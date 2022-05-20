@@ -1,10 +1,10 @@
 SuperObject = {}
 SuperObject.__index = SuperObject
 
+local config = require("config")
 local stream = require("stream")
 local console = require("console")
 local list = require("list")
-
 local Perso = require("perso")
 local IPO = require("ipo")
 
@@ -23,10 +23,9 @@ end
 
 -- Read a superobject
 function SuperObject:Read(address)
-	local so = {}
+	local so = { offset = address }
 	local stream = stream.open(address)
 
-	so.offset = address
 	so.children = list.create()
 	so.type = stream:read32()
 	so.typename = SuperObject.GetTypeName(so)
@@ -34,8 +33,8 @@ function SuperObject:Read(address)
 	local padding = ""
 	for i = 0, level * 4 do padding = padding .. " " end
 
-	if not so.typename then
-		console.log("yellow", "%sEND OF SUPEROBJECT LIST @ %08X", padding, address)
+	if not so.typename and so.data then
+		console.log("yellow", "%sEND OF SUPEROBJECT LIST @ %08X", padding, so.type)
 		so.data = nil
 		return so
 	end
@@ -57,24 +56,35 @@ function SuperObject:Read(address)
 
 	if so.type == 0x2 then numPersos = numPersos + 1 end
 
-	-- Read data
-	if so.typename == "Perso" then so.data = Perso:Read(so.data) end
-	if so.typename == "IPO" then so.data = IPO:Read(so.data) end
+    -- Print superobject address
+	if config.PRINT_INFO and so.typename and so.offset and so.children  then
+        log_read(so.typename, so.offset, so.children.count, padding)
+    end
 
-	-- Print superobject address
-	log_read(so.typename, so.offset, so.children.count, padding)
+	-- Read data
+    if so.data ~= 0x00 then
+        if so.typename == "Perso" then so.data = Perso:Read(so.data) end
+        if so.typename == "IPO" then so.data = IPO:Read(so.data) end
+    end
 
 	-- Read children
-	if so.children.count > 0 then
-		local offset_next = so.children.head
-		for i = 1, so.children.count do
-			level = level + 1
+    if so.children then
+    	if so.children.count > 0 then
+    		local offset_next = so.children.head
+    		for i = 0, so.children.count do
+    			level = level + 1
 
-			so.children.entries[i] = SuperObject:Read(offset_next)
-			so.children.entries[i].parent = so
-			offset_next = so.children.entries[i].next
-		end
-	end
+                -- Check if valid address
+                if offset_next > 0x17FFFFF then
+                    break
+                end
+
+    			so.children.entries[i] = SuperObject:Read(offset_next)
+    			so.children.entries[i].parent = so
+    			offset_next = so.children.entries[i].next
+    		end
+    	end
+    end
 
 	level = level - 1
 

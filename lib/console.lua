@@ -4,7 +4,7 @@ console.__index = console
 function console.fmt(opt, ...)
 	local fmt = "\27[%sm%s\27[0m"
 	local code = "0"
-	
+
 	-- improve or remove
 	if opt == "info" then code = "0" end
 	if opt == "warning" then code = "31" end
@@ -21,6 +21,7 @@ function console.fmt(opt, ...)
 	if opt == "cyan" then code = "36;1" end
 	if opt == "white" then code = "37;1" end
 	if opt == "grey" then code = "38;2" end
+    if opt == "gray" then code = "38;2" end
 
 	local r = string.format(...)
 	local s = string.format(fmt, code, r)

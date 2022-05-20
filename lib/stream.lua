@@ -9,8 +9,16 @@ end
 
 -- Advance stream position
 function stream:advance(step)
-	self.position = self.position + step
-	return self.position
+    if self.position then
+    	self.position = self.position + step
+    	return self.position
+    else
+        return 0x00000000
+    end
+end
+
+function stream:jump(address)
+    self.position = address
 end
 
 function stream:read8()		return memory.read8(self:advance(1) - 1) 	 end
