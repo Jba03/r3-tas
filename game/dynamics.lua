@@ -17,22 +17,21 @@ function Dynamics:Read(address)
     if dynamics.f3 & 0x4 then dynamics.type = 2 end
     if (dynamics.f3 & 0x2) ~= 0 then dynamics.type = 1 end
 
-    stream:jump(dynamics.offset + 0x54)
-    --stream:jump(dynamics.offset + 0x3c)
+    --stream:jump(dynamics.offset + 0x54)
+    stream:jump(dynamics.offset + 0x3c)
     --console.log("cyan", "[Dynamics Speed Vector @ %X]", stream.position)
 
 
-    -- dynamics.speed = {}
-    -- -- Not real speed address? scale is correct
-    -- memory.writefloat(stream.position, 2)
-    -- dynamics.speed.x = stream:readfloat()
-    -- dynamics.speed.z = stream:readfloat() -- x & y switched
-    -- dynamics.speed.y = stream:readfloat()
+    -- Not real speed address? scale is correct
+    dynamics.speed = {}
+    dynamics.speed.x = stream:readfloat()
+    dynamics.speed.z = stream:readfloat() -- x & y switched
+    dynamics.speed.y = stream:readfloat()
 
-    -- dynamics.scale = {}
-    -- dynamics.scale.x = stream:readfloat()
-    -- dynamics.scale.z = stream:readfloat() -- x & y switched
-    -- dynamics.scale.y = stream:readfloat()
+    dynamics.scale = {}
+    dynamics.scale.x = stream:readfloat()
+    dynamics.scale.z = stream:readfloat() -- x & y switched
+    dynamics.scale.y = stream:readfloat()
 
     stream:jump(dynamics.offset + 0x78)
     --console.log("cyan", "[Dynamics Matrix A @ %X]", stream.position)

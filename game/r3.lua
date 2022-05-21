@@ -11,6 +11,7 @@ require("fix")
 require("lvl")
 
 PersoList = {}
+PersoColorList = {}
 IPOList = {}
 
 local FIX_ADDRESS = 0
@@ -26,6 +27,10 @@ frame = 0
 
 -- Parse engine structure
 local function r3_load()
+
+    for i=0,400 do
+        PersoColorList[i] = math.random(0x80303030, 0xFFFFFFFF)
+    end
 
     -- Clear persos and IPO:s
     for k, v in pairs(PersoList) do PersoList[k] = nil end
@@ -47,7 +52,7 @@ local function r3_load()
 
         -- Read the superobject hierarchy
         if config.PRINT_INFO then
-            console.log("red", "Superobject hierarchy: %X", hierarchyEntryPoint)
+            console.log("pink", "Reading superobject hierarchy @ %X", hierarchyEntryPoint)
         end
 
     	local start = os.clock()
@@ -104,31 +109,17 @@ function r3.update()
 	end
 
     -- Testing drawing of boxes at perso positions
-    --ira:begin()
-    -- CameraPositionX = memory.readfloat(0x00c531bc + 4 * 0)
-	-- CameraPositionY = memory.readfloat(0x00c531bc + 4 * 2)
-	-- CameraPositionZ = memory.readfloat(0x00c531bc + 4 * 1)
-    -- CameraLookX = memory.readfloat(0x00c53910 + 0 * 4)
-	-- CameraLookY = memory.readfloat(0x00c53910 + 2 * 4)
-	-- CameraLookZ = memory.readfloat(0x00c53910 + 1 * 4)
-    --
-    -- ira:camera(CameraPositionX, CameraPositionY-1, CameraPositionZ, 0, 0, 0)
-    -- ira:look_at(CameraLookX, CameraLookY-1, CameraLookZ)
-    -- ira:fov(60.0)
-    --
-    -- for k, v in pairs(PersoList) do
-    --     if type(v.dynamics) == "table" then
-    --         -- gui:window(k)
-    --         -- gui:text("X: " .. v.dynamics.position.x)
-    --         -- gui:text("Y: " .. v.dynamics.position.y)
-    --         -- gui:text("Z: " .. v.dynamics.position.z)
-    --
-    --         ira:scale(0.5, 0.5, 0.5)
-	--         ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
-	--         ira:box(0, 0, 0, 0xAAFFFFFF)
-	--         ira:reset()
-    --     end
-    -- end
+    ira:begin()
+    CameraPositionX = memory.readfloat(0x00c531bc + 4 * 0)
+	CameraPositionY = memory.readfloat(0x00c531bc + 4 * 2)
+	CameraPositionZ = memory.readfloat(0x00c531bc + 4 * 1)
+    CameraLookX = memory.readfloat(0x00c53910 + 0 * 4)
+	CameraLookY = memory.readfloat(0x00c53910 + 2 * 4)
+	CameraLookZ = memory.readfloat(0x00c53910 + 1 * 4)
+
+    ira:camera(CameraPositionX, CameraPositionY-1, CameraPositionZ, 0, 0, 0)
+    ira:look_at(CameraLookX, CameraLookY-1, CameraLookZ)
+    ira:fov(60.0)
 
     --Re-read persos each frame
     config.PRINT_INFO = false
@@ -141,11 +132,18 @@ function r3.update()
 
     Rayman = PersoList["Rayman"]
     if Rayman then
-        gui:window("Rayman")
-        gui:text("X: " .. Rayman.dynamics.position.x)
-        gui:text("Y: " .. Rayman.dynamics.position.y)
-        gui:text("Z: " .. Rayman.dynamics.position.z)
-        --gui:text("Hspeed: " .. math.sqrt(Rayman.dynamics.speed.x ^ 2 + Rayman.dynamics.speed.y ^ 2))
+        if type(Rayman.dynamics) == "table" then
+            gui:window("Rayman")
+
+            gui:text("X: " .. Rayman.dynamics.position.x)
+            gui:text("Y: " .. Rayman.dynamics.position.y)
+            gui:text("Z: " .. Rayman.dynamics.position.z)
+            gui:text("")
+
+            gui:text("Hspeed: " .. math.sqrt(Rayman.dynamics.speed.x ^ 2 + Rayman.dynamics.speed.z ^ 2))
+            gui:text("Vspeed: " .. Rayman.dynamics.speed.y)
+            gui:text(string.format("(%.2f, %.2f, %.2f)", Rayman.dynamics.speed.x, Rayman.dynamics.speed.y, Rayman.dynamics.speed.z))
+        end
     end
 
     frame = frame + 1
@@ -156,6 +154,74 @@ function r3.on_video()
     gui:window("Level")
     if gui:button("Reload hierarchy") then
         r3_load()
+    end
+
+    gui:window("Persos")
+    local drawPosition = gui:checkbox("Draw position?")
+    local drawSpeedVector = gui:checkbox("Draw speed vectors?")
+
+    gui:text("")
+    gui:text(string.format("Currently loaded (%d)", numPersos))
+    gui:separator()
+
+    numPersos = 0
+
+    local pcc = 0
+    for k, v in pairs(PersoList) do
+        gui:text(v.name)
+
+        if type(v.dynamics) == "table" then
+
+            -- gui:window(k)
+            -- gui:text("X: " .. v.dynamics.position.x)
+            -- gui:text("Y: " .. v.dynamics.position.y)
+            -- gui:text("Z: " .. v.dynamics.position.z)
+
+            if drawPosition then
+                ira:scale(0.5, 0.5, 0.5)
+    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
+    	        ira:box(0, 0, 0, PersoColorList[pcc])
+    	        ira:reset()
+            end
+
+            if drawSpeedVector then
+                local axesScale = 0.25
+                local off = 0.1
+
+                ira:scale(0.1, v.dynamics.speed.y * 0.25, 0.1)
+    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y + (v.dynamics.speed.y * 0.25)/2, v.dynamics.position.z)
+    	        ira:box(0, 0, 0, 0xFF00FF00)
+    	        ira:reset()
+
+                ira:scale(v.dynamics.speed.x * 0.25, 0.1, 0.1)
+    	        ira:translate(v.dynamics.position.x + (v.dynamics.speed.x * 0.25)/2, v.dynamics.position.y, v.dynamics.position.z)
+    	        ira:box(0, 0, 0, 0xFF0000FF)
+    	        ira:reset()
+
+                ira:scale(0.1, 0.1, v.dynamics.speed.z * 0.25)
+    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z + (v.dynamics.speed.z * 0.25)/2)
+    	        ira:box(0, 0, 0, 0xFFFF0000)
+    	        ira:reset()
+            end
+
+            -- ira:triangle(v.dynamics.position.x,
+            -- v.dynamics.position.y-off,
+            -- v.dynamics.position.z,
+            -- v.dynamics.position.x,
+            -- v.dynamics.position.y+off,
+            -- v.dynamics.position.z,
+            -- v.dynamics.position.x,
+            -- v.dynamics.position.y,
+            -- v.dynamics.position.z + axesScale * v.dynamics.speed.z, 0xFFFF0000)
+
+            --ira:scale(v.dynamics.speed.x, v.dynamics.speed.x, v.dynamics.speed.x)
+            --ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
+            --ira:box(0, 0, 0, 0x0000FFFF)
+            ira:reset()
+        end
+
+        numPersos = numPersos + 1
+        pcc = pcc + 1
     end
 end
 

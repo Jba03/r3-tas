@@ -45,6 +45,11 @@ function lvl.load(address)
 
         --print("Num names: " .. numNames)
 
+        if numNames > 10000 then
+            console.log("red", "Unreasonable number of names - invalid LVL!")
+            return nil
+        end
+
         lvl.objectTypes[i] = {}
         local current = nameFirst
 
@@ -79,5 +84,5 @@ function lvl.load(address)
         --print ""
     end
 
-    console.log("yellow", "Finished reading LVL")
+    console.log("yellow", "Finished reading LVL\n")
 end

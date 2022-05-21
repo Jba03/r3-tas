@@ -35,11 +35,10 @@ function Perso:Read(address)
     perso.name = perso.stdGame:GetName(2)
 
 
-
     -- Read dynamics
     if perso.dynamics ~= 0x00 then
         if config.PRINT_INFO and perso.name then
-            console.log("red", "Perso \"%s\" dynamics @ %X", perso.name, perso.dynamics)
+            --console.log("red", "Perso \"%s\" dynamics @ %X", perso.name, perso.dynamics)
         end
         perso.dynamics = Dynamics:Read(memory.readpointer(perso.dynamics))
     end
