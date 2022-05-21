@@ -129,6 +129,18 @@ function r3.update()
     config.PRINT_INFO = true
 
 
+    frame = frame + 1
+end
+
+-- Draw GUI
+function r3.on_video()
+    gui:window("Level")
+    if gui:button("Reload hierarchy") then
+        r3_load()
+    end
+    gui:window_end()
+
+
 
     Rayman = PersoList["Rayman"]
     if Rayman then
@@ -143,18 +155,12 @@ function r3.update()
             gui:text("Hspeed: " .. math.sqrt(Rayman.dynamics.speed.x ^ 2 + Rayman.dynamics.speed.z ^ 2))
             gui:text("Vspeed: " .. Rayman.dynamics.speed.y)
             gui:text(string.format("(%.2f, %.2f, %.2f)", Rayman.dynamics.speed.x, Rayman.dynamics.speed.y, Rayman.dynamics.speed.z))
+
+            gui:window_end()
         end
     end
 
-    frame = frame + 1
-end
 
--- Draw GUI
-function r3.on_video()
-    gui:window("Level")
-    if gui:button("Reload hierarchy") then
-        r3_load()
-    end
 
     gui:window("Persos")
     local drawPosition = gui:checkbox("Draw position?")
@@ -223,6 +229,30 @@ function r3.on_video()
         numPersos = numPersos + 1
         pcc = pcc + 1
     end
+
+    gui:window_end()
+
+    -- local ccc = 0
+    -- for k, v in pairs(IPOList) do
+    --     if type(v.data) == "table" then
+    --         if type(v.data.collide) == "table" and (ccc % 1) == 0 then
+    --             v.data.collide:Draw()
+    --         end
+    --     end
+    --     ccc = ccc + 1
+    -- end
+end
+
+-- Called when state saved
+function r3.on_savestate(slot)
+    console.log("green", "State %d loaded", slot)
+end
+
+function r3.on_loadstate(slot)
+    console.log("green", "State %d loaded", slot)
+    r3_load()
+    -- TODO: Figure out a way to draw same frame state is loaded
+    r3.on_video()
 end
 
 r3.update()
