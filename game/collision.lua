@@ -90,15 +90,12 @@ function CollisionGeometry:Read(address)
         --  8: alignedboxes
         --  9: cones
         --  13: deformationsetinfo
-        --console.log("cyan", "element type (%d): %d", i, geometry.elements.types[i])
         local elementType = geometry.elements.types[i]
         if elementType == 1 then numTriangles, triangleIndices = readTriangles(block) end
 
-        local aaa=0
         for j = 0, numTriangles * 3 - 1 do
             geometry.vertices.data[j] = geometry.vertices.data[triangleIndices[j]]
-            --console.log("cyan", "%d: %d", aaa, triangleIndices[j])
-            aaa = aaa + 1
+            --console.log("cyan", "%d: %d", j, triangleIndices[j])
         end
 
         --console.log("cyan", "Read %d triangle indices", numTriangles)

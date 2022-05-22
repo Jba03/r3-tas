@@ -138,17 +138,17 @@ end
 function r3.on_video()
 
     -- Draw menu
-    if menuOpen then
-        gui:window("Hah!", 0, 0, 1 << 9 | 1 << 0 | 1 << 10)
-        gui:window_end()
-    else
-        -- Draw menu button
-        gui:window("Menu", 0, 0, 0xFF)
-        if gui:button("Menu") then
-            menuOpen = not menuOpen
-        end
-        gui:window_end()
-    end
+    -- if menuOpen then
+    --     gui:window("Menu window", 0, 0, 1 << 9 | 1 << 0 | 1 << 10)
+    --     gui:window_end()
+    -- else
+    --     -- Draw menu button
+    --     gui:window("Menu", 0, 0, 0xFF)
+    --     if gui:button("Menu") then
+    --         menuOpen = not menuOpen
+    --     end
+    --     gui:window_end()
+    -- end
 
     gui:window("Level")
     if gui:button("Reload hierarchy") then
@@ -177,7 +177,7 @@ function r3.on_video()
     end
 
     gui:window("Persos")
-    local drawPosition = gui:checkbox("Draw position?")
+    local drawPosition = gui:checkbox("Draw positions?")
     local drawSpeedVector = gui:checkbox("Draw speed vectors?")
 
     gui:text("")
@@ -192,11 +192,6 @@ function r3.on_video()
 
         if type(v.dynamics) == "table" then
 
-            -- gui:window(k)
-            -- gui:text("X: " .. v.dynamics.position.x)
-            -- gui:text("Y: " .. v.dynamics.position.y)
-            -- gui:text("Z: " .. v.dynamics.position.z)
-
             if drawPosition then
                 ira:scale(0.5, 0.5, 0.5)
     	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
@@ -205,39 +200,22 @@ function r3.on_video()
             end
 
             if drawSpeedVector then
-                local axesScale = 0.25
-                local off = 0.1
-
-                ira:scale(0.1, v.dynamics.speed.y * 0.25, 0.1)
-    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y + (v.dynamics.speed.y * 0.25)/2, v.dynamics.position.z)
-    	        ira:box(0, 0, 0, 0xFF00FF00)
-    	        ira:reset()
-
+                -- X
                 ira:scale(v.dynamics.speed.x * 0.25, 0.1, 0.1)
     	        ira:translate(v.dynamics.position.x + (v.dynamics.speed.x * 0.25)/2, v.dynamics.position.y, v.dynamics.position.z)
     	        ira:box(0, 0, 0, 0xFF0000FF)
     	        ira:reset()
-
+                -- Y
+                ira:scale(0.1, v.dynamics.speed.y * 0.25, 0.1)
+    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y + (v.dynamics.speed.y * 0.25)/2, v.dynamics.position.z)
+    	        ira:box(0, 0, 0, 0xFF00FF00)
+    	        ira:reset()
+                -- Z
                 ira:scale(0.1, 0.1, v.dynamics.speed.z * 0.25)
     	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z + (v.dynamics.speed.z * 0.25)/2)
     	        ira:box(0, 0, 0, 0xFFFF0000)
     	        ira:reset()
             end
-
-            -- ira:triangle(v.dynamics.position.x,
-            -- v.dynamics.position.y-off,
-            -- v.dynamics.position.z,
-            -- v.dynamics.position.x,
-            -- v.dynamics.position.y+off,
-            -- v.dynamics.position.z,
-            -- v.dynamics.position.x,
-            -- v.dynamics.position.y,
-            -- v.dynamics.position.z + axesScale * v.dynamics.speed.z, 0xFFFF0000)
-
-            --ira:scale(v.dynamics.speed.x, v.dynamics.speed.x, v.dynamics.speed.x)
-            --ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
-            --ira:box(0, 0, 0, 0x0000FFFF)
-            ira:reset()
         end
 
         numPersos = numPersos + 1
@@ -266,6 +244,7 @@ function r3.on_loadstate(slot)
     console.log("green", "State %d loaded", slot)
     r3_load()
     -- TODO: Figure out a way to draw same frame state is loaded
+    -- although this is a problem in Dolphin.
     r3.on_video()
 end
 

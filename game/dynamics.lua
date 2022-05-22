@@ -17,24 +17,20 @@ function Dynamics:Read(address)
     if dynamics.f3 & 0x4 then dynamics.type = 2 end
     if (dynamics.f3 & 0x2) ~= 0 then dynamics.type = 1 end
 
-    --stream:jump(dynamics.offset + 0x54)
-    stream:jump(dynamics.offset + 0x3c)
-    --console.log("cyan", "[Dynamics Speed Vector @ %X]", stream.position)
 
-
-    -- Not real speed address? scale is correct
+    -- Probably changes inter-frame
     dynamics.speed = {}
+    stream:jump(dynamics.offset + 0x3c)
     dynamics.speed.x = stream:readfloat()
-    dynamics.speed.z = stream:readfloat() -- x & y switched
+    dynamics.speed.z = stream:readfloat() -- z & y switched
     dynamics.speed.y = stream:readfloat()
 
     dynamics.scale = {}
     dynamics.scale.x = stream:readfloat()
-    dynamics.scale.z = stream:readfloat() -- x & y switched
+    dynamics.scale.z = stream:readfloat() -- z & y switched
     dynamics.scale.y = stream:readfloat()
 
     stream:jump(dynamics.offset + 0x78)
-    --console.log("cyan", "[Dynamics Matrix A @ %X]", stream.position)
     --dynamics.matrix0 = stream:readpointer()
     stream:read32()
 
@@ -46,7 +42,6 @@ function Dynamics:Read(address)
 
 
     stream:jump(dynamics.offset + 0xD0)
-    --console.log("cyan", "[Dynamics Matrix B @ %X]", stream.position)
     --dynamics.matrix1 = stream:readpointer()
 
 

@@ -74,7 +74,6 @@ function SuperObject:Read(address)
     		for i = 0, so.children.count do
     			level = level + 1
 
-                -- Check if valid address
                 if offset_next > 0x17FFFFF then
                     break
                 end

@@ -11,8 +11,6 @@ function StandardGame:Read(address)
 	std.objectTypes[0] = stream:read32()
 	std.objectTypes[1] = stream:read32()
 	std.objectTypes[2] = stream:read32()
-    --print("obj0: " .. std.objectTypes[1])
-
 	std.superobject = stream:readpointer()
 
 	setmetatable(std, StandardGame)

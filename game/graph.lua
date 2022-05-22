@@ -11,7 +11,7 @@ function WayPoint:Read(address)
 
     wp.position = {}
 	wp.position.x = stream:readfloat()
-	wp.position.y = stream:readfloat() -- Y & Z switched
+	wp.position.y = stream:readfloat() -- z & y switched
 	wp.position.z = stream:readfloat()
 	wp.radius = stream:readfloat()
 
