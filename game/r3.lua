@@ -14,6 +14,8 @@ PersoList = {}
 PersoColorList = {}
 IPOList = {}
 
+local menuOpen = false
+
 local FIX_ADDRESS = 0
 local LVL_ADDRESS = 0
 local HIERARCHY1_ADDRESS = 0
@@ -134,6 +136,20 @@ end
 
 -- Draw GUI
 function r3.on_video()
+
+    -- Draw menu
+    if menuOpen then
+        gui:window("Hah!", 0, 0, 1 << 9 | 1 << 0 | 1 << 10)
+        gui:window_end()
+    else
+        -- Draw menu button
+        gui:window("Menu", 0, 0, 0xFF)
+        if gui:button("Menu") then
+            menuOpen = not menuOpen
+        end
+        gui:window_end()
+    end
+
     gui:window("Level")
     if gui:button("Reload hierarchy") then
         r3_load()
@@ -159,8 +175,6 @@ function r3.on_video()
             gui:window_end()
         end
     end
-
-
 
     gui:window("Persos")
     local drawPosition = gui:checkbox("Draw position?")
@@ -245,7 +259,7 @@ end
 
 -- Called when state saved
 function r3.on_savestate(slot)
-    console.log("green", "State %d loaded", slot)
+    console.log("green", "State %d saved", slot)
 end
 
 function r3.on_loadstate(slot)

@@ -16,7 +16,7 @@ function Dynamics:Read(address)
     dynamics.type = 0
     if dynamics.f3 & 0x4 then dynamics.type = 2 end
     if (dynamics.f3 & 0x2) ~= 0 then dynamics.type = 1 end
-    
+
     --stream:jump(dynamics.offset + 0x54)
     stream:jump(dynamics.offset + 0x3c)
     --console.log("cyan", "[Dynamics Speed Vector @ %X]", stream.position)
