@@ -18,8 +18,10 @@ function StandardGame:Read(address)
 end
 
 function StandardGame:GetName(idx)
-    if self.objectTypes[idx] >= 0 and self.objectTypes[idx] < #lvl.objectTypes[idx] then
-        return lvl.objectTypes[idx][self.objectTypes[idx]].name
+    if not lvl.invalid then
+        if self.objectTypes[idx] >= 0 and self.objectTypes[idx] < #lvl.objectTypes[idx] then
+            return lvl.objectTypes[idx][self.objectTypes[idx]].name
+        end
     end
 
     return "Invalid name - LVL not loaded?"

@@ -21,7 +21,6 @@ local function log_read(type, address, numChildren, padding)
 	print(a .. b .. c .. d .. e)
 end
 
--- Read a superobject
 function SuperObject:Read(address)
 	local so = { offset = address }
 	local stream = stream.open(address)
@@ -30,7 +29,7 @@ function SuperObject:Read(address)
 	so.type = stream:read32()
 	so.typename = SuperObject.GetTypeName(so)
 
-	local padding = ""
+	padding = ""
 	for i = 0, level * 4 do padding = padding .. " " end
 
 	if not so.typename and so.data then
@@ -91,7 +90,6 @@ function SuperObject:Read(address)
 	return so
 end
 
--- Return the name of a superobject's type
 function SuperObject:GetTypeName()
 	if self.type == 0x0 then return "Dummy" end
 	if self.type == 0x1 then return "World" end

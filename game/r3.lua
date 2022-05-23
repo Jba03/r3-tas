@@ -176,53 +176,63 @@ function r3.on_video()
         end
     end
 
-    gui:window("Persos")
-    local drawPosition = gui:checkbox("Draw positions?")
-    local drawSpeedVector = gui:checkbox("Draw speed vectors?")
+    if gui:window("Persos") then
+        local drawPosition = gui:checkbox("Draw positions?")
+        local drawSpeedVector = gui:checkbox("Draw speed vectors?")
+        local drawLights = gui:checkbox("Draw light nodes?")
 
-    gui:text("")
-    gui:text(string.format("Currently loaded (%d)", numPersos))
-    gui:separator()
+        gui:text("")
+        gui:text(string.format("Currently loaded (%d)", numPersos))
+        gui:separator()
 
-    numPersos = 0
+        numPersos = 0
 
-    local pcc = 0
-    for k, v in pairs(PersoList) do
-        gui:text(v.name)
+        local pcc = 0
+        for k, v in pairs(PersoList) do
+            gui:text(v.name)
 
-        if type(v.dynamics) == "table" then
+            if type(v.dynamics) == "table" then
 
-            if drawPosition then
-                ira:scale(0.5, 0.5, 0.5)
-    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
-    	        ira:box(0, 0, 0, PersoColorList[pcc])
-    	        ira:reset()
+                if drawPosition then
+                    ira:scale(0.5, 0.5, 0.5)
+        	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z)
+        	        ira:box(0, 0, 0, PersoColorList[pcc])
+        	        ira:reset()
+                end
+
+                if drawSpeedVector then
+                    -- X
+                    ira:scale(v.dynamics.speed.x * 0.25, 0.1, 0.1)
+        	        ira:translate(v.dynamics.position.x + (v.dynamics.speed.x * 0.25)/2, v.dynamics.position.y, v.dynamics.position.z)
+        	        ira:box(0, 0, 0, 0xFF0000FF)
+        	        ira:reset()
+                    -- Y
+                    ira:scale(0.1, v.dynamics.speed.y * 0.25, 0.1)
+        	        ira:translate(v.dynamics.position.x, v.dynamics.position.y + (v.dynamics.speed.y * 0.25)/2, v.dynamics.position.z)
+        	        ira:box(0, 0, 0, 0xFF00FF00)
+        	        ira:reset()
+                    -- Z
+                    ira:scale(0.1, 0.1, v.dynamics.speed.z * 0.25)
+        	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z + (v.dynamics.speed.z * 0.25)/2)
+        	        ira:box(0, 0, 0, 0xFFFF0000)
+        	        ira:reset()
+                end
             end
 
-            if drawSpeedVector then
-                -- X
-                ira:scale(v.dynamics.speed.x * 0.25, 0.1, 0.1)
-    	        ira:translate(v.dynamics.position.x + (v.dynamics.speed.x * 0.25)/2, v.dynamics.position.y, v.dynamics.position.z)
-    	        ira:box(0, 0, 0, 0xFF0000FF)
-    	        ira:reset()
-                -- Y
-                ira:scale(0.1, v.dynamics.speed.y * 0.25, 0.1)
-    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y + (v.dynamics.speed.y * 0.25)/2, v.dynamics.position.z)
-    	        ira:box(0, 0, 0, 0xFF00FF00)
-    	        ira:reset()
-                -- Z
-                ira:scale(0.1, 0.1, v.dynamics.speed.z * 0.25)
-    	        ira:translate(v.dynamics.position.x, v.dynamics.position.y, v.dynamics.position.z + (v.dynamics.speed.z * 0.25)/2)
-    	        ira:box(0, 0, 0, 0xFFFF0000)
-    	        ira:reset()
+            if drawLights then
+                if type(v.light) == "table" then
+                    v.light:Render()
+                end
             end
+
+            numPersos = numPersos + 1
+            pcc = pcc + 1
         end
-
-        numPersos = numPersos + 1
-        pcc = pcc + 1
     end
-
     gui:window_end()
+
+
+
 
     -- local ccc = 0
     -- for k, v in pairs(IPOList) do

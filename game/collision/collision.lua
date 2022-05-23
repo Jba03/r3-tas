@@ -39,6 +39,7 @@ function CollisionGeometry:Read(address)
 
     geometry.vertices = {}
     geometry.vertices.data = {}
+    geometry.vertices.new_data = {}
     geometry.vertices.count = stream:read16()
 
     geometry.elements = {}
@@ -91,17 +92,19 @@ function CollisionGeometry:Read(address)
         --  9: cones
         --  13: deformationsetinfo
         local elementType = geometry.elements.types[i]
-        if elementType == 1 then numTriangles, triangleIndices = readTriangles(block) end
+        if elementType == 1 then
+            self.numTriangles, triangleIndices = readTriangles(block)
 
-        for j = 0, numTriangles * 3 - 1 do
-            geometry.vertices.data[j] = geometry.vertices.data[triangleIndices[j]]
-            --console.log("cyan", "%d: %d", j, triangleIndices[j])
+            for j = 0, self.numTriangles * 3 - 1 do
+                geometry.vertices.new_data[j] = geometry.vertices.data[triangleIndices[j]]
+                if geometry.vertices.new_data[j] then
+                    --console.log("cyan", "%d: %f", j, geometry.vertices.new_data[j][1])
+                end
+            end
         end
 
         --console.log("cyan", "Read %d triangle indices", numTriangles)
     end
-
-
 
     --console.log("cyan", "Vertices @ %X: %d", address, geometry.vertices.count)
     --console.log("cyan", "Elements @ %X: %d", address, geometry.elements.count)
@@ -114,10 +117,10 @@ end
 
 function CollisionGeometry:Draw()
 
-    for i = 0, self.vertices.count, 3 do
-        local a = self.vertices.data[i+0]
-        local b = self.vertices.data[i+1]
-        local c = self.vertices.data[i+2]
+    for i = 0, self.numTriangles do
+        local a = self.vertices.new_data[i*3+0]
+        local b = self.vertices.new_data[i*3+1]
+        local c = self.vertices.new_data[i*3+2]
 
         --print("len: " .. #self.vertices.data)
         if a and b and c then

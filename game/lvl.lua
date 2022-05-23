@@ -47,7 +47,10 @@ function lvl.load(address)
 
         if numNames > 10000 then
             console.log("red", "Unreasonable number of names - invalid LVL!")
+            lvl.invalid = true
             return nil
+        else
+            lvl.invalid = false
         end
 
         lvl.objectTypes[i] = {}

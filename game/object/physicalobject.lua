@@ -12,7 +12,7 @@ function PhysicalObject:Read(address)
     obj.collide = stream:readpointer()
     obj.visualBoundingVolume = stream:readpointer()
     obj.collideBoundingVolume = stream:readpointer()
-
+    
     -- Parse collide set
     stream = stream.open(obj.collide)
     stream:advance(4 * 3) -- skip
