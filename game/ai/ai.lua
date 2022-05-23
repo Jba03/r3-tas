@@ -1,5 +1,5 @@
 AI = {}
-AI.__index = IPO
+AI.__index = AI
 
 local stream = require("stream")
 local console = require("console")
