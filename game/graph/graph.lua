@@ -1,5 +1,6 @@
 local list = require("list")
 local stream = require("stream")
+local console = require("console")
 
 WayPoint = {}
 WayPoint.__index = WayPoint
@@ -7,12 +8,11 @@ WayPoint.__index = WayPoint
 function WayPoint:Read(address)
     local wp = {}
     local stream = stream.open(address)
-    stream:advance(4)
 
     wp.position = {}
 	wp.position.x = stream:readfloat()
-	wp.position.y = stream:readfloat() -- z & y switched
-	wp.position.z = stream:readfloat()
+	wp.position.z = stream:readfloat() -- z & y switched
+	wp.position.y = stream:readfloat()
 	wp.radius = stream:readfloat()
 
 	setmetatable(wp, WayPoint)
@@ -70,7 +70,10 @@ Graph.__index = Graph
 function Graph:Read(address)
     local graph = { offset = address }
     local stream = stream.open(address)
-    stream:advance(4)
+
+    if address == 0x00 then
+        return nil
+    end
 
     graph.nodelist = list.create()
     graph.nodelist.head = stream:readpointer()
@@ -78,16 +81,16 @@ function Graph:Read(address)
     graph.nodelist.count = stream:read32()
     graph.nodelist.entries = {}
 
-    --print("entries: " .. graph.nodelist.count)
-
-    -- if graph.nodelist.count > 0 then
-	-- 	local offset_next = graph.nodelist.head
-	-- 	for i = 1, graph.nodelist.count do
-	-- 		graph.nodelist.entries[i] = GraphNode:Read(offset_next)
-	-- 		graph.nodelist.entries[i].parent = so
-	-- 		offset_next = graph.nodelist.entries[i].next
-	-- 	end
-	-- end
+    if graph.nodelist.count > 0 then
+		local offset_next = graph.nodelist.head
+		for i = 1, graph.nodelist.count do
+			graph.nodelist.entries[i] = GraphNode:Read(offset_next)
+			graph.nodelist.entries[i].parent = so
+			offset_next = graph.nodelist.entries[i].next
+		end
+	else
+        return nil
+    end
 
 	setmetatable(graph, Graph)
 	return graph
@@ -104,7 +107,7 @@ function Graph:Render()
         --
         -- alpha = ((math.floor(math.max(100, distance * 5))) << 24) & 0xFF000000
         -- color = c - alpha --Color.Graph[5]--
-        color = 0xFFFFFF80
+        color = 0x808000FF
         node:Render(color)
         --p1 = node.waypoint.position
         --p2 = nodelist[i-1].waypoint.position
