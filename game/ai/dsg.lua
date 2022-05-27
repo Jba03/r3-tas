@@ -1,5 +1,6 @@
 local stream = require("stream")
 local console = require("console")
+local Graph = require("graph")
 
 local DSGVariableType = {
     [0]  = {name = "None",              read = function(s) return nil end },
@@ -22,8 +23,8 @@ local DSGVariableType = {
     [17] = {name = "GameMaterial",      read = function(s) return nil end },
     [18] = {name = "VisualMaterial",    read = function(s) return nil end },
     [19] = {name = "Perso",             read = function(s) return nil end },
-    [20] = {name = "WayPoint",          read = function(s) return nil end },
-    [21] = {name = "Graph",             read = function(s) return nil end },
+    [20] = {name = "WayPoint",          read = function(s) return WayPoint:Read(s:readpointer()) end },
+    [21] = {name = "Graph",             read = function(s) return Graph:Read(s:readpointer()) or nil end },
     [22] = {name = "Text",              read = function(s) return nil end },
     [23] = {name = "SuperObject",       read = function(s) return nil end },
     [24] = {name = "SOLinks",           read = function(s) return nil end },
@@ -142,7 +143,9 @@ function DSGMemory.Read(address)
                     local entryOffset = dsg.memory.initial.offset + entry.offsetInBuffer
                     -- Open stream at entry offset
                     local s = stream.open(entryOffset)
-                    dsg.memory.initial.values[i] = {offset = entryOffset, data = DSGVariableType[entry.typeIdentifier+1].read(s)}
+
+                    local T = DSGVariableType[entry.typeIdentifier+1]
+                    dsg.memory.initial.values[i] = { offset = entryOffset, type = T.name, data = T.read(s) }
                     --console.log("green", "(%s) @ (%X + %d): %s", entry.typeName, dsg.memory.initial.offset, entry.offsetInBuffer, tostring(dsg.memory.initial.values[i]))
                 end
             else
@@ -157,7 +160,9 @@ function DSGMemory.Read(address)
                     local entryOffset = dsg.memory.current.offset + entry.offsetInBuffer
                     -- Open stream at entry offset
                     local s = stream.open(entryOffset)
-                    dsg.memory.current.values[i] = {offset = entryOffset, data = DSGVariableType[entry.typeIdentifier+1].read(s)}
+
+                    local T = DSGVariableType[entry.typeIdentifier+1]
+                    dsg.memory.current.values[i] = { offset = entryOffset, type = T.name, data = T.read(s) }
                     --console.log("green", "(%s) @ (%X + %d): %s", entry.typeName, dsg.memory.initial.offset, entry.offsetInBuffer, tostring(dsg.memory.initial.values[i]))
                 end
             else

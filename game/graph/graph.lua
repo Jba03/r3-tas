@@ -80,6 +80,8 @@ function Graph:Read(address)
     graph.nodelist.tail = stream:readpointer()
     graph.nodelist.count = stream:read32()
     graph.nodelist.entries = {}
+    graph.display = false
+    graph.color = math.random(0x60202020, 0xAAFFFFFF)
 
     if graph.nodelist.count > 0 then
 		local offset_next = graph.nodelist.head
@@ -93,6 +95,11 @@ function Graph:Read(address)
     end
 
 	setmetatable(graph, Graph)
+
+    if UpdateGraphList then
+        GraphList[address] = graph
+    end
+
 	return graph
 end
 
@@ -108,7 +115,7 @@ function Graph:Render()
         -- alpha = ((math.floor(math.max(100, distance * 5))) << 24) & 0xFF000000
         -- color = c - alpha --Color.Graph[5]--
         color = 0x808000FF
-        node:Render(color)
+        node:Render(self.color)
         --p1 = node.waypoint.position
         --p2 = nodelist[i-1].waypoint.position
         --ira:triangle(p1.x, p1.y, p1.z, p1.x, p1.y + 0.5, p1.z, p2.x, p2.y, p2.z, Color.Graph[6])
