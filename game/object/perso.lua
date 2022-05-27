@@ -39,6 +39,7 @@ function Perso:Read(address)
 
     -- Read AI
     if perso.ai ~= 0x00 then
+        --console.log("yellow", "AI for %s @ %X\n", perso.name, perso.ai)
         perso.ai = AI:Read(memory.readpointer(perso.ai))
     end
 

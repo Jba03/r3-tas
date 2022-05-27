@@ -95,8 +95,122 @@ local function shouldLoad()
 	return false
 end
 
+addrTable = {
+    2159177220,
+    2159177272,
+    2159177324,
+    2159177376,
+    2165906048,
+    2165906608,
+    29,
+    2165906904,
+    2165908224,
+    67,
+    2165909476,
+    2165913296,
+    192,
+    2164258192,
+    0,
+    0,
+    0,
+    156725103,
+    1683960113,
+    0,
+    0,
+    0,
+    0,
+    0,
+    87,
+    1869571167,
+    825294848,
+    0,
+    0,
+    0,
+    0,
+    0,
+    7169390,
+    1970102640,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4278190080,
+    4294967295,
+    25883,
+    0,
+    431394,
+    17,
+    1,
+    0,
+    0,
+    1,
+    2,
+    2,
+    4,
+    3,
+    2,
+    7,
+    2,
+    10,
+    10,
+    12,
+    10,
+    7,
+    17,
+    418365,
+    1015580809,
+    291474861,
+    1,
+    4058751590,
+    0,
+    40500,
+    16842752,
+    2160004108,
+    0,
+    0,
+    0,
+    1,
+    196613,
+    458761,
+    448,
+    640,
+    448,
+    640,
+    0,
+    448,
+    0,
+    640,
+    0,
+    447,
+    0,
+    639,
+    100,
+    100,
+    0,
+    448,
+    0,
+    640,
+    0,
+    1000,
+    0,
+    1000,
+    0,
+
+}
+
 -- Load, re-read structures, etc.
 function r3.update()
+
+    --console.log("red", "\n\n\nAAAAAAA")
+    -- for i=0,100 do
+    --     print(memory.read32(0x003e7bc8 + i * 4) .. ",")
+    -- end
+
+    -- for i=0,100 do
+    --     memory.write32(0x003e7bc8 + i * 4, addrTable[i+1])
+    -- end
 
     -- Read global structure pointers
 	FIX_ADDRESS = memory.readpointer(config.POINTER.FIX)
@@ -109,19 +223,6 @@ function r3.update()
 		r3_load()
         print("")
 	end
-
-    -- Testing drawing of boxes at perso positions
-    ira:begin()
-    CameraPositionX = memory.readfloat(0x00c531bc + 4 * 0)
-	CameraPositionY = memory.readfloat(0x00c531bc + 4 * 2)
-	CameraPositionZ = memory.readfloat(0x00c531bc + 4 * 1)
-    CameraLookX = memory.readfloat(0x00c53910 + 0 * 4)
-	CameraLookY = memory.readfloat(0x00c53910 + 2 * 4)
-	CameraLookZ = memory.readfloat(0x00c53910 + 1 * 4)
-
-    ira:camera(CameraPositionX, CameraPositionY-1, CameraPositionZ, 0, 0, 0)
-    ira:look_at(CameraLookX, CameraLookY-1, CameraLookZ)
-    ira:fov(60.0)
 
     --Re-read persos each frame
     config.PRINT_INFO = false
@@ -136,6 +237,19 @@ end
 
 -- Draw GUI
 function r3.on_video()
+
+
+    ira:begin() -- Prepare IRA
+    CameraPositionX = memory.readfloat(0x00c531bc + 4 * 0)
+	CameraPositionY = memory.readfloat(0x00c531bc + 4 * 2)
+	CameraPositionZ = memory.readfloat(0x00c531bc + 4 * 1)
+    CameraLookX = memory.readfloat(0x00c53910 + 0 * 4)
+	CameraLookY = memory.readfloat(0x00c53910 + 2 * 4)
+	CameraLookZ = memory.readfloat(0x00c53910 + 1 * 4)
+
+    ira:camera(CameraPositionX, CameraPositionY-1, CameraPositionZ, 0, 0, 0)
+    ira:look_at(CameraLookX, CameraLookY-1, CameraLookZ)
+    ira:fov(60.0)
 
     -- Draw menu
     -- if menuOpen then
@@ -174,6 +288,21 @@ function r3.on_video()
 
             gui:window_end()
         end
+
+        World = PersoList["global"]
+        gui:window("World DSG variables")
+        local dsg = World.ai.dsg
+        for i = 0, dsg.memory.length - 1 do
+            local value = dsg.memory.current.values[i].data
+            local offset = dsg.memory.current.values[i].offset
+            if type(value) == "table" then
+                gui:text(string.format("%X: (%.2f, %.2f, %.2f)", offset, value.x, value.y, value.z))
+            else
+                gui:text(string.format("%X: %s", offset, tostring(value)))
+            end
+        end
+        --console.log("pink", "rayman dsg current @ %x", dsg.memory.current.offset)
+        gui:window_end()
     end
 
     if gui:window("Persos") then
@@ -232,17 +361,15 @@ function r3.on_video()
     gui:window_end()
 
 
-
-
-    -- local ccc = 0
-    -- for k, v in pairs(IPOList) do
-    --     if type(v.data) == "table" then
-    --         if type(v.data.collide) == "table" and (ccc % 1) == 0 then
-    --             v.data.collide:Draw()
-    --         end
-    --     end
-    --     ccc = ccc + 1
-    -- end
+    local ccc = 0
+    for k, v in pairs(IPOList) do
+        if type(v.data) == "table" then
+            if type(v.data.collide) == "table" and (ccc % 1) == 0 then
+                v.data.collide:Draw()
+            end
+        end
+        ccc = ccc + 1
+    end
 end
 
 -- Called when state saved
