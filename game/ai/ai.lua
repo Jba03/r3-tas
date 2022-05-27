@@ -4,6 +4,8 @@ AI.__index = AI
 local stream = require("stream")
 local console = require("console")
 
+require("dsg")
+
 function AI:Read(address)
 	local ai = { offset = address }
 	local stream = stream.open(address)
@@ -12,10 +14,8 @@ function AI:Read(address)
     ai.intelligence = {}
     ai.intelligence.normal = stream:readpointer()
     ai.intelligence.reflex = stream:readpointer()
-    ai.dsg = stream:readpointer()
+    ai.dsg = DSGMemory.Read(stream:readpointer())
     ai.name = memory.readstring(stream:readpointer())
-
-    console.log("yellow", "AI for %s @ %X", ai.name, address)
 
 	setmetatable(ai, AI)
 	return ai
