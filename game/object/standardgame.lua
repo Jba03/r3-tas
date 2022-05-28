@@ -13,6 +13,17 @@ function StandardGame:Read(address)
 	std.objectTypes[2] = stream:read32()
 	std.superobject = stream:readpointer()
 
+    stream:advance(0x10)
+
+    std.customBits = stream:read32()
+    std.customBitsAI = stream:read32()
+    std.flags = stream:read8()
+    std.transparencyZoneMin = stream:read8()
+    std.transparencyZoneMax = stream:read8()
+    std.customBitsInitial = stream:read32()
+    std.customBitsInitialAI = stream:read32()
+
+
 	setmetatable(std, StandardGame)
 	return std
 end
