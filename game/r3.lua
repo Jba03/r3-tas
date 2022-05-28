@@ -12,6 +12,17 @@ require("lvl")
 
 PersoList = {}
 PersoColorList = {}
+PersoWatchList = {
+    "PSY_NIK_mSubcagSea10_BABORD_01",
+    "PSY_NIK_mSubcagSea10_BACK_01",
+    "PSY_NIK_mSubcagSea10_FACE_01",
+    "PSY_NIK_mSubcagSea10_TRIBORD_01",
+    "PSY_NIK_mSubcagSea10_BABORD_02",
+    "PSY_NIK_mSubcagSea10_FACE_02",
+    "PSY_NIK_mSubcagSea10_TRIBORD_02",
+    "PSY_NIK_mSubcagSea10_BACK_02",
+}
+
 IPOList = {}
 
 -- Graphs
@@ -130,7 +141,6 @@ end
 -- Draw GUI
 function r3.on_video()
 
-
     ira:begin() -- Prepare IRA
     CameraPositionX = memory.readfloat(0x00c531bc + 4 * 0)
 	CameraPositionY = memory.readfloat(0x00c531bc + 4 * 2)
@@ -179,35 +189,64 @@ function r3.on_video()
 
             gui:window_end()
         end
-
-        -- World = PersoList["BEN_Globone"]
-        -- gui:window("Globox DSG variables")
-        -- local dsg = World.ai.dsg
-        -- for i = 0, dsg.memory.length - 1 do
-        --     local value = dsg.memory.current.values[i].data
-        --     local type = dsg.memory.current.values[i].type
-        --     local offset = dsg.memory.current.values[i].offset
-        --
-        --     if type == "Graph" then
-        --         if value then
-        --             value:Render(0xFFFF00FF)
-        --             --console.log("red", "(%.2f, %.2f, %.2f)", value.position.x, value.position.y, value.position.z)
-        --         end
-        --     else
-        --         gui:text(string.format("%X: %s", offset, tostring(value)))
-        --     end
-        -- end
-        -- gui:window_end()
     end
 
-    -- Draw graphs
-    gui:window("Graphs")
-    for k,g in pairs(GraphList) do
-        if gui:checkbox(string.format("Graph @ %X (%d nodes)", k, g.nodelist.count)) then
-            g:Render()
+    local function binaryString(x)
+    	ret=""
+    	while x~=1 and x~=0 do
+    		ret=tostring(x%2)..ret
+    		x=math.modf(x/2)
+    	end
+    	ret=tostring(x)..ret
+    	return ret
+    end
+
+    for k,v in pairs(PersoWatchList) do
+        perso = PersoList[v]
+        gui:window("Fish")
+        if perso then
+            perso.stdGame = StandardGame:Read(perso.stdGame.offset)
+
+            local str = "false"
+            if (perso.stdGame.customBitsAI & (1 << 0)) ~= 0 then str = "true" end
+            gui:text(string.format("%s: %s", perso.name, str))
+        end
+        gui:window_end()
+    end
+
+    local function displayDSG(perso)
+        gui:window(string.format("DSG variables for %s", perso))
+        perso = PersoList[perso]
+
+        if perso then
+            local dsg = DSGMemory.Read(perso.ai.dsg.offset)
+            for i = 0, dsg.memory.length - 1 do
+                local value = dsg.memory.current.values[i].data
+                local typename = dsg.memory.current.values[i].type
+                local offset = dsg.memory.current.values[i].offset
+
+                if type(value) == "table" then
+                    if value.x and value.y and value.z then
+                        gui:text(string.format("%s_%d: (%.2f, %.2f, %.2f)", typename, i, value.x, value.y, value.z))
+                    end
+                else
+                    gui:text(string.format("%s_%d @ %X: %s", typename, i, offset, tostring(value)))
+                end
+            end
         end
     end
-    gui:window_end();
+
+    displayDSG("World")
+
+    --
+    -- -- Draw graphs
+    -- gui:window("Graphs")
+    -- for k,g in pairs(GraphList) do
+    --     if gui:checkbox(string.format("Graph @ %X (%d nodes)", k, g.nodelist.count)) then
+    --         g:Render()
+    --     end
+    -- end
+    -- gui:window_end()
 
     if gui:window("Persos") then
         local drawPosition = gui:checkbox("Draw positions?")
