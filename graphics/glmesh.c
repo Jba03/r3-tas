@@ -48,8 +48,12 @@ struct GLMesh *glmesh_sphere(const float sectors, const float stacks)
             const float y = xy * sin(u);
             
             sphere->vertices[vertex].position.x = x;
-            sphere->vertices[vertex].position.y = y;
-            sphere->vertices[vertex].position.z = z;
+            sphere->vertices[vertex].position.y = z;
+            sphere->vertices[vertex].position.z = y;
+            
+            sphere->vertices[vertex].normal.x = x;
+            sphere->vertices[vertex].normal.y = y;
+            sphere->vertices[vertex].normal.z = z;
             
             vertex++;
         }

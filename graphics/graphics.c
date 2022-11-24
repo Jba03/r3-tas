@@ -204,10 +204,15 @@ static void graphics_main_loop()
         }
     }
     
-//    struct Vector3 rayman = vector3_read(0x00BF0D98);
-//    struct Matrix4 model = matrix4_mul(matrix4_make_translation(rayman.x, rayman.z, rayman.y), matrix4_make_scale(0.01, 0.01, 0.01));
-//    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &model.m00);
-//    glmesh_draw(sphere);
+    struct Vector3 rayman = vector3_read(0x00BF0D98);
+    
+    struct Matrix4 T;
+    T = matrix4_make_scale(1,1,1);
+    T = matrix4_mul(T, matrix4_make_translation(rayman.x, rayman.y, rayman.z));
+    T = matrix4_transpose(T);
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
+    glmesh_draw(sphere);
     
     SDL_GL_SwapWindow(window);
 }
