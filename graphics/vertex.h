@@ -13,6 +13,7 @@
 struct GLVertex {
     struct { float x, y, z; } position;
     struct { float x, y, z; } normal;
+    struct { float x, y;    } texcoord;
 };
 
 #endif /* vertex_h */

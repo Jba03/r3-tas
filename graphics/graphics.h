@@ -8,8 +8,11 @@
 #ifndef graphics_h
 #define graphics_h
 
-#include <stdio.h>
+#include "vector3.h"
+#include "vector4.h"
 
 void graphics_init(void);
+
+void graphics_draw_sphere(struct Vector3 center, const float radius, struct Vector4 color);
 
 #endif /* graphics_h */

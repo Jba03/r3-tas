@@ -55,6 +55,9 @@ struct GLMesh *glmesh_sphere(const float sectors, const float stacks)
             sphere->vertices[vertex].normal.y = y;
             sphere->vertices[vertex].normal.z = z;
             
+            sphere->vertices[vertex].texcoord.x = x;
+            sphere->vertices[vertex].texcoord.y = y;
+            
             vertex++;
         }
     }
@@ -112,8 +115,8 @@ void glmesh_data(struct GLMesh *mesh)
     glEnableVertexAttribArray(1);
     
     /* Texture coordinate */
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (GLvoid*)offsetof(struct Vertex, texcoord));
-//    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct GLVertex), (GLvoid*)offsetof(struct GLVertex, texcoord));
+    glEnableVertexAttribArray(2);
     
     /* Unbind VAO */
     glBindVertexArray(0);

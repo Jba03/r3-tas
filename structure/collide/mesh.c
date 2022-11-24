@@ -110,6 +110,28 @@ MESH void mesh_create_glmesh(struct Mesh* mesh)
     
     for (unsigned i = 0; i < mesh->n_triangles * 3; i++)
     {
+        struct Vector3 normal = mesh->processed.normals[i];
+        normal = vector3_new(fabs(normal.x), fabs(normal.z), fabs(normal.y));
+        float n = max(max(normal.x, normal.y), normal.z);
+        
+        float x = mesh->processed.vertices[i].x / 20.0f;
+        float y = mesh->processed.vertices[i].y / 20.0f;
+        float z = mesh->processed.vertices[i].z / 20.0f;
+        
+        if (n == fabs(normal.x)) {
+            glmesh->vertices[i].texcoord.x = y;
+            glmesh->vertices[i].texcoord.y = z;
+        } else if (n == fabs(normal.y)) {
+            glmesh->vertices[i].texcoord.x = x;
+            glmesh->vertices[i].texcoord.y = z;
+        } else {
+            glmesh->vertices[i].texcoord.x = x;
+            glmesh->vertices[i].texcoord.y = y;
+        }
+    }
+    
+    for (unsigned i = 0; i < mesh->n_triangles * 3; i++)
+    {
         glmesh->indices[i] = mesh->processed.indices[i];
     }
     

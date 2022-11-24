@@ -9,26 +9,31 @@
 #include "camera.h"
 #include "common.h"
 #include "opengl.h"
+#include "configuration.h"
 
 #include "engine.h"
 #include "physical_object.h"
 #include "glmesh.h"
 
 #if defined(__APPLE__)
-#include "SDL.h"
-#include <dispatch/dispatch.h>
-
+#   include "SDL.h"
+#   include <dispatch/dispatch.h>
 static dispatch_queue_t sdl_timer_queue;
 static dispatch_source_t sdl_timer_source;
 #endif
 
 static SDL_Window* window;
 static SDL_GLContext context;
-struct Camera* camera;
-static GLuint shader_main;
 
 static int width;
 static int height;
+
+static GLuint shader_main;
+static GLuint checkerboard_texture;
+
+static struct Camera *camera = NULL;
+static struct GLMesh *box = NULL;
+static struct GLMesh *sphere = NULL;
 
 static struct Vector4 bg =
 {
@@ -42,14 +47,17 @@ static struct Vector4 bg =
 "#version 330 core\n"                                               \
 "layout (location = 0) in vec3 aPos;\n"                             \
 "layout (location = 1) in vec3 aNormal;\n"                          \
+"layout (location = 2) in vec2 aTexCoord;\n"                        \
 "out vec3 position;\n"                                              \
 "out vec3 normal;\n"                                                \
+"out vec2 texcoord;\n"                                              \
 "uniform mat4 projection;\n"                                        \
 "uniform mat4 view;\n"                                              \
 "uniform mat4 model;\n"                                             \
 "void main() {\n"                                                   \
 "   position = vec3(model * vec4(aPos, 1.0f));\n"                   \
 "   normal = aNormal;\n"                                            \
+"   texcoord = aTexCoord;\n"                                        \
 "   gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"  \
 "}"
 
@@ -58,9 +66,27 @@ static struct Vector4 bg =
 "layout (location = 0) out vec4 out_color;\n"                             \
 "in vec3 position;\n"                                              \
 "in vec3 normal;\n" \
-"uniform vec3 look_at;\n"    \
+"in vec2 texcoord;\n" \
+"uniform sampler2D checkerboard;\n" \
+"uniform vec3 camera;\n"    \
+"vec3 lightPos = vec3(0, 100, 0);\n" \
+"uniform bool display_normals = false;" \
 "void main() {\n"                                                   \
-"   out_color = vec4(normal, 1.0f);\n"                                      \
+"   vec3 color = vec3(texture(checkerboard, texcoord * 4).r);\n" \
+"   vec3 normal2 = normalize(normal);\n" \
+"   vec3 lightColor = vec3(1,0.3,0.45);\n" \
+"   vec3 ambient = vec3(0.1);\n" \
+"   vec3 lightDir = normalize(lightPos - position);\n" \
+"   float diff = max(dot(lightDir, normal2), 0.0);\n" \
+"   vec3 diffuse = diff * lightColor;\n" \
+"   vec3 viewDir = normalize(camera - position);\n" \
+"   vec3 reflectDir = reflect(-lightDir, normal2);\n" \
+"   float spec = 0.0;\n" \
+"   vec3 halfwayDir = normalize(lightDir + viewDir);\n" \
+"   spec = pow(max(dot(normal2, halfwayDir), 0.0), 64.0);\n" \
+"   vec3 specular = spec * lightColor * 1.0f;\n" \
+"   out_color = display_normals ? vec4(normal, 1.0f) :" \
+"   vec4(vec3(diffuse + specular + ambient) * color, 1.0f);\n"                                      \
 "}"
 
 
@@ -152,7 +178,26 @@ static void draw_ipo(struct SuperObject *obj, void* p)
     }
 }
 
-struct GLMesh* sphere;
+static void gen_checkerboard_texture()
+{
+    glGenTextures(1, &checkerboard_texture);
+    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+       
+    
+    uint8_t data[2 * 2] = {96, 128, 128, 96};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 2, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+}
 
 static void graphics_main_loop()
 {
@@ -191,10 +236,13 @@ static void graphics_main_loop()
     /* Disable face culling */
     glDisable(GL_CULL_FACE);
     
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
+    
     /* Upload uniforms */
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
-    glUniform3f(glGetUniformLocation(shader_main, "look_at"), look_at.x, look_at.y, look_at.z);
+    glUniform3f(glGetUniformLocation(shader_main, "camera"), eye.x, eye.y, eye.z);
     
     if (engine)
     {
@@ -204,17 +252,24 @@ static void graphics_main_loop()
         }
     }
     
+    glUniform1i(glGetUniformLocation(shader_main, "checkerboard"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
     struct Vector3 rayman = vector3_read(0x00BF0D98);
+    graphics_draw_sphere(rayman, 1.0f, vector4_new(0, 0, 0, 0));
     
+    SDL_GL_SwapWindow(window);
+}
+
+void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 color)
+{
     struct Matrix4 T;
-    T = matrix4_make_scale(1,1,1);
-    T = matrix4_mul(T, matrix4_make_translation(rayman.x, rayman.y, rayman.z));
+    T = matrix4_make_scale(r * 2.0f, r * 2.0f, r * 2.0f);
+    T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
     T = matrix4_transpose(T);
     
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
     glmesh_draw(sphere);
-    
-    SDL_GL_SwapWindow(window);
 }
 
 void graphics_init(void)
@@ -250,6 +305,8 @@ void graphics_init(void)
     {
         info(BOLD COLOR_GREEN "GLSL shaders compiled successfully\n");
     }
+    
+    gen_checkerboard_texture();
     
     dispatch_source_set_event_handler(sdl_timer_source, ^{
         graphics_main_loop();
