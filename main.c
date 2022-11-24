@@ -104,7 +104,7 @@ static void loadstate_handler(int slot)
 {
     info(BOLD COLOR_GREEN "Slot %d loaded\n", slot);
     r3_load();
-    engine_export_obj(engine);
+    //engine_export_obj(engine);
 }
 
 static void savestate_handler(int slot)
