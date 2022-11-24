@@ -103,13 +103,9 @@ MESH void mesh_create_glmesh(struct Mesh* mesh)
         glmesh->vertices[i].position.y = mesh->processed.vertices[i].z;
         glmesh->vertices[i].position.z = mesh->processed.vertices[i].y;
         
-        
-        float normal = mesh->processed.normals[i].x + mesh->processed.normals[i].y + mesh->processed.normals[i].z;
-        normal /= 3;
-        normal += 0.1;
-        glmesh->vertices[i].normal.x = normal;
-        glmesh->vertices[i].normal.y = normal;
-        glmesh->vertices[i].normal.z = normal;
+        glmesh->vertices[i].normal.x = mesh->processed.normals[i].x;
+        glmesh->vertices[i].normal.y = mesh->processed.normals[i].z;
+        glmesh->vertices[i].normal.z = mesh->processed.normals[i].y;
     }
     
     for (unsigned i = 0; i < mesh->n_triangles * 3; i++)
