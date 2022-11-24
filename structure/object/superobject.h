@@ -39,9 +39,9 @@ struct SuperObject {
     
     struct SuperObject *children[1000];
     
-    union Matrix4 matrix_default;
-    union Matrix4 matrix_static;
-    union Matrix4 matrix_global;
+    struct Matrix4 matrix_default;
+    struct Matrix4 matrix_static;
+    struct Matrix4 matrix_global;
     
     address offset;
 };

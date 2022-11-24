@@ -13,7 +13,7 @@
 
 #pragma mark - Matrix4
 
-const union Matrix4 matrix4_identity =
+const struct Matrix4 matrix4_identity =
 {
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
@@ -21,17 +21,19 @@ const union Matrix4 matrix4_identity =
     0.0f, 0.0f, 0.0f, 1.0f,
 };
 
-MATRIX4 union Matrix4 matrix4_read(const address addr)
+MATRIX4 struct Matrix4 matrix4_read(const address addr)
 {
-    union Matrix4 m = matrix4_identity;
+    struct Matrix4 m = matrix4_identity;
+    m.offset = addr;
+    
     for (int i = 0; i < 16; i++)
         m.m[i] = memory.read_float(addr + 4 * i);
     return m;
 }
 
-MATRIX4 union Matrix4 matrix4_new(const union Vector4 row0, const union Vector4 row1, const union Vector4 row2, const union Vector4 row3)
+MATRIX4 struct Matrix4 matrix4_new(const struct Vector4 row0, const struct Vector4 row1, const struct Vector4 row2, const struct Vector4 row3)
 {
-    union Matrix4 m;
+    struct Matrix4 m;
     m.row0 = row0;
     m.row1 = row1;
     m.row2 = row2;
@@ -40,9 +42,9 @@ MATRIX4 union Matrix4 matrix4_new(const union Vector4 row0, const union Vector4 
     return m;
 }
 
-MATRIX4 union Matrix4 matrix4_mul(const union Matrix4 a, const union Matrix4 b)
+MATRIX4 struct Matrix4 matrix4_mul(const struct Matrix4 a, const struct Matrix4 b)
 {
-    union Matrix4 m;
+    struct Matrix4 m;
     
     m.m[0]  = a.m[0] * b.m[0]  + a.m[4] * b.m[1]  + a.m[8] * b.m[2]   + a.m[12] * b.m[3];
     m.m[4]  = a.m[0] * b.m[4]  + a.m[4] * b.m[5]  + a.m[8] * b.m[6]   + a.m[12] * b.m[7];
@@ -67,9 +69,9 @@ MATRIX4 union Matrix4 matrix4_mul(const union Matrix4 a, const union Matrix4 b)
     return m;
 }
 
-MATRIX4 union Matrix4 matrix4_inverse(const union Matrix4 m)
+MATRIX4 struct Matrix4 matrix4_inverse(const struct Matrix4 m)
 {
-    union Matrix4 result;
+    struct Matrix4 result;
     
     float s0 = m.m00 * m.m11 - m.m10 * m.m01;
     float s1 = m.m00 * m.m12 - m.m10 * m.m02;
@@ -115,9 +117,9 @@ MATRIX4 union Matrix4 matrix4_inverse(const union Matrix4 m)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_transpose(const union Matrix4 m)
+MATRIX4 struct Matrix4 matrix4_transpose(const struct Matrix4 m)
 {
-    union Matrix4 result;
+    struct Matrix4 result;
     
     result.m[0] = m.m[0];
     result.m[1] = m.m[4];
@@ -142,9 +144,9 @@ MATRIX4 union Matrix4 matrix4_transpose(const union Matrix4 m)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_translation(const float x, const float y, const float z)
+MATRIX4 struct Matrix4 matrix4_make_translation(const float x, const float y, const float z)
 {
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     result.m03 = x;
     result.m13 = y;
     result.m23 = z;
@@ -152,12 +154,12 @@ MATRIX4 union Matrix4 matrix4_make_translation(const float x, const float y, con
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_rotation_x(const float radians)
+MATRIX4 struct Matrix4 matrix4_make_rotation_x(const float radians)
 {
     float sine = sin(radians);
     float cosine = cos(radians);
     
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     result.m11 = cosine;
     result.m12 = sine;
     result.m21 = -sine;
@@ -166,12 +168,12 @@ MATRIX4 union Matrix4 matrix4_make_rotation_x(const float radians)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_rotation_y(const float radians)
+MATRIX4 struct Matrix4 matrix4_make_rotation_y(const float radians)
 {
     const float sine = sin(radians);
     const float cosine = cos(radians);
     
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     result.m00 = cosine;
     result.m02 = -sine;
     result.m20 = sine;
@@ -180,12 +182,12 @@ MATRIX4 union Matrix4 matrix4_make_rotation_y(const float radians)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_rotation_z(const float radians)
+MATRIX4 struct Matrix4 matrix4_make_rotation_z(const float radians)
 {
     const float sine = sin(radians);
     const float cosine = cos(radians);
     
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     result.m00 = cosine;
     result.m01 = sine;
     result.m10 = -sine;
@@ -194,9 +196,9 @@ MATRIX4 union Matrix4 matrix4_make_rotation_z(const float radians)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_scale(const float x, const float y, const float z)
+MATRIX4 struct Matrix4 matrix4_make_scale(const float x, const float y, const float z)
 {
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     result.m00 = x;
     result.m11 = y;
     result.m22 = z;
@@ -204,9 +206,9 @@ MATRIX4 union Matrix4 matrix4_make_scale(const float x, const float y, const flo
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_make_scale_vector3(const union Vector3 v)
+MATRIX4 struct Matrix4 matrix4_make_scale_vector3(const struct Vector3 v)
 {
-    union Matrix4 result =
+    struct Matrix4 result =
     {
         v.x, 0.0f, 0.0f, 0.0f,
         0.0f, v.y, 0.0f, 0.0f,
@@ -217,9 +219,9 @@ MATRIX4 union Matrix4 matrix4_make_scale_vector3(const union Vector3 v)
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z)
+MATRIX4 struct Matrix4 matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z)
 {
-    union Matrix4 result = matrix4_identity;
+    struct Matrix4 result = matrix4_identity;
     
     const float ct = 1.0f / tanf(fov_y / 2.0f);
     
@@ -233,7 +235,7 @@ MATRIX4 union Matrix4 matrix4_perspective(const float fov_y, const float aspect,
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far)
+MATRIX4 struct Matrix4 matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far)
 {
     float ral = right + left;
     float rsl = right - left;
@@ -242,7 +244,7 @@ MATRIX4 union Matrix4 matrix4_ortho(const float left, const float right, const f
     float fan = far + near;
     float fsn = far - near;
     
-    union Matrix4 result =
+    struct Matrix4 result =
     {
         2.0f / rsl, 0.0f, 0.0f, 0.0f,
         0.0f, 2.0f / tsb, 0.0f, 0.0f,
@@ -253,13 +255,13 @@ MATRIX4 union Matrix4 matrix4_ortho(const float left, const float right, const f
     return result;
 }
 
-MATRIX4 union Matrix4 matrix4_lookat(const union Vector3 eye, const union Vector3 center, const union Vector3 up)
+MATRIX4 struct Matrix4 matrix4_lookat(const struct Vector3 eye, const struct Vector3 center, const struct Vector3 up)
 {
-    union Vector3 n = vector3_normalize(vector3_add(eye, vector3_negate(center)));
-    union Vector3 u = vector3_normalize(vector3_cross(up, n));
-    union Vector3 v = vector3_cross(n, u);
+    struct Vector3 n = vector3_normalize(vector3_add(eye, vector3_negate(center)));
+    struct Vector3 u = vector3_normalize(vector3_cross(up, n));
+    struct Vector3 v = vector3_cross(n, u);
     
-    union Matrix4 result =
+    struct Matrix4 result =
     {
         u.v[0], v.v[0], n.v[0], 0.0f,
         u.v[1], v.v[1], n.v[1], 0.0f,
@@ -275,9 +277,9 @@ MATRIX4 union Matrix4 matrix4_lookat(const union Vector3 eye, const union Vector
 
 #if defined(VECTOR4)
 
-VECTOR4 union Vector4 vector4_mul_matrix4(const union Vector4 v, const union Matrix4 m)
+VECTOR4 struct Vector4 vector4_mul_matrix4(const struct Vector4 v, const struct Matrix4 m)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = m.m[0] * v.v[0] + m.m[4] * v.v[1] + m.m[8]  * v.v[2] + m.m[12] * v.v[3];
     result.y = m.m[1] * v.v[0] + m.m[5] * v.v[1] + m.m[9]  * v.v[2] + m.m[13] * v.v[3];
     result.z = m.m[2] * v.v[0] + m.m[6] * v.v[1] + m.m[10] * v.v[2] + m.m[14] * v.v[3];

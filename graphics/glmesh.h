@@ -20,7 +20,7 @@ struct GLMesh {
     unsigned n_indices;
     unsigned* indices;
     
-    union Matrix4 transform;
+    struct Matrix4 transform;
     
     GLuint vao;
     GLuint vbo;

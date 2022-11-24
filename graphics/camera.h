@@ -17,11 +17,11 @@ struct Camera {
 #define CAMERA_NEAR 0.1f
 #define CAMERA_FAR  1000.0f
     
-    union Vector3 position;
-    union Vector3 front;
-    union Vector3 up;
-    union Vector3 right;
-    union Vector3 world_up;
+    struct Vector3 position;
+    struct Vector3 front;
+    struct Vector3 up;
+    struct Vector3 right;
+    struct Vector3 world_up;
     
     float yaw;
     float pitch;
@@ -32,8 +32,8 @@ struct Camera {
     float near;
     float far;
     
-    union Matrix4 projection;
-    union Matrix4 view;
+    struct Matrix4 projection;
+    struct Matrix4 view;
 };
 
 /**
@@ -50,7 +50,7 @@ struct Camera *camera_create(const float yaw, const float pitch, const float spe
 /**
  * Create a new orthographic-projection camera.
  */
-struct Camera *camera_create_orthographic(const union Vector3 viewspace_dimensions);
+struct Camera *camera_create_orthographic(const struct Vector3 viewspace_dimensions);
 
 /**
  * Updates the first-person camera using mouse coordinates
@@ -68,16 +68,16 @@ void camera_update(struct Camera* camera, const float x, const float y, const bo
  * @param camera Camera to be updated
  * @param point Point which camera should look at
  */
-void camera_look_at(struct Camera *camera, const union Vector3 point);
+void camera_look_at(struct Camera *camera, const struct Vector3 point);
 
 /**
  * Calculate specified camera's projection matrix
  */
-const union Matrix4 camera_projection_matrix(const struct Camera* c, const float aspect_ratio);
+const struct Matrix4 camera_projection_matrix(const struct Camera* c, const float aspect_ratio);
 
 /**
  * Calculate specified camera's view matrix
  */
-const union Matrix4 camera_view_matrix(const struct Camera* c);
+const struct Matrix4 camera_view_matrix(const struct Camera* c);
 
 #endif /* camera_h */

@@ -153,16 +153,16 @@ static void internal_export_obj(struct SuperObject *obj, void* p)
                                 {
                                     for (unsigned t = 0; t < mesh->n_triangles * 3; t++)
                                     {
-                                        union Vector3 v = mesh->processed.vertices[t];
+                                        struct Vector3 v = mesh->processed.vertices[t];
                                         
-                                        union Vector4 v2;
+                                        struct Vector4 v2;
                                         v2.x = v.x;
                                         v2.z = v.y;
                                         v2.y = v.z;
                                         v2.w = 1;
                                         
-                                        union Matrix4 transform = obj->matrix_default;
-                                        union Vector4 computed = vector4_mul_matrix4(v2, transform);
+                                        struct Matrix4 transform = obj->matrix_default;
+                                        struct Vector4 computed = vector4_mul_matrix4(v2, transform);
                                         
                                         char buf[128];
                                         memset(buf, 0, 128);

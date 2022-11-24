@@ -29,7 +29,7 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
     geom->bounding_sphere.center = vector4_read(stream->position);
     
     
-    geom->vertices = malloc(sizeof(union Vector3) * geom->n_vertices);
+    geom->vertices = malloc(sizeof(struct Vector3) * geom->n_vertices);
     geom->element_types = malloc(sizeof(uint16_t) * geom->n_elements);
     geom->elements = malloc(sizeof(void*) * geom->n_elements);
     
@@ -39,7 +39,7 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
     stream_seek(stream, geom->vertex_offset);
     for (unsigned n = 0; n < geom->n_vertices; n++)
     {
-        union Vector3* vertex = &geom->vertices[n];
+        struct Vector3* vertex = &geom->vertices[n];
         vertex->offset = stream->position;
         vertex->x = readfloat();
         vertex->z = readfloat();

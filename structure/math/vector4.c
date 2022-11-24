@@ -9,9 +9,9 @@
 
 #pragma mark - Vector4
 
-VECTOR4 union Vector4 vector4_read(const address addr)
+VECTOR4 struct Vector4 vector4_read(const address addr)
 {
-    union Vector4 v = { .offset = addr };
+    struct Vector4 v = { .offset = addr };
     v.x = memory.read_float(addr + 4 * 0);
     v.y = memory.read_float(addr + 4 * 1);
     v.z = memory.read_float(addr + 4 * 2);
@@ -20,9 +20,9 @@ VECTOR4 union Vector4 vector4_read(const address addr)
     return v;
 }
 
-VECTOR4 union Vector4 vector4_new(const float x, const float y, const float z, const float w)
+VECTOR4 struct Vector4 vector4_new(const float x, const float y, const float z, const float w)
 {
-    union Vector4 v;
+    struct Vector4 v;
     v.offset = 0x00;
     v.x = x;
     v.y = y;
@@ -32,9 +32,9 @@ VECTOR4 union Vector4 vector4_new(const float x, const float y, const float z, c
     return v;
 }
 
-VECTOR4 union Vector4 vector4_add(const union Vector4 a, const union Vector4 b)
+VECTOR4 struct Vector4 vector4_add(const struct Vector4 a, const struct Vector4 b)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = a.x + b.x;
     result.y = a.y + b.y;
     result.z = a.z + b.z;
@@ -43,9 +43,9 @@ VECTOR4 union Vector4 vector4_add(const union Vector4 a, const union Vector4 b)
     return result;
 }
 
-VECTOR4 union Vector4 vector4_sub(const union Vector4 a, const union Vector4 b)
+VECTOR4 struct Vector4 vector4_sub(const struct Vector4 a, const struct Vector4 b)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = a.x - b.x;
     result.y = a.y - b.y;
     result.z = a.z - b.z;
@@ -54,9 +54,9 @@ VECTOR4 union Vector4 vector4_sub(const union Vector4 a, const union Vector4 b)
     return result;
 }
 
-VECTOR4 union Vector4 vector4_mul(const union Vector4 a, const union Vector4 b)
+VECTOR4 struct Vector4 vector4_mul(const struct Vector4 a, const struct Vector4 b)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = a.x * b.x;
     result.y = a.y * b.y;
     result.z = a.z * b.z;
@@ -65,9 +65,9 @@ VECTOR4 union Vector4 vector4_mul(const union Vector4 a, const union Vector4 b)
     return result;
 }
 
-VECTOR4 union Vector4 vector4_div(const union Vector4 a, const union Vector4 b)
+VECTOR4 struct Vector4 vector4_div(const struct Vector4 a, const struct Vector4 b)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = a.x / b.x;
     result.y = a.y / b.y;
     result.z = a.z / b.z;
@@ -76,9 +76,9 @@ VECTOR4 union Vector4 vector4_div(const union Vector4 a, const union Vector4 b)
     return result;
 }
 
-VECTOR4 union Vector4 vector4_mulf(const union Vector4 vector, const float value)
+VECTOR4 struct Vector4 vector4_mulf(const struct Vector4 vector, const float value)
 {
-    union Vector4 result;
+    struct Vector4 result;
     result.x = vector.x * value;
     result.y = vector.y * value;
     result.z = vector.z * value;

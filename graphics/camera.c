@@ -10,11 +10,11 @@
 
 #pragma mark - Camera
 
-const union Matrix4 camera_projection_matrix(const struct Camera* camera, const float aspect_ratio) {
+const struct Matrix4 camera_projection_matrix(const struct Camera* camera, const float aspect_ratio) {
     return matrix4_perspective(radians(camera->zoom), aspect_ratio, camera->near, camera->far);
 }
 
-const union Matrix4 camera_view_matrix(const struct Camera* camera) {
+const struct Matrix4 camera_view_matrix(const struct Camera* camera) {
     return matrix4_lookat(camera->position, vector3_add(camera->position, camera->front), camera->up);
 }
 
@@ -42,8 +42,8 @@ void camera_update(struct Camera* camera, float x, float y, bool constrain) {
     camera_update_vectors(camera);
 }
 
-void camera_look_at(struct Camera* camera, const union Vector3 point) {
-    union Vector3 dir = vector3_sub(camera->position, point);
+void camera_look_at(struct Camera* camera, const struct Vector3 point) {
+    struct Vector3 dir = vector3_sub(camera->position, point);
     dir = vector3_normalize(dir);
     
     camera->yaw = -180.0f + degrees(atan2(dir.z, dir.x));

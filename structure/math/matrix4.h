@@ -18,31 +18,31 @@ MATRIX4 MATRIX_DEFINITION(float, 4)
 /**
  * matrix4_identity: Identity matrix
  */
-extern const union Matrix4 matrix4_identity;
+extern const struct Matrix4 matrix4_identity;
 
 /**
  * matrix4_read:
  * Read a matrix from memory
  */
-MATRIX4 union Matrix4 matrix4_read(const address addr);
+MATRIX4 struct Matrix4 matrix4_read(const address addr);
 
 /**
  * matrix4_new:
  * Constructs a matrix with four rows
  */
-MATRIX4 union Matrix4 matrix4_new(const union Vector4 row0, const union Vector4 row1, const union Vector4 row2, const union Vector4 row3);
+MATRIX4 struct Matrix4 matrix4_new(const struct Vector4 row0, const struct Vector4 row1, const struct Vector4 row2, const struct Vector4 row3);
 
 /**
  * matrix4_mul:
  * Multiplies two matrices
  */
-MATRIX4 union Matrix4 matrix4_mul(const union Matrix4 a, const union Matrix4 b);
+MATRIX4 struct Matrix4 matrix4_mul(const struct Matrix4 a, const struct Matrix4 b);
 
 /**
  * matrix4_inverse:
  * Returns the inverse of matrix `m`
  */
-MATRIX4 union Matrix4 matrix4_inverse(const union Matrix4 m);
+MATRIX4 struct Matrix4 matrix4_inverse(const struct Matrix4 m);
 
 /**
  * matrix4_transpose:
@@ -55,7 +55,7 @@ MATRIX4 union Matrix4 matrix4_inverse(const union Matrix4 m);
  * | m30  m31  m32  m33 |     | m03  m13  m23  m33 |
  * '————————————————————'     '————————————————————'
  */
-MATRIX4 union Matrix4 matrix4_transpose(const union Matrix4 m);
+MATRIX4 struct Matrix4 matrix4_transpose(const struct Matrix4 m);
 
 #pragma mark - Translation, scale and rotation
 
@@ -70,7 +70,7 @@ MATRIX4 union Matrix4 matrix4_transpose(const union Matrix4 m);
  * |  0   0   0   1  |
  * '—————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_translation(const float x, const float y, const float z);
+MATRIX4 struct Matrix4 matrix4_make_translation(const float x, const float y, const float z);
 
 
 /**
@@ -84,7 +84,7 @@ MATRIX4 union Matrix4 matrix4_make_translation(const float x, const float y, con
  * |  0   0      0      1  |
  * '———————————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_rotation_x(const float radians);
+MATRIX4 struct Matrix4 matrix4_make_rotation_x(const float radians);
 
 /**
  * matrix4_rotation_y:
@@ -97,7 +97,7 @@ MATRIX4 union Matrix4 matrix4_make_rotation_x(const float radians);
  * |  0      0   0      1  |
  * '———————————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_rotation_y(const float radians);
+MATRIX4 struct Matrix4 matrix4_make_rotation_y(const float radians);
 
 
 /**
@@ -111,7 +111,7 @@ MATRIX4 union Matrix4 matrix4_make_rotation_y(const float radians);
  * |  0      0      0  1  |
  * '——————————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_rotation_z(const float radians);
+MATRIX4 struct Matrix4 matrix4_make_rotation_z(const float radians);
 
 /**
  * matrix4_make_scale:
@@ -124,7 +124,7 @@ MATRIX4 union Matrix4 matrix4_make_rotation_z(const float radians);
  * |  0   0   0   1  |
  * '—————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_scale(const float x, const float y, const float z);
+MATRIX4 struct Matrix4 matrix4_make_scale(const float x, const float y, const float z);
 
 /**
  * matrix4_make_scale_vector3:
@@ -137,30 +137,30 @@ MATRIX4 union Matrix4 matrix4_make_scale(const float x, const float y, const flo
  * |  0    0    0    1  |
  * '————————————————————'
  */
-MATRIX4 union Matrix4 matrix4_make_scale_vector3(const union Vector3 v);
+MATRIX4 struct Matrix4 matrix4_make_scale_vector3(const struct Vector3 v);
 
 /**
  * matrix4_perspective:
  * Creates a camera perspective projection matrix from field of view, aspect ratio, and near + far planes.
  */
-MATRIX4 union Matrix4 matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z);
+MATRIX4 struct Matrix4 matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z);
 
 /**
  * matrix4_ortho:
  * Creates a camera orthogonal projection matrix from field of view, aspect ratio, and near + far planes.
  */
-MATRIX4 union Matrix4 matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far);
+MATRIX4 struct Matrix4 matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far);
 
 /**
  * matrix4_lookat:
  * Constructs a camera view matrix
  */
-MATRIX4 union Matrix4 matrix4_lookat(const union Vector3 eye, const union Vector3 center, const union Vector3 up);
+MATRIX4 struct Matrix4 matrix4_lookat(const struct Vector3 eye, const struct Vector3 center, const struct Vector3 up);
 
 /**
  * vector4_mul_matrix4:
  * Multiply a four-component vector with a 4x4 matrix
  */
-VECTOR4 union Vector4 vector4_mul_matrix4(const union Vector4 v, const union Matrix4 m);
+VECTOR4 struct Vector4 vector4_mul_matrix4(const struct Vector4 v, const struct Matrix4 m);
 
 #endif /* matrix4_h */

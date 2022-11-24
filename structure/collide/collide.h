@@ -27,13 +27,13 @@ struct CollisionGeometry {
     uint16_t n_elements;
     uint16_t n_aabb;
     
-    union Vector3* vertices;
+    struct Vector3* vertices;
     uint16_t* element_types;
     void** elements;
     
     struct {
         float radius;
-        union Vector4 center;
+        struct Vector4 center;
     } bounding_sphere;
     
     address offset;

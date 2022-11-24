@@ -27,8 +27,8 @@ enum TransformType {
 
 struct Transform {
     enum TransformType type;
-    union Matrix4 matrix;
-    union Vector4 scale;
+    struct Matrix4 matrix;
+    struct Vector4 scale;
     address offset;
 };
 

@@ -30,7 +30,7 @@ static GLuint shader_main;
 static int width;
 static int height;
 
-static union Vector4 bg =
+static struct Vector4 bg =
 {
     .r = 0.01f,
     .g = 0.01f,
@@ -137,6 +137,8 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                     if (mesh->glmesh)
                                     {
                                         //info("Drawing mesh: %d vertices, %d indices, vao: %d\n", mesh->glmesh->n_vertices, mesh->glmesh->n_indices, mesh->glmesh->vao);
+                                        obj->matrix_default = matrix4_read(obj->matrix_default.offset);
+                                        
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
                                     }
@@ -166,12 +168,12 @@ static void graphics_main_loop()
     camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
     
     /* Camera parameters */
-    union Vector3 eye = camera->position;
-    union Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
-    union Vector3 look_at = vector3_read(0x00c53910);
+    struct Vector3 eye = camera->position;
+    struct Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
+    struct Vector3 look_at = vector3_read(0x00c53910);
     
-    union Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
-    union Matrix4 view = matrix4_lookat(camera->position, look_at, up);
+    struct Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
+    struct Matrix4 view = matrix4_lookat(camera->position, look_at, up);
     
     /* Set program */
     glUseProgram(shader_main);
@@ -202,8 +204,8 @@ static void graphics_main_loop()
         }
     }
     
-//    union Vector3 rayman = vector3_read(0x00BF0D98);
-//    union Matrix4 model = matrix4_mul(matrix4_make_translation(rayman.x, rayman.z, rayman.y), matrix4_make_scale(0.01, 0.01, 0.01));
+//    struct Vector3 rayman = vector3_read(0x00BF0D98);
+//    struct Matrix4 model = matrix4_mul(matrix4_make_translation(rayman.x, rayman.z, rayman.y), matrix4_make_scale(0.01, 0.01, 0.01));
 //    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &model.m00);
 //    glmesh_draw(sphere);
     

@@ -12,9 +12,9 @@
 
 #pragma mark - Vector3
 
-VECTOR3 union Vector3 vector3_read(const address addr)
+VECTOR3 struct Vector3 vector3_read(const address addr)
 {
-    union Vector3 v = { .offset = addr };
+    struct Vector3 v = { .offset = addr };
     v.x = memory.read_float(addr + 4 * 0);
     v.y = memory.read_float(addr + 4 * 1);
     v.z = memory.read_float(addr + 4 * 2);
@@ -22,9 +22,9 @@ VECTOR3 union Vector3 vector3_read(const address addr)
     return v;
 }
 
-VECTOR3 union Vector3 vector3_new(const float x, const float y, const float z)
+VECTOR3 struct Vector3 vector3_new(const float x, const float y, const float z)
 {
-    union Vector3 v;
+    struct Vector3 v;
     v.offset = 0x00;
     v.x = x;
     v.y = y;
@@ -34,9 +34,9 @@ VECTOR3 union Vector3 vector3_new(const float x, const float y, const float z)
 }
 
 
-VECTOR3 union Vector3 vector3_add(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_add(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = a.x + b.x;
     result.y = a.y + b.y;
     result.z = a.z + b.z;
@@ -44,9 +44,9 @@ VECTOR3 union Vector3 vector3_add(const union Vector3 a, const union Vector3 b)
     return result;
 }
 
-VECTOR3 union Vector3 vector3_sub(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_sub(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = a.x - b.x;
     result.y = a.y - b.y;
     result.z = a.z - b.z;
@@ -54,9 +54,9 @@ VECTOR3 union Vector3 vector3_sub(const union Vector3 a, const union Vector3 b)
     return result;
 }
 
-VECTOR3 union Vector3 vector3_mul(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_mul(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = a.x * b.x;
     result.y = a.y * b.y;
     result.z = a.z * b.z;
@@ -64,9 +64,9 @@ VECTOR3 union Vector3 vector3_mul(const union Vector3 a, const union Vector3 b)
     return result;
 }
 
-VECTOR3 union Vector3 vector3_div(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_div(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = a.x / b.x;
     result.y = a.y / b.y;
     result.z = a.z / b.z;
@@ -74,9 +74,9 @@ VECTOR3 union Vector3 vector3_div(const union Vector3 a, const union Vector3 b)
     return result;
 }
 
-VECTOR3 union Vector3 vector3_negate(const union Vector3 vector)
+VECTOR3 struct Vector3 vector3_negate(const struct Vector3 vector)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = -vector.x;
     result.y = -vector.y;
     result.z = -vector.z;
@@ -84,9 +84,9 @@ VECTOR3 union Vector3 vector3_negate(const union Vector3 vector)
     return result;
 }
 
-VECTOR3 union Vector3 vector3_mulf(const union Vector3 vector, const float value)
+VECTOR3 struct Vector3 vector3_mulf(const struct Vector3 vector, const float value)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = vector.x * value;
     result.y = vector.y * value;
     result.z = vector.z * value;
@@ -94,14 +94,14 @@ VECTOR3 union Vector3 vector3_mulf(const union Vector3 vector, const float value
     return result;
 }
 
-VECTOR3 const float vector3_dot(const union Vector3 a, const union Vector3 b)
+VECTOR3 const float vector3_dot(const struct Vector3 a, const struct Vector3 b)
 {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
-VECTOR3 union Vector3 vector3_cross(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_cross(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = a.v[1] * b.v[2] - a.v[2] * b.v[1];
     result.y = a.v[2] * b.v[0] - a.v[0] * b.v[2];
     result.z = a.v[0] * b.v[1] - a.v[1] * b.v[0];
@@ -109,9 +109,9 @@ VECTOR3 union Vector3 vector3_cross(const union Vector3 a, const union Vector3 b
     return result;
 }
 
-VECTOR3 union Vector3 vector3_wedge(const union Vector3 a, const union Vector3 b)
+VECTOR3 struct Vector3 vector3_wedge(const struct Vector3 a, const struct Vector3 b)
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = (a.y * b.z) - (b.y * a.z);
     result.y = (a.z * b.x) - (b.z * a.x);
     result.z = (a.x * b.y) - (b.x * a.y);
@@ -119,17 +119,17 @@ VECTOR3 union Vector3 vector3_wedge(const union Vector3 a, const union Vector3 b
     return result;
 }
 
-VECTOR3 const float vector3_length(const union Vector3 vector)
+VECTOR3 const float vector3_length(const struct Vector3 vector)
 {
     return sqrtf(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 }
 
-VECTOR3 union Vector3 vector3_normalize(const union Vector3 vector)
+VECTOR3 struct Vector3 vector3_normalize(const struct Vector3 vector)
 {
     const float length = vector3_length(vector);
     const float scale = 1.0f / length;
     
-    union Vector3 result;
+    struct Vector3 result;
     result.x = vector.x * scale;
     result.y = vector.y * scale;
     result.z = vector.z * scale;
@@ -137,9 +137,9 @@ VECTOR3 union Vector3 vector3_normalize(const union Vector3 vector)
     return length == 0.0f ? vector : result;
 }
 
-VECTOR3 union Vector3 vector3_random()
+VECTOR3 struct Vector3 vector3_random()
 {
-    union Vector3 result;
+    struct Vector3 result;
     result.x = drand48();
     result.y = drand48();
     result.z = drand48();

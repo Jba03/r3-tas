@@ -43,7 +43,7 @@ static void draw_timer()
     ImGui::End();
 }
 
-static void draw_matrix(union Matrix4 m)
+static void draw_matrix(struct Matrix4 m)
 {
     ImGui::Begin("Matrix", NULL, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     ImGui::TextColored(ImVec4(0.0, 0.75, 0.45, 1.0), "Matrix display");

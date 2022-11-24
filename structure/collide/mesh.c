@@ -34,7 +34,7 @@ MESH struct Mesh* mesh_read(const address addr, struct CollisionGeometry* geom)
     advance(2); /* padding x 2 */
     
     /* Allocate unprocessed data */
-    mesh->original.normals = malloc(sizeof(union Vector3) * mesh->n_triangles);
+    mesh->original.normals = malloc(sizeof(struct Vector3) * mesh->n_triangles);
     mesh->original.indices = malloc(sizeof(uint16_t) * mesh->n_triangles * 3);
     
     //info("Mesh (%d triangles)\n", mesh->n_triangles);
@@ -63,8 +63,8 @@ MESH void mesh_reindex(struct Mesh* mesh)
     if (mesh->original.vertices != NULL)
     {
         /* Allocate processed data */
-        mesh->processed.vertices = malloc(sizeof(union Vector3) * mesh->n_triangles * 3);
-        mesh->processed.normals = malloc(sizeof(union Vector3) * mesh->n_triangles * 3);
+        mesh->processed.vertices = malloc(sizeof(struct Vector3) * mesh->n_triangles * 3);
+        mesh->processed.normals = malloc(sizeof(struct Vector3) * mesh->n_triangles * 3);
         mesh->processed.indices = malloc(sizeof(uint16_t) * mesh->n_triangles * 3);
 
         /* Process vertices and normals */

@@ -46,9 +46,15 @@
 
 #define VECTOR_STRUCT(T, ...) struct {T __VA_ARGS__;};
 #ifdef LSB_FIRST
-#   define VECTOR_DEFINITION(T, N) union Vector##N { VECTOR_STRUCT(T, VECTOR_XYZ##N); VECTOR_STRUCT(T, VECTOR_CHROMA##N); T v[N]; address offset; };
+#define VECTOR_DEFINITION(T, N) struct Vector##N { union {  \
+    struct { VECTOR_STRUCT(T, VECTOR_XYZ##N);   };  \
+    struct { VECTOR_STRUCT(T, VECTOR_CHROMA##N);};  \
+    struct { T v[N]; };}; address offset;       };
 #else
-#   define VECTOR_DEFINITION(T, N) union Vector##N { VECTOR_STRUCT(T, REVERSE(N, VECTOR_XYZ##N)); VECTOR_STRUCT(T, REVERSE(N,VECTOR_CHROMA##N)); T v[N]; address offset; };
+#define VECTOR_DEFINITION(T, N) struct Vector##N { union { \
+    struct { VECTOR_STRUCT(T, REVERSE(N, VECTOR_XYZ##N)); }; \
+    struct { VECTOR_STRUCT(T, REVERSE(N,VECTOR_CHROMA##N)); }; \
+    struct { T v[N]; };}; address offset; };
 #endif
 
 #pragma mark - Matrix definition
@@ -71,9 +77,19 @@
 #define DEFAULT_ORDER(N, ...) __VA_ARGS__ /* Default order sort function */
 
 #ifdef LSB_FIRST
-#   define MATRIX_DEFINITION(T, N) union Matrix##N { MAT_STRUCT(T, MATSPEC(N, DEFAULT_ORDER)); struct {union Vector##N MAT_ROWS##N; }; struct { T m[N * N]; }; address offset; };
+#define MATRIX_DEFINITION(T, N) struct Matrix##N { union {  \
+    struct { MAT_STRUCT(T, MATSPEC(N, DEFAULT_ORDER));  };  \
+    struct { struct Vector##N MAT_ROWS##N;               };  \
+    struct { T m[N * N];                              };};  \
+    address offset;                                         \
+};
 #else
-#   define MATRIX_DEFINITION(T, N) union Matrix##N { MAT_STRUCT(T, MATSPEC(N, REVERSE)); struct {union Vector##N MAT_ROWS##N; }; struct { T m[N * N]; }; address offset; };
+#define MATRIX_DEFINITION(T, N) struct Matrix##N { union {  \
+    struct { MAT_STRUCT(T, MATSPEC(N, REVERSE));        };  \
+    struct { struct Vector##N MAT_ROWS##N;               };  \
+    struct { T m[N * N];                              };};  \
+    address offset;                                         \
+};
 #endif
 
 #endif /* macrotricks_h */

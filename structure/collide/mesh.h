@@ -28,12 +28,12 @@ struct Mesh {
     uint16_t n_triangles;
     uint16_t n_edges;
     
-    union Vector3* edge_normals;
+    struct Vector3* edge_normals;
     float* edge_coefficients;
     
     struct {
-        union Vector3* vertices;
-        union Vector3* normals;
+        struct Vector3* vertices;
+        struct Vector3* normals;
         uint16_t* indices;
     } original, processed;
     
