@@ -24,6 +24,7 @@ extern ImGuiContext* GImGui;
 static ImVec2 display_size;
 
 static bool general_info = true;
+static bool display_normals = false;
 static bool timer = true;
 
 static void draw_timer()
@@ -144,6 +145,9 @@ static void draw_general_info()
         if (ImGui::BeginMenu("Options"))
         {
             ImGui::Checkbox("Enable cheats", &configuration.enable_cheats);
+            ImGui::Checkbox("Display normals", &display_normals);
+            configuration.graphics_display_mode = display_normals ? 1 : 0;
+            
             ImGui::EndMenu();
         }
         

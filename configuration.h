@@ -26,6 +26,12 @@ struct Configuration {
      */
     bool has_cheated;
     
+    /**
+     * graphics_display_mode:
+     *  0 = checkerboard pattern
+     *  1 = normals
+     */
+    unsigned graphics_display_mode;
 };
 
 extern struct Configuration configuration;

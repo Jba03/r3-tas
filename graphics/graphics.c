@@ -89,7 +89,6 @@ static struct Vector4 bg =
 "   vec4(vec3(diffuse + specular + ambient) * color, 1.0f);\n"                                      \
 "}"
 
-
 static GLuint compile_shader(const char* source, const GLenum type)
 {
     GLint status = 0;
@@ -243,6 +242,7 @@ static void graphics_main_loop()
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
     glUniform3f(glGetUniformLocation(shader_main, "camera"), eye.x, eye.y, eye.z);
+    glUniform1i(glGetUniformLocation(shader_main, "display_normals"), configuration.graphics_display_mode == 1);
     
     if (engine)
     {
