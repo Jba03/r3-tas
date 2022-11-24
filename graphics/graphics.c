@@ -111,8 +111,6 @@ static GLuint shader_create(const char* vertex, const char* fragment)
     return program;
 }
 
-union Matrix4 view;
-
 static void draw_ipo(struct SuperObject *obj, void* p)
 {
     if (obj->type == SUPEROBJECT_TYPE_IPO && obj->data)
@@ -138,7 +136,6 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                 {
                                     if (mesh->glmesh)
                                     {
-                                        view = obj->matrix_default;
                                         //info("Drawing mesh: %d vertices, %d indices, vao: %d\n", mesh->glmesh->n_vertices, mesh->glmesh->n_indices, mesh->glmesh->vao);
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
@@ -162,20 +159,19 @@ static void graphics_main_loop()
     
     SDL_GetWindowSize(window, &width, &height);
     
-    union Vector3 look_at = vector3_read(0x00c53910);
-    
-    //info("Look at: (%f, %f, %f)\n", look_at.x, look_at.y, look_at.z);
-    
     camera->position = vector3_read(0x00c531bc);
     
-    camera->zoom = degrees(memory.read_float(0x00C751B4));
+    /* GCN default fov: 1.3rad */
+    const float fov = memory.read_float(0x00C751B4);
+    camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
     
-    union Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
-    
+    /* Camera parameters */
     union Vector3 eye = camera->position;
     union Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
+    union Vector3 look_at = vector3_read(0x00c53910);
     
-    union Matrix4 view2 = matrix4_lookat(camera->position, look_at, up); //camera_view_matrix(camera);
+    union Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
+    union Matrix4 view = matrix4_lookat(camera->position, look_at, up);
     
     /* Set program */
     glUseProgram(shader_main);
@@ -192,11 +188,9 @@ static void graphics_main_loop()
     
     /* Disable face culling */
     glDisable(GL_CULL_FACE);
-//    glEnable(GL_CULL_FACE);
-//    glCullFace(GL_BACK);
     
     /* Upload uniforms */
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view2.m00);
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
     glUniform3f(glGetUniformLocation(shader_main, "look_at"), look_at.x, look_at.y, look_at.z);
     
@@ -204,7 +198,6 @@ static void graphics_main_loop()
     {
         if (engine->root)
         {
-            //info("drawing ipos...\n");
             superobject_for_every(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
         }
     }

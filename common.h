@@ -20,8 +20,8 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b)) /* min: Choose smaller of two values */
 #define max(a, b) (((a) > (b)) ? (a) : (b)) /* max: Choose bigger of two values */
 
-#define radians(deg) (deg * (M_PI / 180.0f))
-#define degrees(rad) (rad * (180.0f / M_PI))
+#define radians(deg) ((deg) * (M_PI / 180.0f))
+#define degrees(rad) ((rad) * (180.0f / M_PI))
 
 extern struct FIX* fix;
 extern struct LVL* lvl;

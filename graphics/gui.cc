@@ -175,16 +175,12 @@ static void draw_general_info()
     
 }
 
-extern union Matrix4 view;
-
 void render_callback(void* ctx)
 {
     GImGui = (ImGuiContext*)ctx;
     
     draw_general_info();
     draw_timer();
-    
-    draw_matrix(view);
     
 //    if (engine)
 //    {
