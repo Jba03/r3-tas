@@ -64,12 +64,12 @@ void r3_load()
         }
     }
     
+    /* Free previous hierarchy, if any */
+    if (engine) superobject_free(&engine->root);
+    
     info(BOLD "Reading engine struct");
     engine = engine_read(memory.pointer_engine);
     
-    
-    /* Free previous hierarchy, if any */
-    superobject_free(&engine->root);
     
     /* The game seems to alternate between two hierarchy pointers, that are
      * switched when loading a new level. Choose the currently valid pointer. */

@@ -101,3 +101,19 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
     
     return geom;
 }
+
+COLLIDE void collision_geometry_free(struct CollisionGeometry *geom)
+{
+    //info(COLOR_GREEN "free CollisionGeometry[%X]\n", geom->offset);
+    
+    for (int i = 0; i < geom->n_elements; i++)
+    {
+        uint16_t type = geom->element_types[i];
+        if (type == 1) mesh_destroy(geom->elements[i]);
+    }
+    
+    free(geom->vertices);
+    free(geom->element_types);
+    free(geom->elements);
+    free(geom);
+}

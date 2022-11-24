@@ -98,13 +98,13 @@ SUPEROBJECT struct SuperObject* superobject_read(const uint32_t address)
     }
     
     const char* typename = superobject_typename(so);
-    info(COLOR_WHITE "Reading"
-         COLOR_GREEN " %s "
-         COLOR_BLUE "@ %X "
-         COLOR_WHITE "(%d children)\n",
-         typename,
-         address,
-         so->n_children);
+//    info(COLOR_WHITE "Reading"
+//         COLOR_GREEN " %s "
+//         COLOR_BLUE "@ %X "
+//         COLOR_WHITE "(%d children)\n",
+//         typename,
+//         address,
+//         so->n_children);
     
     uint32_t offset_next = so->child_first;
     for (int n = 0; n < so->n_children; n++)
@@ -126,6 +126,42 @@ SUPEROBJECT struct SuperObject* superobject_read(const uint32_t address)
 SUPEROBJECT void superobject_free(struct SuperObject** obj)
 {
     if (!*obj) return;
+    
+    struct SuperObject* so = *obj;
+    switch (so->type)
+    {
+        case SUPEROBJECT_TYPE_DUMMY:
+            break;
+            
+        case SUPEROBJECT_TYPE_WORLD:
+            break;
+            
+        case SUPEROBJECT_TYPE_ACTOR:
+            actor_free(so->data);
+            break;
+            
+        case SUPEROBJECT_TYPE_SECTOR:
+            break;
+            
+        case SUPEROBJECT_TYPE_PHYSICAL_OBJECT:
+            break;
+            
+        case SUPEROBJECT_TYPE_IPO:
+            ipo_free(so->data);
+            break;
+            
+        case SUPEROBJECT_TYPE_IPO2:
+            break;
+            
+        case SUPEROBJECT_TYPE_GEOMETRIC_OBJECT:
+            break;
+            
+        case SUPEROBJECT_TYPE_GEOMETRIC_SHADOW_OBJECT:
+            break;
+            
+        default:
+            break;
+    }
     
     for (int n = 0; n < (*obj)->n_children; n++)
     {

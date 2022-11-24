@@ -44,3 +44,9 @@ ACTOR struct Actor *actor_find(const char* name, const struct SuperObject* super
     
     return ret;
 }
+
+ACTOR void actor_free(struct Actor *act)
+{
+    stdgame_free(act->info);
+    free(act);
+}

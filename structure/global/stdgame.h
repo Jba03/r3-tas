@@ -32,5 +32,6 @@ STDGAME struct StandardGameInfo *stdgame_read(const address addr);
 STDGAME const char* stdgame_family_name(struct StandardGameInfo *info);
 STDGAME const char* stdgame_model_name(struct StandardGameInfo *info);
 STDGAME const char* stdgame_instance_name(struct StandardGameInfo *info);
+STDGAME void stdgame_free(struct StandardGameInfo *info);
 
 #endif /* stdgame_h */

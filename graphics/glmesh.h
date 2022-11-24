@@ -35,4 +35,6 @@ void glmesh_data(struct GLMesh *mesh);
 
 void glmesh_draw(struct GLMesh *mesh);
 
+void glmesh_destroy(struct GLMesh *mesh);
+
 #endif /* glmesh_h */

@@ -249,7 +249,7 @@ void graphics_init(void)
     dispatch_source_set_event_handler(sdl_timer_source, ^{
         graphics_main_loop();
     });
-    
+
     dispatch_source_set_timer(sdl_timer_source, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), NSEC_PER_SEC * (1.0f / 60.0f), 0);
     dispatch_resume(sdl_timer_source);
 }

@@ -14,6 +14,8 @@ MESH struct Mesh* mesh_read(const address addr, struct CollisionGeometry* geom)
     mesh->offset = addr;
     mesh->processed.normals = NULL;
     mesh->processed.indices = NULL;
+    mesh->edge_coefficients = NULL;
+    mesh->edge_normals = NULL;
     mesh->was_processed = false;
     mesh->glmesh = NULL;
     
@@ -36,8 +38,6 @@ MESH struct Mesh* mesh_read(const address addr, struct CollisionGeometry* geom)
     /* Allocate unprocessed data */
     mesh->original.normals = malloc(sizeof(struct Vector3) * mesh->n_triangles);
     mesh->original.indices = malloc(sizeof(uint16_t) * mesh->n_triangles * 3);
-    
-    //info("Mesh (%d triangles)\n", mesh->n_triangles);
     
     /* Read indices */
     stream_seek(stream, mesh->triangles_offset);
@@ -120,4 +120,22 @@ MESH void mesh_create_glmesh(struct Mesh* mesh)
 MESH void mesh_write_obj(struct Mesh* mesh, const char* filename)
 {
     
+}
+
+MESH void mesh_destroy(struct Mesh* mesh)
+{
+    /* Original vertices free'd by collide geometry */
+    free(mesh->original.normals);
+    free(mesh->original.indices);
+    
+    if (mesh->was_processed)
+    {
+        free(mesh->processed.vertices);
+        free(mesh->processed.normals);
+        free(mesh->processed.indices);
+        
+        glmesh_destroy(mesh->glmesh);
+    }
+    
+    free(mesh);
 }

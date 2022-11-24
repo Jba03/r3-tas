@@ -49,4 +49,6 @@ MESH void mesh_reindex(struct Mesh* mesh);
 
 MESH void mesh_create_glmesh(struct Mesh* mesh);
 
+MESH void mesh_destroy(struct Mesh* mesh);
+
 #endif /* mesh_h */

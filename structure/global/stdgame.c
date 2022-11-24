@@ -48,3 +48,8 @@ STDGAME const char* stdgame_instance_name(struct StandardGameInfo *info)
 {
     return lvl->instance_names[info->type.instance];
 }
+
+STDGAME void stdgame_free(struct StandardGameInfo *info)
+{
+    free(info);
+}

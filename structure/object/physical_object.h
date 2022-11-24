@@ -35,7 +35,9 @@ struct IPO {
 };
 
 PHYSICAL_OBJECT struct PhysicalObject *physical_object_read(const address addr);
-PHYSICAL_OBJECT struct IPO *ipo_read(const address addr);
+PHYSICAL_OBJECT void physical_object_free(struct PhysicalObject* obj);
 
+PHYSICAL_OBJECT struct IPO *ipo_read(const address addr);
+PHYSICAL_OBJECT void ipo_free(struct IPO* ipo);
 
 #endif /* physical_object_h */

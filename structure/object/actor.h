@@ -39,4 +39,6 @@ ACTOR struct Actor *actor_read(const address addr);
 /* actor_find: Try to find an actor by its instance name in the hierarchy of specified superobject. */
 ACTOR struct Actor *actor_find(const char* name, const struct SuperObject* superobject);
 
+ACTOR void actor_free(struct Actor *act);
+
 #endif /* actor_h */

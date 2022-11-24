@@ -121,3 +121,14 @@ void glmesh_draw(struct GLMesh *mesh)
     glDrawElements(GL_TRIANGLES, mesh->n_indices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
+
+void glmesh_destroy(struct GLMesh *mesh)
+{
+    glDeleteVertexArrays(1, &mesh->vao);
+    glDeleteBuffers(1, &mesh->vbo);
+    glDeleteBuffers(1, &mesh->ebo);
+    
+    free(mesh->vertices);
+    free(mesh->indices);
+    free(mesh);
+}

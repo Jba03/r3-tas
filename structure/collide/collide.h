@@ -41,4 +41,6 @@ struct CollisionGeometry {
 
 COLLIDE struct CollisionGeometry *collision_geometry_read(const uint32_t address);
 
+COLLIDE void collision_geometry_free(struct CollisionGeometry *geom);
+
 #endif /* collide_h */
