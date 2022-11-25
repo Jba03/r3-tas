@@ -98,13 +98,13 @@ SUPEROBJECT struct SuperObject* superobject_read(const uint32_t address)
     }
     
     const char* typename = superobject_typename(so);
-//    info(COLOR_WHITE "Reading"
-//         COLOR_GREEN " %s "
-//         COLOR_BLUE "@ %X "
-//         COLOR_WHITE "(%d children)\n",
-//         typename,
-//         address,
-//         so->n_children);
+    info(COLOR_WHITE "Reading"
+         COLOR_GREEN " %s "
+         COLOR_BLUE "@ %X "
+         COLOR_WHITE "(%d children)\n",
+         typename,
+         address,
+         so->n_children);
     
     uint32_t offset_next = so->child_first;
     for (int n = 0; n < so->n_children; n++)

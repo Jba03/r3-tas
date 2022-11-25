@@ -32,6 +32,12 @@ struct Configuration {
      *  1 = normals
      */
     unsigned graphics_display_mode;
+    
+    /**
+     * camera_unlocked:
+     *  Camera is allowed to be moved manually
+     */
+    bool camera_unlocked;
 };
 
 extern struct Configuration configuration;

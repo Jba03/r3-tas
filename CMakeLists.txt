@@ -17,6 +17,7 @@ include_directories(structure/collide)
 include_directories(structure/global)
 include_directories(structure/math)
 include_directories(structure/object)
+include_directories(predict)
 include_directories(imgui)
 
 add_library(r3tas SHARED
@@ -47,11 +48,14 @@ add_library(r3tas SHARED
 
 	structure/collide/collide.c
 	structure/collide/mesh.c
+	structure/collide/octree.c
 
 	structure/math/matrix4.c
 	structure/math/vector3.c
 	structure/math/vector4.c
 	structure/math/transform.c	
+
+	predict/predict.c
 
 	imgui/imgui.cpp
 	imgui/imgui_draw.cpp

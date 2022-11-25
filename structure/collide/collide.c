@@ -8,11 +8,13 @@
 #include "collide.h"
 #include "mesh.h"
 #include "common.h"
+#include "octree.h"
 
 COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
 {
     struct CollisionGeometry *geom = malloc(sizeof *geom);
     geom->offset = address;
+    geom->octree = NULL;
     
     struct Stream *stream = stream_open(address);
     geom->n_vertices = read16();
@@ -22,7 +24,7 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
     geom->vertex_offset = readpointer();
     geom->element_types_offset = readpointer();
     geom->element_offset = readpointer();
-    /* ::octree */
+    geom->octree_offset = readpointer();
     geom->aabb_offset = readpointer();
     
     geom->bounding_sphere.radius = readfloat();
@@ -98,6 +100,10 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
         }
     }
     stream_close(stream);
+    
+    /* Read octree */
+    if (geom->octree_offset != 0x00)
+        geom->octree = octree_read(geom->octree_offset);
     
     return geom;
 }

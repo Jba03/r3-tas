@@ -14,6 +14,8 @@ struct FIX* fix = NULL;
 struct LVL* lvl = NULL;
 struct Engine* engine = NULL;
 
+struct Camera *camera = NULL;
+
 int log_indent = 0;
 
 int family_colors = 0;

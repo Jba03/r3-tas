@@ -144,8 +144,9 @@ static void draw_general_info()
         
         if (ImGui::BeginMenu("Options"))
         {
-            ImGui::Checkbox("Enable cheats", &configuration.enable_cheats);
             ImGui::Checkbox("Display normals", &display_normals);
+            ImGui::Checkbox("Unlock camera?", &configuration.camera_unlocked);
+            ImGui::Checkbox("Enable cheats", &configuration.enable_cheats);
             configuration.graphics_display_mode = display_normals ? 1 : 0;
             
             ImGui::EndMenu();
@@ -179,12 +180,32 @@ static void draw_general_info()
     
 }
 
+ImVec2 prev_mouse;
+
+static void move_camera()
+{
+    if (ImGui::IsKeyDown('W')) camera->position = vector3_add(camera->position, vector3_mulf(camera->front, camera->speed));
+    if (ImGui::IsKeyDown('A')) camera->position = vector3_sub(camera->position, vector3_mulf(camera->right, camera->speed));
+    if (ImGui::IsKeyDown('S')) camera->position = vector3_sub(camera->position, vector3_mulf(camera->front, camera->speed));
+    if (ImGui::IsKeyDown('D')) camera->position = vector3_add(camera->position, vector3_mulf(camera->right, camera->speed));
+    
+    ImVec2 mouse = ImGui::GetMousePos();
+    
+    ImVec2 relative = ImVec2(mouse.x - prev_mouse.x, prev_mouse.y - mouse.y);
+    camera_update(camera, relative.y, relative.x, false);
+    
+    prev_mouse = mouse;
+}
+
 void render_callback(void* ctx)
 {
     GImGui = (ImGuiContext*)ctx;
     
     draw_general_info();
     draw_timer();
+    
+    if (configuration.camera_unlocked)
+        move_camera();
     
 //    if (engine)
 //    {

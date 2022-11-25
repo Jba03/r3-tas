@@ -14,6 +14,7 @@
 #include "engine.h"
 #include "physical_object.h"
 #include "glmesh.h"
+#include "predict.h"
 
 #if defined(__APPLE__)
 #   include "SDL.h"
@@ -31,7 +32,6 @@ static int height;
 static GLuint shader_main;
 static GLuint checkerboard_texture;
 
-static struct Camera *camera = NULL;
 static struct GLMesh *box = NULL;
 static struct GLMesh *sphere = NULL;
 
@@ -71,10 +71,11 @@ static struct Vector4 bg =
 "uniform vec3 camera;\n"    \
 "vec3 lightPos = vec3(0, 100, 0);\n" \
 "uniform bool display_normals = false;" \
+"uniform vec3 color = vec3(0);\n" \
 "void main() {\n"                                                   \
-"   vec3 color = vec3(texture(checkerboard, texcoord * 4).r);\n" \
+"   vec3 color2 = vec3(texture(checkerboard, texcoord * 4).r);\n" \
 "   vec3 normal2 = normalize(normal);\n" \
-"   vec3 lightColor = vec3(1,0.3,0.45);\n" \
+"   vec3 lightColor = vec3(1,1,1);\n" \
 "   vec3 ambient = vec3(0.1);\n" \
 "   vec3 lightDir = normalize(lightPos - position);\n" \
 "   float diff = max(dot(lightDir, normal2), 0.0);\n" \
@@ -86,7 +87,7 @@ static struct Vector4 bg =
 "   spec = pow(max(dot(normal2, halfwayDir), 0.0), 64.0);\n" \
 "   vec3 specular = spec * lightColor * 1.0f;\n" \
 "   out_color = display_normals ? vec4(normal, 1.0f) :" \
-"   vec4(vec3(diffuse + specular + ambient) * color, 1.0f);\n"                                      \
+"   vec4(vec3(diffuse + specular + ambient + color) * color2, 1.0f);\n"                                      \
 "}"
 
 static GLuint compile_shader(const char* source, const GLenum type)
@@ -171,6 +172,46 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                             }
                         }
                     }
+                    
+                    if (geom->octree && geom->octree_offset != 0x00)
+                    {
+                        struct Octree* octree = geom->octree;
+                        
+                        struct Vector3 halfway;
+                        halfway.x = (octree->min.x + octree->max.x) / 2.0f;
+                        halfway.y = (octree->min.y + octree->max.y) / 2.0f;
+                        halfway.z = (octree->min.z + octree->max.z) / 2.0f;
+                        
+//                        info("Octree @ %X: %d faces, elements @ %X\n", octree->offset, octree->n_faces, octree->element_base_table_ptr);
+//                        info("\tmin: %f %f %f\n", octree->min.x, octree->min.y, octree->min.z);
+//                        info("\tmax: %f %f %f\n", octree->max.x, octree->max.y, octree->max.z);
+//                        info("\tmiddle: %f %f %f\n\n\n", halfway.x, halfway.y, halfway.z);
+//
+                        
+                        glDisable(GL_DEPTH_TEST);
+                        
+                        struct Vector3 def = vector3_new(0.0f, 2.0, 0.0f);
+                        struct Vector3 aa = vector3_new(1.0f, 1.0, 1.0f);
+                        
+                        glUniform3fv(glGetUniformLocation(shader_main, "color"), 1, &def.x);
+                        
+                        struct Vector3 scale = vector3_sub(octree->max, octree->min);
+
+                        graphics_draw_line(octree->min, octree->max);
+
+                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(scale.x, 0, 0)));
+                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(0, scale.y, 0)));
+                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(0, 0, scale.z)));
+
+                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(scale.x, 0, 0)));
+                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(0, scale.y, 0)));
+                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(0, 0, scale.z)));
+                        
+                        glUniform3fv(glGetUniformLocation(shader_main, "color"), 1, &aa.x);
+                        
+                        glEnable(GL_DEPTH_TEST);
+                        //graphics_draw_sphere(halfway, scale.x, vector4_new(0, 0, 0, 0));
+                    }
                 }
             }
         }
@@ -181,21 +222,46 @@ static void gen_checkerboard_texture()
 {
     glGenTextures(1, &checkerboard_texture);
     glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-       
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     
     uint8_t data[2 * 2] = {96, 128, 128, 96};
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 2, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+}
+
+static void graphics_draw_line(struct Vector3 start, struct Vector3 end)
+{
+    GLuint vao;
+    GLuint vbo;
+    
+    const GLfloat vertices[] =
+    {
+        start.x, start.y, start.z,
+        end.x, end.y, end.z,
+    };
+    
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glDrawArrays(GL_LINES, 0, 2);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
 }
 
 static void graphics_main_loop()
@@ -205,19 +271,23 @@ static void graphics_main_loop()
     
     SDL_GetWindowSize(window, &width, &height);
     
-    camera->position = vector3_read(0x00c531bc);
-    
     /* GCN default fov: 1.3rad */
     const float fov = memory.read_float(0x00C751B4);
     camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
     
+    struct Matrix4 view = camera_view_matrix(camera);
+    
     /* Camera parameters */
-    struct Vector3 eye = camera->position;
-    struct Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
-    struct Vector3 look_at = vector3_read(0x00c53910);
+    if (!configuration.camera_unlocked)
+    {
+        camera->position = vector3_read(0x00c531bc);
+        struct Vector3 eye = camera->position;
+        struct Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
+        struct Vector3 look_at = vector3_read(0x00c53910);
+        view = matrix4_lookat(camera->position, look_at, up);
+    }
     
     struct Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
-    struct Matrix4 view = matrix4_lookat(camera->position, look_at, up);
     
     /* Set program */
     glUseProgram(shader_main);
@@ -241,7 +311,7 @@ static void graphics_main_loop()
     /* Upload uniforms */
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
-    glUniform3f(glGetUniformLocation(shader_main, "camera"), eye.x, eye.y, eye.z);
+    glUniform3f(glGetUniformLocation(shader_main, "camera"), camera->position.x, camera->position.y, camera->position.z);
     glUniform1i(glGetUniformLocation(shader_main, "display_normals"), configuration.graphics_display_mode == 1);
     
     if (engine)
@@ -256,10 +326,80 @@ static void graphics_main_loop()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
     struct Vector3 rayman = vector3_read(0x00BF0D98);
-    graphics_draw_sphere(rayman, 1.0f, vector4_new(0, 0, 0, 0));
+    graphics_draw_box(rayman, vector3_new(1, 1, 1), vector3_new(45.0, 0.0, 0.0), vector4_new(0, 0, 0, 0));
+    //graphics_draw_sphere(rayman, 0.5f, vector4_new(0, 0, 0, 0));
+    
+    
+    
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
+    struct LineSegment segment;
+    
+    segment.start = vector3_new(-1.16, -7, -15);
+    segment.end = vector3_new(-4, 7, -15);
+    
+//    graphics_draw_box(segment.end, vector3_new(0.25, 0.25, 0.25), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
+//
+    graphics_draw_line(segment.start, segment.end);
+    
+    
+    struct Vector3 closest = closest_point_on_segment(rayman, segment);
+    
+    closest = vector3_new(closest.x, closest.y, closest.z);
+    
+    graphics_draw_box(closest, vector3_new(0.1, 0.1, 0.1), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
     
     SDL_GL_SwapWindow(window);
 }
+
+void graphics_draw_box(struct Vector3 position, struct Vector3 scale, struct Vector3 rotation, struct Vector4 color)
+{
+    struct Matrix4 T = matrix4_identity;
+    
+    /* Rotate */
+    T = matrix4_mul(T, matrix4_make_rotation_x(radians(rotation.x)));
+    T = matrix4_mul(T, matrix4_make_rotation_y(radians(rotation.y)));
+    T = matrix4_mul(T, matrix4_make_rotation_z(radians(rotation.z)));
+    
+    /* Scale & translate. */
+    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
+    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
+
+    T = matrix4_transpose(T);
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
+    glmesh_draw(box);
+}
+
+//void graphics_draw_line(struct Vector3 start, struct Vector3 end, const float thickness, struct Vector4 color)
+//{
+//    const float lx = sqrt((end.x - start.x) * (end.x - start.x));
+//    const float ly = sqrt((end.y - start.y) * (end.y - start.y));
+//    const float lz = sqrt((end.z - start.z) * (end.z - start.z));
+//    
+//    struct Vector3 position = start;
+//    struct Vector3 scale = vector3_new(thickness + lx, thickness + ly, thickness + lz);
+//    //struct Vector3 scale = vector3_new(length, thickness, thickness);
+//    
+//    struct Matrix4 T = matrix4_identity;
+//    
+//    const float tx = start.y / end.y;
+//    //const float tx = start.x / end.x;
+//    
+//    /* Rotate */
+//    T = matrix4_mul(T, matrix4_make_rotation_x(-0.3));
+//    T = matrix4_mul(T, matrix4_make_rotation_y(3));
+//    T = matrix4_mul(T, matrix4_make_rotation_z(0.2));
+//    
+//    /* Scale & translate. */
+//    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
+//    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
+//
+//    T = matrix4_transpose(T);
+//    
+//    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
+//    glmesh_draw(box);
+//}
 
 void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 color)
 {
@@ -294,6 +434,7 @@ void graphics_init(void)
     camera = camera_create(-90.0f, 0.0f, 0.1f, 0.25f, 45.0f);
     //camera->up = camera->world_up = vector3_new(0.0f, 1.0f, 0.0f);
     
+    box = glmesh_box();
     sphere = glmesh_sphere(20, 20);
     
     if ((shader_main = shader_create(VERTEX, FRAGMENT)) == 0)

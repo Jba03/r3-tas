@@ -10,6 +10,7 @@
 
 #include "vector3.h"
 #include "vector4.h"
+#include "octree.h"
 
 #define COLLIDE
 
@@ -21,6 +22,7 @@ struct CollisionGeometry {
     pointer vertex_offset;
     pointer element_types_offset;
     pointer element_offset;
+    pointer octree_offset;
     pointer aabb_offset;
     
     uint16_t n_vertices;
@@ -30,6 +32,8 @@ struct CollisionGeometry {
     struct Vector3* vertices;
     uint16_t* element_types;
     void** elements;
+    
+    struct Octree* octree;
     
     struct {
         float radius;

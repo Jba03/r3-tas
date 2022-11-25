@@ -29,6 +29,8 @@ struct GLMesh {
 
 struct GLMesh* glmesh_alloc(void);
 
+struct GLMesh* glmesh_box(void);
+
 struct GLMesh* glmesh_sphere(const float sectors, const float stacks);
 
 void glmesh_data(struct GLMesh *mesh);

@@ -8,6 +8,57 @@
 #include "glmesh.h"
 #include "common.h"
 
+static struct GLVertex box_vertices[] =
+{
+    /* -X */
+    { {-1.0f, -1.0f, -1.0f}, {}, {0.0f, 1.0f} },
+    { {-1.0f, -1.0f,  1.0f}, {}, {1.0f, 1.0f} },
+    { {-1.0f,  1.0f,  1.0f}, {}, {1.0f, 0.0f} },
+    { {-1.0f,  1.0f,  1.0f}, {}, {1.0f, 0.0f} },
+    { {-1.0f,  1.0f, -1.0f}, {}, {0.0f, 0.0f} },
+    { {-1.0f, -1.0f, -1.0f}, {}, {0.0f, 1.0f} },
+    
+    /* -Z */
+    { {-1.0f, -1.0f, -1.0f}, {}, {1.0f, 1.0f} },
+    { { 1.0f,  1.0f, -1.0f}, {}, {0.0f, 0.0f} },
+    { { 1.0f, -1.0f, -1.0f}, {}, {0.0f, 1.0f} },
+    { {-1.0f, -1.0f, -1.0f}, {}, {1.0f, 1.0f} },
+    { {-1.0f,  1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { { 1.0f,  1.0f, -1.0f}, {}, {0.0f, 0.0f} },
+    
+    /* -Y */
+    { {-1.0f, -1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { { 1.0f, -1.0f, -1.0f}, {}, {1.0f, 1.0f} },
+    { { 1.0f, -1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { {-1.0f, -1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { { 1.0f, -1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { {-1.0f, -1.0f,  1.0f}, {}, {0.0f, 0.0f} },
+    
+    /* +Y */
+    { {-1.0f, 1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { {-1.0f, 1.0f,  1.0f}, {}, {0.0f, 0.0f} },
+    { { 1.0f, 1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { {-1.0f, 1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { { 1.0f, 1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { { 1.0f, 1.0f, -1.0f}, {}, {1.0f, 1.0f} },
+    
+    /* +X */
+    { {1.0f,  1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    { {1.0f,  1.0f,  1.0f}, {}, {0.0f, 0.0f} },
+    { {1.0f, -1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { {1.0f, -1.0f,  1.0f}, {}, {0.0f, 1.0f} },
+    { {1.0f, -1.0f, -1.0f}, {}, {1.0f, 1.0f} },
+    { {1.0f,  1.0f, -1.0f}, {}, {1.0f, 0.0f} },
+    
+    /* +Z */
+    { {-1.0f,  1.0f, 1.0f}, {}, {0.0f, 0.0f} },
+    { {-1.0f, -1.0f, 1.0f}, {}, {0.0f, 1.0f} },
+    { { 1.0f,  1.0f, 1.0f}, {}, {1.0f, 0.0f} },
+    { {-1.0f, -1.0f, 1.0f}, {}, {0.0f, 1.0f} },
+    { { 1.0f, -1.0f, 1.0f}, {}, {1.0f, 1.0f} },
+    { { 1.0f,  1.0f, 1.0f}, {}, {1.0f, 0.0f} },
+};
+
 struct GLMesh* glmesh_alloc(void)
 {
     struct GLMesh* m = malloc(sizeof *m);
@@ -18,6 +69,21 @@ struct GLMesh* glmesh_alloc(void)
     m->transform = matrix4_identity;
     
     return m;
+}
+
+struct GLMesh* glmesh_box(void)
+{
+    struct GLMesh *box = glmesh_alloc();
+    box->n_vertices = 36;
+    box->n_indices = 36;
+    box->vertices = box_vertices;
+    
+    box->indices = malloc(sizeof(unsigned) * box->n_indices);
+    for (int i = 0; i < box->n_indices; i++) box->indices[i] = i;
+    
+    glmesh_data(box);
+    
+    return box;
 }
 
 struct GLMesh *glmesh_sphere(const float sectors, const float stacks)
