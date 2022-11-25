@@ -13,12 +13,12 @@
 #define OCTREE
 
 struct OctreeNode {
-    pointer children_ptr;
+    pointer child_list_ptr;
     pointer face_indices_ptr;
     
     struct Vector3 min;
     struct Vector3 max;
-    struct OctreeNode** children;
+    struct OctreeNode* children[8];
     uint8_t* face_indices;
     
     /* not part of struct */
@@ -40,6 +40,8 @@ struct Octree {
     
     address offset;
 };
+
+OCTREE struct OctreeNode* octree_node_read(const address addr);
 
 OCTREE struct Octree* octree_read(const address addr);
 
