@@ -33,7 +33,7 @@ struct Actor {
     struct StandardGameInfo* info;
     struct Dynamics* dynamics;
     int32_t mechanics_used;
-    /* struct Brain brain; */
+    struct Brain* brain;
     
     const char* family_name;
     const char* model_name;

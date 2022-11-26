@@ -6,6 +6,7 @@
 //
 
 #include "actor.h"
+#include "brain.h"
 
 ACTOR struct Actor *actor_read(const address addr)
 {
@@ -27,6 +28,7 @@ ACTOR struct Actor *actor_read(const address addr)
     actor->sector_info_ptr = readpointer();
     
     if (actor->stdgame_ptr != 0x00) actor->info = stdgame_read(actor->stdgame_ptr);
+    if (actor->brain_ptr != 0x00) actor->brain = brain_read(actor->brain_ptr);
     
     if (actor->dynam_ptr != 0x00)
     {

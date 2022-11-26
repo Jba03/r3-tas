@@ -17,6 +17,7 @@ include_directories(structure/collide)
 include_directories(structure/global)
 include_directories(structure/math)
 include_directories(structure/object)
+include_directories(structure/ai)
 include_directories(predict)
 include_directories(imgui)
 
@@ -50,6 +51,10 @@ add_library(r3tas SHARED
 	structure/collide/collide.c
 	structure/collide/mesh.c
 	structure/collide/octree.c
+
+	structure/ai/brain.c
+	structure/ai/mind.c
+	structure/ai/dsg.c
 	
 	structure/math/vector3.c
 	structure/math/vector4.c

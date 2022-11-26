@@ -71,9 +71,9 @@ OCTREE struct Octree* octree_read(const address addr, struct CollisionGeometry* 
     if (octree->root_node_ptr != 0x00)
         octree->root = octree_node_read(octree->root_node_ptr);
     
-    info("Octree @ %X: %d faces, elements @ %X\n", addr, octree->n_faces, octree->element_base_table_ptr);
-    info("\tmin: %f %f %f\n", octree->min.x, octree->min.y, octree->min.z);
-    info("\tmax: %f %f %f\n", octree->max.x, octree->max.y, octree->max.z);
+//    info("Octree @ %X: %d faces, elements @ %X\n", addr, octree->n_faces, octree->element_base_table_ptr);
+//    info("\tmin: %f %f %f\n", octree->min.x, octree->min.y, octree->min.z);
+//    info("\tmax: %f %f %f\n", octree->max.x, octree->max.y, octree->max.z);
     
     return octree;
 }

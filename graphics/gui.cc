@@ -13,6 +13,9 @@ extern "C"
 #include "common.h"
 #include "dynamics.h"
 #include "configuration.h"
+#include "brain.h"
+#include "mind.h"
+#include "dsg.h"
 }
 
 #undef advance
@@ -256,6 +259,15 @@ static void move_camera()
     prev_mouse = mouse;
 }
 
+static void draw_dsg(struct DSGMemory* mem)
+{
+    for (int i = 0; i < mem->n_variables; i++)
+    {
+        struct DSGVariableInfo var = mem->current[i];
+        ImGui::Text("%s_%d @ %X: ", var.type_name, i, var.data_offset);
+    }
+}
+
 void render_callback(void* ctx)
 {
     GImGui = (ImGuiContext*)ctx;
@@ -274,6 +286,10 @@ void render_callback(void* ctx)
             if (rayman)
             {
                 draw_dynamics(rayman->dynamics);
+                
+                struct DSGMemory* mem = rayman->brain->mind->dsg;
+                draw_dsg(mem);
+                
 //                rayman->superobject->matrix_default = matrix4_read(rayman->superobject->matrix_default->offset);
 //                draw_matrix(rayman->superobject->matrix_default);
             }
