@@ -71,7 +71,7 @@ static struct Vector4 bg =
 "uniform vec3 camera;\n"    \
 "vec3 lightPos = vec3(0, 100, 0);\n" \
 "uniform bool display_normals = false;" \
-"uniform vec3 color = vec3(0);\n" \
+"uniform vec4 color = vec4(1);\n" \
 "void main() {\n"                                                   \
 "   vec3 color2 = vec3(texture(checkerboard, texcoord * 4).r);\n" \
 "   vec3 normal2 = normalize(normal);\n" \
@@ -87,7 +87,7 @@ static struct Vector4 bg =
 "   spec = pow(max(dot(normal2, halfwayDir), 0.0), 64.0);\n" \
 "   vec3 specular = spec * lightColor * 1.0f;\n" \
 "   out_color = display_normals ? vec4(normal, 1.0f) :" \
-"   vec4(vec3(diffuse + specular + ambient + color) * color2, 1.0f);\n"                                      \
+"   vec4(vec3(diffuse + specular + ambient) * color2, 1.0f) * color;\n"                                      \
 "}"
 
 static GLuint compile_shader(const char* source, const GLenum type)
@@ -137,6 +137,39 @@ static GLuint shader_create(const char* vertex, const char* fragment)
     return program;
 }
 
+static void draw_octree(struct OctreeNode* root)
+{
+    if (root)
+    {
+        struct Vector3 scale = vector3_sub(root->max, root->min);
+        
+//        info("Octree node @ %X\n", root->offset);
+//        info("\tmin: %f %f %f\n", root->min.x, root->min.y, root->min.z);
+//        info("\tmax: %f %f %f\n", root->max.x, root->max.y, root->max.z);
+        
+        graphics_draw_line(root->min, root->max);
+        
+//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(scale.x, 0, 0)));
+//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(0, scale.y, 0)));
+//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(0, 0, scale.z)));
+//
+//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(scale.x, 0, 0)));
+//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(0, scale.y, 0)));
+//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(0, 0, scale.z)));
+        
+        if (root->child_list_ptr != 0x00)
+        {
+            for (int i = 0; i < 8; i++)
+                draw_octree(root->children[i]);
+        }
+    }
+}
+
+static bool point_in_box(struct Vector3 p, struct Vector3 mi, struct Vector3 ma)
+{
+    return (p.x >= mi.x && p.y >= mi.y && p.z >= mi.z && p.x <= ma.x && p.y < ma.y && p.z < ma.z);
+}
+
 static void draw_ipo(struct SuperObject *obj, void* p)
 {
     if (obj->type == SUPEROBJECT_TYPE_IPO && obj->data)
@@ -165,6 +198,11 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                         //info("Drawing mesh: %d vertices, %d indices, vao: %d\n", mesh->glmesh->n_vertices, mesh->glmesh->n_indices, mesh->glmesh->vao);
                                         obj->matrix_default = matrix4_read(obj->matrix_default.offset);
                                         
+                                        glEnable(GL_DEPTH_TEST);
+                                        
+                                        struct Vector4 color = vector4_new(1.0f, 1.0, 1.0f, 1.0f);
+                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
+                                        
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
                                     }
@@ -177,40 +215,43 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                     {
                         struct Octree* octree = geom->octree;
                         
-                        struct Vector3 halfway;
-                        halfway.x = (octree->min.x + octree->max.x) / 2.0f;
-                        halfway.y = (octree->min.y + octree->max.y) / 2.0f;
-                        halfway.z = (octree->min.z + octree->max.z) / 2.0f;
-                        
+                        log_indent = 0;
 //                        info("Octree @ %X: %d faces, elements @ %X\n", octree->offset, octree->n_faces, octree->element_base_table_ptr);
 //                        info("\tmin: %f %f %f\n", octree->min.x, octree->min.y, octree->min.z);
 //                        info("\tmax: %f %f %f\n", octree->max.x, octree->max.y, octree->max.z);
 //                        info("\tmiddle: %f %f %f\n\n\n", halfway.x, halfway.y, halfway.z);
-//
+
                         
                         glDisable(GL_DEPTH_TEST);
                         
-                        struct Vector3 def = vector3_new(0.0f, 2.0, 0.0f);
-                        struct Vector3 aa = vector3_new(1.0f, 1.0, 1.0f);
-                        
-                        glUniform3fv(glGetUniformLocation(shader_main, "color"), 1, &def.x);
-                        
-                        struct Vector3 scale = vector3_sub(octree->max, octree->min);
-
+                        struct Vector4 color = vector4_new(0.0f, 10.0, 0.0f, 1.0f);
+                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
                         graphics_draw_line(octree->min, octree->max);
-
-                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(scale.x, 0, 0)));
-                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(0, scale.y, 0)));
-                        graphics_draw_line(octree->max, vector3_sub(octree->max, vector3_new(0, 0, scale.z)));
-
-                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(scale.x, 0, 0)));
-                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(0, scale.y, 0)));
-                        graphics_draw_line(octree->min, vector3_add(octree->min, vector3_new(0, 0, scale.z)));
                         
-                        glUniform3fv(glGetUniformLocation(shader_main, "color"), 1, &aa.x);
+                        struct OctreeNode* root = octree->root;
+                        if (root)
+                        {
+                            struct Vector3 rayman = vector3_read(0x00BF0D98);
+                            
+                            struct Vector3 position = vector3_new(obj->matrix_default.m30, obj->matrix_default.m31, obj->matrix_default.m32);
+                            
+                            struct Vector3 local = vector3_sub(rayman, position);
+                            
+                            struct OctreeNode* intersect = NULL;
+                            if ((intersect = octree_intersect_point(root, local)))
+                            {
+                                //info("Octree contains %d vertices\n", octree->n_faces);
+//                                info("Rayman intersects %s @ %X with %d faces\n", ipo->name, intersect->offset, intersect->n_face_indices);
+//                                info("\tThese faces were intersected:\n");
+//                                info("\t\t");
+//                                for (int i = 0; i < intersect->n_face_indices; i++)
+//                                    info("%d, ", intersect->face_indices[i]);
+//                                info("\n");
+                            }
+                        }
+                        
                         
                         glEnable(GL_DEPTH_TEST);
-                        //graphics_draw_sphere(halfway, scale.x, vector4_new(0, 0, 0, 0));
                     }
                 }
             }
@@ -234,7 +275,38 @@ static void gen_checkerboard_texture()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
-static void graphics_draw_line(struct Vector3 start, struct Vector3 end)
+void graphics_draw_triangle(struct Vector3 a, struct Vector3 b, struct Vector3 c)
+{
+    GLuint vao;
+    GLuint vbo;
+    
+    const GLfloat vertices[] =
+    {
+        a.x, a.y, a.z,
+        b.x, b.y, b.z,
+        c.x, c.y, c.z,
+    };
+    
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+}
+
+void graphics_draw_line(struct Vector3 start, struct Vector3 end)
 {
     GLuint vao;
     GLuint vbo;
@@ -305,6 +377,10 @@ static void graphics_main_loop()
     /* Disable face culling */
     glDisable(GL_CULL_FACE);
     
+    /* Enable blending */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
     
@@ -328,8 +404,6 @@ static void graphics_main_loop()
     struct Vector3 rayman = vector3_read(0x00BF0D98);
     graphics_draw_box(rayman, vector3_new(1, 1, 1), vector3_new(45.0, 0.0, 0.0), vector4_new(0, 0, 0, 0));
     //graphics_draw_sphere(rayman, 0.5f, vector4_new(0, 0, 0, 0));
-    
-    
     
     
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);

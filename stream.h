@@ -35,8 +35,6 @@ struct Stream {
     address position;
 };
 
-
-
 #define read8() stream->read8(stream)
 #define read16() stream->read16(stream)
 #define read32() stream->read32(stream)

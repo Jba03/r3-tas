@@ -180,6 +180,16 @@ static void draw_general_info()
     
 }
 
+static void draw_rayman_position()
+{
+    struct Vector3 rayman = vector3_read(0x00BF0D98);
+    ImGui::Begin("Rayman");
+    ImGui::Text("X: %f", rayman.x);
+    ImGui::Text("Y: %f", rayman.y);
+    ImGui::Text("Z: %f", rayman.z);
+    ImGui::End();
+}
+
 ImVec2 prev_mouse;
 
 static void move_camera()
@@ -203,6 +213,7 @@ void render_callback(void* ctx)
     
     draw_general_info();
     draw_timer();
+    draw_rayman_position();
     
     if (configuration.camera_unlocked)
         move_camera();

@@ -103,7 +103,7 @@ COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)
     
     /* Read octree */
     if (geom->octree_offset != 0x00)
-        geom->octree = octree_read(geom->octree_offset);
+        geom->octree = octree_read(geom->octree_offset, geom);
     
     return geom;
 }
