@@ -39,9 +39,9 @@ struct Stream {
 #define read16() stream->read16(stream)
 #define read32() stream->read32(stream)
 #define read64() stream->read32(stream) // TODO: do.
-#define read8S() (s8)stream->read8(stream)
-#define read16S() (s16)stream->read8(stream)
-#define read32S() (s32)stream->read8(stream)
+#define read8S() (int8_t)read8()
+#define read16S() (int16_t)read16()
+#define read32S() (int32_t)read32()
 #define readlong() read32() /* TODO: hmm */
 #define readpointer() (read32() & 0xFFFFFFF)
 #define readfloat() stream->readfloat(stream)

@@ -11,8 +11,13 @@ extern "C"
 #include "engine.h"
 #include "actor.h"
 #include "common.h"
+#include "dynamics.h"
 #include "configuration.h"
 }
+
+#undef advance
+
+#include <string>
 
 #include "imgui.h"
 
@@ -52,6 +57,50 @@ static void draw_matrix(struct Matrix4 m)
     ImGui::TextColored(ImVec4(0.0, 0.75, 0.45, 1.0), "%.2f  %.2f  %.2f  %.2f", m.row1.x, m.row1.y, m.row1.z, m.row1.w);
     ImGui::TextColored(ImVec4(0.0, 0.75, 0.45, 1.0), "%.2f  %.2f  %.2f  %.2f", m.row2.x, m.row2.y, m.row2.z, m.row2.w);
     ImGui::TextColored(ImVec4(0.0, 0.75, 0.45, 1.0), "%.2f  %.2f  %.2f  %.2f", m.row3.x, m.row3.y, m.row3.z, m.row3.w);
+    ImGui::End();
+}
+
+static void vector3_description(struct Vector3 v, ImVec4 color)
+{
+    ImGui::TextColored(color, "%.2f %.2f %.2f", v.x, v.y, v.z);
+}
+
+static void draw_dynamics(struct Dynamics* dynam)
+{
+    *dynam = *dynamics_read(dynam->offset);
+    
+    std::string type;
+    if (dynam->size & DYNAMICS_SIZE_BASE) type = "Base";
+    if (dynam->size & DYNAMICS_SIZE_ADVANCED) type = "Advanced";
+    if (dynam->size & DYNAMICS_SIZE_COMPLEX) type = "Complex";
+    
+    ImGui::Begin(std::string("Dynamics (" + type + ")").c_str());
+    
+    struct DynamicsBase base = dynam->base;
+    struct DynamicsAdvanced advanced = dynam->advanced;
+    
+    ImGui::Text("Gravity: %f", base.gravity);
+    ImGui::Text("Slope limit: %f", base.slopelimit);
+    ImGui::Text("cos(slope): %f", base.cos_slope);
+    ImGui::Text("");
+    ImGui::Text("Imposed speed: %.2f %.2f %.2f", base.speed_impose.x, base.speed_impose.y, base.speed_impose.z);
+    ImGui::Text("Proposed speed: %.2f %.2f %.2f", base.speed_propose.x, base.speed_propose.y, base.speed_propose.z);
+    ImGui::Text("Previous speed: %.2f %.2f %.2f", base.speed_previous.x, base.speed_previous.y, base.speed_previous.z);
+    ImGui::Text("NFrame: %d", base.nframe);
+    
+    if (dynam->size & DYNAMICS_SIZE_ADVANCED)
+    {
+        ImGui::Separator();
+        
+        ImGui::Text("Advanced offset: %X", advanced.offset);
+        ImGui::Text("Inertia: %.2f %.2f %.2f", advanced.inertia.x, advanced.inertia.y, advanced.inertia.z);
+        ImGui::Text("Max speed: %.2f %.2f %.2f", advanced.speed_max.x, advanced.speed_max.y, advanced.speed_max.z);
+        ImGui::Text("Add speed: %.2f %.2f %.2f", advanced.speed_add.x, advanced.speed_add.y, advanced.speed_add.z);
+        ImGui::Text("Ground normal: %.2f %.2f %.2f", advanced.ground_normal.x, advanced.ground_normal.y, advanced.ground_normal.z);
+        ImGui::Text("Wall normal: %.2f %.2f %.2f", advanced.wall_normal.x, advanced.wall_normal.y, advanced.wall_normal.z);
+        ImGui::Text("Collision count: %d", advanced.collide_count);
+    }
+    
     ImGui::End();
 }
 
@@ -218,18 +267,18 @@ void render_callback(void* ctx)
     if (configuration.camera_unlocked)
         move_camera();
     
-//    if (engine)
-//    {
-//        if (engine->root)
-//        {
-//            struct Actor* rayman = actor_find("Rayman", engine->root);
-//            if (rayman)
-//            {
+    if (engine)
+    {
+        if (engine->root)
+        {
+            if (rayman)
+            {
+                draw_dynamics(rayman->dynamics);
 //                rayman->superobject->matrix_default = matrix4_read(rayman->superobject->matrix_default->offset);
 //                draw_matrix(rayman->superobject->matrix_default);
-//            }
-//            
-//            draw_hierarchy(engine->root);
-//        }
-//    }
+            }
+            
+            //draw_hierarchy(engine->root);
+        }
+    }
 }

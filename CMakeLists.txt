@@ -41,6 +41,7 @@ add_library(r3tas SHARED
 	structure/global/lvl.c
 	structure/global/stdgame.c
 	structure/global/superobject_links.c
+	structure/global/dynamics.c
 
 	structure/object/actor.c
 	structure/object/physical_object.c
@@ -49,11 +50,12 @@ add_library(r3tas SHARED
 	structure/collide/collide.c
 	structure/collide/mesh.c
 	structure/collide/octree.c
-
-	structure/math/matrix4.c
+	
 	structure/math/vector3.c
 	structure/math/vector4.c
-	structure/math/transform.c	
+	structure/math/matrix3.c
+	structure/math/matrix4.c
+	structure/math/transform.c
 
 	predict/predict.c
 

@@ -28,12 +28,12 @@ enum SuperObjectLinkPersistence {
 
 struct SuperObjectLinks {
     struct SuperObject* superobject;
-    struct Transform* transform_initial;
+    struct Transform transform_initial;
     uint32_t n_linked_objects;
     uint32_t n_links_allocated;
     void** linked_object;
     enum SuperObjectLinkType obj_type;
-    struct Transform* linked_obj_transform_initial;
+    struct Transform linked_obj_transform_initial;
     enum SuperObjectLinkPersistence persistence;
 };
 

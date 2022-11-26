@@ -8,6 +8,7 @@
 #ifndef transform_h
 #define transform_h
 
+#include "matrix3.h"
 #include "matrix4.h"
 
 #define TRANSFORM
@@ -22,16 +23,19 @@ enum TransformType {
     TRANSFORM_ROTATION_ZOOM = 6,
     TRANSFORM_ROTATION_SCALE = 7,
     TRANSFORM_ROTATION_SCALE_COMPLEX = 8,
-    TRANSFORM_Undefined = 9,
+    TRANSFORM_UNDEFINED = 9,
 };
 
 struct Transform {
-    enum TransformType type;
+#define TRANSFORM_SIZE 0x60
+    
     struct Matrix4 matrix;
     struct Vector4 scale;
+    enum TransformType type;
+    
     address offset;
 };
 
-TRANSFORM struct Transform* transform_read(const address addr);
+TRANSFORM struct Transform transform_read(const address addr);
 
 #endif /* transform_h */

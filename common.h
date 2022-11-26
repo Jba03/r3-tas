@@ -17,6 +17,7 @@
 #include "stream.h"
 #include "logging.h"
 #include "camera.h"
+#include "actor.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b)) /* min: Choose smaller of two values */
 #define max(a, b) (((a) > (b)) ? (a) : (b)) /* max: Choose bigger of two values */
@@ -29,6 +30,8 @@ extern struct LVL* lvl;
 extern struct Engine* engine;
 
 extern struct Camera* camera;
+
+extern struct Actor* rayman;
 
 extern int log_indent;
 

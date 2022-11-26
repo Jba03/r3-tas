@@ -137,6 +137,11 @@ static GLuint shader_create(const char* vertex, const char* fragment)
     return program;
 }
 
+int graphics_texture_id(void)
+{
+    return 0;
+}
+
 static void draw_octree(struct OctreeNode* root)
 {
     if (root)
@@ -398,30 +403,38 @@ static void graphics_main_loop()
         }
     }
     
-    glUniform1i(glGetUniformLocation(shader_main, "checkerboard"), 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
-    struct Vector3 rayman = vector3_read(0x00BF0D98);
-    graphics_draw_box(rayman, vector3_new(1, 1, 1), vector3_new(45.0, 0.0, 0.0), vector4_new(0, 0, 0, 0));
-    //graphics_draw_sphere(rayman, 0.5f, vector4_new(0, 0, 0, 0));
-    
-    
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
-    struct LineSegment segment;
-    
-    segment.start = vector3_new(-1.16, -7, -15);
-    segment.end = vector3_new(-4, 7, -15);
-    
-//    graphics_draw_box(segment.end, vector3_new(0.25, 0.25, 0.25), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
+//    glUniform1i(glGetUniformLocation(shader_main, "checkerboard"), 0);
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
+    struct Vector3 rayman_position = vector3_read(0x00BF0D98);
+//    graphics_draw_box(rayman, vector3_new(1, 1, 1), vector3_new(45.0, 0.0, 0.0), vector4_new(0, 0, 0, 0));
+//    //graphics_draw_sphere(rayman, 0.5f, vector4_new(0, 0, 0, 0));
 //
-    graphics_draw_line(segment.start, segment.end);
+//
+//    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
+//    struct LineSegment segment;
+//
+//    segment.start = vector3_new(-1.16, -7, -15);
+//    segment.end = vector3_new(-4, 7, -15);
+//
+//    graphics_draw_line(segment.start, segment.end);
+//    struct Vector3 closest = closest_point_on_segment(rayman, segment);
+//    closest = vector3_new(closest.x, closest.y, closest.z);
+//    graphics_draw_box(closest, vector3_new(0.1, 0.1, 0.1), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
     
     
-    struct Vector3 closest = closest_point_on_segment(rayman, segment);
+    if (rayman)
+    {
+        struct Vector4 color = vector4_new(10.0f, 0.0, 10.0f, 1.0f);
+        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
+        
+//        struct Vector3 wallnormal = vector3_add(rayman->dynamics->advanced.wall_normal, rayman_position);
+//        graphics_draw_line(rayman_position, wallnormal);
+        
+        struct Vector3 groundnormal = vector3_add(rayman->dynamics->advanced.ground_normal, rayman_position);
+        graphics_draw_line(rayman_position, groundnormal);
+    }
     
-    closest = vector3_new(closest.x, closest.y, closest.z);
-    
-    graphics_draw_box(closest, vector3_new(0.1, 0.1, 0.1), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
     
     SDL_GL_SwapWindow(window);
 }

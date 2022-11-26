@@ -9,12 +9,15 @@
 #include "matrix4.h"
 #include "array.h"
 #include "memory.h"
+#include "superobject.h"
 
 struct FIX* fix = NULL;
 struct LVL* lvl = NULL;
 struct Engine* engine = NULL;
 
 struct Camera *camera = NULL;
+
+struct Actor* rayman = NULL;
 
 int log_indent = 0;
 

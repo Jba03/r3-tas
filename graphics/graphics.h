@@ -13,6 +13,8 @@
 
 void graphics_init(void);
 
+int graphics_texture_id(void);
+
 void graphics_draw_box(struct Vector3 position, struct Vector3 scale, struct Vector3 rotation, struct Vector4 color);
 
 void graphics_draw_line(struct Vector3 start, struct Vector3 end);

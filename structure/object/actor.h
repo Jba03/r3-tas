@@ -10,21 +10,30 @@
 
 #include "stream.h"
 #include "stdgame.h"
+#include "dynamics.h"
 
 #define ACTOR
 
+#define ACTOR_MECHANICS_ERROR  -1
+#define ACTOR_MECHANICS_CAMERA  0
+#define ACTOR_MECHANICS_BASE    1
+
 struct Actor {
+    pointer data3d_ptr;
+    pointer stdgame_ptr;
+    pointer dynam_ptr;
+    pointer dynamics_ptr;
+    pointer brain_ptr;
+    pointer camera_info_ptr;
+    pointer collision_set_ptr;
+    pointer ms_way_ptr;
+    pointer light_ptr;
+    pointer sector_info_ptr;
     
     struct StandardGameInfo* info;
-    /* struct Dynamics dynamics; */
+    struct Dynamics* dynamics;
+    int32_t mechanics_used;
     /* struct Brain brain; */
-    
-    pointer data3d;
-    pointer camera;
-    pointer collision_set;
-    pointer ms_way;
-    pointer light;
-    pointer sector_info;
     
     const char* family_name;
     const char* model_name;
@@ -32,6 +41,8 @@ struct Actor {
     
     /* Containing superobject */
     struct SuperObject* superobject;
+    
+    address offset;
 };
 
 ACTOR struct Actor *actor_read(const address addr);
