@@ -43,6 +43,8 @@ static struct Vector4 bg =
     .a = 1.00f,
 };
 
+#pragma mark - Shader
+
 #define VERTEX                                                      \
 "#version 330 core\n"                                               \
 "layout (location = 0) in vec3 aPos;\n"                             \
@@ -137,42 +139,17 @@ static GLuint shader_create(const char* vertex, const char* fragment)
     return program;
 }
 
-int graphics_texture_id(void)
+#pragma mark - Draw
+
+void graphics_set_viewport(int w, int h)
 {
-    return 0;
+    width = w;
+    height = h;
 }
 
-static void draw_octree(struct OctreeNode* root)
+int graphics_get_texture()
 {
-    if (root)
-    {
-        struct Vector3 scale = vector3_sub(root->max, root->min);
-        
-//        info("Octree node @ %X\n", root->offset);
-//        info("\tmin: %f %f %f\n", root->min.x, root->min.y, root->min.z);
-//        info("\tmax: %f %f %f\n", root->max.x, root->max.y, root->max.z);
-        
-        graphics_draw_line(root->min, root->max);
-        
-//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(scale.x, 0, 0)));
-//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(0, scale.y, 0)));
-//        graphics_draw_line(root->max, vector3_sub(root->max, vector3_new(0, 0, scale.z)));
-//
-//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(scale.x, 0, 0)));
-//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(0, scale.y, 0)));
-//        graphics_draw_line(root->min, vector3_add(root->min, vector3_new(0, 0, scale.z)));
-        
-        if (root->child_list_ptr != 0x00)
-        {
-            for (int i = 0; i < 8; i++)
-                draw_octree(root->children[i]);
-        }
-    }
-}
-
-static bool point_in_box(struct Vector3 p, struct Vector3 mi, struct Vector3 ma)
-{
-    return (p.x >= mi.x && p.y >= mi.y && p.z >= mi.z && p.x <= ma.x && p.y < ma.y && p.z < ma.z);
+    return checkerboard_texture;
 }
 
 static void draw_ipo(struct SuperObject *obj, void* p)
@@ -211,6 +188,17 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
                                     }
+                                    
+//                                    for (int i = 0; i < mesh->n_triangles * 3; i++) {
+//                                        struct Vector3 p1 = mesh->processed.vertices[i];
+//                                        struct Vector3 p2 = vector3_new(p1.x, p1.z, p1.y);
+//                                        
+//                                        struct Vector4 color = vector4_new(0.0f, 1.0, 1.0f, 1.0f);
+//                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
+//                                        struct Vector3 rayman_position = vector3_read(0x00BF0D98);
+//                                        graphics_draw_line(rayman_position, p2);
+//                                        //graphics_draw_sphere(p2, 0.1, color);
+//                                    }
                                 }
                             }
                         }
@@ -341,6 +329,36 @@ void graphics_draw_line(struct Vector3 start, struct Vector3 end)
     glDeleteBuffers(1, &vbo);
 }
 
+void graphics_draw_box(struct Vector3 position, struct Vector3 scale, struct Vector3 rotation, struct Vector4 color)
+{
+    struct Matrix4 T = matrix4_identity;
+    
+    /* Rotate */
+    T = matrix4_mul(T, matrix4_make_rotation_x(radians(rotation.x)));
+    T = matrix4_mul(T, matrix4_make_rotation_y(radians(rotation.y)));
+    T = matrix4_mul(T, matrix4_make_rotation_z(radians(rotation.z)));
+    
+    /* Scale & translate. */
+    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
+    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
+
+    T = matrix4_transpose(T);
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
+    glmesh_draw(box);
+}
+
+void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 color)
+{
+    struct Matrix4 T;
+    T = matrix4_make_scale(r * 2.0f, r * 2.0f, r * 2.0f);
+    T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
+    T = matrix4_transpose(T);
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
+    glmesh_draw(sphere);
+}
+
 static void graphics_main_loop()
 {
     SDL_Event e;
@@ -437,66 +455,6 @@ static void graphics_main_loop()
     
     
     SDL_GL_SwapWindow(window);
-}
-
-void graphics_draw_box(struct Vector3 position, struct Vector3 scale, struct Vector3 rotation, struct Vector4 color)
-{
-    struct Matrix4 T = matrix4_identity;
-    
-    /* Rotate */
-    T = matrix4_mul(T, matrix4_make_rotation_x(radians(rotation.x)));
-    T = matrix4_mul(T, matrix4_make_rotation_y(radians(rotation.y)));
-    T = matrix4_mul(T, matrix4_make_rotation_z(radians(rotation.z)));
-    
-    /* Scale & translate. */
-    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
-    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
-
-    T = matrix4_transpose(T);
-    
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
-    glmesh_draw(box);
-}
-
-//void graphics_draw_line(struct Vector3 start, struct Vector3 end, const float thickness, struct Vector4 color)
-//{
-//    const float lx = sqrt((end.x - start.x) * (end.x - start.x));
-//    const float ly = sqrt((end.y - start.y) * (end.y - start.y));
-//    const float lz = sqrt((end.z - start.z) * (end.z - start.z));
-//    
-//    struct Vector3 position = start;
-//    struct Vector3 scale = vector3_new(thickness + lx, thickness + ly, thickness + lz);
-//    //struct Vector3 scale = vector3_new(length, thickness, thickness);
-//    
-//    struct Matrix4 T = matrix4_identity;
-//    
-//    const float tx = start.y / end.y;
-//    //const float tx = start.x / end.x;
-//    
-//    /* Rotate */
-//    T = matrix4_mul(T, matrix4_make_rotation_x(-0.3));
-//    T = matrix4_mul(T, matrix4_make_rotation_y(3));
-//    T = matrix4_mul(T, matrix4_make_rotation_z(0.2));
-//    
-//    /* Scale & translate. */
-//    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
-//    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
-//
-//    T = matrix4_transpose(T);
-//    
-//    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
-//    glmesh_draw(box);
-//}
-
-void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 color)
-{
-    struct Matrix4 T;
-    T = matrix4_make_scale(r * 2.0f, r * 2.0f, r * 2.0f);
-    T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
-    T = matrix4_transpose(T);
-    
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
-    glmesh_draw(sphere);
 }
 
 void graphics_init(void)

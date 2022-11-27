@@ -28,7 +28,7 @@ DSG struct DSGVariableInfo dsgvar_info_read(const address addr)
     
     info.type_name = dsgvar_typenames[info.type_id + 1];
     
-    info("DSGVar @ %X: %s\n", addr, info.type_name);
+    //info("DSGVar @ %X: %s\n", addr, info.type_name);
     
     return info;
 }

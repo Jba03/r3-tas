@@ -18,6 +18,7 @@ struct Engine* engine = NULL;
 struct Camera *camera = NULL;
 
 struct Actor* rayman = NULL;
+struct Actor* camera_actor = NULL;
 
 int log_indent = 0;
 

@@ -16,6 +16,8 @@ extern "C"
 #include "brain.h"
 #include "mind.h"
 #include "dsg.h"
+#include "graphics.h"
+#include "vector2.h"
 }
 
 #undef advance
@@ -34,6 +36,20 @@ static ImVec2 display_size;
 static bool general_info = true;
 static bool display_normals = false;
 static bool timer = true;
+
+struct Vector2 screen_space_coords(const struct Vector4 iPoint)
+{
+    struct Matrix4 view = camera_view_matrix(camera);
+    struct Matrix4 projection = camera_projection_matrix(camera, display_size.x / display_size.y);
+    
+    struct Vector4 point = vector4_mul_matrix4(iPoint, (matrix4_mul(projection, view)));
+
+    struct Vector2 screenSpacePoint = vector2_new(0.0f, 0.0f);
+    screenSpacePoint.x = (point.x / 2.0f) + 0.5f;
+    screenSpacePoint.y = (point.y / 2.0f) + 0.5f;
+
+    return screenSpacePoint;
+}
 
 static void draw_timer()
 {
@@ -174,8 +190,6 @@ static void draw_hierarchy(struct SuperObject* so)
 
 static void draw_general_info()
 {
-    display_size = ImGui::GetIO().DisplaySize;
-    
     const ImGuiWindowFlags flags =
     ImGuiWindowFlags_MenuBar |
     ImGuiWindowFlags_NoTitleBar |
@@ -259,18 +273,104 @@ static void move_camera()
     prev_mouse = mouse;
 }
 
-static void draw_dsg(struct DSGMemory* mem)
+static const ImColor bright_red = ImColor(0xff3d11ee);
+static const ImColor bright_pink = ImColor(0xffa501d3);
+static const ImColor bright_yellow = ImColor(0xff49bef8);
+static const ImColor bright_green = ImColor(0xff63f147);
+static const ImColor bright_blue = ImColor(0xfff8c212);
+
+static const ImColor dark_red = ImColor(0xff1c0b98);
+static const ImColor orange = ImColor(0xff107dea);
+static const ImColor dark_yellow = ImColor(0xff1ac6ff);
+static const ImColor dark_green = ImColor(0xff3e6803);
+static const ImColor dark_blue = ImColor(0xffb54103);
+static const ImColor dark_purple = ImColor(0xff650183);
+
+static ImColor color_table[] =
 {
+    [DSGVAR_TYPE_BOOLEAN] = dark_blue,
+    [DSGVAR_TYPE_UBYTE] = dark_yellow,
+    [DSGVAR_TYPE_INT] = bright_blue,
+    [DSGVAR_TYPE_UINT] = dark_blue,
+    [DSGVAR_TYPE_SHORT] = bright_red,
+    
+    
+    [DSGVAR_TYPE_FLOAT] = bright_pink,
+    
+    [DSGVAR_TYPE_FLOAT_ARRAY] = bright_red,
+    [DSGVAR_TYPE_ACTOR_ARRAY] = bright_red,
+    [DSGVAR_TYPE_TEXT_REF_ARRAY] = bright_red,
+    
+    [DSGVAR_TYPE_VECTOR] = bright_green,
+    
+    [DSGVAR_TYPE_ACTOR] = bright_yellow,
+    [DSGVAR_TYPE_SUPEROBJECT] = orange,
+    [DSGVAR_TYPE_GRAPH] = dark_green,
+    [DSGVAR_TYPE_WAYPOINT] = dark_purple,
+    
+    [DSGVAR_TYPE_TEXT] = dark_purple,
+    [DSGVAR_TYPE_SOUNDEVENT] = dark_purple,
+    
+    [N_DSGVAR_TYPES] = orange,
+};
+
+static void draw_dsg(struct Actor* actor)
+{
+    struct DSGMemory* mem = actor->brain->mind->dsg;
+    
+    ImGui::Begin(actor->instance_name);
+    
     for (int i = 0; i < mem->n_variables; i++)
     {
         struct DSGVariableInfo var = mem->current[i];
-        ImGui::Text("%s_%d @ %X: ", var.type_name, i, var.data_offset);
+        var.type_id += 1;
+        
+        std::string fmt = "";
+        ImColor color = color_table[var.type_id];
+        ImVec4 color2 = color;
+        color2.w = 0.8;
+        
+        if ((i % 2) == 0) color2.w = 0.6;
+        
+        if (var.type_id == DSGVAR_TYPE_INT)
+        {
+            int32_t value = memory.read_32(var.data_offset);
+            fmt += std::to_string(value);
+        }
+        else if (var.type_id == DSGVAR_TYPE_UINT)
+        {
+            uint32_t value = memory.read_32(var.data_offset);
+            fmt += std::to_string(value);
+        }
+        else if (var.type_id == DSGVAR_TYPE_UBYTE)
+        {
+            uint8_t value = memory.read_8(var.data_offset);
+            fmt += std::to_string(value);
+        }
+        else if (var.type_id == DSGVAR_TYPE_BOOLEAN)
+        {
+            uint8_t value = memory.read_8(var.data_offset);
+            if (value != 0) color2.w = 1.0; else color2.w = 0.75;
+            fmt += value != 0 ? "true" : "false";
+        }
+        else if (var.type_id == DSGVAR_TYPE_VECTOR)
+        {
+            struct Vector3 v = vector3_read(var.data_offset);
+            fmt += "(" + std::to_string(v.x) + ", " +
+            std::to_string(v.z) + ", " + std::to_string(v.y) + ")";
+        }
+        
+        ImGui::TextColored(color2, "%s_%d: %s", var.type_name, i, fmt.c_str());
     }
+    
+    ImGui::End();
 }
 
 void render_callback(void* ctx)
 {
     GImGui = (ImGuiContext*)ctx;
+    
+    display_size = ImGui::GetIO().DisplaySize;
     
     draw_general_info();
     draw_timer();
@@ -283,15 +383,12 @@ void render_callback(void* ctx)
     {
         if (engine->root)
         {
-            if (rayman)
+            if (rayman && camera_actor)
             {
                 draw_dynamics(rayman->dynamics);
                 
-                struct DSGMemory* mem = rayman->brain->mind->dsg;
-                draw_dsg(mem);
-                
-//                rayman->superobject->matrix_default = matrix4_read(rayman->superobject->matrix_default->offset);
-//                draw_matrix(rayman->superobject->matrix_default);
+                draw_dsg(rayman);
+                draw_dsg(camera_actor);
             }
             
             //draw_hierarchy(engine->root);

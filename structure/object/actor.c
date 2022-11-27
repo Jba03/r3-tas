@@ -48,9 +48,11 @@ ACTOR struct Actor *actor_read(const address addr)
         actor->model_name = stdgame_model_name(actor->info);
         actor->instance_name = stdgame_instance_name(actor->info);
         
-        if (actor->instance_name != NULL)
-            if (!strcmp(actor->family_name, "rayman"))
-                rayman = actor;
+        if (!strcmp(actor->family_name, "rayman"))
+            rayman = actor;
+        
+        if (!strcmp(actor->family_name, "Camera"))
+            camera_actor = actor;
     }
     
     stream_close(stream);

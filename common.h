@@ -32,6 +32,7 @@ extern struct Engine* engine;
 extern struct Camera* camera;
 
 extern struct Actor* rayman;
+extern struct Actor* camera_actor;
 
 extern int log_indent;
 

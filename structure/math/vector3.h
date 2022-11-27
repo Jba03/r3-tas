@@ -91,7 +91,7 @@ VECTOR3 const float vector3_length(const struct Vector3 vector);
 /**
  * vector3_normalize:
  * Normalizes a 3-component vector. In case the input
- * vector has a length of zero, it is returned.
+ * vector has a length of zero, the input vector is returned.
  *
  * v = v * 1 / |v|
  */

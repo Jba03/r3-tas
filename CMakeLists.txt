@@ -56,6 +56,7 @@ add_library(r3tas SHARED
 	structure/ai/mind.c
 	structure/ai/dsg.c
 	
+	structure/math/vector2.c
 	structure/math/vector3.c
 	structure/math/vector4.c
 	structure/math/matrix3.c
