@@ -23,6 +23,6 @@ void graphics_draw_triangle(struct Vector3 a, struct Vector3 b, struct Vector3 c
 
 void graphics_draw_sphere(struct Vector3 center, const float radius, struct Vector4 color);
 
-int graphics_get_texture();
+int graphics_shader_id(void);
 
 #endif /* graphics_h */

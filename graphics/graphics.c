@@ -192,7 +192,7 @@ static void draw_ipo(struct SuperObject *obj, void* p)
 //                                    for (int i = 0; i < mesh->n_triangles * 3; i++) {
 //                                        struct Vector3 p1 = mesh->processed.vertices[i];
 //                                        struct Vector3 p2 = vector3_new(p1.x, p1.z, p1.y);
-//                                        
+//
 //                                        struct Vector4 color = vector4_new(0.0f, 1.0, 1.0f, 1.0f);
 //                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
 //                                        struct Vector3 rayman_position = vector3_read(0x00BF0D98);
@@ -417,7 +417,7 @@ static void graphics_main_loop()
     {
         if (engine->root)
         {
-            superobject_for_every(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
+            superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
         }
     }
     
@@ -443,18 +443,16 @@ static void graphics_main_loop()
     
     if (rayman)
     {
-        struct Vector4 color = vector4_new(10.0f, 0.0, 10.0f, 1.0f);
-        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
-        
-//        struct Vector3 wallnormal = vector3_add(rayman->dynamics->advanced.wall_normal, rayman_position);
-//        graphics_draw_line(rayman_position, wallnormal);
-        
-        struct Vector3 groundnormal = vector3_add(rayman->dynamics->advanced.ground_normal, rayman_position);
-        graphics_draw_line(rayman_position, groundnormal);
+        rayman->superobject->matrix_default = matrix4_read(rayman->superobject->matrix_default.offset);
     }
     
     
     SDL_GL_SwapWindow(window);
+}
+
+int graphics_shader_id()
+{
+    return shader_main;
 }
 
 void graphics_init(void)

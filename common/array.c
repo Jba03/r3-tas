@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #pragma mark - Array
 
@@ -25,6 +26,8 @@ ARRAY struct Array* array_create(void)
     array->data = malloc(sizeof(void*) * 4);
     array->size = 4;
     array->counter = 0;
+    
+    memset(array->data, 0, sizeof(void*) * 4);
     
     return array;
 }

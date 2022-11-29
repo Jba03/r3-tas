@@ -16,15 +16,18 @@ ACTOR struct Actor *actor_read(const address addr)
     actor->dynamics = NULL;
     actor->dynamics_ptr = 0x00;
     actor->superobject = NULL;
+    actor->brain = NULL;
     
     struct Stream *stream = stream_open(addr);
     actor->data3d_ptr = readpointer();
     actor->stdgame_ptr = readpointer();
     actor->dynam_ptr = readpointer();
     actor->brain_ptr = readpointer();
+    advance(4);
     actor->camera_info_ptr = readpointer();
     actor->collision_set_ptr = readpointer();
     actor->ms_way_ptr = readpointer();
+    advance(4);
     actor->sector_info_ptr = readpointer();
     
     if (actor->stdgame_ptr != 0x00) actor->info = stdgame_read(actor->stdgame_ptr);
@@ -53,6 +56,9 @@ ACTOR struct Actor *actor_read(const address addr)
         
         if (!strcmp(actor->family_name, "Camera"))
             camera_actor = actor;
+        
+        if (!strcmp(actor->family_name, "Reflux_1"))
+            reflux = actor;
     }
     
     stream_close(stream);
@@ -61,16 +67,21 @@ ACTOR struct Actor *actor_read(const address addr)
 }
 
 /* TODO: fix crashes */
-ACTOR struct Actor *actor_find(const char* name, const struct SuperObject* superobject)
+ACTOR struct Actor *actor_find(int mode, const char* name, const struct SuperObject* superobject)
 {
     struct Actor* actor = superobject->data;
     if (superobject->type == SUPEROBJECT_TYPE_ACTOR && superobject->data_ptr != 0x00 && actor)
-        if (strcmp(actor->instance_name, name) == 0) return actor;
+    {
+        const char* compare = actor->instance_name;
+        if (mode == ACTOR_FIND_MODEL) compare = actor->model_name;
+        if (mode == ACTOR_FIND_FAMILY) compare = actor->family_name;
+        if (strcmp(compare, name) == 0) return actor;
+    }
         
     struct Actor* ret = NULL;
     if (superobject->child_first != 0x00 && superobject->child_last != 0x00)
         for (int n = 0; !ret && n < superobject->n_children; n++)
-            ret = actor_find(name, superobject->children[n]);
+            ret = actor_find(mode, name, superobject->children[n]);
     
     return ret;
 }

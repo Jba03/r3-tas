@@ -18,6 +18,9 @@ extern "C"
 #include "dsg.h"
 #include "graphics.h"
 #include "vector2.h"
+
+#include "predict.h"
+#include "movement.h"
 }
 
 #undef advance
@@ -212,6 +215,7 @@ static void draw_general_info()
         {
             ImGui::Checkbox("Display normals", &display_normals);
             ImGui::Checkbox("Unlock camera?", &configuration.camera_unlocked);
+            ImGui::Checkbox("Visualize HSJs?", &configuration.visualize_hsjs);
             ImGui::Checkbox("Enable cheats", &configuration.enable_cheats);
             configuration.graphics_display_mode = display_normals ? 1 : 0;
             
@@ -353,6 +357,11 @@ static void draw_dsg(struct Actor* actor)
             if (value != 0) color2.w = 1.0; else color2.w = 0.75;
             fmt += value != 0 ? "true" : "false";
         }
+        else if (var.type_id == DSGVAR_TYPE_FLOAT)
+        {
+            float value = memory.read_float(var.data_offset);
+            fmt += std::to_string(value);
+        }
         else if (var.type_id == DSGVAR_TYPE_VECTOR)
         {
             struct Vector3 v = vector3_read(var.data_offset);
@@ -360,11 +369,13 @@ static void draw_dsg(struct Actor* actor)
             std::to_string(v.z) + ", " + std::to_string(v.y) + ")";
         }
         
-        ImGui::TextColored(color2, "%s_%d: %s", var.type_name, i, fmt.c_str());
+        ImGui::TextColored(color2, "%s_%d @ %X: %s", var.type_name, i, var.data_offset, fmt.c_str());
     }
     
     ImGui::End();
 }
+
+static struct prediction_param predict_param;
 
 void render_callback(void* ctx)
 {
@@ -383,15 +394,26 @@ void render_callback(void* ctx)
     {
         if (engine->root)
         {
+            
+            ImGui::Text("Position: %.2f %.2f %.2f", predict_param.source_position.x, predict_param.source_position.y, predict_param.source_position.z);
+            
             if (rayman && camera_actor)
             {
-                draw_dynamics(rayman->dynamics);
+                //draw_dynamics(rayman->dynamics);
                 
                 draw_dsg(rayman);
                 draw_dsg(camera_actor);
+                
+//                free(camera_actor->brain);
+//                camera_actor->brain = brain_read(camera_actor->brain->offset);
+//                struct Intelligence* intelligence = camera_actor->brain->mind->intelligence;
+//                struct Intelligence* reflex = camera_actor->brain->mind->reflex;
+//
+//                ImGui::Begin("Camera intelligence");
+//                ImGui::Text("Current behavior: %s", intelligence->behavior_current->name);
+//                ImGui::Text("Current reflex: %s", reflex->behavior_current->name);
+//                ImGui::End();
             }
-            
-            //draw_hierarchy(engine->root);
         }
     }
 }

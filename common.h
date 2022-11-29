@@ -33,6 +33,7 @@ extern struct Camera* camera;
 
 extern struct Actor* rayman;
 extern struct Actor* camera_actor;
+extern struct Actor* reflux;
 
 extern int log_indent;
 

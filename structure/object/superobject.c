@@ -172,7 +172,7 @@ SUPEROBJECT void superobject_free(struct SuperObject** obj)
     free(*obj);
 }
 
-SUPEROBJECT void superobject_for_every(const enum SuperObjectType type,
+SUPEROBJECT void superobject_for_each(const enum SuperObjectType type,
                                        struct SuperObject* root,
                                        void (*function)(struct SuperObject*, void* param),
                                        void* param)
@@ -181,5 +181,5 @@ SUPEROBJECT void superobject_for_every(const enum SuperObjectType type,
         function(root, param);
     
     for (int n = 0; n < root->n_children; n++)
-        superobject_for_every(type, root->children[n], function, param);
+        superobject_for_each(type, root->children[n], function, param);
 }

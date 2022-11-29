@@ -210,6 +210,6 @@ ENGINE_STRUCT void engine_export_obj(struct Engine *engine)
     fprintf(param.fp, "# %s.obj\n", engine->current_level_name);
     fprintf(param.fp, "# Exported by r3-tas\n\n");
     
-    superobject_for_every(SUPEROBJECT_TYPE_IPO, engine->root, &internal_export_obj, &param);
+    superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &internal_export_obj, &param);
     fclose(param.fp);
 }

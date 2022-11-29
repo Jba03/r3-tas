@@ -52,8 +52,8 @@ SUPEROBJECT const char* superobject_typename(const struct SuperObject *obj);
 
 SUPEROBJECT void superobject_free(struct SuperObject** obj);
 
-/* superobject_for_every: run a function for every superobject of specified type */
-SUPEROBJECT void superobject_for_every(const enum SuperObjectType type,
+/* superobject_for_each: run a function for every superobject of specified type */
+SUPEROBJECT void superobject_for_each(const enum SuperObjectType type,
                                        struct SuperObject* root,
                                        void (*function)(struct SuperObject*, void* param),
                                        void* param);

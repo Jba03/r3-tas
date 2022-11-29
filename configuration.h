@@ -38,6 +38,12 @@ struct Configuration {
      *  Camera is allowed to be moved manually
      */
     bool camera_unlocked;
+    
+    /**
+     * visualize_hsjs:
+     *  Draw directions of horizontal superjumps
+     */
+    bool visualize_hsjs;
 };
 
 extern struct Configuration configuration;

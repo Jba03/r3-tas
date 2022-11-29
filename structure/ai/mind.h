@@ -9,6 +9,7 @@
 #define mind_h
 
 #include "memory.h"
+#include "intelligence.h"
 
 #define MIND
 
@@ -19,8 +20,8 @@ struct Mind {
     pointer ptr_dsgmem;
     
 //    struct AIModel* ai_model;
-//    struct Intelligence* intelligence;
-//    struct Intelligence* reflex;
+    struct Intelligence* intelligence;
+    struct Intelligence* reflex;
     struct DSGMemory* dsg;
     
     uint8_t run_intelligence;
