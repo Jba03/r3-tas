@@ -61,11 +61,30 @@ enum ScriptNodeType {
     NODE_TYPE_GRAPHREF,
 };
 
+union ScriptNodeValue {
+    float v_float;
+    int32_t v_long;
+    uint32_t v_ulong;
+    int16_t v_short;
+    uint16_t v_ushort;
+    int8_t v_char;
+    uint8_t v_uchar;
+    char* string;
+    struct Vector3 vector3;
+    struct Vector4 vector4;
+    struct Actor* actor;
+    struct SuperObject* superobject;
+    struct Behavior* behavior;
+    struct AIModel* ai_model;
+};
+
 struct ScriptNode {
+    enum ScriptNodeType type;
     uint32_t param;
     uint8_t depth;
     
-    enum ScriptNodeType type;
+    union ScriptNodeValue value;
+    
     struct Array* children;
     int line;
     int col;
@@ -75,10 +94,6 @@ struct Script { /* Tree */
     pointer ptr_scriptnodes_offset;
     struct Array* nodes;
     address offset;
-};
-
-struct ScriptInterface {
-    
 };
 
 SCRIPT struct Script* script_read(const address addr);

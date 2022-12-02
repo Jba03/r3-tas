@@ -19,6 +19,8 @@ extern "C"
 #include "graphics.h"
 #include "vector2.h"
 
+#include "interpreter.h"
+
 #include "predict.h"
 #include "movement.h"
 }
@@ -375,7 +377,9 @@ static void draw_dsg(struct Actor* actor)
     ImGui::End();
 }
 
-static struct prediction_param predict_param;
+static bool first = true;
+
+struct ScriptInterpreter* interpreter = NULL;
 
 void render_callback(void* ctx)
 {
@@ -394,8 +398,24 @@ void render_callback(void* ctx)
     {
         if (engine->root)
         {
+            if (first)
+            {
+                if (rayman && engine)
+                {
+                    struct Script* scpt = rayman->brain->mind->intelligence->behavior_current->scripts[0];
+                    
+                    info(COLOR_CYAN "%s", script_translate(scpt));
+                    
+                    
+                    script_interpreter_create(&interpreter, scpt, NULL, engine);
+                    
+                    first = false;
+                }
+            }
             
-            ImGui::Text("Position: %.2f %.2f %.2f", predict_param.source_position.x, predict_param.source_position.y, predict_param.source_position.z);
+            ImGui::Begin("Script debugger");
+            if (ImGui::Button("Step")) script_interpreter_step(interpreter);
+            ImGui::End();
             
             if (rayman && camera_actor)
             {

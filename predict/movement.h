@@ -8,6 +8,9 @@
 #ifndef movement_h
 #define movement_h
 
-#include <stdio.h>
+#include "predict.h"
+
+struct route* predict_movement_optimal_route(struct prediction_param* param);
+
 
 #endif /* movement_h */
