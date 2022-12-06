@@ -6,7 +6,7 @@
 //
 
 #include "octree.h"
-#include "stream.h"
+#include "global.h"
 
 OCTREE struct OctreeNode* octree_node_read(const address addr)
 {

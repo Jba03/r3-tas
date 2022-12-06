@@ -6,7 +6,7 @@
 //
 
 #include "predict.h"
-#include "common.h"
+#include "global.h"
 #include "brain.h"
 #include "dsg.h"
 

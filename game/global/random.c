@@ -6,7 +6,7 @@
 //
 
 #include "random.h"
-#include "stream.h"
+#include "global.h"
 
 /**
  * RNG calls per actor type

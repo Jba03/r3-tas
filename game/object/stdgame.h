@@ -8,7 +8,7 @@
 #ifndef stdgame_h
 #define stdgame_h
 
-#include "stream.h"
+#include "global.h"
 #include "superobject.h"
 
 #define STDGAME

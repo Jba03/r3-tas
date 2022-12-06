@@ -10,7 +10,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "common.h"
 #include "memory.h"
 
 #define STREAM

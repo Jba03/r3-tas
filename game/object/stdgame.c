@@ -6,7 +6,7 @@
 //
 
 #include "stdgame.h"
-#include "common.h"
+#include "global.h"
 #include "lvl.h"
 
 STDGAME struct StandardGameInfo *stdgame_read(const address addr)

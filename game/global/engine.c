@@ -199,17 +199,17 @@ static void internal_export_obj(struct SuperObject *obj, void* p)
 
 ENGINE_STRUCT void engine_export_obj(struct Engine *engine)
 {
-    char path[1024];
-    memset(path, 0, 1024);
-    sprintf(path, "/Users/jba03/Desktop/Development/r3tools/%s.obj", engine->current_level_name);
-    
-    struct OBJParam param;
-    param.fp = fopen(path, "w");
-    param.prev_index = 0;
-    
-    fprintf(param.fp, "# %s.obj\n", engine->current_level_name);
-    fprintf(param.fp, "# Exported by r3-tas\n\n");
-    
-    superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &internal_export_obj, &param);
-    fclose(param.fp);
+//    char path[1024];
+//    memset(path, 0, 1024);
+//    sprintf(path, LIBR3TAS_DIR "/obj/%s.obj", engine->current_level_name);
+//    
+//    struct OBJParam param;
+//    param.fp = fopen(path, "w");
+//    param.prev_index = 0;
+//    
+//    fprintf(param.fp, "# %s.obj\n", engine->current_level_name);
+//    fprintf(param.fp, "# Exported by r3-tas\n\n");
+//    
+//    superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &internal_export_obj, &param);
+//    fclose(param.fp);
 }

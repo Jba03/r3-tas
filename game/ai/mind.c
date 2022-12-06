@@ -6,7 +6,7 @@
 //
 
 #include "mind.h"
-#include "stream.h"
+#include "global.h"
 #include "dsg.h"
 
 MIND struct Mind *mind_read(const address addr)

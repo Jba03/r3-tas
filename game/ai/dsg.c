@@ -6,7 +6,7 @@
 //
 
 #include "dsg.h"
-#include "stream.h"
+#include "global.h"
 
 #include <stdio.h>
 #include <stdlib.h>

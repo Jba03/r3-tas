@@ -8,7 +8,7 @@
 #ifndef engine_timer_h
 #define engine_timer_h
 
-#include "stream.h"
+#include "global.h"
 
 #define ENGINE_TIMER
 

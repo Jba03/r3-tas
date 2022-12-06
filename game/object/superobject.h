@@ -8,7 +8,7 @@
 #ifndef superobject_h
 #define superobject_h
 
-#include "stream.h"
+#include "global.h"
 #include "matrix4.h"
 
 #define SUPEROBJECT

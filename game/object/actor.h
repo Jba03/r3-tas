@@ -8,7 +8,7 @@
 #ifndef actor_h
 #define actor_h
 
-#include "stream.h"
+#include "global.h"
 #include "stdgame.h"
 #include "dynamics.h"
 

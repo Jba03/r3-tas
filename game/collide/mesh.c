@@ -6,7 +6,7 @@
 //
 
 #include "mesh.h"
-#include "stream.h"
+#include "global.h"
 
 MESH struct Mesh* mesh_read(const address addr, struct CollisionGeometry* geom)
 {

@@ -8,7 +8,7 @@
 #ifndef lvl_h
 #define lvl_h
 
-#include "common.h"
+#include "global.h"
 
 #define LVL_STRUCTURE
 

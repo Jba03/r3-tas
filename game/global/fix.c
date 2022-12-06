@@ -7,7 +7,7 @@
 
 #include "fix.h"
 #include "logging.h"
-#include "stream.h"
+#include "global.h"
 
 FIX_STRUCTURE struct FIX* fix_read(const address addr)
 {

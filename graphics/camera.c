@@ -6,7 +6,7 @@
 //
 
 #include "camera.h"
-#include "common.h"
+#include "global.h"
 
 #pragma mark - Camera
 

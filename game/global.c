@@ -5,7 +5,7 @@
 //  Created by Jba03 on 2022-11-20.
 //
 
-#include "common.h"
+#include "global.h"
 #include "matrix4.h"
 #include "array.h"
 #include "memory.h"

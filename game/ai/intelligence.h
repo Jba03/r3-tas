@@ -8,7 +8,7 @@
 #ifndef intelligence_h
 #define intelligence_h
 
-#include "common.h"
+#include "memory.h"
 #include "behavior.h"
 
 #define INTELLIGENCE

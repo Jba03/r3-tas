@@ -8,7 +8,7 @@
 #ifndef script_h
 #define script_h
 
-#include "stream.h"
+#include "global.h"
 #include "array.h"
 
 #define SCRIPT

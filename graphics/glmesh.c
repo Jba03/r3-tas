@@ -6,7 +6,7 @@
 //
 
 #include "glmesh.h"
-#include "common.h"
+#include "global.h"
 
 static struct GLVertex box_vertices[] =
 {

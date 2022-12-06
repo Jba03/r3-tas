@@ -6,7 +6,7 @@
 //
 
 #include "logging.h"
-#include "common.h"
+#include "global.h"
 
 #include <stdio.h>
 #include <string.h>

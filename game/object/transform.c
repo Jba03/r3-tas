@@ -6,7 +6,7 @@
 //
 
 #include "transform.h"
-#include "stream.h"
+#include "global.h"
 
 TRANSFORM struct Transform transform_read(const address addr)
 {

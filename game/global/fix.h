@@ -8,7 +8,7 @@
 #ifndef fix_h
 #define fix_h
 
-#include "common.h"
+#include "memory.h"
 
 #define FIX_STRUCTURE
 

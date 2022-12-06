@@ -8,7 +8,7 @@
 #ifndef behavior_h
 #define behavior_h
 
-#include "common.h"
+#include "global.h"
 #include "script.h"
 
 #define BEHAVIOR

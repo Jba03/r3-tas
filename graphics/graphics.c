@@ -7,7 +7,7 @@
 
 #include "graphics.h"
 #include "camera.h"
-#include "common.h"
+#include "global.h"
 #include "opengl.h"
 #include "configuration.h"
 

@@ -9,7 +9,7 @@
 #define dynamics_h
 
 #include "transform.h"
-#include "stream.h"
+#include "global.h"
 
 #define DYNAMICS
 

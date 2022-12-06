@@ -10,7 +10,7 @@
 
 #include <stdbool.h>
 
-#include "stream.h"
+#include "global.h"
 
 #include "engine_timer.h"
 #include "superobject.h"

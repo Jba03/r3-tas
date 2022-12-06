@@ -7,8 +7,7 @@
 
 #include "physical_object.h"
 #include "collide.h"
-#include "stream.h"
-#include "memory.h"
+#include "global.h"
 
 PHYSICAL_OBJECT struct PhysicalObject *physical_object_read(const address addr)
 {

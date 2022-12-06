@@ -7,7 +7,7 @@
 
 #include "collide.h"
 #include "mesh.h"
-#include "common.h"
+#include "global.h"
 #include "octree.h"
 
 COLLIDE struct CollisionGeometry *collision_geometry_read(const address address)

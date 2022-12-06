@@ -7,7 +7,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
 
-set(COMPILE_FLAGS "-fPIC -dynamiclib")
+set(COMPILE_FLAGS "-fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 
 include_directories(${CMAKE_SOURCE_DIR})
@@ -19,17 +19,22 @@ include_directories(game/math)
 include_directories(game/object)
 include_directories(game/ai)
 include_directories(game/predict)
+include_directories(game)
 include_directories(imgui)
 
 add_library(r3tas SHARED
 	main.c
-	common.c
-	configuration.c
-	logging.c
-	memory.c
-	stream.c
 	
 	common/array.c
+	common/configuration.c
+	common/logging.c
+	common/memory.c
+	common/stream.c
+	common/vector2.c
+	common/vector3.c
+	common/vector4.c
+	common/matrix3.c
+	common/matrix4.c
 	
 	graphics/camera.c
 	graphics/graphics.c
@@ -40,14 +45,16 @@ add_library(r3tas SHARED
 	game/global/engine_timer.c
 	game/global/fix.c
 	game/global/lvl.c
-	game/global/stdgame.c
-	game/global/superobject_links.c
-	game/global/dynamics.c
 	game/global/random.c
+	game/global.c
 
 	game/object/actor.c
 	game/object/physical_object.c
 	game/object/superobject.c
+	game/object/superobject_links.c
+	game/object/dynamics.c
+	game/object/transform.c
+	game/object/stdgame.c
 
 	game/collide/collide.c
 	game/collide/mesh.c
@@ -60,13 +67,6 @@ add_library(r3tas SHARED
 	game/ai/behavior.c
 	game/ai/script.c	
 	game/ai/interpreter.c
-
-	game/math/vector2.c
-	game/math/vector3.c
-	game/math/vector4.c
-	game/math/matrix3.c
-	game/math/matrix4.c
-	game/math/transform.c
 
 	game/predict/predict.c
 

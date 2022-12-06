@@ -6,7 +6,7 @@
 //
 
 #include "brain.h"
-#include "stream.h"
+#include "global.h"
 
 BRAIN struct Brain *brain_read(const address addr)
 {
