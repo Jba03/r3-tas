@@ -8,23 +8,12 @@
 #ifndef global_h
 #define global_h
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
-
+#include "common.h"
 #include "stream.h"
 #include "logging.h"
 #include "camera.h"
 #include "actor.h"
 #include "random.h"
-
-#define min(a, b) (((a) < (b)) ? (a) : (b)) /* min: Choose smaller of two values */
-#define max(a, b) (((a) > (b)) ? (a) : (b)) /* max: Choose bigger of two values */
-
-#define radians(deg) ((deg) * (M_PI / 180.0f))
-#define degrees(rad) ((rad) * (180.0f / M_PI))
 
 extern struct FIX* fix;
 extern struct LVL* lvl;
