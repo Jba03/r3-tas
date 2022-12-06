@@ -13,12 +13,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(common)
 include_directories(graphics)
-include_directories(structure/collide)
-include_directories(structure/global)
-include_directories(structure/math)
-include_directories(structure/object)
-include_directories(structure/ai)
-include_directories(predict)
+include_directories(game/collide)
+include_directories(game/global)
+include_directories(game/math)
+include_directories(game/object)
+include_directories(game/ai)
+include_directories(game/predict)
 include_directories(imgui)
 
 add_library(r3tas SHARED
@@ -36,38 +36,39 @@ add_library(r3tas SHARED
 	graphics/glmesh.c
 	graphics/gui.cc
 		
-	structure/global/engine.c
-	structure/global/engine_timer.c
-	structure/global/fix.c
-	structure/global/lvl.c
-	structure/global/stdgame.c
-	structure/global/superobject_links.c
-	structure/global/dynamics.c
+	game/global/engine.c
+	game/global/engine_timer.c
+	game/global/fix.c
+	game/global/lvl.c
+	game/global/stdgame.c
+	game/global/superobject_links.c
+	game/global/dynamics.c
+	game/global/random.c
 
-	structure/object/actor.c
-	structure/object/physical_object.c
-	structure/object/superobject.c
+	game/object/actor.c
+	game/object/physical_object.c
+	game/object/superobject.c
 
-	structure/collide/collide.c
-	structure/collide/mesh.c
-	structure/collide/octree.c
+	game/collide/collide.c
+	game/collide/mesh.c
+	game/collide/octree.c
 
-	structure/ai/brain.c
-	structure/ai/mind.c
-	structure/ai/dsg.c
-	structure/ai/intelligence.c
-	structure/ai/behavior.c
-	structure/ai/script.c	
-	structure/ai/interpreter.c
+	game/ai/brain.c
+	game/ai/mind.c
+	game/ai/dsg.c
+	game/ai/intelligence.c
+	game/ai/behavior.c
+	game/ai/script.c	
+	game/ai/interpreter.c
 
-	structure/math/vector2.c
-	structure/math/vector3.c
-	structure/math/vector4.c
-	structure/math/matrix3.c
-	structure/math/matrix4.c
-	structure/math/transform.c
+	game/math/vector2.c
+	game/math/vector3.c
+	game/math/vector4.c
+	game/math/matrix3.c
+	game/math/matrix4.c
+	game/math/transform.c
 
-	predict/predict.c
+	game/predict/predict.c
 
 	imgui/imgui.cpp
 	imgui/imgui_draw.cpp

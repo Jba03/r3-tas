@@ -238,18 +238,27 @@ static void draw_general_info()
             }
         }
         
-        ImGui::SameLine(ImGui::GetWindowWidth() - 400);
-        ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), "Hello!");
+        rng_device = rnd_read(GCN_POINTER_RND);
+        
+        long index = rnd_table_index(rng_device, 0, 0);
+        long current = rnd_call(rng_device, 1, 0, 0, 5);
+        long next = rnd_call(rng_device, 2, 0, 0, 5);
+        
+        ImGui::SameLine(ImGui::GetWindowWidth() - 600);
+        ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), "(current value: %ld, next value: %ld, index: %d, index value: %lX)",
+                           current,
+                           next,
+                           memory.read_32(rng_device.ptr_table_indices),
+                           index);
+        
         
         ImGui::EndMenuBar();
     }
-    
     
     ImGui::End();
     
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
-    
 }
 
 static void draw_rayman_position()

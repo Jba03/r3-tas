@@ -18,6 +18,7 @@
 #include "logging.h"
 #include "camera.h"
 #include "actor.h"
+#include "random.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b)) /* min: Choose smaller of two values */
 #define max(a, b) (((a) > (b)) ? (a) : (b)) /* max: Choose bigger of two values */
@@ -28,6 +29,7 @@
 extern struct FIX* fix;
 extern struct LVL* lvl;
 extern struct Engine* engine;
+extern struct RandomNumberDevice rng_device;
 
 extern struct Camera* camera;
 

@@ -52,7 +52,7 @@ void r3_load()
             return;
         }
     }
-    
+
     uint32_t lvlp = memory.read_32(memory.pointer_lvl) & 0xFFFFFFF;
     if (lvlp != 0x00)
     {
@@ -66,7 +66,7 @@ void r3_load()
     
     /* Free previous hierarchy, if any */
     if (engine) superobject_free(&engine->root);
-    
+
     info(BOLD "Reading engine struct");
     engine = engine_read(memory.pointer_engine);
     
@@ -77,14 +77,14 @@ void r3_load()
     uint32_t entry2 = memory.read_32(memory.pointer_hierarchy2) & 0xFFFFFFF;
     uint32_t hierarchy_entry = max(entry1, entry2); /* TODO: This address is important */
     hierarchy_entry = memory.read_32(hierarchy_entry + 4 * 5) & 0xFFFFFFF;
-    
+
     if (hierarchy_entry == 0x00) return;
-    
+
     info(BOLD COLOR_PINK "Reading superobject hierarchy @ %X\n", hierarchy_entry);
     clock_t start = clock();
     engine->root = superobject_read(hierarchy_entry);
     clock_t end = clock();
-    
+
     const float dt = (float)(end - start) / (float)CLOCKS_PER_SEC;
     info(BOLD COLOR_PINK "Parsed superobject hierarchy in %.5f seconds\n", dt);
 }
