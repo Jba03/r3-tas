@@ -75,7 +75,7 @@ static struct Vector4 bg =
 "uniform bool display_normals = false;" \
 "uniform vec4 color = vec4(1);\n" \
 "void main() {\n"                                                   \
-"   vec3 color2 = vec3(texture(checkerboard, texcoord * 4).r);\n" \
+"   vec3 color2 = texture(checkerboard, texcoord * 4).rgb;\n" \
 "   vec3 normal2 = normalize(normal);\n" \
 "   vec3 lightColor = vec3(1,1,1);\n" \
 "   vec3 ambient = vec3(0.1);\n" \
@@ -261,8 +261,13 @@ static void gen_checkerboard_texture()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     
-    uint8_t data[2 * 2] = {96, 128, 128, 96};
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 2, 2, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    const uint32_t data[2 * 2] =
+    {
+        0xFFFFFFFF, 0xBBBBBBBB,
+        0xBBBBBBBB, 0xFFFFFFFF,
+    };
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
