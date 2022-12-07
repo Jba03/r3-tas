@@ -23,15 +23,17 @@ ACTOR struct Actor *actor_read(const address addr)
     actor->stdgame_ptr = readpointer();
     actor->dynam_ptr = readpointer();
     actor->brain_ptr = readpointer();
-    advance(4);
     actor->camera_info_ptr = readpointer();
     actor->collision_set_ptr = readpointer();
     actor->ms_way_ptr = readpointer();
     advance(4);
     actor->sector_info_ptr = readpointer();
     
+    info(COLOR_PINK "MS_WAY @ %X\n", actor->ms_way_ptr);
+    
     if (actor->stdgame_ptr != 0x00) actor->info = stdgame_read(actor->stdgame_ptr);
     if (actor->brain_ptr != 0x00) actor->brain = brain_read(actor->brain_ptr);
+    if (actor->ms_way_ptr != 0x00) actor->ms_way = msway_read(actor->ms_way_ptr);
     
     if (actor->dynam_ptr != 0x00)
     {

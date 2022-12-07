@@ -26,3 +26,5 @@ int log_indent = 0;
 
 int family_colors = 0;
 uint32_t family_color_table[1000];
+
+struct Array* graph_list = NULL;

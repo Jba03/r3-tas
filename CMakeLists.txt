@@ -15,6 +15,7 @@ include_directories(common)
 include_directories(graphics)
 include_directories(game/collide)
 include_directories(game/global)
+include_directories(game/graph)
 include_directories(game/math)
 include_directories(game/object)
 include_directories(game/ai)
@@ -55,6 +56,11 @@ add_library(r3tas SHARED
 	game/object/dynamics.c
 	game/object/transform.c
 	game/object/stdgame.c
+
+	game/graph/graph.c
+	game/graph/graphnode.c
+	game/graph/waypoint.c
+	game/graph/msway.c
 
 	game/collide/collide.c
 	game/collide/mesh.c

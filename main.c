@@ -42,6 +42,9 @@ void r3_load()
 {
     log_indent = 0;
     
+    //array_free(&graph_list);
+    graph_list = array_create();
+    
     uint32_t fixp = memory.read_32(memory.pointer_fix) & 0xFFFFFFF;
     if (fixp != 0x00)
     {
@@ -87,6 +90,8 @@ void r3_load()
 
     const float dt = (float)(end - start) / (float)CLOCKS_PER_SEC;
     info(BOLD COLOR_PINK "Parsed superobject hierarchy in %.5f seconds\n", dt);
+    
+    info("num graphs: %d\n", array_element_count(graph_list));
 }
 
 static void load_check()

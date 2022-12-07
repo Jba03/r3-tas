@@ -11,6 +11,7 @@
 #include "global.h"
 #include "stdgame.h"
 #include "dynamics.h"
+#include "msway.h"
 
 #define ACTOR
 
@@ -38,6 +39,7 @@ struct Actor {
     struct Dynamics* dynamics;
     int32_t mechanics_used;
     struct Brain* brain;
+    struct MSWay* ms_way;
     
     const char* family_name;
     const char* model_name;

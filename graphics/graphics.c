@@ -70,12 +70,13 @@ static struct Vector4 bg =
 "in vec3 normal;\n" \
 "in vec2 texcoord;\n" \
 "uniform sampler2D checkerboard;\n" \
+"uniform bool use_texture = false;\n" \
 "uniform vec3 camera;\n"    \
 "vec3 lightPos = vec3(0, 100, 0);\n" \
 "uniform bool display_normals = false;" \
 "uniform vec4 color = vec4(1);\n" \
 "void main() {\n"                                                   \
-"   vec3 color2 = texture(checkerboard, texcoord * 4).rgb;\n" \
+"   vec3 color2 = use_texture ? texture(checkerboard, texcoord * 4).rgb : vec3(1);\n" \
 "   vec3 normal2 = normalize(normal);\n" \
 "   vec3 lightColor = vec3(1,1,1);\n" \
 "   vec3 ambient = vec3(0.1);\n" \
@@ -182,11 +183,15 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                         
                                         glEnable(GL_DEPTH_TEST);
                                         
+                                        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 1);
+                                        
                                         struct Vector4 color = vector4_new(1.0f, 1.0, 1.0f, 1.0f);
                                         glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
                                         
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
+                                        
+                                        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 0);
                                     }
                                     
 //                                    for (int i = 0; i < mesh->n_triangles * 3; i++) {
@@ -219,7 +224,7 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                         
                         struct Vector4 color = vector4_new(0.0f, 10.0, 0.0f, 1.0f);
                         glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
-                        graphics_draw_line(octree->min, octree->max);
+//                        graphics_draw_line(octree->min, octree->max);
                         
                         struct OctreeNode* root = octree->root;
                         if (root)
@@ -315,6 +320,8 @@ void graphics_draw_line(struct Vector3 start, struct Vector3 end)
         end.x, end.y, end.z,
     };
     
+    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
+    
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
     glBindVertexArray(vao);
@@ -360,6 +367,7 @@ void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 c
     T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
     T = matrix4_transpose(T);
     
+    glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
     glmesh_draw(sphere);
 }
@@ -423,6 +431,28 @@ static void graphics_main_loop()
         if (engine->root)
         {
             superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
+            
+            //glDisable(GL_DEPTH_TEST);
+            for (int g = 0; g < array_element_count(graph_list); g++)
+            {
+                struct Graph* graph = array_get(graph_list, g);
+                
+                struct WayPoint* prev = NULL;
+                for (int i = 0; i < graph->n_nodes; i++)
+                {
+                    struct GraphNode* node = graph->node[i];
+                    struct WayPoint* wp = node->waypoint;
+                    
+                    const float radius = wp->radius == 1.0f ? 0.1f : wp->radius * 2.0f;
+                    const float alpha = wp->radius == 1.0f ? 0.75f : 0.5f;
+                    
+                    graphics_draw_sphere(wp->position, radius, vector4_new(1.85f, 0.0f, 2.0f, alpha));
+                    if (prev) graphics_draw_line(wp->position, prev->position);
+                    
+                    prev = wp;
+                }
+            }
+            //glEnable(GL_DEPTH_TEST);
         }
     }
     
