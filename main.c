@@ -42,7 +42,7 @@ void r3_load()
 {
     log_indent = 0;
     
-    //array_free(&graph_list);
+    if (graph_list) array_free(&graph_list);
     graph_list = array_create();
     
     uint32_t fixp = memory.read_32(memory.pointer_fix) & 0xFFFFFFF;

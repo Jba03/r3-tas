@@ -17,6 +17,13 @@
 #include "random.h"
 #include "graph.h"
 
+#define GCN_POINTER_FIX         0x004334cc /* GCN location of FIX */
+#define GCN_POINTER_LVL         0x004334d0 /* GCN location of LVL */
+#define GCN_POINTER_ENGINE      0x003E7C0C /* GCN location of engine structure */
+#define GCN_POINTER_HIERARCHY1  0x004334d4 /* GCN location of superobject hierarchy pointer 1 */
+#define GCN_POINTER_HIERARCHY2  0x004334d8 /* GCN location of superobject hierarchy pointer 2 */
+#define GCN_POINTER_RND         0x00436924 /* GCN location of random number device */
+
 extern struct FIX* fix;
 extern struct LVL* lvl;
 extern struct Engine* engine;

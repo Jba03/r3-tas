@@ -12,7 +12,7 @@
  * RNG calls per actor type
  *
  *  - Rayman calls RNG whenever he shoots his fist, or whenever his idle animation changes.
- *  - Collecting a yellow gem calls RNG five times.
+ *  - Collecting a yellow or red gem calls RNG five times.
  *  - Collecting a crown calls RNG four times.
  *  - Matuvus (if visible) call RNG once on animation change.
  *
