@@ -25,11 +25,13 @@ extern "C"
 #include "movement.h"
 }
 
+
 #undef advance
 
 #include <string>
 
 #include "imgui.h"
+#include "display/rng.cc"
 
 extern struct Engine *engine;
 
@@ -40,6 +42,7 @@ static ImVec2 display_size;
 
 static bool general_info = true;
 static bool display_normals = false;
+static bool view_rng_table = true;
 static bool timer = true;
 
 struct Vector2 screen_space_coords(const struct Vector4 iPoint)
@@ -238,19 +241,7 @@ static void draw_general_info()
             }
         }
         
-        rng_device = rnd_read(GCN_POINTER_RND);
-        
-        long index = rnd_table_index(rng_device, 0, 0);
-        long current = rnd_call(rng_device, 1, 0, 0, 5);
-        long next = rnd_call(rng_device, 2, 0, 0, 5);
-        
-        ImGui::SameLine(ImGui::GetWindowWidth() - 600);
-        ImGui::TextColored(ImVec4(0.0, 1.0, 0.0, 1.0), "(current value: %ld, next value: %ld, index: %d, index value: %lX)",
-                           current,
-                           next,
-                           memory.read_32(rng_device.ptr_table_indices),
-                           index);
-        
+        display_rng_info();
         
         ImGui::EndMenuBar();
     }
@@ -443,6 +434,19 @@ void render_callback(void* ctx)
 //                ImGui::Text("Current reflex: %s", reflex->behavior_current->name);
 //                ImGui::End();
             }
+            
+            rnd = rnd_read(GCN_POINTER_RND);
+            
+            const ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize;
+            
+            ImGui::Begin("RNG Table", &view_rng_table, flags);
+            ImGui::SetWindowPos(ImVec2(display_size.x - ImGui::GetWindowWidth(), 40));
+            display_rng_table();
+            ImGui::End();
         }
     }
 }

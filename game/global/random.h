@@ -29,8 +29,8 @@ RANDOM uint32_t rnd_table_index(struct RandomNumberDevice rnd, unsigned index, u
 
 /**
  * rnd_call:
- *  Call the random number device `n_calls` times. An index parameter of 0 seems to be what the game uses most.
+ *  Call the random number device `n_calls` times. Use index of 0.
  */
-RANDOM long rnd_call(struct RandomNumberDevice rnd, unsigned n_calls, unsigned index, unsigned min, unsigned max);
+RANDOM uint32_t rnd_call(struct RandomNumberDevice rnd, unsigned n_calls, unsigned index, unsigned min, unsigned max);
 
 #endif /* random_h */

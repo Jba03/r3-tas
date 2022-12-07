@@ -27,7 +27,7 @@
 extern struct FIX* fix;
 extern struct LVL* lvl;
 extern struct Engine* engine;
-extern struct RandomNumberDevice rng_device;
+extern struct RandomNumberDevice rnd;
 
 extern struct Camera* camera;
 

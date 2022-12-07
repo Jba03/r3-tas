@@ -14,13 +14,19 @@
  *  - Rayman calls RNG whenever he shoots his fist, or whenever his idle animation changes.
  *  - Collecting a yellow or red gem calls RNG five times.
  *  - Collecting a crown calls RNG four times.
+ *  - Gems that disappear after a set duration call RNG once per frame when they flicker.
  *  - Matuvus (if visible) call RNG once on animation change.
+ *  - Cages call RNG once when broken.
  *
  *  - Razoff #1 calls RNG when he shoots
  *  - Razoff #2's wrecking ball calls RNG twice when it hits Rayman
  *  - Razoff #2 calls RNG once when he falls off the wrecking ball
  *
  *  - The cannonball in Sea_10 calls the RNG twice when frame % 4 == 0.
+ *
+ *  - Riding the snowboard normally, updates RNG a total of three times per frame:
+ *    twice for the snow particles, once for the animation of rayman bobbing up and down.
+ *    When in the air, twice. After hitting a fence, three times.
  *
  * LaunchAGO seems to be the function responsible for the internal RNG update in most cases.
  */
@@ -52,9 +58,9 @@ RANDOM uint32_t rnd_table_index(struct RandomNumberDevice rnd, unsigned index, u
     return value;
 }
 
-RANDOM long rnd_call(struct RandomNumberDevice rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
+RANDOM uint32_t rnd_call(struct RandomNumberDevice rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
 {
-    long value = 0;
+    uint32_t value = 0;
     for (unsigned n = 0; n < n_calls; n++)
         value = (mi + ((ma + 1 - mi) * rnd_table_index(rnd, index, n)) / (rnd.table_max + 1));
     

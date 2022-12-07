@@ -14,7 +14,7 @@
 struct FIX* fix = NULL;
 struct LVL* lvl = NULL;
 struct Engine* engine = NULL;
-struct RandomNumberDevice rng_device;
+struct RandomNumberDevice rnd;
 
 struct Camera *camera = NULL;
 
