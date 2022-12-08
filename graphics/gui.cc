@@ -344,6 +344,8 @@ void render_callback(void* ctx)
 //                ImGui::End();
             }
             
+            //draw_superobject_tree(engine->root);
+            
             rnd = rnd_read(GCN_POINTER_RND);
             
             const ImGuiWindowFlags flags =

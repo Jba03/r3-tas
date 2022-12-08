@@ -75,16 +75,50 @@ static std::string fmt_actor(address offset)
             for (int i = 0; i < array_element_count(actor_list); i++)
             {
                 struct Actor* actor = (struct Actor*)array_get(actor_list, i);
-                if (actor->superobject->offset == actor_offset)
+                if (actor->superobject)
                 {
-                    return std::string(actor->instance_name);
-                    break;
+                    if (actor->superobject->offset == actor_offset)
+                    {
+                        return std::string(actor->instance_name);
+                        break;
+                    }
                 }
             }
         }
     }
     
     return "NULL";
+}
+
+static std::string dsg_fmt(struct DSGVariableInfo var)
+{
+    switch (var.type_id)
+    {
+        case DSGVAR_TYPE_INT: return fmt_int(var.data_offset); break;
+        case DSGVAR_TYPE_UINT: return fmt_uint(var.data_offset); break;
+        case DSGVAR_TYPE_BYTE: return fmt_byte(var.data_offset); break;
+        case DSGVAR_TYPE_UBYTE: return fmt_ubyte(var.data_offset); break;
+        case DSGVAR_TYPE_BOOLEAN: return fmt_boolean(var.data_offset); break;
+        case DSGVAR_TYPE_FLOAT: return fmt_float(var.data_offset); break;
+        case DSGVAR_TYPE_ACTOR: return fmt_actor(var.data_offset); break;
+    }
+    
+    return "";
+}
+
+static bool display_dsg_info = false;
+static struct DSGVariableInfo dsg_display_var;
+static int dsg_display_var_id = 0;
+static struct Actor* dsg_display_actor;
+
+static void display_dsg_editor()
+{
+    std::string name = std::string(dsg_display_actor->instance_name) + ": " +
+                       std::string(dsg_display_var.type_name) + "_" + std::to_string(dsg_display_var_id);
+    
+    ImGui::Begin(name.c_str(), &display_dsg_info, ImGuiWindowFlags_Modal);
+    
+    ImGui::End();
 }
 
 static void display_dsg(struct Actor* actor)
@@ -111,69 +145,28 @@ static void display_dsg(struct Actor* actor)
             case DSGVAR_TYPE_UBYTE: fmt = fmt_ubyte(var.data_offset); break;
             case DSGVAR_TYPE_BOOLEAN: fmt = fmt_boolean(var.data_offset); break;
             case DSGVAR_TYPE_FLOAT: fmt = fmt_float(var.data_offset); break;
+            case DSGVAR_TYPE_VECTOR: fmt = fmt_vector(var.data_offset); break;
             case DSGVAR_TYPE_ACTOR: fmt = fmt_actor(var.data_offset); break;
         }
         
-//        if (var.type_id == DSGVAR_TYPE_INT)
-//        {
-//            int32_t value = memory.read_32(var.data_offset);
-//            fmt += std::to_string(value);
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_UINT)
-//        {
-//            uint32_t value = memory.read_32(var.data_offset);
-//            fmt += std::to_string(value);
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_UBYTE)
-//        {
-//            uint8_t value = memory.read_8(var.data_offset);
-//            fmt += std::to_string(value);
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_BOOLEAN)
-//        {
-//            uint8_t value = memory.read_8(var.data_offset);
-//            if (value != 0) color2.w = 1.0; else color2.w = 0.75;
-//            fmt += value != 0 ? "true" : "false";
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_FLOAT)
-//        {
-//            float value = memory.read_float(var.data_offset);
-//            fmt += std::to_string(value);
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_VECTOR)
-//        {
-//            struct Vector3 v = vector3_read(var.data_offset);
-//            fmt += "(" + std::to_string(v.x) + ", " +
-//            std::to_string(v.z) + ", " + std::to_string(v.y) + ")";
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_ACTOR)
-//        {
-//            fmt = "NULL";
-//
-//            if (var.data_offset != 0x00)
-//            {
-//                uint32_t actor_offset = memory.read_32(var.data_offset) & 0xFFFFFFF;
-//                if (actor_offset != 0x00)
-//                {
-//                    for (int i = 0; i < array_element_count(actor_list); i++)
-//                    {
-//                        struct Actor* actor = (struct Actor*)array_get(actor_list, i);
-//                        if (actor->superobject->offset == actor_offset)
-//                        {
-//                            fmt = std::string(actor->instance_name);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//
-//            //info("\n");
-//        }
-//        else if (var.type_id == DSGVAR_TYPE_SUPEROBJECT)
-//        {
-//
-//        }
+        ImGui::TextColored(color2, "%s_%d: %s", var.type_name, i, fmt.c_str());
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::TextColored(color2, "%s_%d @ %X: %s", var.type_name, i, var.data_offset, fmt.c_str());
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "Click to edit");
+            ImGui::EndTooltip();
+        }
         
-        ImGui::TextColored(color2, "%s_%d @ %X: %s", var.type_name, i, var.data_offset, fmt.c_str());
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
+            dsg_display_var = var;
+            dsg_display_var_id = i;
+            display_dsg_info = true;
+            dsg_display_actor = actor;
+            ImGui::SetNextWindowPos(ImGui::GetMousePos());
+        }
     }
+    
+    if (display_dsg_info) display_dsg_editor();
 }

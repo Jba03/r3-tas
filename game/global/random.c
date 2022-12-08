@@ -17,6 +17,7 @@
  *  - Gems that disappear after a set duration call RNG once per frame when they flicker.
  *  - Matuvus (if visible) call RNG once on animation change.
  *  - Cages call RNG once when broken.
+ *  - Certain lamps (ie. the ones in the beginning of TLS1) call RNG when the light changes.
  *
  *  - Razoff #1 calls RNG when he shoots
  *  - Razoff #2's wrecking ball calls RNG twice when it hits Rayman

@@ -15,7 +15,7 @@ static bool calc_rng = false;
 static ImVec2 calc_rng_pos;
 static int calc_rng_value = 0;
 static int calc_rng_min = 0;
-static int calc_rng_max = 1;
+static int calc_rng_max = 5;
 
 void display_calculate_rng()
 {
@@ -28,6 +28,8 @@ void display_calculate_rng()
     
     const int R = (calc_rng_min + ((calc_rng_max - calc_rng_min + 1) * calc_rng_value) / (rnd.table_max + 1));
     ImGui::Text("Result: %d", R);
+    
+    ImGui::SetWindowSize(ImVec2(200, 125));
     
     ImGui::End();
 }
@@ -47,7 +49,7 @@ void display_rng_table()
     uint32_t base_index = memory.read_32(rnd.ptr_table_indices);
     if (base_index == 0) previous_rng_index = 0;
     
-    const char* fmt = "0x%X: 0x%X";
+    std::string fmt = "0x%X: 0x%X";
     if (rng_display_as_decimal) fmt = "%d: %d";
     
     for (int i = -RNG_TABLE_DISPLAY / 3; i < RNG_TABLE_DISPLAY; i++)
@@ -56,14 +58,37 @@ void display_rng_table()
         
         float a = 1.0f - float(i) / float(RNG_TABLE_DISPLAY) + 0.1f;
         
+        std::string marker = "";
+        
         ImVec4 color = ImVec4(0.5, 0.5, 1.0, a);
         if (i < 0) color = ImVec4(1.0f, 0.2f, 0.3f, 0.4f);
-        if (base_index + i == previous_rng_index) color.w = 0.75f;
+        if (base_index + i == previous_rng_index || i == 0)
+        {
+            color.w = 0.75f;
+            marker = "->";
+        }
+        
         if (base_index + i < rnd.table_length)
         {
-            ImGui::TextColored(color, fmt, base_index + i, value);
+            ImGui::TextColored(color, ("%-2s " + fmt).c_str(), marker.c_str(), base_index + i, value);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::TextColored(color, fmt.c_str(), base_index + i, value);
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "Left click to open calculator");
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "Right click to view as %s", rng_display_as_decimal ? "hex" : "decimal");
+                ImGui::EndTooltip();
+            }
+            
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
             {
+                if (!calc_rng)
+                {
+                    ImVec2 pos = ImGui::GetMousePos();
+                    pos.x -= 100;
+                    ImGui::SetNextWindowPos(pos);
+                }
                 calc_rng_value = value;
                 calc_rng = true;
             }
