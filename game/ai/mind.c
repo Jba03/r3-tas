@@ -27,8 +27,6 @@ MIND struct Mind *mind_read(const address addr)
     mind->run_intelligence = read8();
     stream_close(stream);
     
-    info("mind: %X\n", mind->offset);
-    
 //    if (mind->ptr_ai_model      != 0x00) mind->ai_model     = ai_model_read(mind->ptr_ai_model);
     if (mind->ptr_intelligence  != 0x00) mind->intelligence = intelligence_read(mind->ptr_intelligence);
     if (mind->ptr_reflex        != 0x00) mind->reflex       = intelligence_read(mind->ptr_reflex);

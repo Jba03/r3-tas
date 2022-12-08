@@ -41,6 +41,7 @@ extern int family_colors;
 extern uint32_t family_color_table[1000];
 
 
+extern struct Array* actor_list;
 extern struct Array* graph_list;
 
 #endif /* global_h */

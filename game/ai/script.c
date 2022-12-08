@@ -403,10 +403,6 @@ SCRIPT struct Script* script_read(const address addr)
     script->ptr_scriptnodes_offset = memory.read_32(addr) & 0xFFFFFFF;
     script->nodes = array_create();
     
-    info("Script @ %X\n", addr);
-    
-    info("scriptnodes offset: %X\n", script->ptr_scriptnodes_offset);
-    
     struct Stream* stream = stream_open(script->ptr_scriptnodes_offset);
     while (1)
     {

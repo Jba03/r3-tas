@@ -29,8 +29,6 @@ ACTOR struct Actor *actor_read(const address addr)
     advance(4);
     actor->sector_info_ptr = readpointer();
     
-    info(COLOR_PINK "MS_WAY @ %X\n", actor->ms_way_ptr);
-    
     if (actor->stdgame_ptr != 0x00) actor->info = stdgame_read(actor->stdgame_ptr);
     if (actor->brain_ptr != 0x00) actor->brain = brain_read(actor->brain_ptr);
     if (actor->ms_way_ptr != 0x00) actor->ms_way = msway_read(actor->ms_way_ptr);
@@ -64,6 +62,9 @@ ACTOR struct Actor *actor_read(const address addr)
     }
     
     stream_close(stream);
+    
+    /* Add to global actor list */
+    array_push(actor_list, actor);
     
     return actor;
 }

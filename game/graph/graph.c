@@ -20,8 +20,6 @@ GRAPH struct Graph* graph_read(const address addr)
     graph->ptr_node_last = readpointer();
     graph->n_nodes = read32();
     
-    info("Graph @ %X with %d nodes\n", addr, graph->n_nodes);
-    
     if (graph->n_nodes > 0 && graph->ptr_node_first != 0x00)
     {
         graph->node = malloc(sizeof(struct GraphNode*) * graph->n_nodes);
@@ -42,8 +40,8 @@ GRAPH struct Graph* graph_read(const address addr)
     
     stream_close(stream);
     
+    /* Add to global graph list */
     array_push(graph_list, graph);
-    
     
     return graph;
 }

@@ -1,5 +1,5 @@
 //
-//  gui.cpp
+//  gui.cc
 //  r3lib
 //
 //  Created by Jba03 on 2022-11-20.
@@ -31,7 +31,9 @@ extern "C"
 #include <string>
 
 #include "imgui.h"
+
 #include "display/rng.cc"
+#include "display/dsg.cc"
 
 extern struct Engine *engine;
 
@@ -279,104 +281,6 @@ static void move_camera()
     prev_mouse = mouse;
 }
 
-static const ImColor bright_red = ImColor(0xff3d11ee);
-static const ImColor bright_pink = ImColor(0xffa501d3);
-static const ImColor bright_yellow = ImColor(0xff49bef8);
-static const ImColor bright_green = ImColor(0xff63f147);
-static const ImColor bright_blue = ImColor(0xfff8c212);
-
-static const ImColor dark_red = ImColor(0xff1c0b98);
-static const ImColor orange = ImColor(0xff107dea);
-static const ImColor dark_yellow = ImColor(0xff1ac6ff);
-static const ImColor dark_green = ImColor(0xff3e6803);
-static const ImColor dark_blue = ImColor(0xffb54103);
-static const ImColor dark_purple = ImColor(0xff650183);
-
-static ImColor color_table[] =
-{
-    [DSGVAR_TYPE_BOOLEAN] = dark_blue,
-    [DSGVAR_TYPE_UBYTE] = dark_yellow,
-    [DSGVAR_TYPE_INT] = bright_blue,
-    [DSGVAR_TYPE_UINT] = dark_blue,
-    [DSGVAR_TYPE_SHORT] = bright_red,
-    
-    
-    [DSGVAR_TYPE_FLOAT] = bright_pink,
-    
-    [DSGVAR_TYPE_FLOAT_ARRAY] = bright_red,
-    [DSGVAR_TYPE_ACTOR_ARRAY] = bright_red,
-    [DSGVAR_TYPE_TEXT_REF_ARRAY] = bright_red,
-    
-    [DSGVAR_TYPE_VECTOR] = bright_green,
-    
-    [DSGVAR_TYPE_ACTOR] = bright_yellow,
-    [DSGVAR_TYPE_SUPEROBJECT] = orange,
-    [DSGVAR_TYPE_GRAPH] = dark_green,
-    [DSGVAR_TYPE_WAYPOINT] = dark_purple,
-    
-    [DSGVAR_TYPE_TEXT] = dark_purple,
-    [DSGVAR_TYPE_SOUNDEVENT] = dark_purple,
-    
-    [N_DSGVAR_TYPES] = orange,
-};
-
-static void draw_dsg(struct Actor* actor)
-{
-    struct DSGMemory* mem = actor->brain->mind->dsg;
-    
-    ImGui::Begin(actor->instance_name);
-    
-    for (int i = 0; i < mem->n_variables; i++)
-    {
-        struct DSGVariableInfo var = mem->current[i];
-        var.type_id += 1;
-        
-        std::string fmt = "";
-        ImColor color = color_table[var.type_id];
-        ImVec4 color2 = color;
-        color2.w = 0.8;
-        
-        if ((i % 2) == 0) color2.w = 0.6;
-        
-        if (var.type_id == DSGVAR_TYPE_INT)
-        {
-            int32_t value = memory.read_32(var.data_offset);
-            fmt += std::to_string(value);
-        }
-        else if (var.type_id == DSGVAR_TYPE_UINT)
-        {
-            uint32_t value = memory.read_32(var.data_offset);
-            fmt += std::to_string(value);
-        }
-        else if (var.type_id == DSGVAR_TYPE_UBYTE)
-        {
-            uint8_t value = memory.read_8(var.data_offset);
-            fmt += std::to_string(value);
-        }
-        else if (var.type_id == DSGVAR_TYPE_BOOLEAN)
-        {
-            uint8_t value = memory.read_8(var.data_offset);
-            if (value != 0) color2.w = 1.0; else color2.w = 0.75;
-            fmt += value != 0 ? "true" : "false";
-        }
-        else if (var.type_id == DSGVAR_TYPE_FLOAT)
-        {
-            float value = memory.read_float(var.data_offset);
-            fmt += std::to_string(value);
-        }
-        else if (var.type_id == DSGVAR_TYPE_VECTOR)
-        {
-            struct Vector3 v = vector3_read(var.data_offset);
-            fmt += "(" + std::to_string(v.x) + ", " +
-            std::to_string(v.z) + ", " + std::to_string(v.y) + ")";
-        }
-        
-        ImGui::TextColored(color2, "%s_%d @ %X: %s", var.type_name, i, var.data_offset, fmt.c_str());
-    }
-    
-    ImGui::End();
-}
-
 static bool first = true;
 
 struct ScriptInterpreter* interpreter = NULL;
@@ -421,8 +325,13 @@ void render_callback(void* ctx)
             {
                 //draw_dynamics(rayman->dynamics);
                 
-                draw_dsg(rayman);
-                draw_dsg(camera_actor);
+                ImGui::Begin("Rayman DSG");
+                display_dsg(rayman);
+                ImGui::End();
+                
+                ImGui::Begin("Camera DSG");
+                display_dsg(camera_actor);
+                ImGui::End();
                 
 //                free(camera_actor->brain);
 //                camera_actor->brain = brain_read(camera_actor->brain->offset);
