@@ -13,7 +13,7 @@
 #define ENGINE_TIMER
 
 struct EngineTimerCount {
-    long low, high;
+    uint32_t low, high;
 };
 
 struct EngineTimer {
@@ -24,8 +24,9 @@ struct EngineTimer {
     uint32_t counter[16];
     uint32_t delta_time_useful;
     uint32_t pause_time;
-    float framelength;    
-    struct EngineTimerCount time_real, time_pause;
+    float framelength;
+    uint64_t time_real;
+    uint64_t time_pause;
     uint32_t ticks_per_ms;
     
     address offset;

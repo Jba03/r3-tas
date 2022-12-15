@@ -35,6 +35,9 @@ MESH struct Mesh* mesh_read(const address addr, struct CollisionGeometry* geom)
     /* ::num edges */
     advance(2); /* padding x 2 */
     
+    if (mesh->material_offset != 0x00)
+        mesh->material = collision_material_read(mesh->material_offset);
+    
     /* Allocate unprocessed data */
     mesh->original.normals = malloc(sizeof(struct Vector3) * mesh->n_triangles);
     mesh->original.indices = malloc(sizeof(uint16_t) * mesh->n_triangles * 3);
@@ -86,6 +89,22 @@ MESH void mesh_reindex(struct Mesh* mesh)
     }
 }
 
+MESH static struct Vector4 mesh_material_color(struct Mesh* mesh)
+{
+    struct Vector4 color;
+    if (mesh->material.identifier & COLLISION_MAT_NONE) color = vector4_new(1.0f, 1.0f, 1.0f, 0.5f);
+    if (mesh->material.identifier & COLLISION_MAT_SLIDE) color = vector4_new(0.0f, 0.0f, 1.0f, 1.0f);
+    if (mesh->material.identifier & COLLISION_MAT_CLIMBABLE_WALL) color = vector4_new(244.0f / 255.0f, 131.0f / 255.0f, 66.0f / 255.0f, 1.0f);
+    if (mesh->material.identifier & COLLISION_MAT_HANGABLE_CEILING) color = vector4_new(244.0f / 255.0f, 131.0f / 255.0f, 66.0f / 255.0f, 1.0f);
+    if (mesh->material.identifier & COLLISION_MAT_GRABBABLE_LEDGE) color = vector4_new(0.0f, 1.0f, 0.0f, 1.0f);
+    
+    if (mesh->material.identifier & COLLISION_MAT_UNKNOWN) color = vector4_new(124.0f / 255.0f, 68.0f / 255.0f, 33.0f / 255.0f, 1.0f);
+    if (mesh->material.identifier & COLLISION_MAT_UNKNOWN2) color = vector4_new(124.0f / 255.0f, 68.0f / 255.0f, 33.0f / 255.0f, 1.0f);
+    if (mesh->material.identifier & COLLISION_MAT_UNKNOWN3) color = vector4_new(124.0f / 255.0f, 68.0f / 255.0f, 33.0f / 255.0f, 1.0f);
+    
+    return vector4_new(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
 MESH void mesh_create_glmesh(struct Mesh* mesh)
 {
     if (!mesh->was_processed) return;
@@ -134,6 +153,8 @@ MESH void mesh_create_glmesh(struct Mesh* mesh)
     {
         glmesh->indices[i] = mesh->processed.indices[i];
     }
+    
+    glmesh->color = mesh_material_color(mesh);
     
     glmesh_data(glmesh);
     mesh->glmesh = glmesh;

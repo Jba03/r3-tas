@@ -13,6 +13,7 @@
 
 #include "vertex.h"
 #include "collide.h"
+#include "material.h"
 #include "glmesh.h"
 
 #define MESH
@@ -36,6 +37,8 @@ struct Mesh {
         struct Vector3* normals;
         uint16_t* indices;
     } original, processed;
+    
+    struct CollisionMaterial material;
     
     bool was_processed;
     struct GLMesh* glmesh;

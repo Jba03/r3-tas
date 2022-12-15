@@ -72,14 +72,14 @@ static struct Vector4 bg =
 "uniform sampler2D checkerboard;\n" \
 "uniform bool use_texture = false;\n" \
 "uniform vec3 camera;\n"    \
-"vec3 lightPos = vec3(0, 100, 0);\n" \
+"uniform vec3 lightPos;\n" \
 "uniform bool display_normals = false;" \
 "uniform vec4 color = vec4(1);\n" \
 "void main() {\n"                                                   \
 "   vec3 color2 = use_texture ? texture(checkerboard, texcoord * 4).rgb : vec3(1);\n" \
 "   vec3 normal2 = normalize(normal);\n" \
-"   vec3 lightColor = vec3(1,1,1);\n" \
-"   vec3 ambient = vec3(0.1);\n" \
+"   vec3 lightColor = vec3(1,1,1)*0.75;\n" \
+"   vec3 ambient = vec3(0.25);\n" \
 "   vec3 lightDir = normalize(lightPos - position);\n" \
 "   float diff = max(dot(lightDir, normal2), 0.0);\n" \
 "   vec3 diffuse = diff * lightColor;\n" \
@@ -186,7 +186,7 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                                         glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 1);
                                         
                                         struct Vector4 color = vector4_new(1.0f, 1.0, 1.0f, 1.0f);
-                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
+                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &mesh->glmesh->color.x);
                                         
                                         glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
                                         glmesh_draw(mesh->glmesh);
@@ -231,7 +231,7 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                         {
                             struct Vector3 rayman = vector3_read(0x00BF0D98);
                             
-                            struct Vector3 position = vector3_new(obj->matrix_default.m30, obj->matrix_default.m31, obj->matrix_default.m32);
+                            struct Vector3 position = matrix4_position(obj->matrix_default);
                             
                             struct Vector3 local = vector3_sub(rayman, position);
                             
@@ -254,6 +254,23 @@ static void draw_ipo(struct SuperObject *obj, void* p)
                 }
             }
         }
+    }
+}
+
+static void draw_actor(struct SuperObject *obj, void* p)
+{
+    if (obj->type == SUPEROBJECT_TYPE_ACTOR && obj->data)
+    {
+        struct Actor* actor = obj->data;
+        
+        const struct Vector4 color = vector4_new(1.0f, 0.2f, 0.2f, 0.25);
+        
+        const struct Matrix4 T = obj->matrix_default;
+        const struct Vector3 position = matrix4_position(T);
+        const struct Vector3 scale = matrix4_scale(T);
+        
+        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 0);
+        graphics_draw_sphere(position, scale.x / 2.0f, color);
     }
 }
 
@@ -424,6 +441,7 @@ static void graphics_main_loop()
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
     glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
     glUniform3f(glGetUniformLocation(shader_main, "camera"), camera->position.x, camera->position.y, camera->position.z);
+    glUniform3f(glGetUniformLocation(shader_main, "lightPos"), camera->position.x, camera->position.y + 100, camera->position.z);
     glUniform1i(glGetUniformLocation(shader_main, "display_normals"), configuration.graphics_display_mode == 1);
     
     if (engine)
@@ -431,6 +449,7 @@ static void graphics_main_loop()
         if (engine->root)
         {
             superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
+            //superobject_for_each(SUPEROBJECT_TYPE_ACTOR, engine->root, &draw_actor, engine->root);
             
             //glDisable(GL_DEPTH_TEST);
             for (int g = 0; g < array_element_count(graph_list); g++)

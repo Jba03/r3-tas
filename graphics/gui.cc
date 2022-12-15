@@ -19,8 +19,6 @@ extern "C"
 #include "graphics.h"
 #include "vector2.h"
 
-#include "interpreter.h"
-
 #include "predict.h"
 #include "movement.h"
 }
@@ -69,11 +67,23 @@ static void draw_timer()
     ImGuiWindowFlags_NoMove |
     ImGuiWindowFlags_NoResize;
     
-    ImGui::Begin("Timer", &general_info, flags);
-    ImGui::SetWindowPos(ImVec2(display_size.x - 150, display_size.y - 45));
+    ImGui::Begin("Timers", &general_info);
+    //ImGui::SetWindowPos(ImVec2(display_size.x - 150, display_size.y - 45));
     ImGui::SetWindowFontScale(1);
     
-    ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 0.5), "00:45.341");
+    if (engine)
+    {
+        engine->timer = engine_timer_read(stream_open(engine->timer.offset));
+        
+        ImGui::Text("Frame: %d", engine->timer.frame);
+        ImGui::Text("Current: %d", engine->timer.timer_count_current);
+        ImGui::Text("Pause time: %d", engine->timer.pause_time);
+        
+        for (int i = 0; i < 16; i++)
+            ImGui::Text("%d: %d\n", i, engine->timer.counter[i]);
+    }
+        
+    //ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 0.5), "00:45.341");
     
     ImGui::End();
 }
@@ -302,24 +312,19 @@ void render_callback(void* ctx)
     {
         if (engine->root)
         {
-            if (first)
+            //if (first)
             {
                 if (rayman && engine)
                 {
                     struct Script* scpt = rayman->brain->mind->intelligence->behavior_current->scripts[0];
                     
-                    info(COLOR_CYAN "%s", script_translate(scpt));
+                    //info(COLOR_CYAN "%s", script_translate(scpt));
                     
-                    
-                    script_interpreter_create(&interpreter, scpt, NULL, engine);
+                    // step interpreter
                     
                     first = false;
                 }
             }
-            
-            ImGui::Begin("Script debugger");
-            if (ImGui::Button("Step")) script_interpreter_step(interpreter);
-            ImGui::End();
             
             if (rayman && camera_actor)
             {

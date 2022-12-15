@@ -64,7 +64,7 @@ ACTOR struct Actor *actor_read(const address addr)
     stream_close(stream);
     
     /* Add to global actor list */
-    array_push(actor_list, actor);
+    //array_push(actor_list, actor);
     
     return actor;
 }

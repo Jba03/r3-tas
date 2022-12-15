@@ -14,6 +14,8 @@
 #include "logging.h"
 #include "camera.h"
 #include "actor.h"
+#include "brain.h"
+#include "dsg.h"
 #include "random.h"
 #include "graph.h"
 

@@ -67,6 +67,7 @@ struct GLMesh* glmesh_alloc(void)
     m->vertices = NULL;
     m->indices = NULL;
     m->transform = matrix4_identity;
+    m->color = vector4_new(1.0f, 1.0f, 1.0f, 1.0f);
     
     return m;
 }

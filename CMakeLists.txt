@@ -10,6 +10,8 @@ include_directories(${OpenGL_INCLUDE_DIRS})
 set(COMPILE_FLAGS "-fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 
+add_compile_definitions(LIBR3TAS_DIR="${CMAKE_BINARY_DIR}")
+
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(common)
 include_directories(graphics)
@@ -20,6 +22,7 @@ include_directories(game/math)
 include_directories(game/object)
 include_directories(game/ai)
 include_directories(game/predict)
+include_directories(game/export)
 include_directories(game)
 include_directories(imgui)
 
@@ -64,6 +67,7 @@ add_library(r3tas SHARED
 
 	game/collide/collide.c
 	game/collide/mesh.c
+	game/collide/material.c
 	game/collide/octree.c
 
 	game/ai/brain.c
@@ -71,10 +75,11 @@ add_library(r3tas SHARED
 	game/ai/dsg.c
 	game/ai/intelligence.c
 	game/ai/behavior.c
-	game/ai/script.c	
-	game/ai/interpreter.c
+	game/ai/script.c
 
 	game/predict/predict.c
+
+	game/export/dsg.c
 
 	imgui/imgui.cpp
 	imgui/imgui_draw.cpp

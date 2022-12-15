@@ -11,7 +11,10 @@
 static const char * const script_nodetype_table[] = {
     "Keyword", "Condition", "Operator", "Function",
     "Procedure", "MetaAction", "BeginMacro", "EndMacro",
-    "EndTree", "Field", "DsgVar", "DsgVarRef", "Constant",
+    "EndTree", "Field",
+    "DsgVar", // 10
+    "DsgVarRef", // 11
+    "Constant", // 12
     "Real", "Button", "ConstantVector", "Vector", "Mask",
     "Module", "DsgVarId", "String", "LipsSynchroRef",
     "FamilyRef", "PersoRef", "ActionRef", "SuperObjectRef",
@@ -32,11 +35,22 @@ static const char * const script_keyword_table[] = {
 };
 
 static const char * const script_operator_table[] = {
-    "Operator_Plus", "Operator_Minus", "Operator_Mul", "Operator_Div",
-    "Operator_UnaryMinus", "Operator_Mod", "Operator_PlusAffect",
-    "Operator_MinusAffect", "Operator_MulAffect", "Operator_DivAffect",
-    "Operator_PlusPlusAffect", "Operator_MinusMinusAffect",
-    "Operator_Affect", "Operator_Dot", ".X", ".Y", ".Z",
+    "Operator_Plus",
+    "Operator_Minus",
+    "Operator_Mul",
+    "Operator_Div",
+    "Operator_UnaryMinus",
+    "Operator_Mod",
+    
+    "Operator_PlusAffect", // 6
+    "Operator_MinusAffect",
+    "Operator_MulAffect",
+    "Operator_DivAffect",
+    "Operator_PlusPlusAffect"
+    "Operator_MinusMinusAffect",
+    "Operator_Affect", // 12
+    
+    "Operator_Dot", ".X", ".Y", ".Z",
     "Operator_VectorPlusVector", "Operator_VectorMinusVector",
     "Operator_VectorUnaryMinus", "Operator_VectorMulScalar",
     "Operator_VectorDivScalar", ".X:=", ".Y:=", ".Z:=", "Operator_Ultra",
@@ -340,25 +354,110 @@ static const char * const script_procedure_table[] = {
 };
 
 static const char * const script_condition_table[] = {
-    "Cond_And", "Cond_Or", "Cond_Not", "Cond_XOR", "Cond_Equal", "Cond_Different", "Cond_Lesser",
-    "Cond_Greater", "Cond_LesserOrEqual", "Cond_GreaterOrEqual", "CollidePersoZDDNoWithPerso",
-    "CollideModuleZDDNoWithPerso", "CollidePersoAllZDDWithPerso", "CollidePersoZDDWithAnyPerso",
-    "CollideModuleZDDWithAnyPerso", "CollidePersoZDENoWithPersoZDENo", "CollideModuleZDENoWithPersoZDENo",
-    "CollidePersoZDENoWithModuleZDENo", "CollideModuleZDENoWithModuleZDENo", "CollidePersoZDENoWithPersoTypeZDE",
-    "CollideModuleZDENoWithPersoTypeZDE", "CollidePersoTypeZDEWithPersoTypeZDE", "CollidePersoAllZDEWithPersoAllZDE",
-    "CollidePersoTypeZDEWithPersoAllZDE", "CollidePersoAllZDEWithPersoTypeZDE", "CollidePersoZDENoWithTypeZDE",
-    "CollideModuleZDENoWithTypeZDE", "CollideWithGround", "CollideWithWall", "CollideWithNothing",
-    "CollideWithCeiling", "CollideWithPerso", "CollideWithWater", "CollideWithThisPerso", "ZDMCollideWithGround",
-    "ZDMCollideWithWall", "ZDMCollideWithNothing", "ZDMCollideWithCeiling", "IsPersoInList", "IsModelInList",
-    "IsFamilyInList", "ListEmptyTest", "UserEvent_IsSet", "UserEvent_IsSet2", "UserEvent_IsSet3", "PressedBut",
-    "JustPressedBut", "ReleasedBut", "JustReleasedBut", "IsTimeElapsed", "IsValidObject", "IsValidWayPoint",
-    "IsValidGMT", "IsValidVMT", "IsValidAction", "IsValidText", "IsValidSPO", "IsValidGraph", "SeePerso",
-    "IsActivable", "IsAlreadyHandled", "Alw_IsMine", "IsPersoLightOn", "IsPersoLightPulseOn", "IsPersoLightGyroPhareOn",
-    "IsRLITransitionInProgress", "IsInAlwaysActiveList", "IsAlwaysActive", "IsAnActivePad", "IsMultitap",
-    "SAV2_IsValid", "IsWidescreen", "EngineIsInPAL", "IsZDMCollideWithObstacle", "IsZDMCollideWithWall",
-    "IsZDMCollideWithGround", "IsZDMCollideWithCeiling", "CmtIdentifierContainsMask", "HitByCollider",
-    "IsTypeOfGMTCollide", "IsInComport", "IsInReflexComport", "IsInAction", "ChangeActionEnable",
-    "EngineReinitRequested", "IsThereMechEvent", "CollisionWP", "IsCustomBitSet", "IsPersoActive",
+    "Cond_And", // 0
+    "Cond_Or",
+    "Cond_Not",
+    "Cond_XOR", // 3
+    
+    "Cond_Equal", // 4
+    "Cond_Different",
+    "Cond_Lesser",
+    "Cond_Greater",
+    "Cond_LesserOrEqual",
+    "Cond_GreaterOrEqual", // 9
+    
+    "CollidePersoZDDNoWithPerso", // 10
+    "CollideModuleZDDNoWithPerso",
+    "CollidePersoAllZDDWithPerso",
+    "CollidePersoZDDWithAnyPerso",
+    "CollideModuleZDDWithAnyPerso", // 14
+    
+    "CollidePersoZDENoWithPersoZDENo", // 15
+    "CollideModuleZDENoWithPersoZDENo",
+    "CollidePersoZDENoWithModuleZDENo",
+    "CollideModuleZDENoWithModuleZDENo",
+    "CollidePersoZDENoWithPersoTypeZDE",
+    "CollideModuleZDENoWithPersoTypeZDE",
+    "CollidePersoTypeZDEWithPersoTypeZDE",
+    "CollidePersoAllZDEWithPersoAllZDE",
+    "CollidePersoTypeZDEWithPersoAllZDE",
+    "CollidePersoAllZDEWithPersoTypeZDE",
+    "CollidePersoZDENoWithTypeZDE",
+    "CollideModuleZDENoWithTypeZDE", // 26
+    
+    "CollideWithGround", // 27
+    "CollideWithWall",
+    "CollideWithNothing",
+    "CollideWithCeiling",
+    "CollideWithPerso",
+    "CollideWithWater",
+    "CollideWithThisPerso", // 33
+    
+    "ZDMCollideWithGround", // 34
+    "ZDMCollideWithWall",
+    "ZDMCollideWithNothing",
+    "ZDMCollideWithCeiling", // 37
+    
+    "IsPersoInList", // 38
+    "IsModelInList",
+    "IsFamilyInList",
+    "ListEmptyTest", // 41
+    
+    "UserEvent_IsSet", // 42
+    "UserEvent_IsSet2",
+    "UserEvent_IsSet3", // 44
+    
+    "PressedBut", // 45
+    "JustPressedBut",
+    "ReleasedBut",
+    "JustReleasedBut", // 48
+    
+    "IsTimeElapsed", // 49
+    
+    "IsValidObject", // 50
+    "IsValidWayPoint",
+    "IsValidGMT",
+    "IsValidVMT",
+    "IsValidAction",
+    "IsValidText",
+    "IsValidSPO",
+    "IsValidGraph", // 57
+    
+    "SeePerso", // 58
+    "IsActivable", // 59
+    "IsAlreadyHandled", // 60
+    "Alw_IsMine", // 61
+    
+    "IsPersoLightOn", // 62
+    "IsPersoLightPulseOn",
+    "IsPersoLightGyroPhareOn", // 64
+    
+    "IsRLITransitionInProgress", // 65
+    "IsInAlwaysActiveList", // 66
+    "IsAlwaysActive", // 67
+    "IsAnActivePad", // 68
+    "IsMultitap", // 69
+    "SAV2_IsValid", // 70
+    "IsWidescreen", // 71
+    "EngineIsInPAL", // 72
+    
+    "IsZDMCollideWithObstacle", // 73
+    "IsZDMCollideWithWall",
+    "IsZDMCollideWithGround",
+    "IsZDMCollideWithCeiling", // 76
+    
+    "CmtIdentifierContainsMask", // 77
+    "HitByCollider", // 78
+    "IsTypeOfGMTCollide",
+    "IsInComport",
+    "IsInReflexComport",
+    "IsInAction",
+    "ChangeActionEnable", // 83
+    
+    "EngineReinitRequested", // 84
+    "IsThereMechEvent", // 85
+    "CollisionWP", // 86
+    "IsCustomBitSet", "IsPersoActive",
     "CheckActionEnd", "IsCurrentStateCustomBitSet", "IsGiBlock", "IsMechanicBlock", "IsMechanicAnimation",
     "IsMechanicCollide", "IsMechanicGravity", "IsMechanicTilt", "IsMechanicGi", "IsMechanicClimb", "IsMechanicOnGround",
     "IsMechanicSpider", "IsMechanicShoot", "IsMechanicSwim", "IsMechanicNeverFall", "IsMechanicCollisionControl",

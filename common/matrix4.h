@@ -163,4 +163,7 @@ MATRIX4 struct Matrix4 matrix4_lookat(const struct Vector3 eye, const struct Vec
  */
 VECTOR4 struct Vector4 vector4_mul_matrix4(const struct Vector4 v, const struct Matrix4 m);
 
+#define matrix4_position(m) vector3_new(m.m30, m.m31, m.m32)
+#define matrix4_scale(m) vector3_new(m.m00, m.m11, m.m22)
+
 #endif /* matrix4_h */

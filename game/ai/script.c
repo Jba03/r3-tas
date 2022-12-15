@@ -330,8 +330,8 @@ SCRIPT const char* script_translate(struct Script* scpt)
         
         node->children = array_create();
         
-        for(int i = 0; i < (node->depth - 1) * 4; i++) printf(" ");
-            info(BOLD COLOR_GREEN "%s (%d)\n", script_nodetype_table[node->type], node->depth);
+//        for(int i = 0; i < (node->depth - 1) * 4; i++) printf(" ");
+//            info(BOLD COLOR_GREEN "%s (%d)\n", script_nodetype_table[node->type], node->depth);
 
         if (node->depth > last_depth && node->depth != 0) /* New child node */
             tree_depth[last_depth] = array_get(scpt->nodes, n - 1);
@@ -411,8 +411,6 @@ SCRIPT struct Script* script_read(const address addr)
         if (node->depth == 0) break;
     }
     stream_close(stream);
-    
-    //script_translate(script);
     
     return script;
 }

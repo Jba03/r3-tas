@@ -10,6 +10,7 @@
 ENGINE_TIMER struct EngineTimer engine_timer_read(struct Stream *stream)
 {
     struct EngineTimer timer;
+    timer.offset = stream->position;
     
     timer.frame = read32();
     timer.timer_handle = read32();
@@ -23,10 +24,8 @@ ENGINE_TIMER struct EngineTimer engine_timer_read(struct Stream *stream)
     timer.pause_time = read32();
     timer.framelength = readfloat();
     
-    timer.time_real.low = read32();
-    timer.time_real.high = read32();
-    timer.time_pause.low = read32();
-    timer.time_pause.high = read32();
+    timer.time_real = read32() << 31 | read32();
+    timer.time_pause = read32() << 31 | read32();
     
     timer.ticks_per_ms = read32();
     

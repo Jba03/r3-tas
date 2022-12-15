@@ -82,7 +82,6 @@ struct ScriptNode {
     enum ScriptNodeType type;
     uint32_t param;
     uint8_t depth;
-    
     union ScriptNodeValue value;
     
     struct Array* children;
@@ -93,6 +92,7 @@ struct ScriptNode {
 struct Script { /* Tree */
     pointer ptr_scriptnodes_offset;
     struct Array* nodes;
+    
     address offset;
 };
 

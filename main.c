@@ -38,6 +38,8 @@ void (*register_render_callback)(void (*rc)(void* ctx));
 
 #pragma mark - Main
 
+extern void game_export_dsg(void);
+
 void r3_load()
 {
     log_indent = 0;
@@ -93,6 +95,8 @@ void r3_load()
 
     const float dt = (float)(end - start) / (float)CLOCKS_PER_SEC;
     info(BOLD COLOR_PINK "Parsed superobject hierarchy in %.5f seconds\n", dt);
+    
+    game_export_dsg();
 }
 
 static void load_check()

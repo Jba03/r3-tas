@@ -19,6 +19,8 @@
  *  - Cages call RNG once when broken.
  *  - Certain lamps (ie. the ones in the beginning of TLS1) call RNG when the light changes.
  *
+ *  - The plants at the beginning of BoM4 call RNG each frame (presumably for the particles)
+ *
  *  - Razoff #1 calls RNG when he shoots
  *  - Razoff #2's wrecking ball calls RNG twice when it hits Rayman
  *  - Razoff #2 calls RNG once when he falls off the wrecking ball

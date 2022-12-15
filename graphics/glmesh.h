@@ -21,6 +21,7 @@ struct GLMesh {
     unsigned* indices;
     
     struct Matrix4 transform;
+    struct Vector4 color;
     
     GLuint vao;
     GLuint vbo;
