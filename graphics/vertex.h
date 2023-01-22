@@ -10,10 +10,11 @@
 
 #include "vector3.h"
 
-struct GLVertex {
-    struct { float x, y, z; } position;
-    struct { float x, y, z; } normal;
-    struct { float x, y;    } texcoord;
+struct vertex
+{
+    struct { float x, y, z, w; } position;
+    struct { float x, y, z, w; } normal;
+    struct { float x, y, z, w; } texcoord;
 };
 
 #endif /* vertex_h */

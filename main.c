@@ -11,187 +11,271 @@
 
 #include <dlfcn.h>
 
-#include "stream.h"
+#include "mathc.h"
+#include "log.h"
+#include "game.h"
+#include "structure.h"
 #include "engine.h"
-#include "logging.h"
+#include "superobject.h"
+#include "actor.h"
+#include "stdgame.h"
 #include "gui.h"
-#include "fix.h"
-#include "lvl.h"
-#include "math.h"
-#include "memory.h"
 #include "graphics.h"
+//#include "translate.h"
 
-#include <dispatch/dispatch.h>
+//#if defined(__APPLE__)
+//#   include <mach/mach.h>
+//#   include <mach/mach_vm.h>
+//#   include <mach/vm_map.h>
+//#endif
 
-//#include <SDL2/SDL.h>
+#pragma mark - Main
+
+static uint8_t* mRAM = NULL;
+static uint8_t* (*get_mRAM)(void) = NULL;
+static bool ram_loaded = false;
+
+bool* render_xfb_main;
+
+void (*cpu_break)(void) = NULL;
 
 #if defined(__APPLE__)
+#include <dispatch/dispatch.h>
 static dispatch_queue_t timer_queue;
 static dispatch_source_t timer_source;
 #endif
 
-#pragma mark - Callbacks
+#define EXTERN_MESSAGE_INITIALIZE         0
+#define EXTERN_MESSAGE_ON_UPDATE          1
+#define EXTERN_MESSAGE_ON_VIDEO           2
+#define EXTERN_MESSAGE_ON_SAVESTATE       3
+#define EXTERN_MESSAGE_ON_LOADSTATE       4
+#define EXTERN_MESSAGE_SAVESTATE_POINTER  5
+#define EXTERN_MESSAGE_LOADSTATE_POINTER  6
+#define EXTERN_MESSAGE_SAVESTATE_FUNCTION 7
+#define EXTERN_MESSAGE_MRAM_POINTER       8
 
-void (*register_savestate_handler)(void (*handle)(int slot));
-void (*register_loadstate_handler)(void (*handle)(int slot));
-void (*register_render_callback)(void (*rc)(void* ctx));
 
-#pragma mark - Main
-
-extern void game_export_dsg(void);
-
-void r3_load()
+static void r3_load()
 {
-    log_indent = 0;
+    info(BOLD "\nLoading...\n");
     
-    if (actor_list) array_free(&actor_list);
-    if (graph_list) array_free(&graph_list);
+    /* Hmm, does this influence the game? */
+    //srand(time(NULL));
     
-    graph_list = array_create();
-    actor_list = array_create();
-    
-    uint32_t fixp = memory.read_32(memory.pointer_fix) & 0xFFFFFFF;
-    if (fixp != 0x00)
-    {
-        info(BOLD COLOR_GREEN "Reading FIX @ %X\n", fixp);
-        if (!(fix = fix_read(fixp)))
-        {
-            warning("Could not read FIX.\n");
-            return;
-        }
-    }
-
-    uint32_t lvlp = memory.read_32(memory.pointer_lvl) & 0xFFFFFFF;
-    if (lvlp != 0x00)
-    {
-        info(BOLD COLOR_GREEN "Reading LVL @ %X\n", fixp);
-        if (!(lvl = lvl_read(lvlp)))
-        {
-            warning("Could not read LVL.\n");
-            return;
-        }
-    }
-    
-    /* Free previous hierarchy, if any */
-    if (engine) superobject_free(&engine->root);
-
-    info(BOLD "Reading engine struct");
-    engine = engine_read(memory.pointer_engine);
-    
+    level_read();
     
     /* The game seems to alternate between two hierarchy pointers, that are
      * switched when loading a new level. Choose the currently valid pointer. */
-    uint32_t entry1 = memory.read_32(memory.pointer_hierarchy1) & 0xFFFFFFF;
-    uint32_t entry2 = memory.read_32(memory.pointer_hierarchy2) & 0xFFFFFFF;
-    uint32_t hierarchy_entry = max(entry1, entry2); /* TODO: This address is important */
-    hierarchy_entry = memory.read_32(hierarchy_entry + 4 * 5) & 0xFFFFFFF;
-
-    if (hierarchy_entry == 0x00) return;
-
-    info(BOLD COLOR_PINK "Reading superobject hierarchy @ %X\n", hierarchy_entry);
-    clock_t start = clock();
-    engine->root = superobject_read(hierarchy_entry);
-    clock_t end = clock();
-
-    const float dt = (float)(end - start) / (float)CLOCKS_PER_SEC;
-    info(BOLD COLOR_PINK "Parsed superobject hierarchy in %.5f seconds\n", dt);
+    uint32_t entry1 = host_byteorder_32(*(uint32_t*)(mRAM + GCN_POINTER_HIERARCHY1)) & 0xFFFFFFF;
+    uint32_t entry2 = host_byteorder_32(*(uint32_t*)(mRAM + GCN_POINTER_HIERARCHY2)) & 0xFFFFFFF;
+    uint32_t hierarchy_entry = max(entry1, entry2); /* Weird structure at this address. */
+    hierarchy_entry = host_byteorder_32(*(uint32_t*)(mRAM + hierarchy_entry + 4 * 5)) & 0xFFFFFFF;
     
-    game_export_dsg();
+    hierarchy = (struct superobject*)(mRAM + hierarchy_entry);
+    
+    info(BOLD COLOR_GREEN "HIE @ [0x%X : %p]\n\n", hierarchy_entry, hierarchy);
+    
+    /* Find some actors */
+    actor_rayman = actor_find(actor_instance_name, "Rayman", hierarchy);
+    actor_camera = actor_find(actor_instance_name, "StdCamer", hierarchy);
+    actor_global = actor_find(actor_instance_name, "global", hierarchy);
+    actor_world  = actor_find(actor_instance_name, "World", hierarchy);
+    actor_changemap = actor_find(actor_model_name, "NIN_m_ChangeMap", hierarchy);
+    
+    info(COLOR_BLUE "Rayman @ %X\n", offset(actor_rayman));
+    info(COLOR_BLUE "StdCamer @ %X\n", offset(actor_camera));
+    info(COLOR_BLUE "global @ %X\n", offset(actor_global));
+    info(COLOR_BLUE "World @ %X\n", offset(actor_world));
+    info(COLOR_BLUE "NIN_m_ChangeMap @ %X\n", offset(actor_changemap));
 }
 
-static void load_check()
+static void r3_unload()
 {
-    uint8_t mode = memory.read_8(memory.pointer_engine);
-    if (mode != 0)
+    array_free(&demo_save_names);
+    array_free(&demo_level_names);
+    array_free(&level_names);
+    
+    array_free(&family_names);
+    array_free(&model_names);
+    array_free(&instance_names);
+}
+
+//static void loadstate_handler(int slot)
+//{
+//    info(BOLD COLOR_GREEN "Slot %d loaded\n", slot);
+//    r3_load();
+//}
+//
+//static void savestate_handler(int slot)
+//{
+//    info(BOLD COLOR_GREEN "Slot %d saved\n", slot);
+//}
+
+static void update(const char* controller)
+{
+    if (!mRAM) memory.base = mRAM = get_mRAM();
+    
+//    input.joymain_y = 0;
+//    input.joymain_x = 0;
+//    input.joyc_y = 0;
+//    input.joyc_x = 0;
+//    input.a = false;
+//    input.b = false;
+//    input.x = false;
+//    input.y = false;
+//    input.z = false;
+//    input.l = false;
+//    input.r = false;
+//    input.R = false;
+//    input.S = false;
+//
+//    char button[128] = "", ignore[128] = "";
+//    if (sscanf(controller, "P1: %[^C:]:%d,%d", button, &input.joymain_x, &input.joymain_y) == 3)
+//        sscanf(controller + strlen(button) + 5, "%[^:]:%d,%d", ignore, &input.joyc_x, &input.joyc_y);
+//    else
+//        sscanf(controller + 4, "%sC:%d,%d", ignore, &input.joyc_x, &input.joyc_y);
+//
+//    char *str = button;
+//    char *token = str;
+//    while (token != NULL)
+//    {
+//        char* btn = strsep(&token, " ");
+//        //printf("btn: %s\n", btn);
+//        if (strcmp(btn, "A") == 0) input.a = true;
+//        if (strcmp(btn, "B") == 0) input.b = true;
+//        if (strcmp(btn, "X") == 0) input.x = true;
+//        if (strcmp(btn, "Y") == 0) input.y = true;
+//        if (strcmp(btn, "Z") == 0) input.z = true;
+//        if (strcmp(btn, "L") == 0) input.l = true;
+//        if (strcmp(btn, "R") == 0) input.r = true;
+//        if (strcmp(btn, "RIGHT") == 0) input.R = true;
+//        if (strcmp(btn, "START") == 0) input.S = true;
+//    }
+    
+    /* Read global structures */
+    engine = (struct engine*)(mRAM + GCN_POINTER_ENGINE);
+    rnd = (struct rnd*)(mRAM + GCN_POINTER_RND);
+    
+    
+    
+    if just_entered_mode(6)
     {
-        info(BOLD "Loading (%d)...\n", mode);
-        r3_load();
-        dispatch_release(timer_source);
+        info(BOLD COLOR_PINK "Level transition began (frame %d)\n", engine->timer.frame);
     }
-}
-
-static void loadstate_handler(int slot)
-{
-    info(BOLD COLOR_GREEN "Slot %d loaded\n", slot);
-    r3_load();
-    //engine_export_obj(engine);
-}
-
-static void savestate_handler(int slot)
-{
-    info(BOLD COLOR_GREEN "Slot %d saved\n", slot);
-}
-
-static void (*functions[]) =
-{
-    /* Read/write */
-    &memory.read_8,
-    &memory.read_16,
-    &memory.read_32,
-    &memory.read_float,
-    &memory.write_8,
-    &memory.write_16,
-    &memory.write_32,
-    &memory.write_float,
     
-    /* Save / loadstates */
-    &register_savestate_handler,
-    &register_loadstate_handler,
+    if just_entered_mode(9)
+    {
+        r3_load();
+        //graphics_load();
+    }
     
-    /* Rendering */
-    &register_render_callback,
+    if just_entered_mode(5)
+        transition_frame = 0;
+        
+    switch (engine->mode)
+    {
+        case 0: /* Invalid mode */
+            break;
+
+        case 1: /* Initialize engine */
+            break;
+
+        case 2: /* Deinitialize engine */
+            break;
+
+        case 3: /* Initialize game loop */
+            break;
+
+        case 4: /* Deinitialize game loop */
+            break;
+
+        case 5: /* Enter level */
+            transition_frame++;
+            break;
+
+        case 6: /* Change level */
+            info(BOLD COLOR_PINK "Level transition began (frame %d)", engine->timer.frame);
+            break;
+
+        case 7: /* Dead loop */
+            break;
+
+        case 8: /* Player dead */
+            break;
+
+        case 9: /* Normal gameplay */
+            break;
+
+    }
+
+    previous_engine_mode = engine->mode;
+}
+
+bool main_render = true;
+
+struct on_video_payload
+{
+    void* texture;
+    void* context;
+    bool draw;
 };
 
-__attribute__((constructor)) void install(void)
+static void video(struct on_video_payload* payload)
 {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(),
-    ^{
-        FILE* fp = fopen("/tmp/r3tas_pointers", "rb");
-        if (!fp)
-        {
-            error(BOLD "/tmp/r3tas_pointers not found - exiting.\n");
-            exit(-1);
-        }
-        
-        for (int i = 0; i < sizeof functions / sizeof *functions; i++)
-        {
-            void (*func)(void) = functions[i];
-            fread(func, sizeof(uint64_t), 1, fp);
-        }
-        
-        fclose(fp);
-        
-        info(BOLD "r3lib loaded successfully\n");
-        info(FADED BOLD COLOR_BLUE "(read8" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.read_8);
-        info(FADED BOLD COLOR_BLUE "(read16" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.read_16);
-        info(FADED BOLD COLOR_BLUE "(read32" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.read_32);
-        info(FADED BOLD COLOR_BLUE "(readfloat" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.read_float);
-        info(FADED BOLD COLOR_BLUE "(write8" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.write_8);
-        info(FADED BOLD COLOR_BLUE "(write16" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.write_16);
-        info(FADED BOLD COLOR_BLUE "(write32" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.write_32);
-        info(FADED BOLD COLOR_BLUE "(writefloat" COLOR_GREY " = " COLOR_BLUE "%p)\n", &memory.write_float);
-        
-        info(FADED BOLD COLOR_BLUE "(register_savestate_handler" COLOR_GREY " = " COLOR_BLUE "%p)\n", &register_savestate_handler);
-        info(FADED BOLD COLOR_BLUE "(register_loadstate_handler" COLOR_GREY " = " COLOR_BLUE "%p)\n", &register_loadstate_handler);
-        info(FADED BOLD COLOR_BLUE "(register_render_callback" COLOR_GREY " = " COLOR_BLUE "%p)\n", &register_render_callback);
-        info("\n");
-        
-        if (register_savestate_handler) register_savestate_handler(savestate_handler);
-        if (register_loadstate_handler) register_loadstate_handler(loadstate_handler);
-        if (register_render_callback) register_render_callback(render_callback);
-        
-        memory.pointer_fix = GCN_POINTER_FIX;
-        memory.pointer_lvl = GCN_POINTER_LVL;
-        memory.pointer_engine = GCN_POINTER_ENGINE;
-        memory.pointer_hierarchy1 = GCN_POINTER_HIERARCHY1;
-        memory.pointer_hierarchy2 = GCN_POINTER_HIERARCHY2;
-        
-        graphics_init();
-    });
+#ifdef OLD_VERSION
+    *render_xfb_main = true;
+#endif
     
-    timer_queue = dispatch_queue_create("load_timer", 0);
-    timer_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, timer_queue);
-    dispatch_source_set_event_handler(timer_source, ^{ load_check(); });
-    dispatch_source_set_timer(timer_source, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), NSEC_PER_SEC * 0.5, 0);
-    dispatch_resume(timer_source);
+    main_render = true;
+    gui_render_callback(payload->context);
+    
+    //graphics_loop();
+    
+    //printf("swapfunc: %p\n", swapfunc);
+    //if (swapfunc) swapfunc();
+}
+
+#pragma mark - Main
+
+int on_load(void)
+{
+    //graphics_init();
+    
+    info(BOLD "r3lib loaded successfully\n");
+    return 1;
+}
+
+struct message
+{
+    int type;
+    void* data;
+};
+
+#ifdef OLD_VERSION
+void on_message(const char* message, void* data)
+{
+#define msg(type, code) if (!strcmp(message, type)) { code; }
+    struct on_video_payload v;
+    v.context = data;
+    
+    msg("ram_func", get_mRAM = data)
+    //msg("xfb_texture", gui_render_game(data))
+    msg("render_xfb_main", render_xfb_main = data)
+    msg("cpu_break", cpu_break = data)
+    msg("update", update(data))
+    msg("render", video(&v))
+#undef msg
+}
+#else
+void on_message(struct message message)
+{
+    if (message.type == EXTERN_MESSAGE_ON_UPDATE) update("");
+    if (message.type == EXTERN_MESSAGE_ON_VIDEO) video(message.data);
+    if (message.type == EXTERN_MESSAGE_MRAM_POINTER) get_mRAM = message.data;
+}
+#endif
+
+void on_unload(void)
+{
 }

@@ -6,19 +6,20 @@
 //
 
 #include "camera.h"
-#include "global.h"
+
+#include <stdlib.h>
 
 #pragma mark - Camera
 
-const struct Matrix4 camera_projection_matrix(const struct Camera* camera, const float aspect_ratio) {
+const struct matrix4 camera_projection_matrix(const struct camera* camera, const float aspect_ratio) {
     return matrix4_perspective(radians(camera->zoom), aspect_ratio, camera->near, camera->far);
 }
 
-const struct Matrix4 camera_view_matrix(const struct Camera* camera) {
+const struct matrix4 camera_view_matrix(const struct camera* camera) {
     return matrix4_lookat(camera->position, vector3_add(camera->position, camera->front), camera->up);
 }
 
-static void camera_update_vectors(struct Camera* camera) {
+static void camera_update_vectors(struct camera* camera) {
     
     const double yaw = radians(camera->yaw);
     const double pitch = radians(camera->pitch);
@@ -33,7 +34,7 @@ static void camera_update_vectors(struct Camera* camera) {
 }
 
 /* Updates the first-person camera with relative mouse position values */
-void camera_update(struct Camera* camera, float x, float y, bool constrain) {
+void camera_update(struct camera* camera, float x, float y, bool constrain) {
     camera->yaw += x * camera->sensitivity;
     camera->pitch += y * camera->sensitivity;
     
@@ -42,8 +43,8 @@ void camera_update(struct Camera* camera, float x, float y, bool constrain) {
     camera_update_vectors(camera);
 }
 
-void camera_look_at(struct Camera* camera, const struct Vector3 point) {
-    struct Vector3 dir = vector3_sub(camera->position, point);
+void camera_look_at(struct camera* camera, const struct vector3 point) {
+    struct vector3 dir = vector3_sub(camera->position, point);
     dir = vector3_normalize(dir);
     
     camera->yaw = -180.0f + degrees(atan2(dir.z, dir.x));
@@ -52,8 +53,8 @@ void camera_look_at(struct Camera* camera, const struct Vector3 point) {
     camera_update_vectors(camera);
 }
 
-struct Camera *camera_create(const float yaw, const float pitch, const float speed, const float sens, const float zoom) {
-    struct Camera *camera = malloc(sizeof *camera);
+struct camera *camera_create(const float yaw, const float pitch, const float speed, const float sens, const float zoom) {
+    struct camera *camera = malloc(sizeof *camera);
     
     camera->position = vector3_new(0.0f, 0.0f, 0.0f);
     camera->up = vector3_new(0.0f, 0.0f, 1.0f);

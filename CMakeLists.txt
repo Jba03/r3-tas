@@ -14,77 +14,41 @@ add_compile_definitions(LIBR3TAS_DIR="${CMAKE_BINARY_DIR}")
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(common)
+include_directories(common/console)
+include_directories(PRIVATE common/math)
+include_directories(common/type)
+include_directories(common/util)
 include_directories(graphics)
-include_directories(game/collide)
-include_directories(game/global)
-include_directories(game/graph)
-include_directories(game/math)
-include_directories(game/object)
-include_directories(game/ai)
-include_directories(game/predict)
-include_directories(game/export)
-include_directories(game)
-include_directories(imgui)
+include_directories(graphics/gui)
+include_directories(graphics/gui/imgui)
+include_directories(game/interface)
+include_directories(game/library/common)
+include_directories(game/library/function)
+include_directories(game/library/function/hierarchy)
+include_directories(game/library/function/script)
+include_directories(game/library/structure)
+include_directories(game/script)
 
 add_library(r3tas SHARED
 	main.c
 	
-	common/array.c
 	common/configuration.c
-	common/logging.c
-	common/memory.c
-	common/stream.c
-	common/vector2.c
-	common/vector3.c
-	common/vector4.c
-	common/matrix3.c
-	common/matrix4.c
 	
-	graphics/camera.c
-	graphics/graphics.c
-	graphics/glmesh.c
-	graphics/gui.cc
-		
-	game/global/engine.c
-	game/global/engine_timer.c
-	game/global/fix.c
-	game/global/lvl.c
-	game/global/random.c
-	game/global.c
+	game/interface/export.c
+	game/interface/game.c
+	game/interface/intfun.c
 
-	game/object/actor.c
-	game/object/physical_object.c
-	game/object/superobject.c
-	game/object/superobject_links.c
-	game/object/dynamics.c
-	game/object/transform.c
-	game/object/stdgame.c
+	graphics/gui/gui.cc
 
-	game/graph/graph.c
-	game/graph/graphnode.c
-	game/graph/waypoint.c
-	game/graph/msway.c
+        graphics/camera.c
+ 	#graphics/graphics.c
+	#graphics/mesh.c
+	graphics/gui/gui.cc
 
-	game/collide/collide.c
-	game/collide/mesh.c
-	game/collide/material.c
-	game/collide/octree.c
-
-	game/ai/brain.c
-	game/ai/mind.c
-	game/ai/dsg.c
-	game/ai/intelligence.c
-	game/ai/behavior.c
-	game/ai/script.c
-
-	game/predict/predict.c
-
-	game/export/dsg.c
-
-	imgui/imgui.cpp
-	imgui/imgui_draw.cpp
-	imgui/imgui_tables.cpp
-	imgui/imgui_widgets.cpp
+	graphics/gui/imgui/imgui.cpp
+	graphics/gui/imgui/imgui_draw.cpp
+	graphics/gui/imgui/imgui_tables.cpp
+	graphics/gui/imgui/imgui_widgets.cpp
 )
 
 set_property(TARGET r3tas PROPERTY CXX_STANDARD 17)

@@ -1,555 +1,231 @@
 //
 //  graphics.c
-//  r3lib
+//  r3-tas-memorymap
 //
-//  Created by Jba03 on 2022-11-22.
+//  Created by Jba03 on 2022-12-31.
 //
 
-#include "graphics.h"
-#include "camera.h"
-#include "global.h"
-#include "opengl.h"
-#include "configuration.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-#include "engine.h"
+#include "mesh.h"
+
+#include "vector.h"
+#include "game.h"
+#include "structure.h"
+#include "superobject.h"
+#include "ipo.h"
 #include "physical_object.h"
-#include "glmesh.h"
-#include "predict.h"
+#include "collideset.h"
+#include "collide_object.h"
+#include "collide_mesh.h"
 
-#if defined(__APPLE__)
-#   include "SDL.h"
-#   include <dispatch/dispatch.h>
-static dispatch_queue_t sdl_timer_queue;
-static dispatch_source_t sdl_timer_source;
-#endif
+struct mesh* meshlist[1000];
+unsigned current_mesh = 0;
 
-static SDL_Window* window;
-static SDL_GLContext context;
+//static void mesh_process(struct mesh* mesh)
+//{
+//}
 
-static int width;
-static int height;
-
-static GLuint shader_main;
-static GLuint checkerboard_texture;
-
-static struct GLMesh *box = NULL;
-static struct GLMesh *sphere = NULL;
-
-static struct Vector4 bg =
+static void mesh_create(struct ipo* ipo)
 {
-    .r = 0.01f,
-    .g = 0.01f,
-    .b = 0.01f,
-    .a = 1.00f,
-};
-
-#pragma mark - Shader
-
-#define VERTEX                                                      \
-"#version 330 core\n"                                               \
-"layout (location = 0) in vec3 aPos;\n"                             \
-"layout (location = 1) in vec3 aNormal;\n"                          \
-"layout (location = 2) in vec2 aTexCoord;\n"                        \
-"out vec3 position;\n"                                              \
-"out vec3 normal;\n"                                                \
-"out vec2 texcoord;\n"                                              \
-"uniform mat4 projection;\n"                                        \
-"uniform mat4 view;\n"                                              \
-"uniform mat4 model;\n"                                             \
-"void main() {\n"                                                   \
-"   position = vec3(model * vec4(aPos, 1.0f));\n"                   \
-"   normal = aNormal;\n"                                            \
-"   texcoord = aTexCoord;\n"                                        \
-"   gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"  \
-"}"
-
-#define FRAGMENT                                                    \
-"#version 330 core\n"                                               \
-"layout (location = 0) out vec4 out_color;\n"                             \
-"in vec3 position;\n"                                              \
-"in vec3 normal;\n" \
-"in vec2 texcoord;\n" \
-"uniform sampler2D checkerboard;\n" \
-"uniform bool use_texture = false;\n" \
-"uniform vec3 camera;\n"    \
-"uniform vec3 lightPos;\n" \
-"uniform bool display_normals = false;" \
-"uniform vec4 color = vec4(1);\n" \
-"void main() {\n"                                                   \
-"   vec3 color2 = use_texture ? texture(checkerboard, texcoord * 4).rgb : vec3(1);\n" \
-"   vec3 normal2 = normalize(normal);\n" \
-"   vec3 lightColor = vec3(1,1,1)*0.75;\n" \
-"   vec3 ambient = vec3(0.25);\n" \
-"   vec3 lightDir = normalize(lightPos - position);\n" \
-"   float diff = max(dot(lightDir, normal2), 0.0);\n" \
-"   vec3 diffuse = diff * lightColor;\n" \
-"   vec3 viewDir = normalize(camera - position);\n" \
-"   vec3 reflectDir = reflect(-lightDir, normal2);\n" \
-"   float spec = 0.0;\n" \
-"   vec3 halfwayDir = normalize(lightDir + viewDir);\n" \
-"   spec = pow(max(dot(normal2, halfwayDir), 0.0), 64.0);\n" \
-"   vec3 specular = spec * lightColor * 1.0f;\n" \
-"   out_color = display_normals ? vec4(normal, 1.0f) :" \
-"   vec4(vec3(diffuse + specular + ambient) * color2, 1.0f) * color;\n"                                      \
-"}"
-
-static GLuint compile_shader(const char* source, const GLenum type)
-{
-    GLint status = 0;
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, 0);
-    glCompileShader(shader);
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
+    /* Get physical object */
+    const struct physical_object* po = (struct physical_object*)pointer(ipo->physical_object);
+    if (!po) return;
+    
+    /* Get the collide set of that object */
+    const struct physical_collideset* collset = (const struct physical_collideset*)pointer(po->physical_collideset);
+    if (!collset) return;
+    
+    /* Level geometry is part of reaction zone. */
+    const struct collide_object* zdr = (const struct collide_object*)pointer(collset->zdr);
+    if (!zdr) return;
+    
+    //printf("\n");
+    
+    for (int i = 0; i < host_byteorder_16(zdr->n_elements); i++)
     {
-        GLchar messages[1024];
-        glGetShaderInfoLog(shader, sizeof messages, 0, &messages[0]);
-        fprintf(stderr, "GLSL shader error: %s\n", messages);
-    }
-    
-    return shader;
-}
-
-static GLuint shader_create(const char* vertex, const char* fragment)
-{
-    GLuint vs = 0;
-    GLuint fs = 0;
-    
-    vs = compile_shader(vertex, GL_VERTEX_SHADER);
-    fs = compile_shader(fragment, GL_FRAGMENT_SHADER);
-    
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    
-    GLint status;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLchar messages[1024];
-        glGetProgramInfoLog(program, sizeof messages, 0, &messages[0]);
-        fprintf(stderr, "GLSL program error: %s", messages);
-        return status;
-    }
-    
-    /* Delete shaders */
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    
-    return program;
-}
-
-#pragma mark - Draw
-
-void graphics_set_viewport(int w, int h)
-{
-    width = w;
-    height = h;
-}
-
-int graphics_get_texture()
-{
-    return checkerboard_texture;
-}
-
-static void draw_ipo(struct SuperObject *obj, void* p)
-{
-    if (obj->type == SUPEROBJECT_TYPE_IPO && obj->data)
-    {
-        struct IPO *ipo = obj->data;
-        if (ipo != NULL)
+        const pointer element = (*((pointer*)pointer(zdr->elements) + i));
+        const int16_t type = host_byteorder_16(*((int16_t*)pointer(zdr->element_types) + i));
+        
+        const void* block = pointer(element);
+        
+        //printf("draw! %X\n", offset(block));
+        
+        //printf("type: %X\n", offset(block));
+        
+        
+        switch (type)
         {
-            if (ipo->data && ipo->data_ptr != 0x00)
+            case collide_object_indexed_triangles:
             {
-                struct PhysicalObject *po = ipo->data;
-                if (po->collide_set_ptr != 0x00 && po->geometry)
-                {
-                    struct CollisionGeometry *geom = po->geometry;
-                    if (geom->element_types)
-                    {
-                        for (unsigned e = 0; e < geom->n_elements; e++)
-                        {
-                            if (geom->element_types[e] == 1) /* mesh */
-                            {
-                                struct Mesh *mesh = geom->elements[e];
-                                //info("Mesh of %s\n", ipo->name);
-                                if (mesh)
-                                {
-                                    if (mesh->glmesh)
-                                    {
-                                        //info("Drawing mesh: %d vertices, %d indices, vao: %d\n", mesh->glmesh->n_vertices, mesh->glmesh->n_indices, mesh->glmesh->vao);
-                                        obj->matrix_default = matrix4_read(obj->matrix_default.offset);
-                                        
-                                        glEnable(GL_DEPTH_TEST);
-                                        
-                                        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 1);
-                                        
-                                        struct Vector4 color = vector4_new(1.0f, 1.0, 1.0f, 1.0f);
-                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &mesh->glmesh->color.x);
-                                        
-                                        glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &obj->matrix_default.m00);
-                                        glmesh_draw(mesh->glmesh);
-                                        
-                                        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 0);
-                                    }
-                                    
-//                                    for (int i = 0; i < mesh->n_triangles * 3; i++) {
-//                                        struct Vector3 p1 = mesh->processed.vertices[i];
-//                                        struct Vector3 p2 = vector3_new(p1.x, p1.z, p1.y);
-//
-//                                        struct Vector4 color = vector4_new(0.0f, 1.0, 1.0f, 1.0f);
-//                                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
-//                                        struct Vector3 rayman_position = vector3_read(0x00BF0D98);
-//                                        graphics_draw_line(rayman_position, p2);
-//                                        //graphics_draw_sphere(p2, 0.1, color);
-//                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (geom->octree && geom->octree_offset != 0x00)
-                    {
-                        struct Octree* octree = geom->octree;
-                        
-                        log_indent = 0;
-//                        info("Octree @ %X: %d faces, elements @ %X\n", octree->offset, octree->n_faces, octree->element_base_table_ptr);
-//                        info("\tmin: %f %f %f\n", octree->min.x, octree->min.y, octree->min.z);
-//                        info("\tmax: %f %f %f\n", octree->max.x, octree->max.y, octree->max.z);
-//                        info("\tmiddle: %f %f %f\n\n\n", halfway.x, halfway.y, halfway.z);
-
-                        
-                        glDisable(GL_DEPTH_TEST);
-                        
-                        struct Vector4 color = vector4_new(0.0f, 10.0, 0.0f, 1.0f);
-                        glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
-//                        graphics_draw_line(octree->min, octree->max);
-                        
-                        struct OctreeNode* root = octree->root;
-                        if (root)
-                        {
-                            struct Vector3 rayman = vector3_read(0x00BF0D98);
-                            
-                            struct Vector3 position = matrix4_position(obj->matrix_default);
-                            
-                            struct Vector3 local = vector3_sub(rayman, position);
-                            
-                            struct OctreeNode* intersect = NULL;
-                            if ((intersect = octree_intersect_point(root, local)))
-                            {
-                                //info("Octree contains %d vertices\n", octree->n_faces);
-//                                info("Rayman intersects %s @ %X with %d faces\n", ipo->name, intersect->offset, intersect->n_face_indices);
-//                                info("\tThese faces were intersected:\n");
-//                                info("\t\t");
-//                                for (int i = 0; i < intersect->n_face_indices; i++)
-//                                    info("%d, ", intersect->face_indices[i]);
-//                                info("\n");
-                            }
-                        }
-                        
-                        
-                        glEnable(GL_DEPTH_TEST);
-                    }
-                }
-            }
-        }
-    }
-}
-
-static void draw_actor(struct SuperObject *obj, void* p)
-{
-    if (obj->type == SUPEROBJECT_TYPE_ACTOR && obj->data)
-    {
-        struct Actor* actor = obj->data;
-        
-        const struct Vector4 color = vector4_new(1.0f, 0.2f, 0.2f, 0.25);
-        
-        const struct Matrix4 T = obj->matrix_default;
-        const struct Vector3 position = matrix4_position(T);
-        const struct Vector3 scale = matrix4_scale(T);
-        
-        glUniform1i(glGetUniformLocation(shader_main, "use_texture"), 0);
-        graphics_draw_sphere(position, scale.x / 2.0f, color);
-    }
-}
-
-static void gen_checkerboard_texture()
-{
-    glGenTextures(1, &checkerboard_texture);
-    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    
-    const uint32_t data[2 * 2] =
-    {
-        0xFFFFFFFF, 0xBBBBBBBB,
-        0xBBBBBBBB, 0xFFFFFFFF,
-    };
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-}
-
-void graphics_draw_triangle(struct Vector3 a, struct Vector3 b, struct Vector3 c)
-{
-    GLuint vao;
-    GLuint vbo;
-    
-    const GLfloat vertices[] =
-    {
-        a.x, a.y, a.z,
-        b.x, b.y, b.z,
-        c.x, c.y, c.z,
-    };
-    
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-}
-
-void graphics_draw_line(struct Vector3 start, struct Vector3 end)
-{
-    GLuint vao;
-    GLuint vbo;
-    
-    const GLfloat vertices[] =
-    {
-        start.x, start.y, start.z,
-        end.x, end.y, end.z,
-    };
-    
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
-    
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    
-    glDrawArrays(GL_LINES, 0, 2);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-}
-
-void graphics_draw_box(struct Vector3 position, struct Vector3 scale, struct Vector3 rotation, struct Vector4 color)
-{
-    struct Matrix4 T = matrix4_identity;
-    
-    /* Rotate */
-    T = matrix4_mul(T, matrix4_make_rotation_x(radians(rotation.x)));
-    T = matrix4_mul(T, matrix4_make_rotation_y(radians(rotation.y)));
-    T = matrix4_mul(T, matrix4_make_rotation_z(radians(rotation.z)));
-    
-    /* Scale & translate. */
-    T = matrix4_mul(T, matrix4_make_scale(scale.x, scale.y, scale.z));
-    T = matrix4_mul(T, matrix4_make_translation(position.x, position.y, position.z));
-
-    T = matrix4_transpose(T);
-    
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
-    glmesh_draw(box);
-}
-
-void graphics_draw_sphere(struct Vector3 center, const float r, struct Vector4 color)
-{
-    struct Matrix4 T;
-    T = matrix4_make_scale(r * 2.0f, r * 2.0f, r * 2.0f);
-    T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
-    T = matrix4_transpose(T);
-    
-    glUniform4fv(glGetUniformLocation(shader_main, "color"), 1, &color.x);
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &T.m00);
-    glmesh_draw(sphere);
-}
-
-static void graphics_main_loop()
-{
-    SDL_Event e;
-    SDL_PollEvent(&e);
-    
-    SDL_GetWindowSize(window, &width, &height);
-    
-    /* GCN default fov: 1.3rad */
-    const float fov = memory.read_float(0x00C751B4);
-    camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
-    
-    struct Matrix4 view = camera_view_matrix(camera);
-    
-    /* Camera parameters */
-    if (!configuration.camera_unlocked)
-    {
-        camera->position = vector3_read(0x00c531bc);
-        struct Vector3 eye = camera->position;
-        struct Vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
-        struct Vector3 look_at = vector3_read(0x00c53910);
-        view = matrix4_lookat(camera->position, look_at, up);
-    }
-    
-    struct Matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
-    
-    /* Set program */
-    glUseProgram(shader_main);
-    
-    glViewport(0, 0, width, height);
-    
-    /* Clear screen */
-    glClearColor(bg.r, bg.g, bg.b, bg.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    /* Enable depth testing */
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    /* Disable face culling */
-    glDisable(GL_CULL_FACE);
-    
-    /* Enable blending */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
-    
-    /* Upload uniforms */
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "view"), 1, GL_FALSE, &view.m00);
-    glUniformMatrix4fv(glGetUniformLocation(shader_main, "projection"), 1, GL_FALSE, &projection.m00);
-    glUniform3f(glGetUniformLocation(shader_main, "camera"), camera->position.x, camera->position.y, camera->position.z);
-    glUniform3f(glGetUniformLocation(shader_main, "lightPos"), camera->position.x, camera->position.y + 100, camera->position.z);
-    glUniform1i(glGetUniformLocation(shader_main, "display_normals"), configuration.graphics_display_mode == 1);
-    
-    if (engine)
-    {
-        if (engine->root)
-        {
-            superobject_for_each(SUPEROBJECT_TYPE_IPO, engine->root, &draw_ipo, engine->root);
-            //superobject_for_each(SUPEROBJECT_TYPE_ACTOR, engine->root, &draw_actor, engine->root);
-            
-            //glDisable(GL_DEPTH_TEST);
-            for (int g = 0; g < array_element_count(graph_list); g++)
-            {
-                struct Graph* graph = array_get(graph_list, g);
+                struct collide_mesh* collmesh = (struct collide_mesh*)block;
                 
-                struct WayPoint* prev = NULL;
-                for (int i = 0; i < graph->n_nodes; i++)
+                struct mesh* mesh = malloc(sizeof *mesh);
+                mesh->name = ipo->name;
+                
+                mesh->n_vertices = host_byteorder_16(collmesh->n_faces) * 3;
+                mesh->n_indices = host_byteorder_16(collmesh->n_faces) * 3;
+                mesh->vertices = malloc(sizeof(struct vertex) * host_byteorder_16(collmesh->n_faces) * 3);
+                mesh->indices = malloc(sizeof(unsigned int) * host_byteorder_16(collmesh->n_faces) * 3);
+                
+                uint16_t* index = pointer(collmesh->face_indices);
+                
+                uint16_t indices[host_byteorder_16(collmesh->n_faces) * 3];
+                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
                 {
-                    struct GraphNode* node = graph->node[i];
-                    struct WayPoint* wp = node->waypoint;
-                    
-                    const float radius = wp->radius == 1.0f ? 0.1f : wp->radius * 2.0f;
-                    const float alpha = wp->radius == 1.0f ? 0.75f : 0.5f;
-                    
-                    graphics_draw_sphere(wp->position, radius, vector4_new(1.85f, 0.0f, 2.0f, alpha));
-                    if (prev) graphics_draw_line(wp->position, prev->position);
-                    
-                    prev = wp;
+                    indices[idx * 3 + 0] = host_byteorder_16(*(index + idx * 3 + 0));
+                    indices[idx * 3 + 1] = host_byteorder_16(*(index + idx * 3 + 1));
+                    indices[idx * 3 + 2] = host_byteorder_16(*(index + idx * 3 + 2));
                 }
+                
+                struct vector33* vertices = pointer(zdr->vertices);
+                struct vector33* normals = pointer(collmesh->normals);
+                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+                {
+                    mesh->vertices[idx].position.x = host_byteorder_f32(vertices[indices[idx]].x);
+                    mesh->vertices[idx].position.z = host_byteorder_f32(vertices[indices[idx]].y);
+                    mesh->vertices[idx].position.y = host_byteorder_f32(vertices[indices[idx]].z);
+                    
+                    mesh->vertices[idx].normal.x = host_byteorder_f32(normals[idx / 3].x);
+                    mesh->vertices[idx].normal.z = host_byteorder_f32(normals[idx / 3].y);
+                    mesh->vertices[idx].normal.y = host_byteorder_f32(normals[idx / 3].z);
+                    
+                    //printf("%f %f %f\n", mesh->vertices[idx].position.x, mesh->vertices[idx].position.z, mesh->vertices[idx].position.y);
+                    /* normals.. */
+                }
+                
+                //printf("\n");
+                
+                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
+                {
+                    mesh->indices[idx * 3 + 0] = idx * 3 + 0;
+                    mesh->indices[idx * 3 + 1] = idx * 3 + 2;
+                    mesh->indices[idx * 3 + 2] = idx * 3 + 1;
+                }
+                
+                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+                {
+                    struct vector33 normal;
+                    normal.x = fabs(host_byteorder_f32(mesh->vertices[idx].normal.x));
+                    normal.y = fabs(host_byteorder_f32(mesh->vertices[idx].normal.y));
+                    normal.z = fabs(host_byteorder_f32(mesh->vertices[idx].normal.z));
+                    
+                    float n = max(max(normal.x, normal.y), normal.z);
+                    
+                    float x = mesh->vertices[idx].position.x / 20.0f;
+                    float y = mesh->vertices[idx].position.y / 20.0f;
+                    float z = mesh->vertices[idx].position.z / 20.0f;
+                        
+                    if (n == fabs(normal.x)) {
+                        mesh->vertices[idx].texcoord.x = y;
+                        mesh->vertices[idx].texcoord.y = z;
+                    } else if (n == fabs(normal.y)) {
+                        mesh->vertices[idx].texcoord.x = x;
+                        mesh->vertices[idx].texcoord.y = z;
+                    } else {
+                        mesh->vertices[idx].texcoord.x = x;
+                        mesh->vertices[idx].texcoord.y = y;
+                    }
+                }
+                
+                mesh_process(mesh);
+                
+                meshlist[current_mesh++] = mesh;
+                
+                break;
             }
-            //glEnable(GL_DEPTH_TEST);
+        }
+    }
+}
+
+char *replace(const char *s, char ch, const char *repl)
+{
+    int count = 0;
+    const char *t;
+    for(t=s; *t; t++)
+        count += (*t == ch);
+
+    size_t rlen = strlen(repl);
+    char *res = malloc(strlen(s) + (rlen-1)*count + 1);
+    char *ptr = res;
+    for(t=s; *t; t++) {
+        if(*t == ch) {
+            memcpy(ptr, repl, rlen);
+            ptr += rlen;
+        } else {
+            *ptr++ = *t;
+        }
+    }
+    *ptr = 0;
+    return res;
+}
+
+static void export_obj(struct mesh* mesh, FILE* fp, int *prev_index)
+{
+    if (mesh->vertices)
+    {
+        for (unsigned t = 0; t < mesh->n_vertices; t++)
+        {
+            struct vertex v = mesh->vertices[t];
+                                            
+            struct vector4 v2;
+            v2.x = v.position.x;
+            v2.z = v.position.y;
+            v2.y = v.position.z;
+            v2.w = 1;
+                                            
+//            matrix4 transform = obj->matrix_default;
+//            struct vector4 computed = vector4_mul_matrix4(v2, transform);
+//
+            char buf[128];
+            memset(buf, 0, 128);
+            sprintf(buf, "v %.7f %.7f %.7f\n", v2.x, v2.z, v2.y);
+            char* a= replace(buf, ',', ".");
+                                            
+            fprintf(fp, "%s", a);
+                                            
+            free(a);
+        }
+                                        
+        fprintf(fp, "\n");
+        fprintf(fp, "o %s\n", mesh->name);
+        for (unsigned t = 0; t < mesh->n_vertices / 3; t++)
+        {
+            uint16_t idx0 = mesh->indices[t * 3 + 0] + 1 + *prev_index;
+            uint16_t idx1 = mesh->indices[t * 3 + 1] + 1 + *prev_index;
+            uint16_t idx2 = mesh->indices[t * 3 + 2] + 1 + *prev_index;
+            fprintf(fp, "f %d %d %d\n", idx0, idx1, idx2);
+        }
+        
+        fprintf(fp, "\n");
+                                        
+        *prev_index += mesh->indices[mesh->n_vertices - 1] + 2;
+    }
+}
+
+
+void graphics_load(void)
+{
+    FILE* fp = fopen(LIBR3TAS_DIR "/dump.obj", "wb");
+    
+    int prev_index = 0;
+    
+    superobject_for_each(superobject_last_child(hierarchy), sector)
+    {
+        superobject_for_each(sector, ipo_so)
+        {
+            const struct ipo* ipo = (const struct ipo*)superobject_data(ipo_so);
+            if (!ipo) continue;
+            
+            mesh_create(ipo);
+            export_obj(meshlist[current_mesh-1], fp, &prev_index);
         }
     }
     
-//    glUniform1i(glGetUniformLocation(shader_main, "checkerboard"), 0);
-//    glActiveTexture(GL_TEXTURE0);
-//    glBindTexture(GL_TEXTURE_2D, checkerboard_texture);
-    struct Vector3 rayman_position = vector3_read(0x00BF0D98);
-//    graphics_draw_box(rayman, vector3_new(1, 1, 1), vector3_new(45.0, 0.0, 0.0), vector4_new(0, 0, 0, 0));
-//    //graphics_draw_sphere(rayman, 0.5f, vector4_new(0, 0, 0, 0));
-//
-//
-//    glUniformMatrix4fv(glGetUniformLocation(shader_main, "model"), 1, GL_FALSE, &matrix4_identity.m00);
-//    struct LineSegment segment;
-//
-//    segment.start = vector3_new(-1.16, -7, -15);
-//    segment.end = vector3_new(-4, 7, -15);
-//
-//    graphics_draw_line(segment.start, segment.end);
-//    struct Vector3 closest = closest_point_on_segment(rayman, segment);
-//    closest = vector3_new(closest.x, closest.y, closest.z);
-//    graphics_draw_box(closest, vector3_new(0.1, 0.1, 0.1), vector3_new(0, 0, 0), vector4_new(0, 0, 0, 0));
     
+    fclose(fp);
     
-    if (rayman)
-    {
-        rayman->superobject->matrix_default = matrix4_read(rayman->superobject->matrix_default.offset);
-    }
-    
-    
-    SDL_GL_SwapWindow(window);
-}
-
-int graphics_shader_id()
-{
-    return shader_main;
-}
-
-void graphics_init(void)
-{
-    sdl_timer_queue = dispatch_get_main_queue();
-    sdl_timer_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, sdl_timer_queue);
-    
-    SDL_Init(SDL_INIT_EVERYTHING);
-    window = SDL_CreateWindow("", 0, 0, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-    
-    /* Set OpenGL parameters */
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
-    SDL_GL_SetSwapInterval(0);
-    
-    context = SDL_GL_CreateContext(window);
-    
-    camera = camera_create(-90.0f, 0.0f, 0.1f, 0.25f, 45.0f);
-    //camera->up = camera->world_up = vector3_new(0.0f, 1.0f, 0.0f);
-    
-    box = glmesh_box();
-    sphere = glmesh_sphere(20, 20);
-    
-    if ((shader_main = shader_create(VERTEX, FRAGMENT)) == 0)
-    {
-        warning("Could not create shader program\n");
-        exit(-1);
-    }
-    else
-    {
-        info(BOLD COLOR_GREEN "GLSL shaders compiled successfully\n");
-    }
-    
-    gen_checkerboard_texture();
-    
-    dispatch_source_set_event_handler(sdl_timer_source, ^{
-        graphics_main_loop();
-    });
-
-    dispatch_source_set_timer(sdl_timer_source, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), NSEC_PER_SEC * (1.0f / 60.0f), 0);
-    dispatch_resume(sdl_timer_source);
+    printf("n meshes: %d\n", current_mesh);
 }
