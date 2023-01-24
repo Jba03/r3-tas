@@ -163,9 +163,9 @@ static inline void translate_operator(struct translation* t)
         case 19: emit("-"); translate_childnode(t, 0); break; /* negate vector */
         case 20: emit("("); translate_childnode(t, 0); emit(" * "); translate_childnode(t, 1); emit(")"); break; /* multiply vector by scalar */
         case 21: emit("("); translate_childnode(t, 0); emit(" / "); translate_childnode(t, 1); emit(")"); break; /* divide vector by scalar */
-        case 22: translate_childnode(t, 0); emit(".Y = "); translate_childnode(t, 1); break; /* assign to vector component X */
-        case 23: translate_childnode(t, 0); emit(".Z = "); translate_childnode(t, 1); break; /* assign to vector component Y */
-        case 24: translate_childnode(t, 0); emit(".X = "); translate_childnode(t, 1); break; /* assign to vector component Z */
+        case 22: translate_childnode(t, 0); emit(".X = "); translate_childnode(t, 1); break; /* assign to vector component X */
+        case 23: translate_childnode(t, 0); emit(".Y = "); translate_childnode(t, 1); break; /* assign to vector component Y */
+        case 24: translate_childnode(t, 0); emit(".Z = "); translate_childnode(t, 1); break; /* assign to vector component Z */
         case 25: translate_childnode(t, 0); emit("."); translate_childnode(t, 1); break; /* ultra */ break;
         case 26: emit("(("); translate_childnode(t, 0); emit(")"); emit("(") translate_childnode(t, 1); emit("))") break; /* modelcast */
         case 27: translate_childnode(t, 0); emit("["); translate_childnode(t, 1); emit("]"); break;
