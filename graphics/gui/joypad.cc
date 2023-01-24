@@ -14,8 +14,8 @@ static void draw_joystick(ImDrawList* drawlist, ImVec2 pos, float radius, int jo
     drawlist->AddCircleFilled(ImVec2(pos.x + joystick_radius, pos.y + joystick_radius), joystick_radius, IM_COL32(255, 255, 255, 20));
     drawlist->AddCircleFilled(ImVec2(pos.x + joystick_radius, pos.y + joystick_radius), 2.0f, IM_COL32(255, 255, 255, 20));
     
-    float x = (float(joyx - 128) / 128.0f) * joystick_radius;
-    float y = (float(joyy - 128) / 128.0f) * joystick_radius;
+    float x = (float(joyx) / 100.0f) * joystick_radius;
+    float y = -(float(joyy) / 100.0f) * joystick_radius;
     
     ImVec2 linestart = ImVec2(pos.x + joystick_radius, pos.y + joystick_radius);
     ImVec2 lineend = ImVec2(pos.x + joystick_radius + x, pos.y + joystick_radius - y);

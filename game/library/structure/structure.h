@@ -34,14 +34,7 @@
 #
 #endif
 
-/* generate structure operators? */
-#define structure_operators
-
-/* allow structure modifications? */
-#define readonly
-
-/* TODO: Add platform-specific typedefs once char type name is figured out */
-
+#define readonly // const
 
 typedef int8_t      int8;
 typedef uint8_t     uint8;
@@ -54,33 +47,24 @@ typedef uint32_t    address;
 typedef uint32_t    pointer;
 typedef uint32_t    doublepointer;
 
-// typedef float struct vector3[3];
-// typedef float vector4[4];
-
-#define align(S) __attribute__ ((aligned(S), packed))
-
-#define CONCAT(a, b) CONCAT_INNER(a, b)
-#define CONCAT_INNER(a, b) a ## b
-#define UNIQUE_NAME(base) CONCAT(base, __LINE__)
+/* macros to synthesize unique struct padding field names */
+#define concat(a, b) concat_inner(a, b)
+#define concat_inner(a, b) a ## b
+#define unique_name(base) concat(base, __LINE__)
 
 /** padding: insert padding bytes. */
-#define padding(S) readonly uint8_t UNIQUE_NAME(padding) [S];
-/** pointer: resolve memory pointer. Expects game byteorder. */
+#define padding(S) readonly uint8_t unique_name(padding) [S];
+/** pointer: resolve memory pointer - expects game byteorder. */
 #define pointer(addr) ((host_byteorder_32(addr) == 0x00) ? NULL : ((void*)(memory.base + (host_byteorder_32(addr) & 0xFFFFFFF))))
-/** doublepointer: resolve memory pointer, then resolve that pointer. */
+/** doublepointer: resolve memory pointer, then resolve the resolved pointer. */
 #define doublepointer(addr) pointer(*(pointer*)pointer(addr))
 /** offset: return the mRAM offset of specified structure */
 #define offset(data) ((data == NULL) ? 0x0 : ((address)((uint8_t*)data - memory.base)))
-
+/** host_byteorder_f32: convert in-game float to platform byteorder */
 static inline float host_byteorder_f32(float32 f)
 {
     uint32_t v = host_byteorder_32(f);
     return (*(float*)(&v));
 }
-
-#include "engine.h"
-#include "engine_timer.h"
-#include "superobject.h"
-#include "actor.h"
 
 #endif /* structure_h */

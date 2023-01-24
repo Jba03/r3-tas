@@ -9,6 +9,11 @@
 #include "stdgame.h"
 #include "log.h"
 #include "rnd.h"
+#include "engine.h"
+#include "brain.h"
+#include "mind.h"
+#include "intelligence.h"
+#include "dsg.h"
 //#include "vector3.h"
 
 #include <stdio.h>
@@ -214,6 +219,35 @@ const char* actor_name(int name, const struct actor* actor)
     }
     
     return NULL;
+}
+
+int actor_dsgvar(const struct superobject* actor_so, unsigned var, int* type, void** data)
+{
+    const struct actor* actor = superobject_data(actor_so);
+    if (!actor) return -1;
+
+    const struct brain* brain = actor_brain(actor);
+    if (!brain) return -1;
+    
+    const struct mind* mind = pointer(brain->mind);
+    if (!mind) return -1;
+    
+    const struct dsgmem* dsgmem = pointer(mind->dsgmemory);
+    if (!dsgmem) return -1;
+    
+    const struct dsgvar* dsgvars = doublepointer(dsgmem->dsgvars);
+    if (!dsgvars) return -1;
+    
+    if (var >= dsgvars->info_length) return -1;
+    
+    const struct dsgvar_info* variable = (struct dsgvar_info*)pointer(dsgvars->info) + var;
+    *type = host_byteorder_32(variable->type);
+    
+    const uint8_t* dataptr = (uint8_t*)pointer(dsgmem->buffer_current);
+    if (!dataptr) return -1;
+    
+    *data = (void*)(data + host_byteorder_32(variable->mem_offset));
+    return 0;
 }
 
 

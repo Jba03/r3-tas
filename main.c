@@ -21,6 +21,7 @@
 #include "stdgame.h"
 #include "gui.h"
 #include "graphics.h"
+#include "input.h"
 //#include "vector3.h"
 //#include "translate.h"
 
@@ -153,6 +154,19 @@ static void update(const char* controller)
 //        if (strcmp(btn, "RIGHT") == 0) input.R = true;
 //        if (strcmp(btn, "START") == 0) input.S = true;
 //    }
+    
+    /* Read input */
+    {
+        const struct input_entry* mjoyx = (const struct input_entry*)(memory.base + 0xB244C8);
+        const struct input_entry* mjoyy = (const struct input_entry*)(memory.base + 0xB244FC);
+        const struct input_entry* cjoyx = (const struct input_entry*)(memory.base + 0xB25300);
+        const struct input_entry* cjoyy = (const struct input_entry*)(memory.base + 0xB25334);
+        
+        input.joymain_x = host_byteorder_f32(*(uint32_t*)&mjoyx->analogvalue);
+        input.joymain_y = host_byteorder_f32(*(uint32_t*)&mjoyy->analogvalue);
+        input.joyc_x = host_byteorder_f32(*(uint32_t*)&cjoyx->analogvalue);
+        input.joyc_y = host_byteorder_f32(*(uint32_t*)&cjoyy->analogvalue);
+    }
     
     /* Read global structures */
     engine = (struct engine*)(mRAM + GCN_POINTER_ENGINE);

@@ -66,8 +66,8 @@ extern unsigned transition_frame;
 /* TAS */
 extern struct inputstructure
 {
-    int joymain_x, joymain_y;
-    int joyc_x, joyc_y;
+    float joymain_x, joymain_y;
+    float joyc_x, joyc_y;
     bool a,b,x,y,z,l,r,S,L,U,D,R;
 } input;
 
@@ -84,6 +84,7 @@ void level_load(const char* level_name);
  */
 const char* actor_name(int name, const struct actor* actor);
 
+int actor_dsgvar(const struct superobject* actor_so, unsigned var, int* type, void** data);
 
 #pragma mark - RNG
 
