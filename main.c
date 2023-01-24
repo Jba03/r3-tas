@@ -166,7 +166,9 @@ static void update(const char* controller)
     if just_entered_mode(9)
     {
         r3_load();
+#ifdef OLD_VERSION
         graphics_load();
+#endif
     }
     
     if just_entered_mode(5)
@@ -239,7 +241,9 @@ static void video(struct on_video_payload* payload)
 
 int on_load(void)
 {
+#ifdef OLD_VERSION
     graphics_init();
+#endif
     
 //    printf("sizeof default: %ul\n", sizeof(struct vector4));
 //    printf("sizeof default: %ul\n", sizeof(struct vector44));
