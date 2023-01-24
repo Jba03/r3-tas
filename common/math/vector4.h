@@ -10,9 +10,21 @@
 
 #include "mathc.h"
 #include "macrotricks.h"
+#include "structure.h"
 
 #define VECTOR4
 VECTOR4 VECTOR_DEFINITION(float, 4)
+
+VECTOR4 static inline struct vector4 vector4_host_byteorder(const struct vector4 v)
+{
+    struct vector4 result;
+    result.x = host_byteorder_f32(*(uint32_t*)&v.x);
+    result.y = host_byteorder_f32(*(uint32_t*)&v.y);
+    result.z = host_byteorder_f32(*(uint32_t*)&v.z);
+    result.w = host_byteorder_f32(*(uint32_t*)&v.w);
+    
+    return result;
+}
 
 /**
  * vector4_new:

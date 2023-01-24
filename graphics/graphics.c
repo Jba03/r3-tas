@@ -11,7 +11,7 @@
 
 #include "mesh.h"
 
-#include "vector.h"
+//#include "vector3.h"
 #include "game.h"
 #include "structure.h"
 #include "superobject.h"
@@ -80,17 +80,17 @@ static void mesh_create(struct ipo* ipo)
                     indices[idx * 3 + 2] = host_byteorder_16(*(index + idx * 3 + 2));
                 }
                 
-                struct vector33* vertices = pointer(zdr->vertices);
-                struct vector33* normals = pointer(collmesh->normals);
+                struct vector3* vertices = pointer(zdr->vertices);
+                struct vector3* normals = pointer(collmesh->normals);
                 for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
                 {
-                    mesh->vertices[idx].position.x = host_byteorder_f32(vertices[indices[idx]].x);
-                    mesh->vertices[idx].position.z = host_byteorder_f32(vertices[indices[idx]].y);
-                    mesh->vertices[idx].position.y = host_byteorder_f32(vertices[indices[idx]].z);
+                    mesh->vertices[idx].position.x = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].x);
+                    mesh->vertices[idx].position.z = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].y);
+                    mesh->vertices[idx].position.y = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].z);
                     
-                    mesh->vertices[idx].normal.x = host_byteorder_f32(normals[idx / 3].x);
-                    mesh->vertices[idx].normal.z = host_byteorder_f32(normals[idx / 3].y);
-                    mesh->vertices[idx].normal.y = host_byteorder_f32(normals[idx / 3].z);
+                    mesh->vertices[idx].normal.x = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].x);
+                    mesh->vertices[idx].normal.z = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].y);
+                    mesh->vertices[idx].normal.y = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].z);
                     
                     //printf("%f %f %f\n", mesh->vertices[idx].position.x, mesh->vertices[idx].position.z, mesh->vertices[idx].position.y);
                     /* normals.. */
@@ -107,10 +107,10 @@ static void mesh_create(struct ipo* ipo)
                 
                 for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
                 {
-                    struct vector33 normal;
-                    normal.x = fabs(host_byteorder_f32(mesh->vertices[idx].normal.x));
-                    normal.y = fabs(host_byteorder_f32(mesh->vertices[idx].normal.y));
-                    normal.z = fabs(host_byteorder_f32(mesh->vertices[idx].normal.z));
+                    struct vector3 normal;
+                    normal.x = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.x));
+                    normal.y = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.y));
+                    normal.z = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.z));
                     
                     float n = max(max(normal.x, normal.y), normal.z);
                     
@@ -220,7 +220,8 @@ void graphics_load(void)
             if (!ipo) continue;
             
             mesh_create(ipo);
-            export_obj(meshlist[current_mesh-1], fp, &prev_index);
+            meshlist[current_mesh-1]->transform_global = pointer(ipo_so->transform_global);
+            //export_obj(meshlist[current_mesh-1], fp, &prev_index);
         }
     }
     

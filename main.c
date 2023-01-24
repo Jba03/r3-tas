@@ -21,6 +21,7 @@
 #include "stdgame.h"
 #include "gui.h"
 #include "graphics.h"
+//#include "vector3.h"
 //#include "translate.h"
 
 //#if defined(__APPLE__)
@@ -157,8 +158,6 @@ static void update(const char* controller)
     engine = (struct engine*)(mRAM + GCN_POINTER_ENGINE);
     rnd = (struct rnd*)(mRAM + GCN_POINTER_RND);
     
-    
-    
     if just_entered_mode(6)
     {
         info(BOLD COLOR_PINK "Level transition began (frame %d)\n", engine->timer.frame);
@@ -167,7 +166,7 @@ static void update(const char* controller)
     if just_entered_mode(9)
     {
         r3_load();
-        //graphics_load();
+        graphics_load();
     }
     
     if just_entered_mode(5)
@@ -240,7 +239,10 @@ static void video(struct on_video_payload* payload)
 
 int on_load(void)
 {
-    //graphics_init();
+    graphics_init();
+    
+//    printf("sizeof default: %ul\n", sizeof(struct vector4));
+//    printf("sizeof default: %ul\n", sizeof(struct vector44));
     
     info(BOLD "r3lib loaded successfully\n");
     return 1;

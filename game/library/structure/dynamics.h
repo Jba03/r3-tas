@@ -3,7 +3,8 @@
 
 #include "structure.h"
 #include "transform.h"
-#include "vector.h"
+//#include "vector3.h"
+#include "matrix3.h"
 
 #define dynamics_size_base      0x1
 #define dynamics_size_advanced  0x2
@@ -42,17 +43,17 @@ struct dynamics_base
     readonly float32 slope_cosine;
     readonly float32 slide;
     readonly float32 rebound;
-    readonly struct vector33 speed_impose;
-    readonly struct vector33 speed_propose;
-    readonly struct vector33 speed_previous;
-    readonly struct vector33 scale;
-    readonly struct vector33 anim_speed;
-    readonly struct vector33 translation_safe;
-    readonly struct vector33 translation_add;
+    readonly struct vector3 speed_impose;
+    readonly struct vector3 speed_propose;
+    readonly struct vector3 speed_previous;
+    readonly struct vector3 scale;
+    readonly struct vector3 anim_speed;
+    readonly struct vector3 translation_safe;
+    readonly struct vector3 translation_add;
     padding(8)
     readonly struct transform transform_previous;
     readonly struct transform transform_current;
-    readonly struct matrix3x3 rotation_imposed;
+    readonly matrix3 rotation_imposed;
     readonly uint8_t nframe;
     padding(3)
     readonly pointer report;

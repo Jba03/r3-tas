@@ -15,8 +15,8 @@ struct sector
     readonly doubly_linked_list sound_sectors;
     readonly doubly_linked_list sound_events;
     
-    readonly vector3 aabb_min;
-    readonly vector3 aabb_max;
+    readonly struct vector3 aabb_min;
+    readonly struct vector3 aabb_max;
     
     readonly float far_plane;
     readonly uint8_t is_virtual;

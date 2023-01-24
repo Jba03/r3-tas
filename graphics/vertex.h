@@ -8,7 +8,7 @@
 #ifndef vertex_h
 #define vertex_h
 
-#include "vector3.h"
+//#include "vector3.h"
 
 struct vertex
 {

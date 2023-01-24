@@ -9,7 +9,7 @@
 #include "stdgame.h"
 #include "log.h"
 #include "rnd.h"
-#include "vector3.h"
+//#include "vector3.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -216,19 +216,44 @@ const char* actor_name(int name, const struct actor* actor)
     return NULL;
 }
 
+
+/**
+ * RNG calls per actor type
+ *
+ *  - Rayman calls RNG whenever he shoots his fist, or whenever his idle animation changes.
+ *  - Collecting a yellow or red gem calls RNG five times.
+ *  - Collecting a crown calls RNG four times.
+ *  - Gems that disappear after a set duration call RNG once per frame when they flicker.
+ *  - Matuvus (if visible) call RNG once on animation change.
+ *  - Cages call RNG once when broken.
+ *  - Certain lamps (ie. the ones in the beginning of TLS1) call RNG when the light changes.
+ *
+ *  - Razoff #1 calls RNG when he shoots
+ *  - Razoff #2's wrecking ball calls RNG twice when it hits Rayman
+ *  - Razoff #2 calls RNG once when he falls off the wrecking ball
+ *
+ *  - The cannonball in Sea_10 calls the RNG twice when frame % 4 == 0.
+ *
+ *  - Riding the snowboard normally, updates RNG a total of three times per frame:
+ *    twice for the snow particles, once for the animation of rayman bobbing up and down.
+ *    When in the air, twice. After hitting a fence, three times.
+ *
+ * LaunchAGO seems to be the function responsible for the internal RNG update in most cases.
+ */
+
 int32_t rnd_table_index(const struct rnd *rnd, unsigned index, unsigned offset)
 {
     if (host_byteorder_32(rnd->table) == 0x00) return 0;
     
-//    /* The RNG table index is fetched from a table of 50 RNG "channels", */
-//    /* index 0 being the most common (if not the only) used by the game. */
-//    uint32_t idx = host_byteorder_32(*(uint32_t*)(rnd->table_indices + index * 4)) - 1;
-//
-//    printf("current index: %d, last: %d\n", idx, rnd->last_index);
-//    /* The RNG table of 10000 entries is then indexed by previous index, together with an optional offset. */
-//    int32_t value = host_byteorder_32(*(int32_t*)(pointer(rnd->table) + (idx + offset) * 4));
+    /* The RNG table index is fetched from a table of 50 RNG "channels", */
+    /* index 0 being the most common (if not the only) used by the game. */
+    uint32_t idx = host_byteorder_32(*(uint32_t*)(rnd->table_indices + index * 4));
+
+    //printf("current index: %d, last: %d\n", idx, rnd->last_index);
+    /* The RNG table of 10000 entries is then indexed by previous index, together with an optional offset. */
+    int32_t value = host_byteorder_32(*(int32_t*)(pointer(rnd->table) + (idx + offset) * 4));
     
-    return 0;
+    return value;
 }
 
 int32_t rnd_call(const struct rnd *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)

@@ -20,7 +20,7 @@ extern "C"
 #include "engine_timer.h"
 #include "rnd.h"
 #include "configuration.h"
-#include "vector3.h"
+//#include "vector3.h"
 #include "stdgame.h"
 #include "sector.h"
 
@@ -150,7 +150,7 @@ static void draw_general_info()
 
 static void draw_rayman_position()
 {
-//    struct vector3 rayman = vector3_read(0x00BF0D98);
+//    struct vector3 rayman = struct vector3_read(0x00BF0D98);
 //    ImGui::Begin("Rayman");
 //    ImGui::Text("X: %f", rayman.x);
 //    ImGui::Text("Y: %f", rayman.y);
@@ -162,10 +162,10 @@ ImVec2 prev_mouse;
 
 static void move_camera()
 {
-//    if (ImGui::IsKeyDown('W')) camera->position = vector3_add(camera->position, vector3_mulf(camera->front, camera->speed));
-//    if (ImGui::IsKeyDown('A')) camera->position = vector3_sub(camera->position, vector3_mulf(camera->right, camera->speed));
-//    if (ImGui::IsKeyDown('S')) camera->position = vector3_sub(camera->position, vector3_mulf(camera->front, camera->speed));
-//    if (ImGui::IsKeyDown('D')) camera->position = vector3_add(camera->position, vector3_mulf(camera->right, camera->speed));
+//    if (ImGui::IsKeyDown('W')) camera->position = struct vector3_add(camera->position, struct vector3_mulf(camera->front, camera->speed));
+//    if (ImGui::IsKeyDown('A')) camera->position = struct vector3_sub(camera->position, struct vector3_mulf(camera->right, camera->speed));
+//    if (ImGui::IsKeyDown('S')) camera->position = struct vector3_sub(camera->position, struct vector3_mulf(camera->front, camera->speed));
+//    if (ImGui::IsKeyDown('D')) camera->position = struct vector3_add(camera->position, struct vector3_mulf(camera->right, camera->speed));
 //
 //    ImVec2 mouse = ImGui::GetMousePos();
 //
@@ -185,6 +185,19 @@ static void AspectRatio(ImGuiSizeCallbackData* data)
     float aspect_ratio = 648.0f / 520.0f;
     data->DesiredSize.x = IM_MAX(data->CurrentSize.x, data->CurrentSize.y);
     data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspect_ratio);
+}
+
+static void display_transform(struct transform* transform)
+{
+    matrix4 mat = matrix4_host_byteorder(transform->matrix);
+    mat = matrix4_inverse(matrix4_transpose(mat));
+    
+#define f32 host_byteorder_f32
+    ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m00, mat.m01, mat.m02, mat.m03);
+    ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m10, mat.m11, mat.m12, mat.m13);
+    ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m20, mat.m21, mat.m22, mat.m23);
+    ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m30, mat.m31, mat.m32, mat.m33);
+#undef f32
 }
 
 void gui_render_game(void* xfb_texture)
@@ -248,7 +261,10 @@ extern "C" void gui_render_callback(void* ctx)
         ImGui::End();
     }
     
-    
+    if (actor_rayman)
+    {
+        display_transform((struct transform*)pointer(actor_superobject(actor_rayman)->transform_global));
+    }
     
     if (configuration.camera_unlocked)
         move_camera();
@@ -259,8 +275,8 @@ extern "C" void gui_render_callback(void* ctx)
     ImGuiWindowFlags_NoResize;
     
     ImGui::Begin("RNG Table", &view_rng_table, flags);
+    ImGui::SetWindowSize(ImVec2(150,200));
     display_rng_table();
-    //ImGui::SetWindowSize(ImVec2(200,200));
     ImGui::SetWindowPos(ImVec2(display_size.x - ImGui::GetWindowWidth(), 40));
     ImGui::End();
     

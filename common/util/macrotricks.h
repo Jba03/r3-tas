@@ -79,13 +79,13 @@
 #ifdef LSB_FIRST
 #define MATRIX_DEFINITION(T, N) typedef struct matrix##N { union {  \
     struct { MAT_STRUCT(T, MATSPEC(N, DEFAULT_ORDER));  };  \
-    struct { struct vector##N MAT_ROWS##N;               };  \
+    struct { struct vector##N MAT_ROWS##N;              };  \
     struct { T m[N * N];                              };};  \
 } matrix##N;
 #else
 #define MATRIX_DEFINITION(T, N) typedef struct matrix##N { union {  \
     struct { MAT_STRUCT(T, MATSPEC(N, REVERSE));        };  \
-    struct { struct vector##N MAT_ROWS##N;               };  \
+    struct { struct vector##N MAT_ROWS##N;              };  \
     struct { T m[N * N];                              };};  \
 } matrix##N;
 #endif

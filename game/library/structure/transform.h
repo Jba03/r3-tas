@@ -2,7 +2,7 @@
 #define transform_h
 
 #include "structure.h"
-#include "matrix.h"
+#include "matrix4.h"
 
 #define transform_uninitialized             0
 #define transform_identity                  1
@@ -19,7 +19,7 @@ struct transform
 {
     readonly uint32_t type;
     padding(12)
-    readonly struct matrix4x4 matrix;
+    readonly matrix4 matrix;
     readonly struct vector3 scale;
 };
 

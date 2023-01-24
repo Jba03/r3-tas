@@ -65,7 +65,7 @@ struct mesh* mesh_alloc(void)
     m->n_indices = 0;
     m->vertices = NULL;
     m->indices = NULL;
-    m->transform = matrix4_identity;
+    //m->transform_global = matrix4_identity;
     m->color = vector4_new(1.0f, 1.0f, 1.0f, 1.0f);
     
     m->name = "Invalid Mesh";
@@ -102,7 +102,7 @@ struct mesh *mesh_sphere(const float sectors, const float stacks)
     sphere->vertices = malloc(sizeof(struct vertex) * sphere->n_vertices * 3);
     sphere->indices = malloc(sizeof(unsigned) * sphere->n_indices);
     
-    //sphere->vertices[1].position = vector3_new(0.0f, 10.0f, 0.0f);
+    //sphere->vertices[1].position = struct vector3_new(0.0f, 10.0f, 0.0f);
     
     int vertex = 0;
     for (int i = 0; i <= stacks; ++i)

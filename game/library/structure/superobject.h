@@ -2,6 +2,7 @@
 #define superobject_h
 
 #include "structure.h"
+#include "vector3.h"
 
 #define superobject_type_none                       0x0
 #define superobject_type_world                      0x1

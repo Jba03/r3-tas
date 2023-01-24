@@ -10,7 +10,7 @@
 
 #include "superobject.h"
 
-static inline struct superobject* sector_get_active(const struct superobject* fathersector, const vector3 position)
+static inline struct superobject* sector_get_active(const struct superobject* fathersector, const struct vector3 position)
 {
     const struct sector* sector_last;
     

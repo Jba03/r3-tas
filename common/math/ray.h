@@ -9,15 +9,15 @@
 #define ray_h
 
 #include "vector2.h"
-#include "vector3.h"
+//#include "vector3.h"
 #include "matrix4.h"
 
 #define RAY static inline
 
 struct ray
 {
-    vector3 origin;
-    vector3 direction;
+    struct vector3 origin;
+    struct vector3 direction;
 };
 
 RAY static inline struct ray raycast(const vector2 coord, const matrix4 projection, const matrix4 view, const float near, const float far)
@@ -35,8 +35,8 @@ RAY static inline struct ray raycast(const vector2 coord, const matrix4 projecti
     const vector4 origin = vector4_mul_matrix4(p1, inverse);
     const vector4 direction = vector4_mul_matrix4(p2, inverse);
     
-    ray.origin = vector3_new(origin.x, origin.y, origin.z);
-    ray.direction = vector3_new(direction.x, direction.y, direction.z);
+    ray.origin = struct vector3_new(origin.x, origin.y, origin.z);
+    ray.direction = struct vector3_new(direction.x, direction.y, direction.z);
     
     return ray;
 }

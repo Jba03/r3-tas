@@ -15,7 +15,6 @@
 
 extern "C"
 {
-#include "vector.h"
 #include "graphics.h"
 //#include "shadertypes.h"
 #include "camera.h"
@@ -251,7 +250,7 @@ void graphics_loop()
     
     SDL_ShowWindow(window);
 
-    //camera->position = vector3_new(0, 0, 0);
+    //camera->position = struct vector3_new(0, 0, 0);
     
 //    printf("position: (%f, %f, %f)\n", camera->position.x, camera->position.z, camera->position.y);
 //    printf("lookat: (%f, %f, %f)\n", lookat.x, lookat.z, lookat.y);
@@ -325,26 +324,29 @@ void graphics_loop()
     
     
     
-    //camera_look_at(camera, vector3_new(0.0f, 0.0f, 0.0f));
+    //camera_look_at(camera, struct vector3_new(0.0f, 0.0f, 0.0f));
     
     
     
-//    matrix4 view = camera_view_matrix(camera); // matrix4_lookat(camera->position, lookat, vector3_new(0.0f, 1.0f, 0.0f));
+//    matrix4 view = camera_view_matrix(camera); // matrix4_lookat(camera->position, lookat, struct vector3_new(0.0f, 1.0f, 0.0f));
 //    matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
 //
     
-    struct vector33 campos = *(struct vector33*)(memory.base + 0x00c531bc); //vector3_new(20.0f, 0.0f, 0.0f);
-    struct vector33 lookato = *(struct vector33*)(memory.base + 0x00c53910);
+    struct vector3 campos = *(struct vector3*)(memory.base + 0x00c531bc); //vector3_new(20.0f, 0.0f, 0.0f);
+    struct vector3 lookato = *(struct vector3*)(memory.base + 0x00c53910);
+    const float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
+    
+    //printf("fov: %f\n", fov);
     
     simd_float3 position;
-    position.x = host_byteorder_f32(campos.x);
-    position.z = host_byteorder_f32(campos.y);
-    position.y = host_byteorder_f32(campos.z);
+    position.x = host_byteorder_f32(*(uint32_t*)&campos.x);
+    position.z = host_byteorder_f32(*(uint32_t*)&campos.y);
+    position.y = host_byteorder_f32(*(uint32_t*)&campos.z);
     
     simd_float3 lookat;
-    lookat.x = host_byteorder_f32(lookato.x);
-    lookat.z = host_byteorder_f32(lookato.y);
-    lookat.y = host_byteorder_f32(lookato.z);
+    lookat.x = host_byteorder_f32(*(uint32_t*)&lookato.x);
+    lookat.z = host_byteorder_f32(*(uint32_t*)&lookato.y);
+    lookat.y = host_byteorder_f32(*(uint32_t*)&lookato.z);
     
 //    printf("pos: %f, %f, %f\n", position.x, position.y, position.z);
 //    printf("lookat: %f, %f, %f\n", lookat.x, lookat.y, lookat.z);
@@ -353,7 +355,7 @@ void graphics_loop()
                                                    lookat,
                                                    (simd_float3){0, 1, 0});
     
-    simd_float4x4 projection = matrix_perspective_left_hand(radians(90.0f), (float)width / (float)height, 0.1f, 1000.0f);
+    simd_float4x4 projection = matrix_perspective_left_hand(fov, (float)width / (float)height, 0.1f, 1000.0f);
     simd_float4x4 correction = matrix_make_rows(1.0f, 0.0f, 0.0f, 0.0f,
                                                 0.0f, 1.0f, 0.0f, 0.0f,
                                                 0.0f, 0.0f, 0.5f, 0.5f,
@@ -402,7 +404,7 @@ void graphics_loop()
             if (!collset) continue;
 
             const struct zdx_list* zddlist = (const struct zdx_list*)pointer(collset->zdd_list);
-            printf("zdd list: %X\n", offset(zddlist));
+            //printf("zdd list: %X\n", offset(zddlist));
             if (zddlist)
             {
                 for (unsigned int i = 0; i < host_byteorder_32(zddlist->n_elements); i++)
@@ -441,9 +443,11 @@ void graphics_loop()
 //                    }
                 }
             }
+            
+            
         };
 
-        printf("\n");
+        //printf("\n");
     }
     
     

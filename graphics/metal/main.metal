@@ -17,6 +17,7 @@ struct RasterizerData
     // returned from the vertex function.
     float4 position [[position]];
     
+    float4 eye;
     float3 normal;
     float2 texcoord;
     
@@ -80,10 +81,10 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
 //    "   texcoord = aTexCoord;\n"                                        \
 //    "   gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"  \
     
-    float3 pos = vertices[vertexID].position.xyz;
+    float4 pos = vertices[vertexID].position;
     //pos.x = -pos.x;
     
-    float4 position = uniform->projection * uniform->view * float4(pos, 1.0f);
+    float4 position = uniform->projection * uniform->view * float4(pos.xyz, 1.0f);
     //position.z = pos.z; //1.0-vertices[vertexID].position.z;
     
     //position.x = -position.x;
@@ -91,6 +92,7 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     out.texcoord = vertices[vertexID].texcoord.xy;
     out.position = position;
     out.normal = vertices[vertexID].normal.xyz;
+    out.eye = -(uniform->view * pos);
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
     
@@ -112,20 +114,37 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     float4 color = texture.sample(nearestSampler, in.texcoord, 0); //use_texture ? texture(checkerboard, texcoord * 4).rgb : vec3(1);
     float3 normal = normalize(in.normal);
     
-    float3 lightColor = float3(1,1,1);
-    float3 ambient = float3(0.25);
+    float3 ambientTerm = float3(0.5f);
+    
     float3 lightDir = normalize(lightPos - in.position.xyz);
+    float diffuseIntensity = saturate(dot(normal, lightDir));
+    float3 diffuseTerm = float3(1,1,1) * normal * diffuseIntensity;
+     
+    float3 specularTerm(0);
+    if (diffuseIntensity > 0)
+    {
+        float3 eyeDirection = normalize(in.eye.xyz);
+        float3 halfway = normalize(lightDir + eyeDirection);
+        float specularFactor = pow(saturate(dot(normal, halfway)), 0.1f);
+        specularTerm = float3(0.1) * float3(0.1) * 1.0f;
+    }
     
-    float diff = max(dot(lightDir, normal), 0.0);
-    float3 diffuse = diff * lightColor;
-    float3 viewDir = normalize(uniform->camera_pos.xyz - in.position.xyz);
-    float3 reflectDir = reflect(-lightDir, normal);
-    float spec = 0.0;
-    float3 halfwayDir = normalize(lightDir + viewDir);
-    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-    float3 specular = spec * lightColor * 1.0f;
+    out.color = float4((ambientTerm + diffuseTerm + specularTerm) * color.xyz, 1);
     
-    out.color = float4(float3(diffuse + specular + ambient) * color.xyz, 1.0f) * 1;
+//    float3 lightColor = float3(1,1,1);
+//    float3 ambient = float3(0.25);
+//    float3 lightDir = normalize(lightPos - in.position.xyz);
+//
+//    float diff = max(dot(lightDir, normal), 0.0);
+//    float3 diffuse = diff * lightColor;
+//    float3 viewDir = normalize(in.position.xyz);
+//    float3 reflectDir = reflect(-lightDir, normal);
+//    float spec = 0.0;
+//    float3 halfwayDir = normalize(lightDir + viewDir);
+//    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+//    float3 specular = spec * lightColor * 1.0f;
+//
+//    out.color = float4(float3(diffuse + specular + ambient) * color.xyz, 1.0f) * 1;
     //out.depth = 0.5f;
     
     return out;

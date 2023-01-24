@@ -11,6 +11,7 @@
 #include "opengl.h"
 #include "vertex.h"
 #include "matrix4.h"
+#include "transform.h"
 
 struct mesh
 {
@@ -22,7 +23,7 @@ struct mesh
     unsigned n_indices;
     unsigned* indices;
     
-    struct matrix4 transform;
+    struct transform* transform_global;
     struct vector4 color;
     
     void* internal_data;

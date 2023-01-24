@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "vector3.h"
+//#include "vector3.h"
 #include "endianness.h"
 
 #define GCN 0
@@ -54,7 +54,7 @@ typedef uint32_t    address;
 typedef uint32_t    pointer;
 typedef uint32_t    doublepointer;
 
-// typedef float vector3[3];
+// typedef float struct vector3[3];
 // typedef float vector4[4];
 
 #define align(S) __attribute__ ((aligned(S), packed))

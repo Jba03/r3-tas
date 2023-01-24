@@ -16,7 +16,6 @@
 #include "vector3.h"
 #include "vector4.h"
 #include "assert.h"
-#include "matrix.h"
 
 #define MATRIX4
 MATRIX4 MATRIX_DEFINITION(float, 4)
@@ -32,14 +31,11 @@ static const struct matrix4 matrix4_identity =
     0.0f, 0.0f, 0.0f, 1.0f,
 };
 
-MATRIX4 static inline struct matrix4 matrix4_from_internal(const struct matrix4x4 m)
+MATRIX4 static inline matrix4 matrix4_host_byteorder(struct matrix4 m)
 {
     struct matrix4 result = matrix4_identity;
     for (int i = 0; i < 16; i++)
-    {
-        uint32_t value = host_byteorder_32((*((uint32_t*)(&m.m00) + i)));
-        *(((uint32_t*)&result.m00) + i) = value;
-    }
+        result.m[i] = host_byteorder_f32(*((uint32_t*)&m.m + i));
     
     return result;
 }
@@ -303,7 +299,7 @@ MATRIX4 static inline struct matrix4 matrix4_make_scale(const float x, const flo
 
 /**
  * matrix4_make_scale_vector3:
- * Construct a 4x4 linear scale matrix from vector3 values
+ * Construct a 4x4 linear scale matrix from struct vector3 values
  *
  * .____________________.
  * |  v.x  0    0    0  |
@@ -410,7 +406,7 @@ VECTOR4 static inline struct vector4 vector4_mul_matrix4(const struct vector4 v,
 
 #endif
 
-#define matrix4_position(m) vector3_new(m.m30, m.m31, m.m32)
-#define matrix4_scale(m) vector3_new(m.m00, m.m11, m.m22)
+#define matrix4_position(m) struct vector3_new(m.m30, m.m31, m.m32)
+#define matrix4_scale(m) struct vector3_new(m.m00, m.m11, m.m22)
 
 #endif /* matrix4_h */

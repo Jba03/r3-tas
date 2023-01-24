@@ -10,7 +10,7 @@
 
 #include "mathc.h"
 #include "macrotricks.h"
-#include "vector3.h"
+//#include "vector3.h"
 #include "vector4.h"
 
 #define MATRIX3

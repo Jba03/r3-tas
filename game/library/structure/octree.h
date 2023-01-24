@@ -2,7 +2,7 @@
 #define octree_h
 
 #include "collide.h"
-#include "vector3.h"
+//#include "vector3.h"
 #include "vector4.h"
 
 #define OCTREE

@@ -190,7 +190,7 @@ static void gen_checkerboard_texture()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
-void graphics_draw_triangle(const vector3 a, const vector3 b, const vector3 c)
+void graphics_draw_triangle(const struct vector3 a, const struct vector3 b, const struct vector3 c)
 {
     GLuint vao;
     GLuint vbo;
@@ -221,7 +221,7 @@ void graphics_draw_triangle(const vector3 a, const vector3 b, const vector3 c)
     glDeleteBuffers(1, &vbo);
 }
 
-void graphics_draw_line(const vector3 start, struct vector3 end)
+void graphics_draw_line(const struct vector3 start, struct vector3 end)
 {
     GLuint vao;
     GLuint vbo;
@@ -297,7 +297,7 @@ static void graphics_main_loop()
     {
         camera->position = *(vector3*)(memory.base + 0x00c531bc);
         struct vector3 eye = camera->position;
-        struct vector3 up = vector3_new(-0.0f, 0.0f, 1.0f);
+        struct vector3 up = struct vector3_new(-0.0f, 0.0f, 1.0f);
         struct vector3 look_at = *(vector3*)(memory.base + 0x00c53910);
         view = matrix4_lookat(camera->position, look_at, up);
     }

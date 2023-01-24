@@ -10,7 +10,7 @@
 
 #include <stdbool.h>
 
-#include "vector3.h"
+//#include "vector3.h"
 #include "matrix4.h"
 
 #define CAMERA_NEAR 0.1f

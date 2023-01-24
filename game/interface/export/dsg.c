@@ -80,7 +80,7 @@ static void export(struct SuperObject* so, void* param)
                 
             case DSGVAR_TYPE_VECTOR:
             {
-                struct vector3 value = vector3_read(var.data_offset);
+                struct vector3 value = struct vector3_read(var.data_offset);
                 fwrite(&value.x, 1, sizeof(float), fp);
                 fwrite(&value.y, 1, sizeof(float), fp);
                 fwrite(&value.z, 1, sizeof(float), fp);
