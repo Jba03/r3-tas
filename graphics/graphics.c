@@ -230,3 +230,11 @@ void graphics_load(void)
     
     printf("n meshes: %d\n", current_mesh);
 }
+
+void graphics_unload(void)
+{
+    while (current_mesh--)
+    {
+        free(meshlist[current_mesh]);
+    }
+}

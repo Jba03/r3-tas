@@ -393,7 +393,7 @@ void graphics_loop()
 //    11F884C
     
     /* Draw ZDX */
-    if (hierarchy)
+    if (false)
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
         {

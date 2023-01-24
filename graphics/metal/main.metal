@@ -91,7 +91,7 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     
     out.texcoord = vertices[vertexID].texcoord.xy;
     out.position = position;
-    out.normal = vertices[vertexID].normal.xyz;
+    out.normal = (uniform->view * vertices[vertexID].normal).xyz;
     out.eye = -(uniform->view * pos);
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
@@ -111,16 +111,16 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
 {
     FragmentOutput out;
     
-    float4 color = texture.sample(nearestSampler, in.texcoord, 0); //use_texture ? texture(checkerboard, texcoord * 4).rgb : vec3(1);
+    float4 color = texture.sample(nearestSampler, in.texcoord, 0);
     float3 normal = normalize(in.normal);
     
     float3 ambientTerm = float3(0.5f);
     
     float3 lightDir = normalize(lightPos - in.position.xyz);
     float diffuseIntensity = saturate(dot(normal, lightDir));
-    float3 diffuseTerm = float3(1,1,1) * normal * diffuseIntensity;
+    float3 diffuseTerm = float3(1,1,1) * diffuseIntensity;
      
-    float3 specularTerm(0);
+    float3 specularTerm (0);
     if (diffuseIntensity > 0)
     {
         float3 eyeDirection = normalize(in.eye.xyz);
@@ -130,22 +130,6 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     }
     
     out.color = float4((ambientTerm + diffuseTerm + specularTerm) * color.xyz, 1);
-    
-//    float3 lightColor = float3(1,1,1);
-//    float3 ambient = float3(0.25);
-//    float3 lightDir = normalize(lightPos - in.position.xyz);
-//
-//    float diff = max(dot(lightDir, normal), 0.0);
-//    float3 diffuse = diff * lightColor;
-//    float3 viewDir = normalize(in.position.xyz);
-//    float3 reflectDir = reflect(-lightDir, normal);
-//    float spec = 0.0;
-//    float3 halfwayDir = normalize(lightDir + viewDir);
-//    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-//    float3 specular = spec * lightColor * 1.0f;
-//
-//    out.color = float4(float3(diffuse + specular + ambient) * color.xyz, 1.0f) * 1;
-    //out.depth = 0.5f;
     
     return out;
 }

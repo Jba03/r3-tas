@@ -27,6 +27,8 @@ void graphics_init(void);
 
 void graphics_load(void);
 
+void graphics_unload(void);
+
 void graphics_set_viewport(int width, int height);
 
 void graphics_draw_box(struct vector3 position, struct vector3 scale, struct vector3 rotation, struct vector4 color);
