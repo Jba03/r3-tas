@@ -16,7 +16,6 @@
 extern "C"
 {
 #include "graphics.h"
-//#include "shadertypes.h"
 #include "camera.h"
 #include "SDL.h"
 
