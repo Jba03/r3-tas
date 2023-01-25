@@ -175,7 +175,9 @@ static void update(const char* controller)
     if just_entered_mode(6)
     {
         info(BOLD COLOR_PINK "Level transition began (frame %d)\n", engine->timer.frame);
+#ifdef OLD_VERSION
         graphics_unload();
+#endif
     }
     
     if just_entered_mode(9)
