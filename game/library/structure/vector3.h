@@ -17,7 +17,6 @@
 #define VECTOR3
 VECTOR3 VECTOR_DEFINITION(float, 3)
 
-
 VECTOR3 static inline struct vector3 vector3_host_byteorder(const struct vector3 v)
 {
     struct vector3 result;

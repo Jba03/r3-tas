@@ -14,6 +14,15 @@
 #define VECTOR2
 VECTOR2 VECTOR_DEFINITION(float, 2)
 
+VECTOR2 static inline struct vector2 vector2_host_byteorder(const struct vector2 v)
+{
+    struct vector2 result;
+    result.x = host_byteorder_f32(*(uint32_t*)&v.x);
+    result.y = host_byteorder_f32(*(uint32_t*)&v.y);
+    
+    return result;
+}
+
 /**
  * vector2_new:
  * Creates a new two-component vector

@@ -8,7 +8,6 @@
 #ifndef vector4_h
 #define vector4_h
 
-#include "mathc.h"
 #include "macrotricks.h"
 #include "structure.h"
 

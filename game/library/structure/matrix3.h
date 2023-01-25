@@ -8,10 +8,8 @@
 #ifndef matrix3_h
 #define matrix3_h
 
-#include "mathc.h"
 #include "macrotricks.h"
-//#include "vector3.h"
-#include "vector4.h"
+#include "vector3.h"
 
 #define MATRIX3
 MATRIX3 MATRIX_DEFINITION(float, 3)

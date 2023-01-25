@@ -9,7 +9,7 @@
 #define ray_h
 
 #include "vector2.h"
-//#include "vector3.h"
+#include "vector3.h"
 #include "matrix4.h"
 
 #define RAY static inline
