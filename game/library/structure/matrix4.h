@@ -406,7 +406,8 @@ VECTOR4 static inline struct vector4 vector4_mul_matrix4(const struct vector4 v,
 
 #endif
 
-#define matrix4_position(m) struct vector3_new(m.m30, m.m31, m.m32)
-#define matrix4_scale(m) struct vector3_new(m.m00, m.m11, m.m22)
+#define game_matrix4_position(m) vector3_new(m.m21, m.m22, m.m23)
+#define game_matrix4_scale(m) vector3_new(m.m31, m.m32, m.m32)
+#define game_matrix4_rotation_z(m) atan2(m.m01, m.m02)
 
 #endif /* matrix4_h */

@@ -184,7 +184,7 @@ static void update(const char* controller)
     {
         r3_load();
 #ifdef OLD_VERSION
-        graphics_load();
+        //graphics_load();
 #endif
     }
     
@@ -259,7 +259,7 @@ static void video(struct on_video_payload* payload)
 int on_load(void)
 {
 #ifdef OLD_VERSION
-    graphics_init();
+    //graphics_init();
 #endif
     
 //    printf("sizeof default: %ul\n", sizeof(struct vector4));

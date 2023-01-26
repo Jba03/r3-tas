@@ -114,4 +114,22 @@ VECTOR2 static inline struct vector2 vector2_negate(const struct vector2 vector)
     return result;
 }
 
+/**
+ * vector2_dot:
+ * Return the dot product of `a` and `b`
+ */
+VECTOR2 static inline float vector2_dot(const struct vector2 a, const struct vector2 b)
+{
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+/**
+ * vector2_dot:
+ * Return the dot product of `a` and `b`
+ */
+VECTOR2 static inline float vector2_length(const struct vector2 a)
+{
+    return sqrt(a.x * a.x + a.y * a.y);
+}
+
 #endif /* vector2_h */

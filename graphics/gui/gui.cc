@@ -21,6 +21,7 @@ extern "C"
 #include "rnd.h"
 #include "configuration.h"
 //#include "vector3.h"
+#include "vector2.h"
 #include "stdgame.h"
 #include "sector.h"
 
@@ -190,7 +191,10 @@ static void AspectRatio(ImGuiSizeCallbackData* data)
 static void display_transform(struct transform* transform)
 {
     matrix4 mat = matrix4_host_byteorder(transform->matrix);
-    mat = matrix4_inverse(matrix4_transpose(mat));
+    
+    transform->matrix.m21 = 0;
+    transform->matrix.m22 = 0;
+    transform->matrix.m23 = 0;
     
 #define f32 host_byteorder_f32
     ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m00, mat.m01, mat.m02, mat.m03);
@@ -272,12 +276,13 @@ extern "C" void gui_render_callback(void* ctx)
     ImGuiWindowFlags flags =
     ImGuiWindowFlags_NoTitleBar |
     ImGuiWindowFlags_NoMove |
-    ImGuiWindowFlags_NoResize;
+    ImGuiWindowFlags_NoResize |
+    ImGuiWindowFlags_NoBackground;
     
     ImGui::Begin("RNG Table", &view_rng_table, flags);
-    ImGui::SetWindowSize(ImVec2(150,200));
+    ImGui::SetWindowSize(ImVec2(150, display_size.y));
     display_rng_table();
-    ImGui::SetWindowPos(ImVec2(display_size.x - ImGui::GetWindowWidth(), 40));
+    ImGui::SetWindowPos(ImVec2(display_size.x - ImGui::GetWindowWidth(), 140));
     ImGui::End();
     
     if (engine)

@@ -18,7 +18,6 @@ extern "C"
 #include "graphics.h"
 #include "camera.h"
 #include "SDL.h"
-
 }
 
 #include "game.h"
