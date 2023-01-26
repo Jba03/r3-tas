@@ -8,10 +8,13 @@
 #include <vector>
 #include <bitset>
 
+#include "log.h"
+
 static ImVec4 bit_on_color = ImColor(0.5f, 0.5f, 0.5f);
 static ImVec4 bit_off_color = ImColor(0.3f, 0.3f, 0.3f);
 
-static void DisplayBit(bool on, int idx, std::string description = "")
+template <typename T>
+static void DisplayBit(T* data, bool on, int idx, std::string description = "")
 {
     ImGui::TextColored(on ? bit_on_color : bit_off_color, "%1d", on ? 1 : 0);
     if (ImGui::IsItemHovered())
@@ -21,15 +24,21 @@ static void DisplayBit(bool on, int idx, std::string description = "")
         ImGui::Text("%s", description.c_str());
         ImGui::EndTooltip();
     }
+    
+    if (ImGui::IsItemClicked() && configuration.enable_cheats)
+    {
+        info("Toggle bit %d\n", idx);
+        *(uint32_t*)data ^= game_byteorder_32((1 << idx));
+    }
 }
 
 template <typename T>
-static void DisplayBits(T data, bool all = true, std::vector<std::string> description = {})
+static void DisplayBits(T* data, bool all = true, std::vector<std::string> description = {})
 {
-    std::bitset bits = std::bitset<sizeof(T)*8>(data);
+    std::bitset bits = std::bitset<sizeof(T)*8>((uint32_t)host_byteorder_32((*(T*)data)));
     
     size_t total = bits.count();
-    if (true) total = sizeof(data) * 8;
+    if (true) total = sizeof((*(T*)data)) * 8;
     
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     ImGui::TextColored(bit_off_color, "0b");
@@ -46,9 +55,9 @@ static void DisplayBits(T data, bool all = true, std::vector<std::string> descri
     {
         ImGui::SameLine();
         if (total < description.size())
-            DisplayBit(bits[total], total, description.at(total));
+            DisplayBit(data, bits[total], total, description.at(total));
         else
-            DisplayBit(bits[total], total);
+            DisplayBit(data, bits[total], total);
     }
     
     ImGui::PopStyleVar();

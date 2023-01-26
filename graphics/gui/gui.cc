@@ -192,10 +192,6 @@ static void display_transform(struct transform* transform)
 {
     matrix4 mat = matrix4_host_byteorder(transform->matrix);
     
-    transform->matrix.m21 = 0;
-    transform->matrix.m22 = 0;
-    transform->matrix.m23 = 0;
-    
 #define f32 host_byteorder_f32
     ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m00, mat.m01, mat.m02, mat.m03);
     ImGui::Text("%.2f  %.2f  %.2f  %.2f", mat.m10, mat.m11, mat.m12, mat.m13);

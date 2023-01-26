@@ -226,7 +226,8 @@ void superobject_info(struct superobject* so)
                         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
                         
                         ImGui::BeginChild("FlagName", ImVec2(130, 50));
-                        ImGui::TextColored(bit_off_color, "Superobject flags");
+                        ImGui::TextColored(bit_off_color, "SPO flags");
+                        ImGui::TextColored(bit_off_color, "SPO draw flags");
                         ImGui::TextColored(bit_off_color, "Custom bits");
                         ImGui::TextColored(bit_off_color, "AI custom bits");
                         ImGui::EndChild();
@@ -234,9 +235,10 @@ void superobject_info(struct superobject* so)
                         ImGui::SameLine();
                         
                         ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
-                        DisplayBits(host_byteorder_32(selected_superobject->flags), false, superobject_flag_description);
-                        DisplayBits(host_byteorder_32(stdgame->custom_bits), true);
-                        DisplayBits(host_byteorder_32(stdgame->ai_custom_bits), true, ai_custom_bits_description);
+                        DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
+                        DisplayBits(&selected_superobject->draw_flags, false);
+                        DisplayBits(&stdgame->custom_bits, true);
+                        DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
                         ImGui::EndChild();
                         
                         ImGui::PopStyleVar();
