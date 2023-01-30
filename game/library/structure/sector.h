@@ -18,7 +18,7 @@ struct sector
     readonly struct vector3 aabb_min;
     readonly struct vector3 aabb_max;
     
-    readonly float far_plane;
+    readonly float32 far_plane;
     readonly uint8 is_virtual;
     readonly int8 camera_type;
     readonly int8 counter;
@@ -27,7 +27,7 @@ struct sector
     readonly uint8 fog;
     
 #if platform == GCN
-    readonly const char name[0x104];
+    readonly char8 name[0x104];
 #endif
 };
 
