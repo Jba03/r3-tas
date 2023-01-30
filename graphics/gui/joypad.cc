@@ -51,8 +51,8 @@ static void display_joypad()
     ImU32 col = IM_COL32(255, 255, 255, 30);
     if (joystick_radius >= 35.0f)
     {
-        drawlist->AddText(ctrlstickpos, col, std::string("M(" + std::to_string(input.joymain_x) + "," + std::to_string(input.joymain_y) + ")").c_str());
-        drawlist->AddText(cstickpos, col, std::string("C(" + std::to_string(input.joyc_x) + "," + std::to_string(input.joyc_y) + ")").c_str());
+        drawlist->AddText(ctrlstickpos, col, std::string("M(" + std::to_string((int)input.joymain_x) + "," + std::to_string((int)input.joymain_y) + ")").c_str());
+        drawlist->AddText(cstickpos, col, std::string("C(" + std::to_string((int)input.joyc_x) + "," + std::to_string((int)input.joyc_y) + ")").c_str());
     }
     else
     {
