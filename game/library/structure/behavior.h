@@ -5,7 +5,7 @@
 
 struct behavior
 {
-    readonly const char name[256]; /* 256 on GCN, at least */
+    readonly char8 name[256]; /* 256 on GCN, at least */
     readonly pointer scripts;
     readonly pointer script_first;
     readonly uint8 n_scripts;

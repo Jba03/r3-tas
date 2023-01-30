@@ -5,7 +5,7 @@
 
 struct action_entry
 {
-    readonly char name[0x50];
+    readonly char8 name[0x50];
     readonly uint32 param[8];
     readonly pointer tree;
     readonly uint8 used;

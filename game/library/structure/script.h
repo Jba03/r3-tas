@@ -69,7 +69,7 @@ struct script
 
 struct macro
 {
-    readonly char name[0x100];
+    readonly char8 name[0x100];
     readonly pointer script_initial;
     readonly pointer script_current;
 };

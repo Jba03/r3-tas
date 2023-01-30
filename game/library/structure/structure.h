@@ -36,6 +36,8 @@
 
 #define readonly // const
 
+typedef char        char8;
+typedef uint8_t     uchar8;
 typedef int8_t      int8;
 typedef uint8_t     uint8;
 typedef int16_t     int16;

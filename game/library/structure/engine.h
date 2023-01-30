@@ -7,9 +7,9 @@
 struct engine
 {
     readonly uint8 mode;
-    readonly char current_level_name[30];
-    readonly char next_level_name[30];
-    readonly char first_level_name[30];
+    readonly char8 current_level_name[30];
+    readonly char8 next_level_name[30];
+    readonly char8 first_level_name[30];
     readonly uint8 input_mode;
     readonly uint8 display_fix_mode;
     padding(3)
@@ -37,9 +37,9 @@ struct engine
     bool engine_paused2;
     bool engine_gamesave;
     
-    const char* level_names[150];
-    const char* demo_names[30];
-    const char* demo_level_names[30];
+    char8 level_names[150][30];
+    char8 demo_names[30][12];
+    char8 demo_level_names[30][12];
     
     uint8 demo_count;
     uint8 level_count;

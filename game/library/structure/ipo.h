@@ -12,7 +12,7 @@ struct ipo {
     readonly float32 last_ratio_used;
 #if platform == GCN || platform == PC
     padding(4) /* Unknown? */
-    readonly const char name[0x32];
+    readonly char8 name[0x32];
 #endif
 };
 
