@@ -9,8 +9,8 @@ struct graphnode
     readonly pointer prev;
     readonly pointer parent;
     readonly pointer waypoint;
-    readonly int32_t type;
-    readonly int32_t type_initial;
+    readonly int32 type;
+    readonly int32 type_initial;
     readonly pointer arc_list;
 };
 

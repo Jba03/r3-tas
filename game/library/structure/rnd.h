@@ -5,11 +5,11 @@
 
 struct rnd
 {
-    readonly uint32_t table_size;
-    readonly uint32_t table_indices[50];
-    readonly uint32_t last_index;
-    readonly uint32_t table_max;
-    readonly uint32_t table_max_inverse; /* float */
+    readonly uint32 table_size;
+    readonly uint32 table_indices[50];
+    readonly uint32 last_index;
+    readonly uint32 table_max;
+    readonly uint32 table_max_inverse; /* float */
     readonly pointer table;
 };
 

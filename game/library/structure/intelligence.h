@@ -10,7 +10,7 @@ struct intelligence
     readonly pointer current_behavior;
     readonly pointer previous_behavior;
     readonly pointer action_table;
-    readonly uint32_t initialize_behavior;
+    readonly uint32 initialize_behavior;
 };
 
 #endif /* intelligence_h */

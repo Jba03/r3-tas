@@ -9,7 +9,7 @@ struct aimodel
     readonly pointer reflex_behavior_list;
     readonly pointer dsgvar;
     readonly pointer macrolist;
-    readonly uint8_t secondpass;
+    readonly uint8 secondpass;
     padding(3)
 };
 

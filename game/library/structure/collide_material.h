@@ -24,13 +24,13 @@
 
 struct collide_material
 {
-    readonly int16_t zonetype;
-    readonly uint16_t identifier;
-    readonly float direction_x;
-    readonly float direction_y;
-    readonly float direction_z;
-    readonly float coefficient;
-    readonly uint16_t aitype;
+    readonly int16 zonetype;
+    readonly uint16 identifier;
+    readonly float32 direction_x;
+    readonly float32 direction_y;
+    readonly float32 direction_z;
+    readonly float32 coefficient;
+    readonly uint16 aitype;
     padding(2)
 };
 

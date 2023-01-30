@@ -6,13 +6,13 @@
 struct input_entry
 {
     padding(6 * 4) /* ? */
-    readonly uint32_t num_keywords;
+    readonly uint32 num_keywords;
     readonly pointer keyword_array;
     readonly pointer action_name;
     readonly pointer entry_name;
-    readonly int32_t state;
-    readonly float analogvalue;
-    readonly int8_t active;
+    readonly int32 state;
+    readonly float32 analogvalue;
+    readonly int8 active;
     padding(3)
 };
 

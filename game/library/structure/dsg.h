@@ -58,19 +58,19 @@ static const char * const dsgvar_typenames[] =
 
 struct dsgvar_info
 {
-    readonly uint32_t mem_offset;
-    readonly uint32_t type;
-    readonly int16_t save_type;
+    readonly uint32 mem_offset;
+    readonly uint32 type;
+    readonly int16 save_type;
     padding(2)
-    readonly uint32_t objtree_init_type;
+    readonly uint32 objtree_init_type;
 };
 
 struct dsgvar
 {
     readonly pointer memory;
     readonly pointer info;
-    readonly uint32_t memory_size;
-    readonly uint8_t info_length;
+    readonly uint32 memory_size;
+    readonly uint8 info_length;
     padding(3)
 };
 

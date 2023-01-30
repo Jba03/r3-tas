@@ -19,12 +19,12 @@ struct sector
     readonly struct vector3 aabb_max;
     
     readonly float far_plane;
-    readonly uint8_t is_virtual;
-    readonly int8_t camera_type;
-    readonly int8_t counter;
-    readonly int8_t priority;
+    readonly uint8 is_virtual;
+    readonly int8 camera_type;
+    readonly int8 counter;
+    readonly int8 priority;
     readonly pointer skymaterial;
-    readonly uint8_t fog;
+    readonly uint8 fog;
     
 #if platform == GCN
     readonly const char name[0x104];

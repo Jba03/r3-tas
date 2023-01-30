@@ -14,34 +14,36 @@
 #define superobject_type_geometric_object           0x400
 #define superobject_type_geometric_shadow_object    0x80000
 
+/* TODO: Add draw flags */
+
 struct superobject
 {
-    readonly uint32_t type;
+    readonly uint32 type;
     readonly pointer data;
     readonly pointer first_child;
     readonly pointer last_child;
-    readonly int32_t n_children;
+    readonly int32 n_children;
     readonly pointer next;
     readonly pointer prev;
     readonly pointer parent;
     readonly pointer transform_local;
     readonly pointer transform_global;
-    readonly int32_t prev_frame_processed;
-    readonly int32_t draw_flags;
-    readonly uint32_t flags;
+    readonly int32 prev_frame_processed;
+    readonly int32 draw_flags;
+    readonly uint32 flags;
     readonly pointer visual_bbox;
     readonly pointer collide_bbox;
     readonly struct vector3 semi_lookat;
-    readonly float transparency;
-    readonly uint32_t outline_color;
-    readonly int32_t display_priority;
-    readonly int32_t ilstatus; /* ? */
+    readonly float32 transparency;
+    readonly uint32 outline_color;
+    readonly int32 display_priority;
+    readonly int32 ilstatus; /* ? */
     readonly struct vector3 ambient_color;
     readonly struct vector3 parallel_direction;
     readonly struct vector3 parallel_color;
-    readonly uint8_t superimpose;
-    readonly uint8_t is_superobject;
-    readonly uint8_t transition;
+    readonly uint8 superimpose;
+    readonly uint8 is_superobject;
+    readonly uint8 transition;
     padding(1)
 };
 

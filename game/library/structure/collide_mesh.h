@@ -13,9 +13,9 @@
 struct collide_mesh_visual
 {
     readonly pointer visual_material;
-    readonly int16_t n_faces;
-    readonly int16_t n_uvs;
-    readonly int16_t n_uv_stages;
+    readonly int16 n_faces;
+    readonly int16 n_uvs;
+    readonly int16 n_uv_stages;
     padding(2)
     readonly pointer face_indices;
     readonly pointer face_indices_uv;
@@ -24,13 +24,13 @@ struct collide_mesh_visual
     readonly pointer edges;
     readonly pointer adjacent_faces;
     readonly pointer this_indexlist;
-    readonly int16_t n_used_indices;
-    readonly int16_t bbox_index;
-    readonly uint32_t displaylist;
+    readonly int16 n_used_indices;
+    readonly int16 bbox_index;
+    readonly uint32 displaylist;
     readonly pointer unknown;
-    readonly uint8_t portalvisibility;
+    readonly uint8 portalvisibility;
     padding(3)
-    readonly uint32_t vao[4];
+    readonly uint32 vao[4];
 };
 
 struct collide_mesh
@@ -38,13 +38,13 @@ struct collide_mesh
     readonly pointer material;
     readonly pointer face_indices;
     readonly pointer normals;
-    readonly int16_t n_faces;
-    readonly int16_t aabb_index;
+    readonly int16 n_faces;
+    readonly int16 aabb_index;
     readonly pointer geo_visualization; /* above struct */
     readonly pointer face_edges;
     readonly pointer edge_normals;
     readonly pointer edge_coefficients;
-    readonly int16_t n_edges;
+    readonly int16 n_edges;
     padding(2)
 };
 

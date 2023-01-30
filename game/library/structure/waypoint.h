@@ -6,7 +6,7 @@
 struct waypoint
 {
     readonly struct vector3 position;
-    readonly float radius;
+    readonly float32 radius;
     readonly pointer superobject;
 };
 

@@ -21,23 +21,23 @@ struct macdpid
     readonly float32 data6;
     readonly struct { readonly float angle; readonly struct vector3 axis; } data7;
     readonly struct { readonly float angle; readonly struct vector3 axis; } data8;
-    readonly int8_t data9;
+    readonly int8 data9;
     padding(1)
-    readonly uint16_t data10;
+    readonly uint16 data10;
     readonly struct vector3 data11;
     readonly float32 data12;
     readonly struct vector3 data13;
     readonly float32 data14;
-    readonly uint8_t data15;
+    readonly uint8 data15;
     padding(3)
 };
 
 struct dynamics_base
 {
-    readonly int32_t object_type;
+    readonly int32 object_type;
     readonly pointer idcard;
-    readonly uint32_t flags;
-    readonly uint32_t endflags;
+    readonly uint32 flags;
+    readonly uint32 endflags;
     readonly float32 gravity;
     readonly float32 slopelimit;
     readonly float32 slope_cosine;
@@ -54,7 +54,7 @@ struct dynamics_base
     readonly struct transform transform_previous;
     readonly struct transform transform_current;
     readonly matrix3 rotation_imposed;
-    readonly uint8_t nframe;
+    readonly uint8 nframe;
     padding(3)
     readonly pointer report;
     padding(4)
@@ -79,17 +79,17 @@ struct dynamics_advanced
     readonly struct vector3 inertia_translation;
     readonly struct vector3 ground_normal;
     readonly struct vector3 wall_normal;
-    readonly int8_t collide_count;
+    readonly int8 collide_count;
     padding(3)
 };
 
 struct dynamics_complex
 {
-    readonly float tilt_strength;
-    readonly float tilt_inertia;
-    readonly float tilt_origin;
-    readonly float tilt_angle;
-    readonly float hanging_limit;
+    readonly float32 tilt_strength;
+    readonly float32 tilt_inertia;
+    readonly float32 tilt_origin;
+    readonly float32 tilt_angle;
+    readonly float32 hanging_limit;
     readonly struct vector3 contact;
     readonly struct vector3 fall_translation;
     readonly struct macdpid macdpid;
@@ -111,7 +111,7 @@ struct dynam
 {
     readonly pointer dynamics;
     readonly pointer parsedata;
-    readonly uint32_t used_mechanics;
+    readonly uint32 used_mechanics;
 };
 
 #define dynamics_size(dynam) (host_byteorder_32((dynam).base.endflags) & 0x3)

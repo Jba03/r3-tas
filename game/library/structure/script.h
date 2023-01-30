@@ -53,11 +53,11 @@
 struct script_node
 {
 #if platform == GCN
-    readonly uint32_t param;
+    readonly uint32 param;
     padding(3)
-    readonly uint8_t type;
+    readonly uint8 type;
     padding(2)
-    readonly uint8_t depth;
+    readonly uint8 depth;
     padding(1)
 #endif
 };
@@ -77,7 +77,7 @@ struct macro
 struct macro_list
 {
     readonly pointer macros;
-    readonly uint8_t n_macros;
+    readonly uint8 n_macros;
     padding(3)
 };
 

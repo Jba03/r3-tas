@@ -17,16 +17,16 @@
 
 struct collide_object
 {
-    readonly int16_t n_vertices;
-    readonly int16_t n_elements;
-    readonly int16_t n_bboxes;
+    readonly int16 n_vertices;
+    readonly int16 n_elements;
+    readonly int16 n_bboxes;
     padding(2)
     readonly pointer vertices;
     readonly pointer element_types;
     readonly doublepointer elements;
     readonly pointer octree;
     readonly pointer bboxes;
-    readonly float bounding_sphere_radius;
+    readonly float32 bounding_sphere_radius;
     readonly struct vector4 bounding_sphere_position;
 };
 

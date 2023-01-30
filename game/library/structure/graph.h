@@ -7,7 +7,7 @@ struct graph
 {
     readonly pointer node_first;
     readonly pointer node_last;
-    readonly int32_t n_nodes;
+    readonly int32 n_nodes;
 };
 
 #endif /* graph_h */

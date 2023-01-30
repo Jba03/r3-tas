@@ -9,7 +9,7 @@ struct mind
     readonly pointer intelligence;
     readonly pointer reflex;
     readonly pointer dsgmemory;
-    readonly uint8_t run_intelligence;
+    readonly uint8 run_intelligence;
     padding(3)
 };
 

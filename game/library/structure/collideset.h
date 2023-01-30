@@ -20,10 +20,10 @@ struct collider_info
 {
     readonly pointer collider_actors[2]; /* ::so */
     readonly struct vector3 collider_vectors[2];
-    readonly float collider_real[2];
-    readonly uint8_t collider_type;
-    readonly uint8_t collider_prio;
-    readonly uint8_t unused[2];
+    readonly float32 collider_real[2];
+    readonly uint8 collider_type;
+    readonly uint8 collider_prio;
+    readonly uint8 unused[2];
 };
 
 struct actor_collideset
@@ -40,13 +40,13 @@ struct actor_collideset
     readonly pointer zde_activation_current;
     readonly pointer zdr_activation_current;
     readonly pointer zdm_activation_current;
-    readonly uint32_t zdd_privileged_zone;
-    readonly uint32_t zde_privileged_zone;
-    readonly uint32_t zdm_privileged_zone;
-    readonly uint32_t zdr_privileged_zone;
-    readonly uint8_t computefrequency;
-    readonly uint8_t character_priority;
-    readonly uint8_t collision_flag;
+    readonly uint32 zdd_privileged_zone;
+    readonly uint32 zde_privileged_zone;
+    readonly uint32 zdm_privileged_zone;
+    readonly uint32 zdr_privileged_zone;
+    readonly uint8 computefrequency;
+    readonly uint8 character_priority;
+    readonly uint8 collision_flag;
     padding(1)
     readonly struct collider_info collider_info;
 };
@@ -55,8 +55,8 @@ struct zdx_list
 {
     readonly pointer first_element;
     readonly pointer unknown; /* gc only? mirror of above field */
-    readonly int32_t n_elements;
-    readonly uint16_t n_zdx;
+    readonly int32 n_elements;
+    readonly uint16 n_zdx;
     padding(2)
 };
 
