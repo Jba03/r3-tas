@@ -12,10 +12,10 @@ static void display_dynamics(const struct dynamics* dynamics)
     //DisplayBits((dynamics->base.idcard));
     
     
-#define f32 host_byteorder_f32
+#define f32(v) host_byteorder_f32(*(uint32_t*)&v)
     
     #pragma mark Base
-    ImGui::BeginChild("Dynamics: base block", ImVec2(ImMax(ImGui::GetContentRegionAvail().x / 3, 150.0f), ImGui::GetContentRegionAvail().y));
+    ImGui::BeginChild("Dynamics: base block", ImVec2(ImMax(ImGui::GetContentRegionAvail().x / 3, 150.0f), ImGui::GetContentRegionAvail().y / 1.5));
     {
         ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Base @ %X", offset(&dynamics->base));
         
@@ -30,27 +30,35 @@ static void display_dynamics(const struct dynamics* dynamics)
         ImGui::Text("Slide: %f", f32(dynamics->base.rebound));
         ImGui::Text("Rebound: %f", f32(dynamics->base.rebound));
         
+        const vector3 imposedSpeed = vector3_host_byteorder(dynamics->base.speed_impose);
+        const vector3 proposedSpeed = vector3_host_byteorder(dynamics->base.speed_propose);
+        const vector3 previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
+        const vector3 scale = vector3_host_byteorder(dynamics->base.scale);
+        const vector3 animSpeed = vector3_host_byteorder(dynamics->base.anim_speed);
+        const vector3 safeTranslation = vector3_host_byteorder(dynamics->base.translation_safe);
+        const vector3 addedTranslation = vector3_host_byteorder(dynamics->base.translation_add);
+        
         ImGui::Spacing();
         ImGui::Text("Imposed speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.speed_impose.x), f32(dynamics->base.speed_impose.y), f32(dynamics->base.speed_impose.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", imposedSpeed.x, imposedSpeed.y, imposedSpeed.z);
         ImGui::Spacing();
         ImGui::Text("Proposed speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.speed_propose.x), f32(dynamics->base.speed_propose.y), f32(dynamics->base.speed_propose.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", proposedSpeed.x, proposedSpeed.y, proposedSpeed.z);
         ImGui::Spacing();
-        ImGui::Text("Previous speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.speed_previous.x), f32(dynamics->base.speed_previous.y), f32(dynamics->base.speed_previous.z));
+        ImGui::Text("Previous speed: %.3f", sqrt(previousSpeed.x * previousSpeed.x + previousSpeed.y * previousSpeed.y));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", previousSpeed.x, previousSpeed.y, previousSpeed.z);
         ImGui::Spacing();
         ImGui::Text("Scale:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.scale.x), f32(dynamics->base.scale.y), f32(dynamics->base.scale.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", scale.x, scale.y, scale.z);
         ImGui::Spacing();
         ImGui::Text("Animation speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.anim_speed.x), f32(dynamics->base.anim_speed.y), f32(dynamics->base.anim_speed.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", animSpeed.x, animSpeed.y, animSpeed.z);
         ImGui::Spacing();
         ImGui::Text("Safe translation:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.translation_safe.x), f32(dynamics->base.translation_safe.y), f32(dynamics->base.translation_safe.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", safeTranslation.x, safeTranslation.y, safeTranslation.z);
         ImGui::Spacing();
         ImGui::Text("Added translation:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->base.translation_add.x), f32(dynamics->base.translation_add.y), f32(dynamics->base.translation_add.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", addedTranslation.x, addedTranslation.y, addedTranslation.z);
     }
     ImGui::EndChild();
     
@@ -78,7 +86,7 @@ static void display_dynamics(const struct dynamics* dynamics)
     ImGui::SameLine();
     
     #pragma mark Advanced
-    ImGui::BeginChild("Dynamics: advanced block", ImVec2(ImMax(ImGui::GetContentRegionAvail().x / 3, 150.0f), ImGui::GetContentRegionAvail().y));
+    ImGui::BeginChild("Dynamics: advanced block", ImVec2(ImMax(ImGui::GetContentRegionAvail().x / 3, 150.0f), ImGui::GetContentRegionAvail().y / 1.5));
     {
         ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", offset(&dynamics->advanced));
         
@@ -95,36 +103,45 @@ static void display_dynamics(const struct dynamics* dynamics)
         
         ImGui::Spacing();
         
+        const vector3 maxSpeed = vector3_host_byteorder(dynamics->advanced.speed_max);
+        const vector3 streamSpeed = vector3_host_byteorder(dynamics->advanced.speed_stream);
+        const vector3 addSpeed = vector3_host_byteorder(dynamics->advanced.speed_add);
+        const vector3 limit = vector3_host_byteorder(dynamics->advanced.limit);
+        const vector3 collisionTranslation = vector3_host_byteorder(dynamics->advanced.collision_translation);
+        const vector3 inertiaTranslation = vector3_host_byteorder(dynamics->advanced.inertia_translation);
+        const vector3 groundNormal = vector3_host_byteorder(dynamics->advanced.ground_normal);
+        const vector3 wallNormal = vector3_host_byteorder(dynamics->advanced.wall_normal);
+        
         ImGui::Text("Max speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.speed_max.x), f32(dynamics->advanced.speed_max.y), f32(dynamics->advanced.speed_max.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", maxSpeed.x, maxSpeed.y, maxSpeed.z);
         ImGui::Spacing();
         
         ImGui::Text("Stream speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.speed_stream.x), f32(dynamics->advanced.speed_stream.y), f32(dynamics->advanced.speed_stream.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", streamSpeed.x, streamSpeed.y, streamSpeed.z);
         ImGui::Spacing();
         
         ImGui::Text("+Speed:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.speed_add.x), f32(dynamics->advanced.speed_add.y), f32(dynamics->advanced.speed_add.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", addSpeed.x, addSpeed.y, addSpeed.z);
         ImGui::Spacing();
 
         ImGui::Text("Limit:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.limit.x), f32(dynamics->advanced.limit.y), f32(dynamics->advanced.limit.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", limit.x, limit.y, limit.z);
         ImGui::Spacing();
         
         ImGui::Text("Collision translation:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.collision_translation.x), f32(dynamics->advanced.collision_translation.y), f32(dynamics->advanced.collision_translation.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", collisionTranslation.x, collisionTranslation.y, collisionTranslation.z);
         ImGui::Spacing();
         
         ImGui::Text("Intertia translation:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.inertia_translation.x), f32(dynamics->advanced.inertia_translation.y), f32(dynamics->advanced.inertia_translation.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", inertiaTranslation.x, inertiaTranslation.y, inertiaTranslation.z);
         ImGui::Spacing();
         
         ImGui::Text("Ground normal:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.ground_normal.x), f32(dynamics->advanced.ground_normal.y), f32(dynamics->advanced.ground_normal.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", groundNormal.x, groundNormal.y, groundNormal.z);
         ImGui::Spacing();
         
         ImGui::Text("Wall normal:");
-        ImGui::Text(" (%.3f, %.3f, %.3f)", f32(dynamics->advanced.wall_normal.x), f32(dynamics->advanced.wall_normal.y), f32(dynamics->advanced.wall_normal.z));
+        ImGui::Text(" (%.3f, %.3f, %.3f)", wallNormal.x, wallNormal.y, wallNormal.z);
         ImGui::Spacing();
         
         ImGui::Text("Collide count: %d", dynamics->advanced.collide_count);
@@ -132,6 +149,22 @@ static void display_dynamics(const struct dynamics* dynamics)
         
     }
     ImGui::EndChild();
+    
+    const struct dynamics_report* report = (const struct dynamics_report*)pointer(dynamics->base.report);
+    if (report)
+    {
+        ImGui::BeginChild("Dynamics report");
+        {
+            ImGui::Text("%X", offset(&dynamics->base.report));
+            
+            vector3 currentspeed = vector3_host_byteorder(report->position_absolute_current.linear);
+            vector3 previousspeed = vector3_host_byteorder(report->position_absolute_previous.linear);
+            
+            ImGui::Text("Current speed: (%.3f, %.3f, %.3f)", currentspeed.x, currentspeed.y, currentspeed.z);
+            ImGui::Text("Previous speed: (%.3f, %.3f, %.3f)", previousspeed.x, previousspeed.y, previousspeed.z);
+        }
+        ImGui::EndChild();
+    }
     
     
 #undef f32
