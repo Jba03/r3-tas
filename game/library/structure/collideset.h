@@ -8,6 +8,8 @@
 #ifndef collideset_h
 #define collideset_h
 
+#include "list.h"
+
 struct physical_collideset
 {
     readonly pointer zdm;
@@ -53,9 +55,7 @@ struct actor_collideset
 
 struct zdx_list
 {
-    readonly pointer first_element;
-    readonly pointer unknown; /* gc only? mirror of above field */
-    readonly int32 n_elements;
+    readonly doubly_linked_list list;
     readonly uint16 n_zdx;
     padding(2)
 };
