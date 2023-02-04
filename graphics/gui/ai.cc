@@ -19,6 +19,7 @@ static int selected_type;
 static int selected_index;
 static bool scroll = true;
 
+static struct actor* current_actor;
 static struct behavior* current_intelligence = NULL;
 static struct behavior* current_reflex = NULL;
 static struct macro* current_macro = NULL;
@@ -89,6 +90,23 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(name), offset(name));
                     ImGui::SameLine();
                     ImGui::PopStyleVar();
+                    continue;
+                }
+                
+                if (tok.node->type == script_node_type_dsgvarref2)
+                {
+                    ImGui::TextColored(color, "%s", tok.string);
+                 
+//                    void* data = actor_dsgvar(current_actor, 22);
+//                    if (data)
+//                    {
+                        if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(tree) + tok.offset, offset(tree) + tok.offset);
+//                    }
+                        
+                    if (tok.string[0] == '\n') linenn++;
+                    if (tok.string[0] != '\n') ImGui::SameLine();
+                    ImGui::PopStyleVar();
+
                     continue;
                 }
                 
@@ -366,6 +384,8 @@ static void display_ai(struct actor* actor)
     
     if ((brain = (struct brain*)actor_brain(actor)))
     {
+        current_actor = actor;
+        
         if ((mind = (struct mind*)pointer(brain->mind)))
         {
             if ((intelligence = (struct intelligence*)pointer(mind->intelligence)))
