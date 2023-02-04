@@ -18,9 +18,9 @@
 struct transform
 {
     readonly uint32_t type;
-    padding(12)
+    //padding(12)
     readonly matrix4 matrix;
-    readonly struct vector3 scale;
+    readonly struct vector4 scale;
 };
 
 #endif /* transform_h */

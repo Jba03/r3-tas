@@ -50,14 +50,13 @@ struct dynamics_base
     readonly struct vector3 anim_speed;
     readonly struct vector3 translation_safe;
     readonly struct vector3 translation_add;
-    padding(8)
+    //padding(8)
     readonly struct transform transform_previous;
     readonly struct transform transform_current;
     readonly matrix3 rotation_imposed;
     readonly uint8 nframe;
     padding(3)
     readonly pointer report;
-    padding(4)
 };
 
 struct dynamics_advanced
@@ -97,6 +96,46 @@ struct dynamics_complex
     padding(4)
     readonly struct transform matrix_previous_absolute;
     readonly struct transform matrix_previous_previous;
+};
+
+struct dynamics_obstacle
+{
+    readonly float32 rate;
+    readonly struct vector3 normal;
+    readonly struct vector3 contact;
+    readonly pointer material;
+    readonly pointer collide_material;
+    readonly pointer superobject;
+};
+
+struct rotation
+{
+    readonly float32 angle;
+    readonly struct vector3 axis;
+};
+
+struct movement_vector
+{
+    readonly struct vector3 linear;
+    readonly struct rotation angular;
+};
+
+struct dynamics_report
+{
+    readonly uint32 surface_state_previous;
+    readonly uint32 surface_state_current;
+    readonly struct dynamics_obstacle obstacle;
+    readonly struct dynamics_obstacle ground;
+    readonly struct dynamics_obstacle wall;
+    readonly struct dynamics_obstacle character;
+    readonly struct dynamics_obstacle water;
+    readonly struct dynamics_obstacle ceiling;
+    readonly struct movement_vector speed_absolute_previous;
+    readonly struct movement_vector speed_absolute_current;
+    readonly struct movement_vector position_absolute_previous;
+    readonly struct movement_vector position_absolute_current;
+    readonly char8 bitfield;
+    padding(3)
 };
 
 struct dynamics

@@ -62,27 +62,6 @@ static void display_dynamics(const struct dynamics* dynamics)
     }
     ImGui::EndChild();
     
-    
-//    readonly float inertia_x;
-//    readonly float inertia_y;
-//    readonly float inertia_z;
-//    readonly float streamprio;
-//    readonly float streamfactor;
-//    readonly float slide_factor_x;
-//    readonly float slide_factor_y;
-//    readonly float slide_factor_z;
-//    readonly float slide_previous;
-//    readonly struct vector3 speed_max;
-//    readonly struct vector3 speed_stream;
-//    readonly struct vector3 speed_add;
-//    readonly struct vector3 limit;
-//    readonly struct vector3 collision_translation;
-//    readonly struct vector3 inertia_translation;
-//    readonly struct vector3 ground_normal;
-//    readonly struct vector3 wall_normal;
-//    readonly int8_t collide_count;
-//    padding(3)
-    
     ImGui::SameLine();
     
     #pragma mark Advanced
@@ -157,11 +136,18 @@ static void display_dynamics(const struct dynamics* dynamics)
         {
             ImGui::Text("%X", offset(&dynamics->base.report));
             
-            vector3 currentspeed = vector3_host_byteorder(report->position_absolute_current.linear);
-            vector3 previousspeed = vector3_host_byteorder(report->position_absolute_previous.linear);
+            float currentspeed = f32(report->speed_absolute_current.angular.angle);
+            float previousspeed = f32(report->speed_absolute_previous.angular.angle);
             
-            ImGui::Text("Current speed: (%.3f, %.3f, %.3f)", currentspeed.x, currentspeed.y, currentspeed.z);
-            ImGui::Text("Previous speed: (%.3f, %.3f, %.3f)", previousspeed.x, previousspeed.y, previousspeed.z);
+            ImGui::Text("Current speed: %f", currentspeed);
+            ImGui::Text("Previous speed: %f", previousspeed);
+            
+            const struct superobject* colliding_so = (const struct superobject*)pointer(report->character.superobject);
+            if (colliding_so)
+            {
+                const struct actor* colliding_actor = (const struct actor*)superobject_data(colliding_so);
+                if (colliding_actor) ImGui::Text("Colliding actor: %s", actor_name(actor_family_name, colliding_actor));
+            }
         }
         ImGui::EndChild();
     }

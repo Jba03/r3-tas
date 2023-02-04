@@ -1,5 +1,5 @@
 /*******************************************************
- * struct vector3.h: Three-component vector
+ * vector3.h: Three-component vector
  *******************************************************
  * Created by Jba03 on 2021-05-20
  * Copyright (c) 2021 - 2022 Jba03. All rights reserved.
@@ -8,7 +8,7 @@
 #ifndef vector3_h
 #define vector3_h
 
-#include <stdlib.h> /* drand48() */
+#include <stdlib.h>
 
 #include "mathc.h"
 #include "macrotricks.h"
