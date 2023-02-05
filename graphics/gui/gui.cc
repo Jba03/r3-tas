@@ -24,7 +24,7 @@ extern "C"
 #include "vector2.h"
 #include "stdgame.h"
 #include "sector.h"
-
+#include "graphics.h"
 #include "export.h"
 }
 
@@ -202,6 +202,34 @@ static void display_transform(struct transform* transform)
 
 void gui_render_game(void* xfb_texture)
 {
+    if (engine->mode == 0) return;
+    
+    if (first)
+    {
+        ImGui::SetNextWindowSize(ImVec2(648, 520));
+    }
+    
+    printf("texture: %p\n", xfb_texture);
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    //ImGui::SetNextWindowContentSize(ImVec2(648, 520));
+    //ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), AspectRatio, NULL);
+    ImGui::Begin("Game", &general_info, ImGuiWindowFlags_NoScrollbar | /*ImGuiWindowFlags_NoMove |*/ ImGuiWindowFlags_NoTitleBar);
+    
+    ImVec2 size = ImGui::GetWindowContentRegionMax();
+    ImVec2 pos = ImVec2(display_size.x / 2.0f - size.x / 2.0f, display_size.y / 2.0f - size.y / 2.0f);
+    if (first) { ImGui::SetWindowPos(pos); first = false; }
+    
+    //ImGui::Image(xfb_texture, size);
+    ImGui::SetWindowSize(ImVec2(size.y * (648.0f / 520.0f), size.y));
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+}
+
+static void gui_render_collision()
+{
     if (first)
     {
         ImGui::SetNextWindowSize(ImVec2(648, 520));
@@ -217,7 +245,9 @@ void gui_render_game(void* xfb_texture)
     ImVec2 pos = ImVec2(display_size.x / 2.0f - size.x / 2.0f, display_size.y / 2.0f - size.y / 2.0f);
     if (first) { ImGui::SetWindowPos(pos); first = false; }
     
-    ImGui::Image(xfb_texture, size);
+    //printf("texure: %p\n", graphics_get_texture());
+    
+    ImGui::Image(graphics_get_texture(), size);
     ImGui::SetWindowSize(ImVec2(size.y * (648.0f / 520.0f), size.y));
     ImGui::End();
     ImGui::PopStyleVar();
@@ -233,6 +263,8 @@ extern "C" void gui_render_callback(void* ctx)
     }
     
     display_size = ImGui::GetIO().DisplaySize;
+    
+    //gui_render_collision();
     
     draw_general_info();
     //draw_timer();
@@ -259,11 +291,6 @@ extern "C" void gui_render_callback(void* ctx)
         
         ImGui::SetWindowPos(windowpos);
         ImGui::End();
-    }
-    
-    if (actor_rayman)
-    {
-        display_transform((struct transform*)pointer(actor_superobject(actor_rayman)->transform_global));
     }
     
     if (configuration.camera_unlocked)

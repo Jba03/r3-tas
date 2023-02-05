@@ -217,31 +217,45 @@ void superobject_info(struct superobject* so)
             
             if ((actor = (struct actor*)superobject_data(selected_superobject)))
             {
-                ImGui::Text("Father: %X\n", offset(superobject_parent(selected_superobject)));
-                
                 if ((stdgame = (struct standard_game_info*)pointer(actor->stdgame)))
                 {
-                    ImGui::BeginChild("Flags", ImVec2(ImGui::GetContentRegionAvail().x, 60), false);
+                    ImGui::BeginChild("Info", ImVec2(ImGui::GetContentRegionAvail().x, 150));
                     {
-                        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-                        
-                        ImGui::BeginChild("FlagName", ImVec2(130, 50));
-                        ImGui::TextColored(bit_off_color, "SPO flags");
-                        ImGui::TextColored(bit_off_color, "SPO draw flags");
-                        ImGui::TextColored(bit_off_color, "Custom bits");
-                        ImGui::TextColored(bit_off_color, "AI custom bits");
+                        ImGui::BeginChild("Flags", ImVec2(ImGui::GetContentRegionAvail().x / 2, ImGui::GetContentRegionAvail().y), false);
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+                            
+                            ImGui::BeginChild("FlagName", ImVec2(130, 50));
+                            ImGui::TextColored(bit_off_color, "SPO flags");
+                            ImGui::TextColored(bit_off_color, "SPO draw flags");
+                            ImGui::TextColored(bit_off_color, "Custom bits");
+                            ImGui::TextColored(bit_off_color, "AI custom bits");
+                            ImGui::EndChild();
+                            
+                            ImGui::SameLine();
+                            
+                            ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
+                            DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
+                            DisplayBits(&selected_superobject->draw_flags, false);
+                            DisplayBits(&stdgame->custom_bits, true);
+                            DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
+                            ImGui::EndChild();
+                            
+                            ImGui::PopStyleVar();
+                        }
                         ImGui::EndChild();
                         
                         ImGui::SameLine();
                         
-                        ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
-                        DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
-                        DisplayBits(&selected_superobject->draw_flags, false);
-                        DisplayBits(&stdgame->custom_bits, true);
-                        DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
+                        ImGui::BeginChild("Transform");
+                        {
+                            const struct transform* Tg = (const struct transform*)pointer(selected_superobject->transform_global);
+                            const struct transform* Tl = (const struct transform*)pointer(selected_superobject->transform_local);
+                            if (Tg) display_matrix4(matrix4_host_byteorder(Tg->matrix), ImVec4(1.0,1.0,1.0,1.0));
+                            if (Tl) display_matrix4(matrix4_host_byteorder(Tl->matrix), ImVec4(1.0,1.0,1.0,1.0));
+                            
+                        }
                         ImGui::EndChild();
-                        
-                        ImGui::PopStyleVar();
                     }
                     ImGui::EndChild();
                 }

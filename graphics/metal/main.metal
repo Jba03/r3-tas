@@ -17,7 +17,7 @@ struct RasterizerData
     // returned from the vertex function.
     float4 position [[position]];
     
-    float4 eye;
+    float3 eye;
     float3 normal;
     float2 texcoord;
     
@@ -41,6 +41,8 @@ struct Uniform
     matrix_float4x4 view;
     matrix_float4x4 projection;
     matrix_float4x4 model;
+    matrix_float3x3 normal_matrix;
+    float4 color;
 };
 
 constexpr sampler linearSampler (address::repeat,
@@ -56,7 +58,7 @@ constexpr sampler nearestSampler(address::repeat,
 
 vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
                                   constant Vertex *vertices [[ buffer(0) ]],
-                                  constant Uniform *uniform [[ buffer(1) ]])
+                                  constant Uniform &uniform [[ buffer(1) ]])
 {
     RasterizerData out;
 
@@ -84,15 +86,16 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     float4 pos = vertices[vertexID].position;
     //pos.x = -pos.x;
     
-    float4 position = uniform->projection * uniform->view * float4(pos.xyz, 1.0f);
+    float4 position = uniform.projection * uniform.view * uniform.model * float4(pos.xyz, 1.0f);
     //position.z = pos.z; //1.0-vertices[vertexID].position.z;
     
     //position.x = -position.x;
     
     out.texcoord = vertices[vertexID].texcoord.xy;
+    
     out.position = position;
-    out.normal = (uniform->view * vertices[vertexID].normal).xyz;
-    out.eye = -(uniform->view * pos);
+    out.eye = -(uniform.view * uniform.model * pos).xyz;
+    out.normal = uniform.normal_matrix * vertices[vertexID].normal.xyz;
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
     
@@ -103,33 +106,33 @@ struct FragmentOutput {
     float4 color [[ color(0) ]];
 };
 
-constant float3 lightPos = float3(0, 100, 0);
+constant float3 lightPos = float3(0, 1000, 0);
 
 fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
                                       texture2d<float> texture [[ texture(0) ]],
-                                      constant Uniform *uniform [[ buffer(0) ]])
+                                      constant Uniform &uniform [[ buffer(0) ]])
 {
     FragmentOutput out;
     
     float4 color = texture.sample(nearestSampler, in.texcoord, 0);
     float3 normal = normalize(in.normal);
     
-    float3 ambientTerm = float3(0.5f);
+    float3 ambientTerm = float3(0.25f);
     
-    float3 lightDir = normalize(lightPos - in.position.xyz);
+    float3 lightDir = float3(0,1,0);
     float diffuseIntensity = saturate(dot(normal, lightDir));
-    float3 diffuseTerm = float3(1,1,1) * diffuseIntensity;
+    float3 diffuseTerm = float3(0.5f) * diffuseIntensity;
      
-    float3 specularTerm (0);
+    float3 specularTerm(0);
     if (diffuseIntensity > 0)
     {
-        float3 eyeDirection = normalize(in.eye.xyz);
+        float3 eyeDirection = normalize(in.eye);
         float3 halfway = normalize(lightDir + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), 0.1f);
-        specularTerm = float3(0.1) * float3(0.1) * 1.0f;
+        float specularFactor = pow(saturate(dot(normal, halfway)), 0.5f);
+        specularTerm = specularFactor * 0.1f;
     }
     
-    out.color = float4((ambientTerm + diffuseTerm + specularTerm) * color.xyz, 1);
+    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * color;
     
     return out;
 }

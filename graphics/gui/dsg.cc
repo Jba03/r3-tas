@@ -145,6 +145,29 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
 //    ImGui::End();
 //}
 
+static void* actor_dsgvar(struct actor* actor, unsigned var)
+{
+    const struct brain* brain = (const struct brain*)actor_brain(actor);
+    if (!brain) return NULL;
+    
+    const struct mind* mind = (const struct mind*)pointer(brain->mind);
+    if (!mind) return NULL;
+    
+    const struct dsgmem* dsgmem = (const struct dsgmem*)pointer(mind->dsgmemory);
+    if (!dsgmem) return NULL;
+    
+    const struct dsgvar* dsgvars = (const struct dsgvar*)doublepointer(dsgmem->dsgvars);
+    if (!dsgvars) return NULL;
+        
+    const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
+    const struct dsgvar_info* info = (const struct dsgvar_info*)pointer(dsgvars->info) + var;
+    if (!info) return NULL;
+    
+    void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
+    
+    return data;
+}
+
 static void display_actor_dsg(struct actor* actor, bool initial = false)
 {
     const struct brain* brain = (const struct brain*)actor_brain(actor);

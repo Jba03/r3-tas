@@ -108,9 +108,9 @@ static void mesh_create(struct ipo* ipo)
                 for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
                 {
                     struct vector3 normal;
-                    normal.x = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.x));
-                    normal.y = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.y));
-                    normal.z = fabs(host_byteorder_f32(*(uint32_t*)&mesh->vertices[idx].normal.z));
+                    normal.x = fabs(mesh->vertices[idx].normal.x);
+                    normal.y = fabs(mesh->vertices[idx].normal.y);
+                    normal.z = fabs(mesh->vertices[idx].normal.z);
                     
                     float n = max(max(normal.x, normal.y), normal.z);
                     
@@ -208,33 +208,35 @@ static void export_obj(struct mesh* mesh, FILE* fp, int *prev_index)
 
 void graphics_load(void)
 {
-    FILE* fp = fopen(LIBR3TAS_DIR "/dump.obj", "wb");
-    
-    int prev_index = 0;
-    
-    superobject_for_each(superobject_last_child(hierarchy), sector)
+    if (hierarchy)
     {
-        superobject_for_each(sector, ipo_so)
+        FILE* fp = fopen(LIBR3TAS_DIR "/dump.obj", "wb");
+        
+        int prev_index = 0;
+        
+        superobject_for_each(superobject_last_child(hierarchy), sector)
         {
-            const struct ipo* ipo = (const struct ipo*)superobject_data(ipo_so);
-            if (!ipo) continue;
-            
-            mesh_create(ipo);
-            meshlist[current_mesh-1]->transform_global = pointer(ipo_so->transform_global);
-            //export_obj(meshlist[current_mesh-1], fp, &prev_index);
+            superobject_for_each(sector, ipo_so)
+            {
+                const struct ipo* ipo = (const struct ipo*)superobject_data(ipo_so);
+                if (!ipo) continue;
+
+                mesh_create(ipo);
+                meshlist[current_mesh-1]->transform_global = pointer(ipo_so->transform_global);
+                //export_obj(meshlist[current_mesh-1], fp, &prev_index);
+            }
         }
+        
+        fclose(fp);
+        printf("n meshes: %d\n", current_mesh);
     }
-    
-    
-    fclose(fp);
-    
-    printf("n meshes: %d\n", current_mesh);
 }
 
 void graphics_unload(void)
 {
-    while (current_mesh--)
-    {
-        free(meshlist[current_mesh]);
-    }
+//    while (current_mesh--)
+//    {
+//        if (meshlist[current_mesh])
+//        free(meshlist[current_mesh]);
+//    }
 }

@@ -27,6 +27,8 @@ void graphics_init(void);
 
 void graphics_load(void);
 
+void graphics_loop(void);
+
 void graphics_unload(void);
 
 void graphics_set_viewport(int width, int height);
@@ -41,7 +43,7 @@ void graphics_draw_sphere(struct vector3 center, const float radius, struct vect
 
 int graphics_shader_id(void);
 
-int graphics_get_texture(void);
+void* graphics_get_texture(void);
 
 void graphics_load_meshes(void);
 

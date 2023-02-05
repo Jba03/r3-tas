@@ -18,6 +18,7 @@ extern "C"
 #include "graphics.h"
 #include "camera.h"
 #include "SDL.h"
+#include "dynamics.h"
 }
 
 #include "game.h"
@@ -34,6 +35,7 @@ static id<MTLRenderPipelineState> pipeline_state = NULL;
 static id<MTLDepthStencilState> depth_state = NULL;
 static id<MTLTexture> depth_texture = NULL;
 static id<MTLTexture> checker_texture = NULL;
+static id<MTLTexture> render_texture = NULL;
 
 static MTLVertexDescriptor* vertex_descriptor = NULL;
 static MTLRenderPassDescriptor* renderpass_descriptor = NULL;
@@ -99,7 +101,7 @@ static id<MTLTexture> create_checkerboard_texture()
     desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
     desc.mipmapLevelCount = 1;
     desc.storageMode = MTLStorageModeShared;
-    desc.usage = MTLTextureUsageRenderTarget;
+    desc.usage = MTLTextureUsageShaderRead;
     
     id<MTLTexture> depthTexture = [device newTextureWithDescriptor: desc];
     assert(depthTexture);
@@ -110,6 +112,24 @@ static id<MTLTexture> create_checkerboard_texture()
     [depthTexture replaceRegion: region mipmapLevel: 0 withBytes: data bytesPerRow: 4 * 2];
     
     return depthTexture;
+}
+
+static id<MTLTexture> create_render_texture()
+{
+    MTLTextureDescriptor* desc = [[MTLTextureDescriptor alloc] init];
+    desc.width = 800;
+    desc.height = 600;
+    desc.depth = 1;
+    desc.textureType = MTLTextureType2D;
+    desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
+    desc.mipmapLevelCount = 1;
+    desc.storageMode = MTLStorageModeShared;
+    desc.usage = MTLTextureUsageRenderTarget;
+    
+    id<MTLTexture> renderTexture = [device newTextureWithDescriptor: desc];
+    assert(renderTexture);
+    
+    return renderTexture;
 }
 
 static struct mesh* sphere_mesh;
@@ -167,6 +187,10 @@ static int metal_setup()
     
     depth_texture = create_depth_texture();
     checker_texture = create_checkerboard_texture();
+    render_texture = create_render_texture();
+    
+    //printf("render texture: %p\n", render_texture);
+    
     
     //printf("dvaa\n");
     NSError* error = NULL;
@@ -218,6 +242,8 @@ struct Uniform
     simd_float4x4 view;
     simd_float4x4 projection;
     simd_float4x4 model;
+    simd_float3x3 normal_matrix;
+    simd_float4 color;
 } uniform;
 
 extern struct mesh* meshlist[1000];
@@ -231,6 +257,12 @@ void copyDepthStencilConfigurationFrom(MTLRenderPassDescriptor *src, MTLRenderPa
     dest.stencilAttachment.loadAction   = src.stencilAttachment.loadAction;
     dest.stencilAttachment.clearStencil = src.stencilAttachment.clearStencil;
     dest.stencilAttachment.texture      = src.stencilAttachment.texture;
+}
+
+void* graphics_get_texture()
+{
+    id<CAMetalDrawable> drawable = [layer nextDrawable];
+    return (__bridge void*)drawable.texture;
 }
 
 
@@ -300,14 +332,14 @@ void graphics_loop()
         renderpass_descriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
     
     
-    renderpass_descriptor.depthAttachment.texture = depth_texture;
-    renderpass_descriptor.depthAttachment.clearDepth = 1.0f;
-    renderpass_descriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    renderpass_descriptor.depthAttachment.storeAction = MTLStoreActionStore;
-
-    renderpass_descriptor.stencilAttachment.texture = depth_texture;
-    renderpass_descriptor.stencilAttachment.loadAction = MTLLoadActionClear;
-    renderpass_descriptor.stencilAttachment.storeAction = MTLStoreActionStore;
+//    renderpass_descriptor.depthAttachment.texture = depth_texture;
+//    renderpass_descriptor.depthAttachment.clearDepth = 1.0f;
+//    renderpass_descriptor.depthAttachment.loadAction = MTLLoadActionClear;
+//    renderpass_descriptor.depthAttachment.storeAction = MTLStoreActionStore;
+//
+//    renderpass_descriptor.stencilAttachment.texture = depth_texture;
+//    renderpass_descriptor.stencilAttachment.loadAction = MTLLoadActionClear;
+//    renderpass_descriptor.stencilAttachment.storeAction = MTLStoreActionStore;
     
         id <MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor: renderpass_descriptor];
         [renderEncoder pushDebugGroup: @"ImGui demo"];
@@ -319,22 +351,10 @@ void graphics_loop()
     
     [renderEncoder setViewport: (MTLViewport){0, 0, static_cast<double>(width), static_cast<double>(height), 0.0f, 1.0f /* 1.0f: important! */}];
     
-    
-    
-    
-    //camera_look_at(camera, struct vector3_new(0.0f, 0.0f, 0.0f));
-    
-    
-    
-//    matrix4 view = camera_view_matrix(camera); // matrix4_lookat(camera->position, lookat, struct vector3_new(0.0f, 1.0f, 0.0f));
-//    matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
-//
-    
-    struct vector3 campos = *(struct vector3*)(memory.base + 0x00c531bc); //vector3_new(20.0f, 0.0f, 0.0f);
+    struct vector3 campos = *(struct vector3*)(memory.base + 0x00c531bc);
     struct vector3 lookato = *(struct vector3*)(memory.base + 0x00c53910);
-    const float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
-    
-    //printf("fov: %f\n", fov);
+    float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
+    fov = fov == 0.0f ? 1.3 : fov;
     
     simd_float3 position;
     position.x = host_byteorder_f32(*(uint32_t*)&campos.x);
@@ -365,6 +385,7 @@ void graphics_loop()
     uniform.projection = projection;
     uniform.model = matrix_identity_float4x4;
     uniform.camera_pos = position;
+    uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
     
     for (unsigned int i = 0; i < current_mesh; i++)
     {
@@ -372,15 +393,25 @@ void graphics_loop()
         
         struct mesh_data* data = (struct mesh_data*)mesh->internal_data;
         
+        const struct transform* T = (const struct transform*)mesh->transform_global;
+        if (T)
+        {
+            const struct matrix4 mat = matrix4_host_byteorder(T->matrix);
+            struct vector3 pos = game_matrix4_position(mat);
+            uniform.model = matrix4x4_translation(pos.x, pos.z, pos.y);
+        }
+        
+        uniform.normal_matrix = matrix3x3_upper_left(uniform.model);
+        
         id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-        
+
         //printf("draw %d with %d indices and %d vertices\n", i, mesh->n_indices, mesh->n_vertices);
-        
+
         [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
         [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
         [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
         [renderEncoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
-        
+
         [renderEncoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
                                   indexCount: mesh->n_indices
                                    indexType: MTLIndexTypeUInt32
@@ -388,9 +419,60 @@ void graphics_loop()
                             indexBufferOffset: 0];
     }
     
+    if (hierarchy)
+    {
+        superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
+        {
+            const struct actor* actor = (const struct actor*)superobject_data(object);
+            if (!actor) continue;
+            
+            /* The camera blocks the view; skip it. */
+            if (offset(object) == 0xC533E0) continue;
+            
+            struct mesh_data* data = (struct mesh_data*)sphere_mesh->internal_data;
+            
+            const struct transform* T = (const struct transform*)pointer(object->transform_global);
+            const struct matrix4 mat = matrix4_host_byteorder(T->matrix);
+            struct vector3 pos = game_matrix4_position(mat);
+            
+            //printf("matrix: %X\n", offset(&T->matrix));
+            
+//            const struct dynam* dynam = (const struct dynam*)actor_dynam(actor);
+//            if (dynam)
+//            {
+//                const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
+//                if (dynamics)
+//                {
+//                    pos = vector3_add(pos, vector3_host_byteorder(dynamics->advanced.wall_normal));
+//                }
+//            }
+            
+            
+            
+            //printf("pos: %f %f %f\n", pos.x, pos.y, pos.z);
+            
+            uniform.color = simd_make_float4(1.0f, 0.0f, 0.0f, 1.0f);
+            uniform.model = matrix4x4_translation(pos.x, pos.z, pos.y);
+            
+            id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
+            
+            
+            [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
+            [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
+            [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
+            [renderEncoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
+            
+            [renderEncoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
+                                      indexCount: sphere_mesh->n_indices
+                                       indexType: MTLIndexTypeUInt32
+                                     indexBuffer: data->index_buffer
+                               indexBufferOffset: 0];
+        }
+    }
+    
 //    11F884C
     
-    /* Draw ZDX */
+    /* Draw ZDx */
     if (false)
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
@@ -400,13 +482,28 @@ void graphics_loop()
 
             const struct actor_collideset* collset = (const struct actor_collideset*)actor_collset(actor);
             if (!collset) continue;
-
-            const struct zdx_list* zddlist = (const struct zdx_list*)pointer(collset->zdd_list);
-            //printf("zdd list: %X\n", offset(zddlist));
+            
+            const struct zdx_list* zddlist = (const struct zdx_list*)pointer(collset->zde_list);
+            //printf("zdd list: %X\n", offset(&zddlist->list));
             if (zddlist)
             {
-                for (unsigned int i = 0; i < host_byteorder_32(zddlist->n_elements); i++)
+                for (unsigned int i = 0; i < host_byteorder_32(zddlist->list.n_entries); i++)
                 {
+                    pointer* zonesetptr = (pointer*)pointer(zddlist->list.first);
+                    if (zonesetptr)
+                    {
+                        const struct collide_object* obj = (const struct collide_object*)pointer(*zonesetptr);
+                        if (obj)
+                        {
+                            //printf("zdd list: %X\n", offset(obj));
+                            
+                            printf("sphere center: %f %f %f\n",
+                                    host_byteorder_f32(obj->bounding_sphere_position.x),
+                                   host_byteorder_f32(obj->bounding_sphere_position.y),
+                                   host_byteorder_f32(obj->bounding_sphere_position.z));
+                        }
+                    }
+                    
 //                    const pointer* zddoffset = ((pointer*)pointer(zddlist->first_element)) + i;
 //                    const struct collide_object* zdd = (const struct collide_object*)zddoffset;
 //                    if (zdd)
