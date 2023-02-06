@@ -136,9 +136,12 @@ static void display_dynamics(const struct dynamics* dynamics)
         {
             ImGui::Text("%X", offset(&dynamics->base.report));
             
+            
+            vector3 currentspeed2 = vector3_host_byteorder(report->speed_absolute_current.linear);
             float currentspeed = f32(report->speed_absolute_current.angular.angle);
             float previousspeed = f32(report->speed_absolute_previous.angular.angle);
             
+            ImGui::Text("Current speed angle: %f°", degrees(atan2(currentspeed2.y, currentspeed2.x)));
             ImGui::Text("Current speed: %f", currentspeed);
             ImGui::Text("Previous speed: %f", previousspeed);
             

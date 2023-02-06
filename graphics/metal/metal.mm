@@ -180,10 +180,20 @@ static int metal_setup()
     pipelineStateDescriptor.label = @"Simple Pipeline";
     pipelineStateDescriptor.vertexFunction = vertexfn;
     pipelineStateDescriptor.fragmentFunction = fragmentfn;
+    
     pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
+    pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
+    pipelineStateDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
+    pipelineStateDescriptor.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
+    pipelineStateDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+    pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+    pipelineStateDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    pipelineStateDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    
     pipelineStateDescriptor.vertexDescriptor = vertex_descriptor;
     pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
     pipelineStateDescriptor.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+
     
     depth_texture = create_depth_texture();
     checker_texture = create_checkerboard_texture();
@@ -247,7 +257,7 @@ struct Uniform
 } uniform;
 
 extern struct mesh* meshlist[1000];
-extern unsigned current_mesh;
+extern int current_mesh;
 
 void copyDepthStencilConfigurationFrom(MTLRenderPassDescriptor *src, MTLRenderPassDescriptor *dest)
 {
@@ -268,6 +278,7 @@ void* graphics_get_texture()
 
 void graphics_loop()
 {
+    
 //    if (main_render)
 //    {
 //        SDL_HideWindow(window);
@@ -331,7 +342,6 @@ void graphics_loop()
         renderpass_descriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
         renderpass_descriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
     
-    
 //    renderpass_descriptor.depthAttachment.texture = depth_texture;
 //    renderpass_descriptor.depthAttachment.clearDepth = 1.0f;
 //    renderpass_descriptor.depthAttachment.loadAction = MTLLoadActionClear;
@@ -387,11 +397,23 @@ void graphics_loop()
     uniform.camera_pos = position;
     uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
     
-    for (unsigned int i = 0; i < current_mesh; i++)
+    for (int i = 0; i < current_mesh; i++)
     {
         struct mesh* mesh = meshlist[i];
         
+        const struct collide_material* material = (const struct collide_material*)pointer(mesh->material);
+        if (material)
+        {
+            //printf("material: %X\n", offset(material));
+            const uint16 identifier = host_byteorder_16(material->identifier);
+            if (identifier & collide_material_grabbable_ledge) uniform.color = simd_make_float4(0.1f, 1.0f, 0.1f, 1.0f);
+            if (identifier & collide_material_trampoline) uniform.color = simd_make_float4(0.0f, 0.0f, 1.0f, 1.0f);
+            if (identifier & collide_material_water) uniform.color = simd_make_float4(0.0f, 1.0f, 1.0f, 0.5f);
+            if (identifier & collide_material_unknown) uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        
         struct mesh_data* data = (struct mesh_data*)mesh->internal_data;
+        if (!data) continue;
         
         const struct transform* T = (const struct transform*)mesh->transform_global;
         if (T)
@@ -404,9 +426,7 @@ void graphics_loop()
         uniform.normal_matrix = matrix3x3_upper_left(uniform.model);
         
         id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-
-        //printf("draw %d with %d indices and %d vertices\n", i, mesh->n_indices, mesh->n_vertices);
-
+        
         [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
         [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
         [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
@@ -469,8 +489,6 @@ void graphics_loop()
                                indexBufferOffset: 0];
         }
     }
-    
-//    11F884C
     
     /* Draw ZDx */
     if (false)

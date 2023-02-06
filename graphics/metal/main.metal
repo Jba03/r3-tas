@@ -132,7 +132,7 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
         specularTerm = specularFactor * 0.1f;
     }
     
-    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * color;
+    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * color * uniform.color;
     
     return out;
 }

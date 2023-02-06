@@ -12,6 +12,7 @@
 #include "vertex.h"
 #include "matrix4.h"
 #include "transform.h"
+#include "collide_material.h"
 
 struct mesh
 {
@@ -25,6 +26,7 @@ struct mesh
     
     struct transform* transform_global;
     struct vector4 color;
+    pointer material;
     
     void* internal_data;
     

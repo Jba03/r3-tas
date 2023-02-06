@@ -22,6 +22,12 @@
 #define collide_material_no_collision       (1 << 15)
 #define collide_material_all                0xffff
 
+struct game_material
+{
+    readonly int32 material_sound;
+    readonly pointer collide_material;
+};
+
 struct collide_material
 {
     readonly int16 zonetype;

@@ -22,7 +22,7 @@
 #include "collide_mesh.h"
 
 struct mesh* meshlist[1000];
-unsigned current_mesh = 0;
+int current_mesh = 0;
 
 //static void mesh_process(struct mesh* mesh)
 //{
@@ -42,8 +42,6 @@ static void mesh_create(struct ipo* ipo)
     const struct collide_object* zdr = (const struct collide_object*)pointer(collset->zdr);
     if (!zdr) return;
     
-    //printf("\n");
-    
     for (int i = 0; i < host_byteorder_16(zdr->n_elements); i++)
     {
         const pointer element = (*((pointer*)pointer(zdr->elements) + i));
@@ -51,19 +49,16 @@ static void mesh_create(struct ipo* ipo)
         
         const void* block = pointer(element);
         
-        //printf("draw! %X\n", offset(block));
-        
-        //printf("type: %X\n", offset(block));
-        
-        
         switch (type)
         {
             case collide_object_indexed_triangles:
             {
                 struct collide_mesh* collmesh = (struct collide_mesh*)block;
+                struct game_material* gamemat = (struct game_material*)pointer(collmesh->material);
                 
                 struct mesh* mesh = malloc(sizeof *mesh);
                 mesh->name = ipo->name;
+                mesh->material = gamemat->collide_material;
                 
                 mesh->n_vertices = host_byteorder_16(collmesh->n_faces) * 3;
                 mesh->n_indices = host_byteorder_16(collmesh->n_faces) * 3;
@@ -91,12 +86,7 @@ static void mesh_create(struct ipo* ipo)
                     mesh->vertices[idx].normal.x = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].x);
                     mesh->vertices[idx].normal.z = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].y);
                     mesh->vertices[idx].normal.y = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].z);
-                    
-                    //printf("%f %f %f\n", mesh->vertices[idx].position.x, mesh->vertices[idx].position.z, mesh->vertices[idx].position.y);
-                    /* normals.. */
                 }
-                
-                //printf("\n");
                 
                 for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
                 {
@@ -234,9 +224,10 @@ void graphics_load(void)
 
 void graphics_unload(void)
 {
-//    while (current_mesh--)
-//    {
-//        if (meshlist[current_mesh])
-//        free(meshlist[current_mesh]);
-//    }
+    while (--current_mesh)
+    {
+        printf("mesh: %d\n", current_mesh);
+        if (meshlist[current_mesh])
+            free(meshlist[current_mesh]);
+    }
 }

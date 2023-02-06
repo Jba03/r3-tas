@@ -270,6 +270,30 @@ extern "C" void gui_render_callback(void* ctx)
     //draw_timer();
     //draw_rayman_position();
     
+//    if (hierarchy)
+//    {
+//        const struct superobject* ray = (const struct superobject*)actor_superobject(actor_rayman);
+//        const struct superobject* nin = (const struct superobject*)actor_superobject(actor_changemap);
+//        
+//        const struct transform* rayT = (const struct transform*)pointer(ray->transform_global);
+//        const struct transform* ninT = (const struct transform*)pointer(nin->transform_global);
+//        
+//        const matrix4 raymat = matrix4_host_byteorder(rayT->matrix);
+//        const matrix4 ninmat = matrix4_host_byteorder(ninT->matrix);
+//        
+//        const vector3 raypos = game_matrix4_position(raymat);
+//        const vector3 ninpos = game_matrix4_position(ninmat);
+//        const float ninrel = degrees(atan2(ninpos.y - raypos.y, ninpos.x - raypos.x));
+//        const float rayrel = degrees(atan2(raypos.y, raypos.x));
+//        const float raylook = degrees(atan2(raymat.m00, raymat.m01));
+//        
+//        ImGui::Begin("Diverse");
+//        ImGui::Text("Nin rel: %f°", ninrel + raylook);
+//        ImGui::Text("Ray rel: %f°", rayrel);
+//        ImGui::Text("Rayman angle: %f°", raylook);
+//        ImGui::End();
+//    }
+    
     if (engine->mode == 5)
     {
         const ImGuiWindowFlags flags =
