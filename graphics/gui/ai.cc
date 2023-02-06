@@ -19,7 +19,7 @@ static int selected_type;
 static int selected_index;
 static bool scroll = true;
 
-static struct actor* current_actor;
+struct actor* current_actor;
 static struct behavior* current_intelligence = NULL;
 static struct behavior* current_reflex = NULL;
 static struct macro* current_macro = NULL;
@@ -379,6 +379,8 @@ static void display_ai(struct actor* actor)
     struct intelligence* intelligence;
     struct intelligence* reflex;
     struct script* script;
+    
+    current_actor = actor;
     
     static int pc = -1;
     

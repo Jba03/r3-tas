@@ -43,6 +43,7 @@ struct Uniform
     matrix_float4x4 model;
     matrix_float3x3 normal_matrix;
     float4 color;
+    bool use_texture;
 };
 
 constexpr sampler linearSampler (address::repeat,
@@ -114,10 +115,10 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
 {
     FragmentOutput out;
     
-    float4 color = texture.sample(nearestSampler, in.texcoord, 0);
+    float tex = uniform.use_texture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1;
     float3 normal = normalize(in.normal);
     
-    float3 ambientTerm = float3(0.25f);
+    float3 ambientTerm = float3(0.5f);
     
     float3 lightDir = float3(0,1,0);
     float diffuseIntensity = saturate(dot(normal, lightDir));
@@ -128,11 +129,12 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     {
         float3 eyeDirection = normalize(in.eye);
         float3 halfway = normalize(lightDir + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), 0.5f);
-        specularTerm = specularFactor * 0.1f;
+        float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
+        specularTerm = specularFactor * 0.75f;
     }
     
-    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * color * uniform.color;
+    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
+    out.color.xyz *= tex;
     
     return out;
 }

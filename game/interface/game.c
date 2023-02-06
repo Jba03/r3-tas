@@ -275,17 +275,17 @@ int actor_dsgvar(const struct superobject* actor_so, unsigned var, int* type, vo
  * LaunchAGO seems to be the function responsible for the internal RNG update in most cases.
  */
 
-int32_t rnd_table_index(const struct rnd *rnd, unsigned index, unsigned offset)
+int32_t rnd_table_index(const struct rnd *rnd, unsigned index, int offset)
 {
     if (host_byteorder_32(rnd->table) == 0x00) return 0;
     
     /* The RNG table index is fetched from a table of 50 RNG "channels", */
     /* index 0 being the most common (if not the only) used by the game. */
-    uint32_t idx = host_byteorder_32(*(uint32_t*)(rnd->table_indices + index * 4));
-
-    //printf("current index: %d, last: %d\n", idx, rnd->last_index);
+    int32_t idx = host_byteorder_32(*(int32_t*)(rnd->table_indices + index));
+    
+    printf("current index: %d, %d, off: %d\n", idx, max(0, idx + offset), offset);
     /* The RNG table of 10000 entries is then indexed by previous index, together with an optional offset. */
-    int32_t value = host_byteorder_32(*(int32_t*)(pointer(rnd->table) + (idx + offset) * 4));
+    int32_t value = host_byteorder_32(*(int32_t*)((uint8_t*)pointer(rnd->table) + max(0, idx + offset) * 4));
     
     return value;
 }

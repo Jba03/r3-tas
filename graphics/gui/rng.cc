@@ -24,7 +24,8 @@ void display_calculate_rng()
     ImGui::InputInt("min", &calc_rng_min);
     ImGui::InputInt("max", &calc_rng_max);
     
-    const int R = (calc_rng_min + ((calc_rng_max - calc_rng_min + 1) * calc_rng_value) / (rnd->table_max + 1));
+    const uint32_t Tmax = host_byteorder_32(rnd->table_max);
+    const int R = (calc_rng_min + ((calc_rng_max - calc_rng_min + 1) * calc_rng_value) / (Tmax + 1));
     ImGui::Text("Result: %d", R);
     
     ImGui::SetWindowSize(ImVec2(200, 125));

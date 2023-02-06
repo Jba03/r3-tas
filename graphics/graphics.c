@@ -226,7 +226,6 @@ void graphics_unload(void)
 {
     while (--current_mesh)
     {
-        printf("mesh: %d\n", current_mesh);
         if (meshlist[current_mesh])
             free(meshlist[current_mesh]);
     }

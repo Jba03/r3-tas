@@ -19,9 +19,9 @@ extern "C"
 #include "camera.h"
 #include "SDL.h"
 #include "dynamics.h"
+#include "game.h"
 }
 
-#include "game.h"
 #include "gui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_metal.h"
@@ -98,7 +98,7 @@ static id<MTLTexture> create_checkerboard_texture()
     desc.height = 2;
     desc.depth = 1;
     desc.textureType = MTLTextureType2D;
-    desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
+    desc.pixelFormat = MTLPixelFormatR32Float;
     desc.mipmapLevelCount = 1;
     desc.storageMode = MTLStorageModeShared;
     desc.usage = MTLTextureUsageShaderRead;
@@ -107,7 +107,7 @@ static id<MTLTexture> create_checkerboard_texture()
     assert(depthTexture);
     
     MTLRegion region = MTLRegionMake2D(0, 0, 2, 2);
-    const uint32_t data[2 * 2] = { 0xFFFFFFFF, 0xFFBBBBBB, 0xFFBBBBBB, 0xFFFFFFFF };
+    const float data[2 * 2] = { 1.0f, 0.5f, 0.5f, 1.0f };
     
     [depthTexture replaceRegion: region mipmapLevel: 0 withBytes: data bytesPerRow: 4 * 2];
     
@@ -254,10 +254,12 @@ struct Uniform
     simd_float4x4 model;
     simd_float3x3 normal_matrix;
     simd_float4 color;
+    bool use_texture;
 } uniform;
 
 extern struct mesh* meshlist[1000];
 extern int current_mesh;
+extern struct actor* current_actor;
 
 void copyDepthStencilConfigurationFrom(MTLRenderPassDescriptor *src, MTLRenderPassDescriptor *dest)
 {
@@ -288,6 +290,8 @@ void graphics_loop()
 //    {
 //        SDL_ShowWindow(window);
 //    }
+    
+    return;
     
     SDL_ShowWindow(window);
 
@@ -397,6 +401,8 @@ void graphics_loop()
     uniform.camera_pos = position;
     uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
     
+    uniform.use_texture = true;
+    
     for (int i = 0; i < current_mesh; i++)
     {
         struct mesh* mesh = meshlist[i];
@@ -439,6 +445,8 @@ void graphics_loop()
                             indexBufferOffset: 0];
     }
     
+    uniform.use_texture = false;
+    
     if (hierarchy)
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
@@ -452,7 +460,7 @@ void graphics_loop()
             struct mesh_data* data = (struct mesh_data*)sphere_mesh->internal_data;
             
             const struct transform* T = (const struct transform*)pointer(object->transform_global);
-            const struct matrix4 mat = matrix4_host_byteorder(T->matrix);
+            const struct matrix4 mat = ( matrix4_host_byteorder(T->matrix));
             struct vector3 pos = game_matrix4_position(mat);
             
             //printf("matrix: %X\n", offset(&T->matrix));
@@ -472,6 +480,8 @@ void graphics_loop()
             //printf("pos: %f %f %f\n", pos.x, pos.y, pos.z);
             
             uniform.color = simd_make_float4(1.0f, 0.0f, 0.0f, 1.0f);
+            if (actor == current_actor) uniform.color = simd_make_float4(1.0f, 1.0f, 0.0f, 1.0f);
+            
             uniform.model = matrix4x4_translation(pos.x, pos.z, pos.y);
             
             id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];

@@ -21,7 +21,7 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #define GCN_POINTER_HIERARCHY1  0x004334d4
 #define GCN_POINTER_HIERARCHY2  0x004334d8
 #define GCN_POINTER_RND         0x00436924
-#define GCN_POINTER_CINEMANAGER 0x0134b4c8
+#define GCN_POINTER_CINEMANAGER 0x003E9760
 
 /* actor_find */
 #define actor_family_name   0
@@ -92,7 +92,7 @@ int actor_dsgvar(const struct superobject* actor_so, unsigned var, int* type, vo
  * rnd_table_index:
  *  Index the RNG table.
  */
-int32_t rnd_table_index(const struct rnd *rnd, unsigned index, unsigned offset);
+int32_t rnd_table_index(const struct rnd *rnd, unsigned index, int offset);
 
 /**
  * rnd_call:
