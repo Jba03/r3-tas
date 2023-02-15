@@ -14,8 +14,10 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 
 #include "structure.h"
 #include "array.h"
+#include "input.h"
 
 #define GCN_POINTER_ENGINE      0x003E7C0C
+#define GCN_POINTER_INPUT       0x00430904
 #define GCN_POINTER_FIX         0x004334cc
 #define GCN_POINTER_LVL         0x004334d0
 #define GCN_POINTER_HIERARCHY1  0x004334d4
@@ -31,6 +33,7 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 /* Global structures */
 extern struct engine* engine;
 extern struct superobject* hierarchy;
+extern struct input_structure* input_struct;
 extern struct rnd* rnd;
 
 typedef void (*object_function)(void* object, void* param);
@@ -66,15 +69,44 @@ extern unsigned transition_frame;
 /* TAS */
 extern struct inputstructure
 {
-    float joymain_x, joymain_y;
-    float joyc_x, joyc_y;
-    bool a,b,x,y,z,l,r,S,L,U,D,R;
+    struct
+    {
+        struct { struct input_entry *x, *y; } main;
+        struct { struct input_entry *x, *y; } c;
+    } stick;
+    
+    struct
+    {
+        struct input_entry* a;
+        struct input_entry* b;
+        struct input_entry* x;
+        struct input_entry* y;
+        struct input_entry* z;
+        struct input_entry* l;
+        struct input_entry* r;
+        struct input_entry* S;
+        struct input_entry* L;
+        struct input_entry* U;
+        struct input_entry* D;
+        struct input_entry* R;
+    } button;
 } input;
+
+
 
 
 void level_read(void);
 
 void level_load(const char* level_name);
+
+#pragma mark - Input
+
+/**
+ * input_entry_find:
+ *  Find an input entry by name
+ */
+struct input_entry* input_entry_find(const struct input_structure* s, const char* name);
+
 
 #pragma mark - Actor
 

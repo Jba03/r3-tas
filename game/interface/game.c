@@ -27,7 +27,7 @@ struct memory memory;
 /* Global structures */
 struct engine* engine = NULL;
 struct superobject* hierarchy = NULL;
-struct superobject* hierarchy2 = NULL;
+struct input_structure* input_struct = NULL;
 struct rnd* rnd = NULL;
 
 /* FIX entries */
@@ -202,6 +202,20 @@ void level_load(const char* level_name)
     engine->mode = 6; /* Change map */
 }
 
+struct input_entry* input_entry_find(const struct input_structure* s, const char* str)
+{
+    struct input_entry* entry = pointer(s->entries);
+    int c = host_byteorder_32(s->n_entries);
+    while (--c && entry)
+    {
+        const char* name = pointer(entry->action_name);
+        if (strcmp(name, str) == 0) return entry;
+        entry++;
+    }
+    
+    return NULL;
+}
+
 const char* actor_name(int name, const struct actor* actor)
 {
     const struct standard_game_info* stdgame = pointer(actor->stdgame);
@@ -282,8 +296,6 @@ int32_t rnd_table_index(const struct rnd *rnd, unsigned index, int offset)
     /* The RNG table index is fetched from a table of 50 RNG "channels", */
     /* index 0 being the most common (if not the only) used by the game. */
     int32_t idx = host_byteorder_32(*(int32_t*)(rnd->table_indices + index));
-    
-    printf("current index: %d, %d, off: %d\n", idx, max(0, idx + offset), offset);
     /* The RNG table of 10000 entries is then indexed by previous index, together with an optional offset. */
     int32_t value = host_byteorder_32(*(int32_t*)((uint8_t*)pointer(rnd->table) + max(0, idx + offset) * 4));
     
