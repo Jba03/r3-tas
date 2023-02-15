@@ -114,59 +114,40 @@ static void r3_unload()
 //    info(BOLD COLOR_GREEN "Slot %d saved\n", slot);
 //}
 
+static void load()
+{
+    #pragma mark Input structure
+    {
+        unsigned long io = offsetof(struct input_structure, entries);
+        input_struct = (struct input_structure*)(memory.base + GCN_POINTER_INPUT - io);
+        
+        input.stick.main.x = input_entry_find(input_struct, "Action_Pad0_AxeX");
+        input.stick.main.y = input_entry_find(input_struct, "Action_Pad0_AxeY");
+        input.stick.c.x    = input_entry_find(input_struct, "Action_Pad0_AxeV");
+        input.stick.c.y    = input_entry_find(input_struct, "Action_Pad0_AxeZ");
+        
+        input.button.a = input_entry_find(input_struct, "Action_Sauter");
+        input.button.b = input_entry_find(input_struct, "Action_Affiche_Jauge");
+        input.button.x = input_entry_find(input_struct, "Action_Tirer");
+        input.button.y = input_entry_find(input_struct, "Action_Camera_Look");
+        input.button.S = input_entry_find(input_struct, "Button_Start");
+        input.button.R = input_entry_find(input_struct, "Action_Strafe");
+        input.button.L = input_entry_find(input_struct, "Action_Baisser");
+        
+        input.button.l = input_entry_find(input_struct, "Action_Camera_TourneDroite");
+    }
+    
+    /* Engine */
+    r3_load();
+    
+#ifdef OLD_VERSION
+    graphics_load();
+#endif
+}
+
 static void update(const char* controller)
 {
     if (!mRAM) memory.base = mRAM = get_mRAM();
-    
-//    input.joymain_y = 0;
-//    input.joymain_x = 0;
-//    input.joyc_y = 0;
-//    input.joyc_x = 0;
-//    input.a = false;
-//    input.b = false;
-//    input.x = false;
-//    input.y = false;
-//    input.z = false;
-//    input.l = false;
-//    input.r = false;
-//    input.R = false;
-//    input.S = false;
-//
-//    char button[128] = "", ignore[128] = "";
-//    if (sscanf(controller, "P1: %[^C:]:%d,%d", button, &input.joymain_x, &input.joymain_y) == 3)
-//        sscanf(controller + strlen(button) + 5, "%[^:]:%d,%d", ignore, &input.joyc_x, &input.joyc_y);
-//    else
-//        sscanf(controller + 4, "%sC:%d,%d", ignore, &input.joyc_x, &input.joyc_y);
-//
-//    char *str = button;
-//    char *token = str;
-//    while (token != NULL)
-//    {
-//        char* btn = strsep(&token, " ");
-//        //printf("btn: %s\n", btn);
-//        if (strcmp(btn, "A") == 0) input.a = true;
-//        if (strcmp(btn, "B") == 0) input.b = true;
-//        if (strcmp(btn, "X") == 0) input.x = true;
-//        if (strcmp(btn, "Y") == 0) input.y = true;
-//        if (strcmp(btn, "Z") == 0) input.z = true;
-//        if (strcmp(btn, "L") == 0) input.l = true;
-//        if (strcmp(btn, "R") == 0) input.r = true;
-//        if (strcmp(btn, "RIGHT") == 0) input.R = true;
-//        if (strcmp(btn, "START") == 0) input.S = true;
-//    }
-    
-    /* Read input */
-    {
-        const struct input_entry* mjoyx = (const struct input_entry*)(memory.base + 0xB244C8);
-        const struct input_entry* mjoyy = (const struct input_entry*)(memory.base + 0xB244FC);
-        const struct input_entry* cjoyx = (const struct input_entry*)(memory.base + 0xB25300);
-        const struct input_entry* cjoyy = (const struct input_entry*)(memory.base + 0xB25334);
-        
-        input.joymain_x = host_byteorder_f32(*(uint32_t*)&mjoyx->analogvalue);
-        input.joymain_y = host_byteorder_f32(*(uint32_t*)&mjoyy->analogvalue);
-        input.joyc_x = host_byteorder_f32(*(uint32_t*)&cjoyx->analogvalue);
-        input.joyc_y = host_byteorder_f32(*(uint32_t*)&cjoyy->analogvalue);
-    }
     
     /* Read global structures */
     engine = (struct engine*)(mRAM + GCN_POINTER_ENGINE);
@@ -176,17 +157,11 @@ static void update(const char* controller)
     {
         info(BOLD COLOR_PINK "Level transition began (frame %d)\n", engine->timer.frame);
 #ifdef OLD_VERSION
-        graphics_unload();
+       // graphics_unload();
 #endif
     }
     
-    if just_entered_mode(9)
-    {
-        r3_load();
-#ifdef OLD_VERSION
-        //graphics_load();
-#endif
-    }
+    if just_entered_mode(9) load();
     
     if just_entered_mode(5)
         transition_frame = 0;
@@ -245,8 +220,12 @@ static void video(struct on_video_payload* payload)
     *render_xfb_main = true;
 #endif
     
+    //graphics_loop();
+    
     main_render = true;
     gui_render_callback(payload->context);
+    
+    //gui_render_game(payload->texture);
     
     //graphics_loop();
     
@@ -259,7 +238,7 @@ static void video(struct on_video_payload* payload)
 int on_load(void)
 {
 #ifdef OLD_VERSION
-    //graphics_init();
+    graphics_init();
 #endif
     
 //    printf("sizeof default: %ul\n", sizeof(struct vector4));

@@ -42,8 +42,13 @@ static void display_joypad()
     cstickpos.y += 15;
     cstickpos.x += joystick_radius * 2.0f + 5.0f;
     
-    draw_joystick(drawlist, ctrlstickpos, joystick_radius, input.joymain_x, input.joymain_y);
-    draw_joystick(drawlist, cstickpos, joystick_radius, input.joyc_x, input.joyc_y);
+    const float mjoy_x = input.stick.main.x ? host_byteorder_f32(*(uint32_t*)&input.stick.main.x->analogvalue) : 0.0f;
+    const float mjoy_y = input.stick.main.y ? host_byteorder_f32(*(uint32_t*)&input.stick.main.y->analogvalue) : 0.0f;
+    const float cjoy_x = input.stick.c.x ? host_byteorder_f32(*(uint32_t*)&input.stick.c.x->analogvalue) : 0.0f;
+    const float cjoy_y = input.stick.c.y ? host_byteorder_f32(*(uint32_t*)&input.stick.c.y->analogvalue) : 0.0f;
+    
+    draw_joystick(drawlist, ctrlstickpos, joystick_radius, mjoy_x, mjoy_y);
+    draw_joystick(drawlist, cstickpos, joystick_radius, cjoy_x, cjoy_y);
     
     ctrlstickpos.y -= 15;
     cstickpos.y -= 15;
@@ -51,8 +56,8 @@ static void display_joypad()
     ImU32 col = IM_COL32(255, 255, 255, 30);
     if (joystick_radius >= 35.0f)
     {
-        drawlist->AddText(ctrlstickpos, col, std::string("M(" + std::to_string((int)input.joymain_x) + "," + std::to_string((int)input.joymain_y) + ")").c_str());
-        drawlist->AddText(cstickpos, col, std::string("C(" + std::to_string((int)input.joyc_x) + "," + std::to_string((int)input.joyc_y) + ")").c_str());
+        drawlist->AddText(ctrlstickpos, col, std::string("M(" + std::to_string((int)mjoy_x) + "," + std::to_string((int)mjoy_y) + ")").c_str());
+        drawlist->AddText(cstickpos, col, std::string("C(" + std::to_string((int)cjoy_x) + "," + std::to_string((int)cjoy_y) + ")").c_str());
     }
     else
     {
@@ -63,16 +68,27 @@ static void display_joypad()
     ImU32 on = IM_COL32(255, 255, 255, 128);
     ImU32 off = col;
     
+    const bool a = input.button.a ? !(host_byteorder_32(input.button.a->state) & 0xFF000000) : false;
+    const bool b = input.button.b ? !(host_byteorder_32(input.button.b->state) & 0xFF000000) : false;
+    const bool x = input.button.x ? !(host_byteorder_32(input.button.x->state) & 0xFF000000) : false;
+    const bool y = input.button.y ? !(host_byteorder_32(input.button.y->state) & 0xFF000000) : false;
+    const bool S = input.button.S ? !(host_byteorder_32(input.button.S->state) & 0xFF000000) : false;
+    
+    const bool L = input.button.L ? !(host_byteorder_32(input.button.L->state) & 0xFF000000) : false;
+    const bool R = input.button.R ? !(host_byteorder_32(input.button.R->state) & 0xFF000000) : false;
+    
+    const bool l = input.button.l ? !(host_byteorder_32(input.button.l->state) & 0xFF000000) : false;
+    
     const float yy = ctrlstickpos.y + joystick_radius * 2.0f + 20;
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 00, yy), input.a ? on : off, "A");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 10, yy), input.b ? on : off, "B");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 20, yy), input.x ? on : off, "X");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 30, yy), input.y ? on : off, "Y");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 40, yy), input.z ? on : off, "Z");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 50, yy), input.l ? on : off, "L");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 60, yy), input.r ? on : off, "R");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 70, yy), input.R ? on : off, "CAM");
-    drawlist->AddText(ImVec2(ctrlstickpos.x + 95, yy), input.S ? on : off, "START");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 00, yy), a ? on : off, "A");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 10, yy), b ? on : off, "B");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 20, yy), x ? on : off, "X");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 30, yy), y ? on : off, "Y");
+//    drawlist->AddText(ImVec2(ctrlstickpos.x + 40, yy), input.z ? on : off, "Z");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 50, yy), L ? on : off, "L");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 60, yy), R ? on : off, "R");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 70, yy), l ? on : off, "CAM");
+    drawlist->AddText(ImVec2(ctrlstickpos.x + 95, yy), S ? on : off, "START");
     
     ImGui::End();
 }
