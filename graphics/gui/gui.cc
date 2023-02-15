@@ -42,6 +42,7 @@ static bool timer = true;
 
 static bool view_game_input = true;
 static bool view_input_structure = false;
+static bool view_recording_tool = false;
 
 static bool display_transition_counter = true;
 
@@ -59,6 +60,7 @@ static bool display_memory_viewer = true;
 #include "rng.cc"
 #include "joypad.cc"
 #include "inputstructure.cc"
+#include "recording-tool.cc"
 
 static void display_counters()
 {
@@ -143,10 +145,14 @@ static void draw_general_info()
         
         if (ImGui::BeginMenu("View"))
         {
-            ImGui::Checkbox("Display memory viewer?", &memory_viewer.Open);
             ImGui::Checkbox("Display superobject hierarchy?", &configuration.display.hierarchy);
             ImGui::Checkbox("Display controller input?", &view_game_input);
             ImGui::Checkbox("Display input structure?", &view_input_structure);
+            ImGui::Separator();
+            ImGui::Checkbox("Open memory viewer?", &memory_viewer.Open);
+            
+            if (configuration.cheats.enabled)
+                ImGui::Checkbox("Open recording tool?", &view_recording_tool);
             
             ImGui::EndMenu();
         }
@@ -324,13 +330,6 @@ extern "C" void gui_render_callback(void* ctx)
     
     if (hierarchy)
     {
-        flags |= ImGuiWindowFlags_NoBackground;
-        flags &= ~ImGuiWindowFlags_NoScrollWithMouse;
-        ImGui::Begin("Superobject hierarchy", &general_info, flags);
-        ImGui::SetWindowPos(ImVec2(0, 50));
-        ImGui::SetWindowSize(ImVec2(350, display_size.y - 200));
-        ImGui::SetItemUsingMouseWheel();
-        
         if (hierarchy->n_children > 0)
         {
             struct superobject* dynamic_world = (struct superobject*)pointer(hierarchy->first_child);
@@ -341,17 +340,25 @@ extern "C" void gui_render_callback(void* ctx)
             
             if (configuration.display.hierarchy)
             {
+                flags |= ImGuiWindowFlags_NoBackground;
+                flags &= ~ImGuiWindowFlags_NoScrollWithMouse;
+                ImGui::Begin("Superobject hierarchy", &general_info, flags);
+                ImGui::SetWindowPos(ImVec2(0, 50));
+                ImGui::SetWindowSize(ImVec2(350, display_size.y - 200));
+                ImGui::SetItemUsingMouseWheel();
+                
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.6f), " ACTUAL WORLD");
                 display_hierarchy(dynamic_world, "Dynamic world");
                 display_hierarchy(inactive_dynamic_world, "Inactive dynamic world");
                 display_hierarchy(father_sector, "Father sector");
+                
+                ImGui::End();
             }
         }
-        
-        ImGui::End();
     }
     
     display_joypad(&view_game_input);
+    display_recording_tool(&view_recording_tool);
     display_input_structure(&view_input_structure);
     
     /* Draw memory viewer */
