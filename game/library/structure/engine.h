@@ -14,7 +14,7 @@ struct engine
     readonly uint8 display_fix_mode;
     padding(3)
     uint32_t display_mode;
-    padding(4)
+    
     readonly struct engine_timer timer;
     readonly uint8 multimode_player_count;
     readonly uint8 multimode_column_count;
