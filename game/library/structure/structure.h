@@ -68,5 +68,11 @@ static inline float host_byteorder_f32(float32 f)
     uint32_t v = host_byteorder_32(f);
     return (*(float*)(&v));
 }
+/** game_byteorder_f32: convert host-byteorder float to game byteorder */
+static inline float32 game_byteorder_f32(float f)
+{
+    uint32_t v = *(uint32_t*)(&f);
+    return game_byteorder_32(v);
+}
 
 #endif /* structure_h */
