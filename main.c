@@ -241,9 +241,6 @@ int on_load(void)
     graphics_init();
 #endif
     
-//    printf("sizeof default: %ul\n", sizeof(struct vector4));
-//    printf("sizeof default: %ul\n", sizeof(struct vector44));
-    
     info(BOLD "r3lib loaded successfully\n");
     return 1;
 }

@@ -33,18 +33,21 @@ extern ImGuiContext* GImGui;
 static ImFont* font = NULL;
 static ImVec2 display_size;
 
+static bool first = true;
+
 static bool general_info = true;
 static bool display_normals = false;
 static bool view_rng_table = true;
 static bool timer = true;
-static bool display_input = true;
 
-static float render_region_scale = 1.0f;
+static bool view_game_input = true;
+static bool view_input_structure = false;
 
 static bool display_transition_counter = true;
 
 static MemoryEditor memory_viewer;
 static bool display_memory_viewer = true;
+
 
 #include "type.cc"
 #include "bits.cc"
@@ -55,6 +58,7 @@ static bool display_memory_viewer = true;
 #include "hierarchy.cc"
 #include "rng.cc"
 #include "joypad.cc"
+#include "inputstructure.cc"
 
 static void display_counters()
 {
@@ -76,6 +80,33 @@ static void display_counters()
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "%02d %02d %02d %02d", y(0), y(1), y(2), y(3));
     
     ImGui::End();
+}
+
+static void draw_endtrigger_angle()
+{
+    if (hierarchy)
+    {
+        const struct superobject* ray = (const struct superobject*)actor_superobject(actor_rayman);
+        const struct superobject* nin = (const struct superobject*)actor_superobject(actor_changemap);
+        if (ray && nin)
+        {
+            const struct transform* T_ray = (const struct transform*)pointer(ray->transform_global);
+            const struct transform* T_nin = (const struct transform*)pointer(nin->transform_global);
+            
+            const matrix4 M_ray = matrix4_host_byteorder(T_ray->matrix);
+            const matrix4 M_nin = matrix4_host_byteorder(T_nin->matrix);
+            
+            const vector3 P_ray = game_matrix4_position(M_ray);
+            const vector3 P_nin = game_matrix4_position(M_nin);
+            const float ninrel = atan2(P_nin.y - P_ray.y, P_nin.x - P_ray.x);
+            const float raylook = atan2(M_ray.m00, M_ray.m01);
+            
+            float angle = degrees(raylook + ninrel);
+            if (angle >= 180.0f) angle = 360.0f - angle;
+            
+            ImGui::Text("Level end trigger: %.3f°", fabs(angle));
+        }
+    }
 }
 
 static void draw_general_info()
@@ -101,30 +132,26 @@ static void draw_general_info()
             ImGui::Button("Export geometry");
             if (ImGui::Button("Export scripts")) export_scripts();
             ImGui::Separator();
-            ImGui::Checkbox("Enable cheats?", &configuration.enable_cheats);
+            ImGui::Checkbox("Enable cheats?", &configuration.cheats.enabled);
             ImGui::EndMenu();
         }
         
         if (ImGui::BeginMenu("Options"))
         {
-            ImGui::Checkbox("Display normals", &display_normals);
-            ImGui::Checkbox("Unlock camera?", &configuration.camera_unlocked);
-            ImGui::Checkbox("Visualize HSJs?", &configuration.visualize_hsjs);
-            ImGui::SliderFloat("Render region scale", &render_region_scale, 1.0f, 5.0f);
-            //ImGui::Checkbox("Enable cheats", &configuration.enable_cheats);
-            configuration.graphics_display_mode = display_normals ? 1 : 0;
-            
             ImGui::EndMenu();
         }
         
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("Memory viewer")) memory_viewer.Open = true;
+            ImGui::Checkbox("Display memory viewer?", &memory_viewer.Open);
+            ImGui::Checkbox("Display superobject hierarchy?", &configuration.display.hierarchy);
+            ImGui::Checkbox("Display controller input?", &view_game_input);
+            ImGui::Checkbox("Display input structure?", &view_input_structure);
             
             ImGui::EndMenu();
         }
         
-        if (configuration.enable_cheats)
+        if (configuration.cheats.enabled)
         {
             if (ImGui::BeginMenu("Change map"))
             {
@@ -138,6 +165,11 @@ static void draw_general_info()
             }
         }
         
+        ImGui::Text("|");
+        
+        draw_endtrigger_angle();
+        
+        
         //display_rng_info();
         
         ImGui::EndMenuBar();
@@ -148,18 +180,6 @@ static void draw_general_info()
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
 }
-
-static void draw_rayman_position()
-{
-//    struct vector3 rayman = struct vector3_read(0x00BF0D98);
-//    ImGui::Begin("Rayman");
-//    ImGui::Text("X: %f", rayman.x);
-//    ImGui::Text("Y: %f", rayman.y);
-//    ImGui::Text("Z: %f", rayman.z);
-//    ImGui::End();
-}
-
-ImVec2 prev_mouse;
 
 static void move_camera()
 {
@@ -174,18 +194,6 @@ static void move_camera()
 //    camera_update(camera, relative.y, relative.x, false);
 //
     //prev_mouse = mouse;
-}
-
-static bool first = true;
-
-//struct ScriptInterpreter* interpreter = NULL;
-
-static void AspectRatio(ImGuiSizeCallbackData* data)
-{
-    #define IM_MAX(A, B) (((A) > (B)) ? (A) : (B))
-    float aspect_ratio = 648.0f / 520.0f;
-    data->DesiredSize.x = IM_MAX(data->CurrentSize.x, data->CurrentSize.y);
-    data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspect_ratio);
 }
 
 static void display_transform(struct transform* transform)
@@ -270,29 +278,6 @@ extern "C" void gui_render_callback(void* ctx)
     //draw_timer();
     //draw_rayman_position();
     
-//    if (hierarchy)
-//    {
-//        const struct superobject* ray = (const struct superobject*)actor_superobject(actor_rayman);
-//        const struct superobject* nin = (const struct superobject*)actor_superobject(actor_changemap);
-//        
-//        const struct transform* rayT = (const struct transform*)pointer(ray->transform_global);
-//        const struct transform* ninT = (const struct transform*)pointer(nin->transform_global);
-//        
-//        const matrix4 raymat = matrix4_host_byteorder(rayT->matrix);
-//        const matrix4 ninmat = matrix4_host_byteorder(ninT->matrix);
-//        
-//        const vector3 raypos = game_matrix4_position(raymat);
-//        const vector3 ninpos = game_matrix4_position(ninmat);
-//        const float ninrel = degrees(atan2(ninpos.y - raypos.y, ninpos.x - raypos.x));
-//        const float rayrel = degrees(atan2(raypos.y, raypos.x));
-//        const float raylook = degrees(atan2(raymat.m00, raymat.m01));
-//        
-//        ImGui::Begin("Diverse");
-//        ImGui::Text("Nin rel: %f°", ninrel + raylook);
-//        ImGui::Text("Ray rel: %f°", rayrel);
-//        ImGui::Text("Rayman angle: %f°", raylook);
-//        ImGui::End();
-//    }
     
     if (engine->mode == 5)
     {
@@ -317,7 +302,7 @@ extern "C" void gui_render_callback(void* ctx)
         ImGui::End();
     }
     
-    if (configuration.camera_unlocked)
+    if (configuration.cheats.camera_unlocked)
         move_camera();
     
     ImGuiWindowFlags flags =
@@ -348,27 +333,29 @@ extern "C" void gui_render_callback(void* ctx)
         
         if (hierarchy->n_children > 0)
         {
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.6f), " ACTUAL WORLD");
-            
             struct superobject* dynamic_world = (struct superobject*)pointer(hierarchy->first_child);
             struct superobject* inactive_dynamic_world = (struct superobject*)pointer(dynamic_world->next);
             struct superobject* father_sector = (struct superobject*)pointer(hierarchy->last_child);
             
             superobject_info(dynamic_world);
             
-            display_hierarchy(dynamic_world, "Dynamic world");
-            display_hierarchy(inactive_dynamic_world, "Inactive dynamic world");
-            display_hierarchy(father_sector, "Father sector");
+            if (configuration.display.hierarchy)
+            {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.6f), " ACTUAL WORLD");
+                display_hierarchy(dynamic_world, "Dynamic world");
+                display_hierarchy(inactive_dynamic_world, "Inactive dynamic world");
+                display_hierarchy(father_sector, "Father sector");
+            }
         }
         
         ImGui::End();
     }
     
-    
-    display_joypad();
+    display_joypad(&view_game_input);
+    display_input_structure(&view_input_structure);
     
     /* Draw memory viewer */
-    memory_viewer.ReadOnly = !configuration.enable_cheats;
+    memory_viewer.ReadOnly = !configuration.cheats.enabled;
     std::string fmt = "Memory (" + std::string(memory_viewer.ReadOnly ? "readonly" : "writeable") + ")";
     if (memory_viewer.Open) memory_viewer.DrawWindow(fmt.c_str(), (void*)memory.base, 24 * 1000 * 1000);
 }
