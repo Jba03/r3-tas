@@ -8,6 +8,7 @@
 #include "dsg.h"
 #include "mind.h"
 #include "brain.h"
+#include "physical_object.h"
 
 #include <sstream>
 #include <iomanip>
@@ -53,7 +54,7 @@ static ImColor color_table[] =
     [n_dsgvar_types] = orange,
 };
 
-static std::string fmt_boolean(void* offset) { return std::to_string((*(uint8_t*)(offset))); }
+static std::string fmt_boolean(void* offset) { return (*(uint8_t*)(offset)) ? "TRUE" : "FALSE"; }
 static std::string fmt_byte(void* offset) { return std::to_string((*(int8_t*)(offset))); }
 static std::string fmt_ubyte(void* offset) { return std::to_string((*(uint8_t*)(offset))); }
 static std::string fmt_short(void* offset) { return std::to_string(host_byteorder_16(*(int16_t*)(offset))); }
@@ -80,12 +81,6 @@ static std::string fmt_vector(void* offset)
     return s.str();
 }
 
-static std::string fmt_superobject(address offset)
-{
-    
-    return "NULL";
-}
-
 static std::string fmt_actor(void* offset)
 {
     const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
@@ -94,14 +89,67 @@ static std::string fmt_actor(void* offset)
     const struct actor* actor = (const struct actor*)superobject_data(so);
     if (!actor) return "NULL";
     
-    char str[256];
-    memset(str, 0, 256);
-    
     const char* name = actor_name(actor_instance_name, actor);
     if (!name) name = actor_name(actor_model_name, actor);
     
     return std::string(name ? name : "NULL");
 }
+
+static std::string fmt_sector(const struct superobject* offset)
+{
+    const struct sector* sct = (const struct sector*)superobject_data(offset);
+    if (!sct) return "NULL";
+    
+    return std::string(sct->name);
+}
+
+static std::string fmt_ipo(const struct superobject* offset)
+{
+    const struct ipo* ipo = (const struct ipo*)superobject_data(offset);
+    if (!ipo) return "NULL";
+    
+    return std::string(ipo->name);
+}
+
+static std::string fmt_superobject(void* offset)
+{
+    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+    if (!so) return "NULL";
+    
+    const int type = superobject_type(so);
+    switch (type)
+    {
+        // No prefixing of the superobject type here - actors are
+        // easily identifiable, and IPOs are already prefixed with `IPO:`
+        case superobject_type_actor: return fmt_actor(offset);
+        case superobject_type_sector: return fmt_sector(so);
+        case superobject_type_ipo:
+        case superobject_type_ipo2: return fmt_ipo(so);
+    }
+    
+    return "NULL";
+}
+
+static std::string fmt_superobject_array(void* offset)
+{
+    printf("spo array: %X\n", offset(offset));
+    
+//    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+//    if (!so) return "NULL";
+//
+    
+    return "NULL";
+}
+
+static std::string fmt_actor_array(void* offset)
+{
+    //printf("actor array: %X\n", offset(offset));
+//    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+//    if (!so) return "NULL";
+//
+    return "NULL";
+}
+
 
 static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buffer)
 {
@@ -111,7 +159,6 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
     
     switch (host_byteorder_32(info->type))
     {
-
         case dsgvar_type_boolean: return fmt_boolean(data); break;
         case dsgvar_type_byte: return fmt_byte(data); break;
         case dsgvar_type_ubyte: return fmt_ubyte(data); break;
@@ -123,7 +170,11 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
         case dsgvar_type_float: return fmt_float(data); break;
         case dsgvar_type_vector: return fmt_vector(data); break;
             
-        case dsgvar_type_actor: return fmt_actor(data);
+        case dsgvar_type_superobject: return fmt_superobject(data); break;
+        case dsgvar_type_actor: return fmt_actor(data); break;
+            
+        case dsgvar_type_actor_array: return fmt_actor_array(data); break;
+        case dsgvar_type_superobj_array: return fmt_superobject_array(data); break;
     }
     
     return "";
