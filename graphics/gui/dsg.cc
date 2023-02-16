@@ -88,20 +88,19 @@ static std::string fmt_superobject(address offset)
 
 static std::string fmt_actor(void* offset)
 {
+    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+    if (!so) return "NULL";
     
-
-    const struct actor* actor = (const struct actor*)pointer(host_byteorder_32(*(address*)offset));
+    const struct actor* actor = (const struct actor*)superobject_data(so);
     if (!actor) return "NULL";
     
-    char str[2000] = "hello";
+    char str[256];
+    memset(str, 0, 256);
     
-    const char* name = actor_name(actor_family_name, actor);
-    if (name)
-    {
-        std::strcpy(str, name);
-    }
+    const char* name = actor_name(actor_instance_name, actor);
+    if (!name) name = actor_name(actor_model_name, actor);
     
-    return std::string(str);
+    return std::string(name ? name : "NULL");
 }
 
 static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buffer)
@@ -147,6 +146,8 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
 
 static void* actor_dsgvar(struct actor* actor, unsigned var)
 {
+    if (!actor) return NULL;
+    
     const struct brain* brain = (const struct brain*)actor_brain(actor);
     if (!brain) return NULL;
     
