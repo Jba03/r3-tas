@@ -132,7 +132,7 @@ static std::string fmt_superobject(void* offset)
 
 static std::string fmt_superobject_array(void* offset)
 {
-    printf("spo array: %X\n", offset(offset));
+    //printf("spo array: %X\n", offset(offset));
     
 //    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
 //    if (!so) return "NULL";
