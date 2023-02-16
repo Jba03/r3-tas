@@ -77,6 +77,9 @@ static void display_counters()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "Counters");
     
     struct engine_timer timer = engine->timer;
+    
+    ImGui::Text("Frame(%d)", host_byteorder_32(timer.frame));
+    
     #define y(x) host_byteorder_32(*(timer.counter + i * 4 + x))
     for (unsigned int i = 0; i < 4; i++)
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "%02d %02d %02d %02d", y(0), y(1), y(2), y(3));
@@ -94,19 +97,21 @@ static void draw_endtrigger_angle()
         {
             const struct transform* T_ray = (const struct transform*)pointer(ray->transform_global);
             const struct transform* T_nin = (const struct transform*)pointer(nin->transform_global);
-            
-            const matrix4 M_ray = matrix4_host_byteorder(T_ray->matrix);
-            const matrix4 M_nin = matrix4_host_byteorder(T_nin->matrix);
-            
-            const vector3 P_ray = game_matrix4_position(M_ray);
-            const vector3 P_nin = game_matrix4_position(M_nin);
-            const float ninrel = atan2(P_nin.y - P_ray.y, P_nin.x - P_ray.x);
-            const float raylook = atan2(M_ray.m00, M_ray.m01);
-            
-            float angle = degrees(raylook + ninrel);
-            if (angle >= 180.0f) angle = 360.0f - angle;
-            
-            ImGui::Text("Level end trigger: %.3f°", fabs(angle));
+            if (T_ray && T_nin)
+            {
+                const matrix4 M_ray = matrix4_host_byteorder(T_ray->matrix);
+                const matrix4 M_nin = matrix4_host_byteorder(T_nin->matrix);
+                
+                const vector3 P_ray = game_matrix4_position(M_ray);
+                const vector3 P_nin = game_matrix4_position(M_nin);
+                const float ninrel = atan2(P_nin.y - P_ray.y, P_nin.x - P_ray.x);
+                const float raylook = atan2(M_ray.m00, M_ray.m01);
+                
+                float angle = degrees(raylook + ninrel);
+                if (angle >= 180.0f) angle = 360.0f - angle;
+                
+                ImGui::Text("Level end trigger: %.3f°", fabs(angle));
+            }
         }
     }
 }
