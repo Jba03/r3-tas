@@ -39,6 +39,6 @@ struct actor
  * actor_superobject:
  *  Get the superobject associated with this actor.
  */
-#define actor_superobject(actor) (actor_stdgame(actor) ? stdgame_get_superobject(actor_stdgame(actor)) : NULL)
+#define actor_superobject(actor) (actor ? (actor_stdgame(actor) ? stdgame_get_superobject(actor_stdgame(actor)) : NULL) : NULL)
 
 #endif /* actor_h */

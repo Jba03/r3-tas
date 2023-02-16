@@ -169,9 +169,11 @@ void superobject_info(struct superobject* so)
             /* Get actor instance name, or model name if spawnable actor */
             const char* name = actor_name(actor_instance_name, actor);
             if (!name) name = actor_name(actor_model_name, actor);
+            if (!name) name = "Invalid object";
             
-            /* Get actor family color */
-            ImVec4 color = ImColor(*(uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type)));
+            ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
+            uint32_t* cc = (uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type));
+            if (cc) color = ImColor(*cc);
             
             /* Draw the list item */
             ImGui::PushStyleColor(ImGuiCol_Text, color);
@@ -282,7 +284,7 @@ void superobject_info(struct superobject* so)
                     {
                         const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
                         display_dynamics(dynamics);
-                        
+
                         ImGui::EndTabItem();
                     }
                 }
