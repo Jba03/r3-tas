@@ -57,6 +57,8 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     case script_node_type_dsgvarref2: color = ImVec4(0.9, 0.4, 0.45, 1.0f); break;
                     case script_node_type_constant:
                     case script_node_type_real: color = ImVec4(210.0f / 255.0f, 148.0f / 255.0f, 93.0f / 255.0f, 1.0f); break;
+                    case script_node_type_modelref:
+                    case script_node_type_modelref2:
                     case script_node_type_constant_vector:
                     case script_node_type_vector: color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f); break;
                     case script_node_type_field: color = ImVec4(170.0f / 255.0f, 13.0f / 255.0f, 145.0f / 255.0f, 1.0f); break;
@@ -92,6 +94,32 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     ImGui::PopStyleVar();
                     continue;
                 }
+                
+                if (tok.node->type == script_node_type_modelref || tok.node->type == script_node_type_modelref2)
+                {
+                    address* name_addr = (address*)doublepointer(tok.node->param);
+                    
+                    const char* name;
+                    if (name_addr) name = (const char*)pointer(*name_addr);
+
+                    std::string str = "NULL";
+                    if (name_addr)
+                    {
+                        std::string::size_type pos = str.find('\\');
+                        str = str.substr(0, pos);
+                    }
+                    else
+                    {
+                        color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f);
+                    }
+                    
+                    ImGui::TextColored(color, "%s", str.c_str());
+                    //if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(name), offset(name));
+                    ImGui::SameLine();
+                    ImGui::PopStyleVar();
+                    continue;
+                }
+                
                 
                 if (tok.node->type == script_node_type_dsgvarref2)
                 {
