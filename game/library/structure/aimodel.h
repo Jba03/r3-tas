@@ -13,9 +13,4 @@ struct aimodel
     padding(3)
 };
 
-//struct aiscript
-//{
-//
-//}
-
 #endif /* aimodel_h */
