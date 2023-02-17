@@ -6,9 +6,46 @@
 //#include "vector3.h"
 #include "matrix3.h"
 
-#define dynamics_size_base      0x1
-#define dynamics_size_advanced  0x2
-#define dynamics_size_complex   0x4
+/* Base dynamics flags */
+#define dynamics_flag_animation                     (1 <<  0) // Use animation speed?
+#define dynamics_flag_collide                       (1 <<  1) // Geometry collision enabled?
+#define dynamics_flag_gravity                       (1 <<  2) // Is gravity used?
+#define dynamics_flag_tilt                          (1 <<  3) // ?
+#define dynamics_flag_unknown                       (1 <<  4) // ?
+#define dynamics_flag_grounded                      (1 <<  5) // Is on ground
+#define dynamics_flag_climb                         (1 <<  6) // Climbing
+#define dynamics_flag_collide_dynamics_param        (1 <<  7) // Use dynamics param when colliding?
+#define dynamics_flag_collide_preserve_z_momentum   (1 <<  8) // Preseve Z-axis momentum when collding with a wall
+#define dynamics_flag_speed_limit                   (1 <<  9) // Limit speed
+#define dynamics_flag_inertia                       (1 << 10) // Has inertia?
+#define dynamics_flag_stream                        (1 << 11) // Is affected by a stream?
+#define dynamics_flag_stuck_to_platform             (1 << 12) // No slide on platform
+#define dynamics_flag_has_scale                     (1 << 13) // Use scale parameters
+#define dynamics_flag_speed_impose_absolute         (1 << 14) // Impose absolute speed
+#define dynamics_flag_speed_propose_absolute        (1 << 15) // Propose absolute speed
+#define dynamics_flag_speed_add_absolute            (1 << 16) // Add absolute speed
+#define dynamics_flag_speed_impose_x                (1 << 17) // Impose absolute X-speed
+#define dynamics_flag_speed_impose_y                (1 << 18) // Impose absolute Y-speed
+#define dynamics_flag_speed_impose_z                (1 << 19) // Impose absolute Z-speed
+#define dynamics_flag_speed_propose_x               (1 << 20) // Propose absolute X-speed
+#define dynamics_flag_speed_propose_y               (1 << 21) // Propose absolute Y-speed
+#define dynamics_flag_speed_propose_z               (1 << 22) // Propose absolute Z-speed
+#define dynamics_flag_speed_add_x                   (1 << 23) // Add absolute X-speed
+#define dynamics_flag_speed_add_y                   (1 << 24) // Add absolute Y-speed
+#define dynamics_flag_speed_add_z                   (1 << 25) // Add absolute Z-speed
+#define dynamics_flag_limit_x                       (1 << 26) // Limit X (position?)
+#define dynamics_flag_limit_y                       (1 << 27) // Limit Y (position?)
+#define dynamics_flag_limit_z                       (1 << 28) // Limit Z (position?)
+#define dynamics_flag_rotation_impose               (1 << 29) // Impose axis rotation
+#define dynamics_flag_platform_lock                 (1 << 30) // ?
+#define dynamics_flag_translation_impose            (1 << 31) // Impose translation
+
+/* Base dynamics endflags */
+#define dynamics_size_base              (1 << 0)
+#define dynamics_size_advanced          (1 << 1)
+#define dynamics_size_complex           (1 << 2)
+#define dynamics_reserved               (1 << 3)
+#define dynamics_mechanics_changed      (1 << 4)
 
 struct macdpid
 {
