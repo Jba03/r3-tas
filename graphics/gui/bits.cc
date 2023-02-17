@@ -25,7 +25,7 @@ static void DisplayBit(T* data, bool on, int idx, std::string description = "")
         ImGui::EndTooltip();
     }
     
-    if (ImGui::IsItemClicked() && configuration.enable_cheats)
+    if (ImGui::IsItemClicked() && configuration.cheats.enabled)
     {
         info("Toggle bit %d\n", idx);
         *(uint32_t*)data ^= game_byteorder_32((1 << idx));
