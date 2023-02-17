@@ -11,41 +11,39 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-struct Configuration {
+#include "vector3.h"
+
+struct configuration
+{
+    struct
+    {
+        bool hierarchy;
+    } display;
     
-    /**
-     * enable_cheats:
-     * Enables the ability to fly, change map, and more.
-     */
-    bool enable_cheats;
-    
-    /**
-     * has_cheated:
-     * Checked if cheats have been enabled any time during the
-     * currently recording movie. If so, the run is invalidated.
-     */
-    bool has_cheated;
-    
-    /**
-     * graphics_display_mode:
-     *  0 = checkerboard pattern
-     *  1 = normals
-     */
-    unsigned graphics_display_mode;
-    
-    /**
-     * camera_unlocked:
-     *  Camera is allowed to be moved manually
-     */
-    bool camera_unlocked;
-    
-    /**
-     * visualize_hsjs:
-     *  Draw directions of horizontal superjumps
-     */
-    bool visualize_hsjs;
+    struct
+    {
+        /**
+         * enable_cheats:
+         * Enables the ability to fly, change map, and more.
+         */
+        bool enabled;
+        
+        /**
+         * force_position:
+         *  Force main actor position.
+         */
+        bool force_position;
+        struct vector3 forced_position;
+        
+        /**
+         * camera_unlocked:
+         *  The in-game is allowed to be moved manually.
+         */
+        bool camera_unlocked;
+        
+    } cheats;
 };
 
-extern struct Configuration configuration;
+extern struct configuration configuration;
 
 #endif /* configuration_h */

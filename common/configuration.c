@@ -7,4 +7,4 @@
 
 #include "configuration.h"
 
-struct Configuration configuration;
+struct configuration configuration;
