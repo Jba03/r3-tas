@@ -70,19 +70,30 @@ static void display_counters()
     ImGuiWindowFlags_NoMove |
     ImGuiWindowFlags_NoResize;
     
+    const struct engine_timer timer = engine->timer;
+    
     ImGui::Begin("Engine counters", &general_info, flags);
     ImGui::SetWindowPos(ImVec2(display_size.x - 105, 45));
-    ImGui::SetWindowFontScale(1);
-    
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "Counters");
-    
-    struct engine_timer timer = engine->timer;
-    
-    ImGui::Text("Frame(%d)", host_byteorder_32(timer.frame));
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "F(%d)", host_byteorder_32(timer.frame));
     
     #define y(x) host_byteorder_32(*(timer.counter + i * 4 + x))
     for (unsigned int i = 0; i < 4; i++)
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "%02d %02d %02d %02d", y(0), y(1), y(2), y(3));
+    
+    ImGui::End();
+    
+    ImGui::Begin("Timer", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
+    ImGui::SetWindowFontScale(2.0f);
+    
+    const int frames = host_byteorder_32(timer.frame);
+    const int ms = (int)(frames * (1000.0 / 60.0)) % 1000;
+    const int s  = (frames / 60) % 60;
+    const int m  = (frames / 60 / 60) % 60;
+    const int h  = (frames / 60 / 60 / 60) % 24;
+    ImGui::TextColored(ImVec4(1,1,1,0.25f), "%02d:%02d:%02d.%03d", h, m, s, ms);
+    
+    ImVec2 sz = ImGui::GetWindowSize();
+    ImGui::SetWindowPos(ImVec2(display_size.x - sz.x - 15, display_size.y - sz.y - 10));
     
     ImGui::End();
 }
@@ -107,10 +118,10 @@ static void draw_endtrigger_angle()
                 const float ninrel = atan2(P_nin.y - P_ray.y, P_nin.x - P_ray.x);
                 const float raylook = atan2(M_ray.m00, M_ray.m01);
                 
-                float angle = degrees(raylook + ninrel);
+                float angle = fabs(degrees(raylook + ninrel));
                 if (angle >= 180.0f) angle = 360.0f - angle;
                 
-                ImGui::Text("Level end trigger: %.3f°", fabs(angle));
+                ImGui::Text("Level end trigger: %.3f°", angle);
             }
         }
     }
