@@ -59,7 +59,7 @@ typedef uint32_t    doublepointer;
 /** pointer: resolve memory pointer - expects game byteorder. */
 #define pointer(addr) ((host_byteorder_32(addr) == 0x00) ? NULL : ((void*)(memory.base + (host_byteorder_32(addr) & 0xFFFFFFF))))
 /** doublepointer: resolve memory pointer, then resolve the resolved pointer. */
-#define doublepointer(addr) pointer(*(pointer*)pointer(addr))
+#define doublepointer(addr) pointer((((address*)pointer(addr) == NULL) ? 0x00 : *(address*)pointer(addr)))
 /** offset: return the mRAM offset of specified structure */
 #define offset(data) ((data == NULL) ? 0x0 : ((address)((uint8_t*)data - memory.base)))
 /** host_byteorder_f32: convert in-game float to platform byteorder */
