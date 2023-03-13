@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <time.h>
 
 #include <dlfcn.h>
@@ -22,14 +23,6 @@
 #include "gui.h"
 #include "graphics.h"
 #include "input.h"
-//#include "vector3.h"
-//#include "translate.h"
-
-//#if defined(__APPLE__)
-//#   include <mach/mach.h>
-//#   include <mach/mach_vm.h>
-//#   include <mach/vm_map.h>
-//#endif
 
 #pragma mark - Main
 

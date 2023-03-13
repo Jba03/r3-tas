@@ -8,7 +8,6 @@
 #ifndef glmesh_h
 #define glmesh_h
 
-#include "opengl.h"
 #include "vertex.h"
 #include "matrix4.h"
 #include "transform.h"

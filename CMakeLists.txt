@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(r3-tas)
 
-find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
-
-find_package(OpenGL REQUIRED)
-include_directories(${OpenGL_INCLUDE_DIRS})
-
 set(COMPILE_FLAGS "-fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 
