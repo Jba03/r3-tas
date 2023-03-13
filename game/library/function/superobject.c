@@ -67,9 +67,9 @@ const struct superobject* sector_by_location(const struct superobject* father_se
 {
     if (!father_sector) return NULL;
     
-    float d_near = MAXFLOAT;
-    float d_current = MAXFLOAT;
-    float d_virtual = MAXFLOAT;
+    float d_near = INFINITY;
+    float d_current = INFINITY;
+    float d_virtual = INFINITY;
     int8 p = sector_priority_min;
     int8 v = sector_priority_min;
  

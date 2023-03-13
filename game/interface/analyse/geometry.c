@@ -68,7 +68,7 @@ int collide_object_closest_vertex_to(const struct collide_object* object,
                                      int16 *index_out,
                                      struct vector3 *vertex_out)
 {
-    float length = MAXFLOAT;
+    float length = INFINITY;
     struct vector3 result = vector3_new(0.0f, 0.0f, 0.0f);
     struct collide_mesh* collmesh_out = NULL;
     int16 idx = 0;

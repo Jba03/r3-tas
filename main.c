@@ -10,8 +10,6 @@
 #include <stddef.h>
 #include <time.h>
 
-#include <dlfcn.h>
-
 #include "mathc.h"
 #include "log.h"
 #include "game.h"

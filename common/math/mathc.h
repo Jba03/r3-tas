@@ -13,6 +13,10 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
+#ifndef M_PI
+#   define M_PI 3.14159265358
+#endif
+
 static inline const double radians(const double degrees)
 {
     return degrees * (M_PI / 180.0);
