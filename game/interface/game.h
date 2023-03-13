@@ -15,6 +15,8 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #include "structure.h"
 #include "array.h"
 #include "input.h"
+#include "fix.h"
+#include "lvl.h"
 
 #define GCN_POINTER_ENGINE      0x003E7C0C
 #define GCN_POINTER_INPUT       0x00430904
@@ -25,35 +27,16 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #define GCN_POINTER_RND         0x00436924
 #define GCN_POINTER_CINEMANAGER 0x003E9760
 
-/* actor_find */
-#define actor_family_name   0
-#define actor_model_name    1
-#define actor_instance_name 2
-
-/* Global structures */
 extern struct engine* engine;
 extern struct superobject* hierarchy;
+extern struct superobject* dynamic_world;
+extern struct superobject* inactive_dynamic_world;
+extern struct superobject* father_sector;
 extern struct input_structure* input_struct;
 extern struct rnd* rnd;
+extern struct fix fix;
+extern struct lvl lvl;
 
-typedef void (*object_function)(void* object, void* param);
-
-/* FIX entries */
-extern struct array* demo_save_names;
-extern struct array* demo_level_names;
-extern struct array* level_names;
-extern const char* first_level_name;
-extern pointer fix_language_offset;
-extern unsigned fix_language_count;
-extern unsigned fix_texture_count;
-
-/* LVL entries */
-extern struct array* family_names;
-extern struct array* model_names;
-extern struct array* instance_names;
-extern struct array* family_colors;
-
-/* Important actors */
 extern struct actor* actor_rayman;
 extern struct actor* actor_camera;
 extern struct actor* actor_global;
@@ -62,6 +45,7 @@ extern struct actor* actor_changemap;
 
 /* */
 extern uint8_t previous_engine_mode;
+extern char previous_level_name[30];
 extern unsigned transition_frame;
 /* just_entered_mode: true if engine mode differs from previous frame */
 #define just_entered_mode(m) ((engine->mode == m) && (previous_engine_mode != m))
@@ -92,45 +76,11 @@ extern struct inputstructure
     } button;
 } input;
 
-
-
-
 void level_read(void);
 
-void level_load(const char* level_name);
+uint32 color_table_index(unsigned idx);
 
-#pragma mark - Input
-
-/**
- * input_entry_find:
- *  Find an input entry by name
- */
-struct input_entry* input_entry_find(const struct input_structure* s, const char* name);
-
-
-#pragma mark - Actor
-
-/**
- * actor_name:
- *  Return the family, model, or instance name of specfied actor.
- */
-const char* actor_name(int name, const struct actor* actor);
-
-int actor_dsgvar(const struct superobject* actor_so, unsigned var, int* type, void** data);
-
-#pragma mark - RNG
-
-/**
- * rnd_table_index:
- *  Index the RNG table.
- */
-int32_t rnd_table_index(const struct rnd *rnd, unsigned index, int offset);
-
-/**
- * rnd_call:
- *  Call the random number device `n_calls` times.
- */
-int32_t rnd_call(const struct rnd *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma);
+uint32 actor_color(const struct actor* actor);
 
 /* Structure functions */
 #include "find.h"

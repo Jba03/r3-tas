@@ -102,4 +102,48 @@ static inline unsigned int tree_max_depth(struct script_node* tree)
     return current;
 }
 
+#if USE_FUNCTIONS
+
+struct translation_token
+{
+    #define TOKEN_MAX_LENGTH 256
+    char string[TOKEN_MAX_LENGTH];
+    struct script_node* node;
+    struct translation_token* next;
+    int offset; /* Offset in tree */
+};
+
+struct translation
+{
+    struct script_node* original_tree;
+    struct script_node* tree;
+    struct script_node* current;
+    
+    unsigned n_tokens;
+    struct translation_token token[4096];
+    
+    unsigned indent;
+};
+
+/** script_translate: translate a script into readable text */
+struct translation* script_translate(const struct script* script);
+
+/** script_node_translate: translate a script into readable text */
+struct translation* script_node_translate(const struct script_node* tree);
+
+/** script_translation_free: destroy script translation */
+void script_translation_free(struct translation* t);
+
+/** ai_function_temporal_real_combination: interpolation function based on engine frame time */
+const float ai_function_temporal_real_combination(const float a, const float coefficient, const float b);
+
+/** ai_function_get_time: get current timer count  */
+const uint32 ai_function_get_time(void);
+
+/** ai_function_get_time: get time elapsed since `v` */
+const uint32 ai_function_get_elapsed_time(const uint32 v);
+
+
+#endif
+
 #endif /* script_h */

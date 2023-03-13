@@ -3,6 +3,10 @@
 
 #include "structure.h"
 
+#define actor_family_name   0
+#define actor_model_name    1
+#define actor_instance_name 2
+
 struct actor
 {
     readonly pointer p_3ddata;
@@ -17,6 +21,58 @@ struct actor
     readonly pointer micro;
     readonly pointer mssound;
 };
+
+#if USE_FUNCTIONS
+
+/** actor_matrix: get the global transformation matrix of an actor */
+const struct matrix4 actor_matrix(const struct actor* actor);
+
+/** actor_position: get global position of an actor */
+const struct vector3 actor_position(const struct actor* actor);
+
+/** actor_speed: get current speed of an actor */
+const struct vector3 actor_speed(const struct actor* actor);
+
+/**
+ * actor_sighting_relative:
+ *  compute the horizontal angle between actor A's line of sight and the position of actor B.
+ *  The angle returned is in radians, -π to π.
+ */
+const float actor_horizontal_sighting_relative(const struct actor* A, const struct actor* B);
+
+/**
+ * actor_vertical_sighting_relative:
+ *  compute the vertical angle between actor A's line of sight and the position of actor B.
+ *  The angle returned is in radians, -π to π.
+ */
+const float actor_vertical_sighting_relative(const struct actor* A, const struct actor* B);
+
+/**
+ * actor_trajectory_angle_relative:
+ *  compute the angle of actor A's speed relative to the position of actor B.
+ *  the angle returned is in radians, range -π to π.
+ */
+const float actor_trajectory_angle_relative(const struct actor* A, const struct actor* B);
+
+/** actor_dsgvar: get the offset of an actor's dsgvar. Negative on failure. */
+const int actor_dsgvar(const struct actor* actor, unsigned var, int* type, void** data);
+
+/** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
+const char* actor_name(int name, const struct actor* actor);
+
+/** actor_current_behavior_name: return the name of the actor's current behavior */
+const char* actor_current_behavior_name(const struct actor* actor);
+
+/** actor_in_behavior: return true if an actor is in the specified behavior */
+bool actor_in_behavior(const struct actor* actor, const char* behavior_name);
+
+/** actor_dynamics: get dynamics structure of an actor */
+const struct dynamics* actor_dynamics(const struct actor* actor);
+
+/** actor_dynamics_report: get dynamics report of an actor */
+const struct dynamics_report* actor_dynamics_report(const struct actor* actor);
+
+#endif
 
 #define actor_3Ddata(actor) ((void*)pointer(actor->p_3ddata))
 #define actor_stdgame(actor) ((struct standard_game_info*)pointer(actor->stdgame))

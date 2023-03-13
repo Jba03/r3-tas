@@ -30,4 +30,16 @@ struct collide_object
     readonly struct vector4 bounding_sphere_position;
 };
 
+#if USE_FUNCTIONS
+
+#include "collide_mesh.h"
+
+/** collide_object_mesh: get collide mesh at specified index */
+const struct collide_mesh* collide_object_mesh(const struct collide_object* object, int idx);
+
+/** collide_object_sphere: get collide sphere at specified index */
+const struct collide_mesh* collide_object_sphere(const struct collide_object* object, int idx);
+
+#endif
+
 #endif /* collide_object_h */

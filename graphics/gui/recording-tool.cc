@@ -6,6 +6,8 @@ static int start_at = 0;
 
 static FILE* recording_file = NULL;
 
+extern const char* (*get_config_path)(void);
+
 static void record_input()
 {
     /* Write */
@@ -50,7 +52,7 @@ static void display_recording_tool(bool *display)
             {
                 if ((is_playback = ImGui::Button("Start playback")))
                 {
-                    std::string path = std::string(LIBR3TAS_DIR) + "/input.r3c";
+                    std::string path = std::string(get_config_path()) + "/input.r3c";
                     recording_file = fopen(path.c_str(), "rb");
                     fread(&n_frames, sizeof(int), 1, recording_file);
                     fread(&start_at, sizeof(int), 1, recording_file);
@@ -59,7 +61,7 @@ static void display_recording_tool(bool *display)
             }
             else
             {
-                if (host_byteorder_32(engine->timer.frame) >= start_at+1)
+                if (host_byteorder_32(engine->timer.frame) >= start_at)
                 {
                     playback_input();
                 }
@@ -78,11 +80,11 @@ static void display_recording_tool(bool *display)
             {
                 if ((is_recording = ImGui::Button("Start recording")))
                 {
-                    std::string path = std::string(LIBR3TAS_DIR) + "/input.r3c";
+                    std::string path = std::string(get_config_path()) + "/input.r3c";
                     recording_file = fopen(path.c_str(), "wb");
                     
-                    printf("started recording frame %d\n", host_byteorder_32(engine->timer.frame));
-                    int c = host_byteorder_32(engine->timer.frame);
+                    printf("started recording frame %d\n", host_byteorder_32(engine->timer.frame)+1);
+                    int c = host_byteorder_32(engine->timer.frame)+1;
                     fputc(0, recording_file);
                     fputc(0, recording_file);
                     fputc(0, recording_file);

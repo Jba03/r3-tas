@@ -1,10 +1,3 @@
-//
-//  collideset.h
-//  r3-tas-memorymap
-//
-//  Created by Jba03 on 2023-01-09.
-//
-
 #ifndef collideset_h
 #define collideset_h
 

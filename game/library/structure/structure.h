@@ -4,12 +4,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//#include "vector3.h"
 #include "endianness.h"
 
 #define GCN 0
 #define PC  1
 #define platform GCN
+
+#define USE_FUNCTIONS   1
 
 #define swap16(data) \
     ((((data) >> 8) & 0x00FF) | (((data) << 8) & 0xFF00))

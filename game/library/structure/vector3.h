@@ -11,11 +11,16 @@
 #include <stdlib.h>
 
 #include "mathc.h"
-#include "macrotricks.h"
 #include "structure.h"
 
 #define VECTOR3
-VECTOR3 VECTOR_DEFINITION(float, 3)
+
+struct vector3
+{
+    float x;
+    float y;
+    float z;
+};
 
 VECTOR3 static inline struct vector3 vector3_host_byteorder(const struct vector3 v)
 {
@@ -142,9 +147,9 @@ VECTOR3 static inline const float vector3_dot(const struct vector3 a, const stru
 VECTOR3 static inline struct vector3 vector3_cross(const struct vector3 a, const struct vector3 b)
 {
     struct vector3 result;
-    result.x = a.v[1] * b.v[2] - a.v[2] * b.v[1];
-    result.y = a.v[2] * b.v[0] - a.v[0] * b.v[2];
-    result.z = a.v[0] * b.v[1] - a.v[1] * b.v[0];
+    result.x = a.y * b.z - a.z * b.y;
+    result.y = a.z * b.x - a.x * b.z;
+    result.z = a.x * b.y - a.y * b.x;
     
     return result;
 }

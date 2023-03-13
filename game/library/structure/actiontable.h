@@ -7,10 +7,13 @@ struct action_entry
 {
     readonly char8 name[0x50];
     readonly uint32 param[8];
+    padding(4) /* ? */
+    padding(4) /* ? */
+    readonly pointer name_pointer; /* ? */
     readonly pointer tree;
     readonly uint8 used;
     readonly uint8 n_rules;
-    readonly uint8 default_return;
+    readonly uint8 use_default_return;
     readonly uint8 new_return;
 };
 

@@ -1,10 +1,3 @@
-//
-//  collide_mesh.h
-//  r3-tas-memorymap
-//
-//  Created by Jba03 on 2023-01-09.
-//
-
 #ifndef collide_mesh_h
 #define collide_mesh_h
 

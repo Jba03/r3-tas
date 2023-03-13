@@ -18,7 +18,7 @@
 #include "assert.h"
 
 #define MATRIX4
-MATRIX4 MATRIX_DEFINITION(float, 4)
+MATRIX4 MATRIX_DEFINITION(float, 4);
 
 /**
  * matrix4_identity: Identity matrix
@@ -374,9 +374,9 @@ MATRIX4 static inline struct matrix4 matrix4_lookat(const struct vector3 eye, co
     
     struct matrix4 result =
     {
-        u.v[0], v.v[0], n.v[0], 0.0f,
-        u.v[1], v.v[1], n.v[1], 0.0f,
-        u.v[2], v.v[2], n.v[2], 0.0f,
+        u.x, v.x, n.x, 0.0f,
+        u.y, v.y, n.y, 0.0f,
+        u.z, v.z, n.z, 0.0f,
         vector3_dot(vector3_negate(u), eye),
         vector3_dot(vector3_negate(v), eye),
         vector3_dot(vector3_negate(n), eye),
@@ -396,10 +396,10 @@ MATRIX4 static inline struct matrix4 matrix4_lookat(const struct vector3 eye, co
 VECTOR4 static inline struct vector4 vector4_mul_matrix4(const struct vector4 v, const struct matrix4 m)
 {
     struct vector4 result;
-    result.x = m.m[0] * v.v[0] + m.m[4] * v.v[1] + m.m[8]  * v.v[2] + m.m[12] * v.v[3];
-    result.y = m.m[1] * v.v[0] + m.m[5] * v.v[1] + m.m[9]  * v.v[2] + m.m[13] * v.v[3];
-    result.z = m.m[2] * v.v[0] + m.m[6] * v.v[1] + m.m[10] * v.v[2] + m.m[14] * v.v[3];
-    result.w = m.m[3] * v.v[0] + m.m[7] * v.v[1] + m.m[11] * v.v[2] + m.m[15] * v.v[3];
+    result.x = m.m[0] * v.x + m.m[4] * v.y + m.m[8]  * v.z + m.m[12] * v.w;
+    result.y = m.m[1] * v.x + m.m[5] * v.y + m.m[9]  * v.z + m.m[13] * v.w;
+    result.z = m.m[2] * v.x + m.m[6] * v.y + m.m[10] * v.z + m.m[14] * v.w;
+    result.w = m.m[3] * v.x + m.m[7] * v.y + m.m[11] * v.z + m.m[15] * v.w;
     
     return result;
 }

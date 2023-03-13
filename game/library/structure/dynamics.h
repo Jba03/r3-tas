@@ -47,6 +47,20 @@
 #define dynamics_reserved               (1 << 3)
 #define dynamics_mechanics_changed      (1 << 4)
 
+/* Dynamics obstacle surface state */
+#define dynamics_obstacle_none      (0 << 0)
+#define dynamics_obstacle_ground    (1 << 0)
+#define dynamics_obstacle_wall      (1 << 2)
+#define dynamics_obstacle_ceiling   (1 << 4)
+#define dynamics_obstacle_water     (1 << 6)
+#define dynamics_obstacle_error     (1 << 31)
+
+struct rotation
+{
+    readonly float32 angle;
+    readonly struct vector3 axis;
+};
+
 struct macdpid
 {
     readonly float32 data0;
@@ -56,17 +70,15 @@ struct macdpid
     readonly float32 data4;
     readonly float32 data5;
     readonly float32 data6;
-    readonly struct { readonly float angle; readonly struct vector3 axis; } data7;
-    readonly struct { readonly float angle; readonly struct vector3 axis; } data8;
+    readonly struct rotation data7;
+    readonly struct rotation data8;
     readonly int8 data9;
-    padding(1)
     readonly uint16 data10;
     readonly struct vector3 data11;
     readonly float32 data12;
     readonly struct vector3 data13;
     readonly float32 data14;
     readonly uint8 data15;
-    padding(3)
 };
 
 struct dynamics_base
@@ -145,12 +157,6 @@ struct dynamics_obstacle
     readonly pointer superobject;
 };
 
-struct rotation
-{
-    readonly float32 angle;
-    readonly struct vector3 axis;
-};
-
 struct movement_vector
 {
     readonly struct vector3 linear;
@@ -179,7 +185,6 @@ struct dynamics
 {
     readonly struct dynamics_base base;
     readonly struct dynamics_advanced advanced;
-    padding(8)
     readonly struct dynamics_complex complex;
 };
 
@@ -191,5 +196,15 @@ struct dynam
 };
 
 #define dynamics_size(dynam) (host_byteorder_32((dynam).base.endflags) & 0x3)
+
+#if USE_FUNCTIONS
+
+/** dynamics_get_speed: get the speed of the specified dynamics structure */
+const struct vector3 dynamics_get_speed(const struct dynamics* dynamics);
+
+/** dynamics_collide_with: get the surface collision state for the specified obstacle type */
+bool dynamics_collide_with(const struct dynamics* dynamics, unsigned obstacle);
+
+#endif
 
 #endif /* dynamics_h */

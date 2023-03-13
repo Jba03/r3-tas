@@ -24,6 +24,96 @@ extern "C" {
     #include "intfun.h"
 }
 
+static int window_counter = 0;
+
+struct SuperobjectInfoWindow
+{
+    bool active;
+    bool sidebar;
+    int sidebar_idx;
+    const struct superobject* selected;
+    
+    SuperobjectInfoWindow()
+    {
+        active = true;
+        sidebar = false;
+    }
+    
+    void Draw()
+    {
+        if (active && hierarchy)
+        {
+            const char* name = superobject_name(selected);
+            if (!name) name = "Invalid object name";
+            
+            ImGui::Begin(name);
+            
+            if (true)
+            {
+                ImGui::BeginChild("SO List", ImVec2(200, 0), true);
+                
+                int i = 0;
+                
+                const struct superobject* world = dynamic_world;
+                if (superobject_type(selected) == superobject_type_actor) world = dynamic_world;
+                if (superobject_type(selected) == superobject_type_ipo) world = father_sector;
+                if (superobject_type(selected) == superobject_type_sector) world = father_sector;
+                
+                superobject_for_each(world, child)
+                {
+                    const struct actor* actor = (const struct actor*)superobject_data(child);
+                    if (!actor) continue;
+                    
+                    /* Get actor instance name, or model name if spawnable actor */
+                    const char* name = superobject_name(child);
+                    if (!name) name = "Invalid object name";
+                    
+                    ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
+                    if (superobject_type(child) == superobject_type_actor) color = ImColor(actor_color(actor));
+                    
+                    /* Draw the list item */
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    if (ImGui::Selectable(name, sidebar_idx == i))
+                    {
+                        selected = (struct superobject*)child;
+                        sidebar_idx = i;
+                    }
+                    ImGui::PopStyleColor();
+                    
+                    i++;
+                };
+                
+                ImGui::EndChild();
+            }
+            
+            ImGui::Text("hi!");
+            ImGui::End();
+        }
+        else
+        {
+            selected = NULL;
+        }
+    }
+    
+    void Destroy()
+    {
+        
+    }
+    
+    static SuperobjectInfoWindow* CreateWindow(const struct superobject* target)
+    {
+        SuperobjectInfoWindow* window = new SuperobjectInfoWindow;
+        window->selected = target;
+        window->active = true;
+        
+        window_counter++;
+        
+        return window;
+    }
+};
+
+static std::vector<SuperobjectInfoWindow*> superobject_info_windows;
+
 struct list_param { int *selected, i; struct superobject** so; struct actor** actor; struct standard_game_info** stdgame; };
 
 static void superobject_draw_childlist(void* data, void* p)
@@ -47,7 +137,7 @@ static void superobject_draw_childlist(void* data, void* p)
             if (!stdgame) return;
             name = actor_name(actor_instance_name, actor);
             if (!name) name = actor_name(actor_model_name, actor);
-            color = ImColor(*(uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type)));
+            color = ImColor(actor_color(actor));
             break;
     }
     
@@ -131,33 +221,30 @@ static std::vector<std::string> ai_custom_bits_description =
     "PrincipalActor",
 };
 
-static int frame = 0;
-
+static struct superobject* selected_superobject = NULL;
 
 void superobject_info(struct superobject* so)
 {
-    frame++;
-    
     if (!so) return;
     
     static bool is_open = true;
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Superobject info", &is_open, ImGuiWindowFlags_MenuBar))
+    if (ImGui::Begin("Superobject info", &is_open))
     {
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
+//        if (ImGui::BeginMenuBar())
+//        {
+//            if (ImGui::BeginMenu("File"))
+//            {
+//
+//                ImGui::EndMenu();
+//            }
+//            ImGui::EndMenuBar();
+//        }
         
         ImGui::BeginChild("SO List", ImVec2(200, 0), true);
         
         int i = 0;
-        static struct superobject* selected_superobject = NULL;
+        
         superobject_for_each_type(superobject_type_actor, so, object)
         {
             const struct actor* actor = (const struct actor*)superobject_data(object);
@@ -169,11 +256,11 @@ void superobject_info(struct superobject* so)
             /* Get actor instance name, or model name if spawnable actor */
             const char* name = actor_name(actor_instance_name, actor);
             if (!name) name = actor_name(actor_model_name, actor);
-            if (!name) name = "Invalid object";
+            if (!name) name = "Invalid object name";
             
             ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
-            uint32_t* cc = (uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type));
-            if (cc) color = ImColor(*cc);
+            uint32_t cc = actor_color(actor);
+            if (cc) color = ImColor(cc);
             
             /* Draw the list item */
             ImGui::PushStyleColor(ImGuiCol_Text, color);
@@ -221,41 +308,66 @@ void superobject_info(struct superobject* so)
             {
                 if ((stdgame = (struct standard_game_info*)pointer(actor->stdgame)))
                 {
-                    ImGui::BeginChild("Info", ImVec2(ImGui::GetContentRegionAvail().x, 150));
+                    ImGui::BeginChild("Info", ImVec2(ImGui::GetContentRegionAvail().x, 250));
                     {
-                        ImGui::BeginChild("Flags", ImVec2(ImGui::GetContentRegionAvail().x / 2, ImGui::GetContentRegionAvail().y), false);
+                        ImGui::BeginChild("Families", ImVec2(ImGui::GetContentRegionAvail().x, 25));
                         {
-                            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+                            const char* family = actor_name(actor_family_name, actor);
+                            const char* model = actor_name(actor_model_name, actor);
+                            const char* instance = actor_name(actor_instance_name, actor);
+                            ImColor color1 = actor_color(actor);
+                            ImColor color2 = color1;
+                            ImColor color3 = color1;
+                            color2.Value.w = 0.6f;
+                            color3.Value.w = 0.45f;
                             
-                            ImGui::BeginChild("FlagName", ImVec2(130, 50));
-                            ImGui::TextColored(bit_off_color, "SPO flags");
-                            ImGui::TextColored(bit_off_color, "SPO draw flags");
-                            ImGui::TextColored(bit_off_color, "Custom bits");
-                            ImGui::TextColored(bit_off_color, "AI custom bits");
+                            ImGui::TextColored(color1, "%s -", family);
+                            ImGui::SameLine();
+                            ImGui::TextColored(color2, "%s -", model);
+                            ImGui::SameLine();
+                            ImGui::TextColored(color3, "%s", instance);
+                            
+                            ImGui::EndChild();
+                        }
+                        
+                        ImGui::BeginChild("A");
+                        {
+                            
+                            ImGui::BeginChild("Flags", ImVec2(ImGui::GetContentRegionAvail().x / 2, ImGui::GetContentRegionAvail().y), false);
+                            {
+                                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+                                
+                                ImGui::BeginChild("FlagName", ImVec2(130, 50));
+                                ImGui::TextColored(bit_off_color, "SPO flags");
+                                ImGui::TextColored(bit_off_color, "SPO draw flags");
+                                ImGui::TextColored(bit_off_color, "Custom bits");
+                                ImGui::TextColored(bit_off_color, "AI custom bits");
+                                ImGui::EndChild();
+                                
+                                ImGui::SameLine();
+                                
+                                ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
+                                DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
+                                DisplayBits(&selected_superobject->draw_flags, false);
+                                DisplayBits(&stdgame->custom_bits, true);
+                                DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
+                                ImGui::EndChild();
+                                
+                                ImGui::PopStyleVar();
+                            }
                             ImGui::EndChild();
                             
                             ImGui::SameLine();
                             
-                            ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
-                            DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
-                            DisplayBits(&selected_superobject->draw_flags, false);
-                            DisplayBits(&stdgame->custom_bits, true);
-                            DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
+                            ImGui::BeginChild("Transform");
+                            {
+                                const struct transform* Tg = (const struct transform*)pointer(selected_superobject->transform_global);
+                                const struct transform* Tl = (const struct transform*)pointer(selected_superobject->transform_local);
+                                if (Tg) display_matrix4(matrix4_host_byteorder(Tg->matrix), ImVec4(1.0,1.0,1.0,1.0));
+                                if (Tl) display_matrix4(matrix4_host_byteorder(Tl->matrix), ImVec4(1.0,1.0,1.0,1.0));
+                                
+                            }
                             ImGui::EndChild();
-                            
-                            ImGui::PopStyleVar();
-                        }
-                        ImGui::EndChild();
-                        
-                        ImGui::SameLine();
-                        
-                        ImGui::BeginChild("Transform");
-                        {
-                            const struct transform* Tg = (const struct transform*)pointer(selected_superobject->transform_global);
-                            const struct transform* Tl = (const struct transform*)pointer(selected_superobject->transform_local);
-                            if (Tg) display_matrix4(matrix4_host_byteorder(Tg->matrix), ImVec4(1.0,1.0,1.0,1.0));
-                            if (Tl) display_matrix4(matrix4_host_byteorder(Tl->matrix), ImVec4(1.0,1.0,1.0,1.0));
-                            
                         }
                         ImGui::EndChild();
                     }
@@ -280,6 +392,13 @@ void superobject_info(struct superobject* so)
                 const struct dynam* dynam = actor_dynam(actor);
                 if (dynam)
                 {
+                    if (ImGui::BeginTabItem("AI"))
+                    {
+                        display_ai(actor);
+                        
+                        ImGui::EndTabItem();
+                    }
+                    
                     if (ImGui::BeginTabItem("Dynamics"))
                     {
                         const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
@@ -289,27 +408,16 @@ void superobject_info(struct superobject* so)
                     }
                 }
                 
-                
-                if (ImGui::BeginTabItem("AI"))
-                {
-                    display_ai(actor);
-                    
-                    ImGui::EndTabItem();
-                }
-                
-                if (ImGui::BeginTabItem("StdGame"))
-                {
-                    
-                    
-                    ImGui::EndTabItem();
-                }
+//                if (ImGui::BeginTabItem("StdGame"))
+//                {
+//
+//
+//                    ImGui::EndTabItem();
+//                }
                 
                 ImGui::EndTabBar();
             }
             ImGui::EndChild();
-//            if (ImGui::Button("Open in memory viewer")) memory_viewer.GotoAddrAndHighlight(so_offset, so_offset + 4);
-//            ImGui::SameLine();
-//            if (ImGui::Button("Save")) {}
             ImGui::EndGroup();
         }
     }

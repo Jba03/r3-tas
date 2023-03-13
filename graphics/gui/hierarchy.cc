@@ -8,6 +8,8 @@
 
 static struct superobject* info_target_so = NULL;
 
+struct superobject* viewed_sector;
+
 static void display_superobject_info()
 {
     if (info_target_so)
@@ -22,13 +24,14 @@ static void display_superobject_info()
             if (!stdgame) return;
             
             /* Get actor names */
-            const char* family_name = actor_name(actor_family_name, actor);
-            const char* model_name = actor_name(actor_model_name, actor);
-            const char* instance_name = actor_name(actor_instance_name, actor);
-            const char* display_name = instance_name ? instance_name : model_name;
+            const char* family_name = "a";//actor_name(actor_family_name, actor);
+//            const char* model_name = actor_name(actor_model_name, actor);
+//            const char* instance_name = actor_name(actor_instance_name, actor);
+            const char* display_name = NULL;//instance_name ? instance_name : model_name;
+            if (!display_name) display_name = "Invalid object name";
                 
             /* Get family color */
-            const uint32_t col = *(uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type));
+            const uint32_t col = actor_color(actor);
             const ImVec4 color = ImColor(col);
                                                        
             ImGui::Begin(display_name);
@@ -75,20 +78,19 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
             struct standard_game_info* stdgame = (struct standard_game_info* )pointer(actor->stdgame);
             if (!stdgame) goto end;
             
-            uint32_t col = *(uint32_t*)array_get(family_colors, host_byteorder_32(stdgame->family_type));
+            uint32_t col = actor_color(actor);
             color = ImColor(col);
             
-            name = actor_name(actor_instance_name, actor);
-            if (!name) /* Try model name instead */
-                name = actor_name(actor_model_name, actor);
+            name = superobject_name(so);
+            if (!name) name = "Invalid object name";
         }
         else
         {
-            name = "INVALID_ACTOR";
+            name = "Invalid actor";
         }
     }
     
-    if (type == superobject_type_ipo || type == superobject_type_ipo2)
+    if (type == superobject_type_ipo || type == superobject_type_ipo_mirror)
     {
         struct ipo* ipo = (struct ipo*)superobject_data(so);
         if (ipo)
@@ -103,7 +105,7 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
         if (sector)
         {
             name = strchr(sector->name, ':') + 1;
-            
+            if (so == viewed_sector) color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
             uint32_t prio = sector_priority(sector);
             uint8_t is_virtual = sector_is_virtual(sector);
             int8_t counter = sector_get_counter(sector);
@@ -155,16 +157,30 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
         ImGui::TreePop();
     }
     
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::Text("Left click to view information");
+        ImGui::Text("Right click to view in memory");
+        ImGui::EndTooltip();
+    }
+    
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+    {
+        if (so != dynamic_world && so != inactive_dynamic_world && so != father_sector)
+            superobject_info_windows.push_back(SuperobjectInfoWindow::CreateWindow(so));
+    }
+    
     if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
     {
         const uint32_t addr = offset(so);
         memory_viewer.GotoAddrAndHighlight(addr, addr);
+        selected_superobject = so;
+        if (superobject_type(so) == superobject_type_sector)
+        {
+            viewed_sector = so;
+        }
     }
-    
-//    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-//    {
-//        info_target_so = so;
-//    }
     
     display_superobject_info();
     

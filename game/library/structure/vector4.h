@@ -12,7 +12,14 @@
 #include "structure.h"
 
 #define VECTOR4
-VECTOR4 VECTOR_DEFINITION(float, 4)
+
+struct vector4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
 
 VECTOR4 static inline struct vector4 vector4_host_byteorder(const struct vector4 v)
 {

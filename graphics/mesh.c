@@ -121,6 +121,11 @@ struct mesh *mesh_sphere(const float sectors, const float stacks)
             sphere->vertices[vertex].position.y = z;
             sphere->vertices[vertex].position.z = y;
             
+            
+            sphere->vertices[vertex].normal.x = x;
+            sphere->vertices[vertex].normal.y = z;
+            sphere->vertices[vertex].normal.z = y;
+            
 //            sphere->vertices[vertex].normal.x = x;
 //            sphere->vertices[vertex].normal.y = y;
 //            sphere->vertices[vertex].normal.z = z;

@@ -45,7 +45,7 @@ struct standard_game_info
  * stdgame_get_superobject:
  *  Get the superobject whose actor holds this info.
  */
-#define stdgame_get_superobject(stdgame) ((struct superobject*)pointer(stdgame->superobject))
+#define stdgame_get_superobject(stdgame) (stdgame ? ((struct superobject*)pointer(stdgame->superobject)) : NULL)
 
 #define stdgame_family_type(stdgame) host_byteorder_32(stdgame->family_type)
 #define stdgame_model_type(stdgame) host_byteorder_32(stdgame->model_type)

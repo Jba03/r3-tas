@@ -20,10 +20,14 @@
 
 #include "translate.h"
 
+extern const char* (*get_config_path)(void);
+
 static void export_behavior(struct behavior* behavior)
 {
-    char path[4096] = LIBR3TAS_DIR;
-    sprintf(path, "%s/behavior/%s.scpt", path, behavior->name);
+    char path[4096];
+    memset(path, 0, 4096);
+    
+    sprintf(path, "%s/libr3/behavior/%s.scpt", get_config_path(), behavior->name);
 
     FILE* fp = fopen(path, "w");
     
@@ -116,7 +120,7 @@ static void export_behavior(struct behavior* behavior)
             
             fprintf(fp, "\n\n");
             
-            translation_destroy(translation);
+            script_translation_free(translation);
         }
         
         

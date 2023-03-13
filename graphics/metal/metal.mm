@@ -20,6 +20,8 @@ extern "C"
 #include "SDL.h"
 #include "dynamics.h"
 #include "game.h"
+#include "octree.h"
+#include "sector.h"
 }
 
 #include "gui.h"
@@ -78,8 +80,8 @@ static id<MTLLibrary> shader_library()
 static id<MTLTexture> create_depth_texture()
 {
     MTLTextureDescriptor* desc = [[MTLTextureDescriptor alloc] init];
-    desc.width = 800*2;
-    desc.height = 600*2;
+    desc.width = 800 * 2;
+    desc.height = 600 * 2;
     desc.pixelFormat = MTLPixelFormatDepth32Float_Stencil8;
     desc.mipmapLevelCount = 1;
     desc.storageMode = MTLStorageModePrivate;
@@ -133,6 +135,7 @@ static id<MTLTexture> create_render_texture()
 }
 
 static struct mesh* sphere_mesh;
+static struct mesh* box_mesh;
 
 static int metal_setup()
 {
@@ -171,7 +174,7 @@ static int metal_setup()
     vertex_descriptor.attributes[2].offset = offsetof(struct vertex, texcoord);
     vertex_descriptor.attributes[2].bufferIndex = 0;
     
-    vertex_descriptor.layouts[0].stride = sizeof(struct vertex);
+    vertex_descriptor.layouts[0].stride = sizeof(struct vector3);
     vertex_descriptor.layouts[0].stepRate = 1;
     vertex_descriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
     
@@ -212,6 +215,7 @@ static int metal_setup()
     }
     
     sphere_mesh = mesh_sphere(20.0f, 20.0f);
+    box_mesh = mesh_box();
     
     return 0;
 }
@@ -245,6 +249,7 @@ void mesh_process(struct mesh *mesh)
 #include "collideset.h"
 #include "collide_object.h"
 #include "collide_mesh.h"
+#include "geometry.h"
 
 struct Uniform
 {
@@ -257,8 +262,12 @@ struct Uniform
     bool use_texture;
 } uniform;
 
+extern struct collide_object* collide_objects[1000];
+extern struct matrix4 matrices[1000];
 extern struct mesh* meshlist[1000];
 extern int current_mesh;
+extern int current_matrix;
+extern int current_collide_object;
 extern struct actor* current_actor;
 
 void copyDepthStencilConfigurationFrom(MTLRenderPassDescriptor *src, MTLRenderPassDescriptor *dest)
@@ -277,10 +286,210 @@ void* graphics_get_texture()
     return (__bridge void*)drawable.texture;
 }
 
+int n_triangles = 0;
+struct triangle* triangles;
+
+struct vector3 sphere_pos;
+
+static void draw_sphere(struct vector3 center, const float radius, struct vector4 color, const id<MTLRenderCommandEncoder> renderEncoder)
+{
+    uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
+    uniform.model = matrix4x4_translation(center.x, center.z, center.y);
+    uniform.model = simd_mul(uniform.model, matrix4x4_scale(radius * 2.0f, radius * 2.0f, radius * 2.0f));
+    
+    id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
+        
+    struct mesh_data* data = (struct mesh_data*)sphere_mesh->internal_data;
+    [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
+    [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
+    [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
+    [renderEncoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
+    
+    [renderEncoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
+                              indexCount: sphere_mesh->n_indices
+                               indexType: MTLIndexTypeUInt32
+                             indexBuffer: data->index_buffer
+                       indexBufferOffset: 0];
+}
+
+static void draw_box(struct vector3 center, struct vector3 size, struct vector4 color, const id<MTLRenderCommandEncoder> renderEncoder)
+{
+    uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
+    uniform.model = matrix4x4_translation(center.x, center.z, center.y);
+    uniform.model = simd_mul(uniform.model, matrix4x4_scale(size.x, size.y, size.z));
+    uniform.use_texture = false;
+    
+    id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
+        
+    struct mesh_data* data = (struct mesh_data*)box_mesh->internal_data;
+    [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
+    [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
+    [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
+    [renderEncoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
+    
+    [renderEncoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
+                              indexCount: box_mesh->n_indices
+                               indexType: MTLIndexTypeUInt32
+                             indexBuffer: data->index_buffer
+                       indexBufferOffset: 0];
+}
+
+/*
+See LICENSE folder for this sample’s licensing information.
+
+Abstract:
+Implementation of vector, matrix, and quaternion math utility functions useful for 3D graphics
+ rendering with Metal
+
+ Metal uses column-major matrices and column-vector inputs.
+
+    linearIndex     cr              example with reference elements
+     0  4  8 12     00 10 20 30     sx  10  20   tx
+     1  5  9 13 --> 01 11 21 31 --> 01  sy  21   ty
+     2  6 10 14     02 12 22 32     02  12  sz   tz
+     3  7 11 15     03 13 23 33     03  13  1/d  33
+
+  The "cr" names are for <column><row>
+*/
+static simd_float4x4 GameToMetalMatrix(const struct matrix4 mat)
+{
+    simd_float4x4 m;
+    m.columns[0] = simd_make_float4(mat.m00, mat.m01, mat.m02, mat.m03);
+    m.columns[1] = simd_make_float4(mat.m10, mat.m11, mat.m12, mat.m13);
+    m.columns[2] = simd_make_float4(mat.m20, mat.m21, mat.m22, mat.m23);
+    m.columns[3] = simd_make_float4(mat.m30, mat.m31, mat.m32, mat.m33);
+    
+    return m;
+}
+
+
+static void RenderOctreeNode(const struct matrix4 transform, const struct octree_node* nd, struct vector4 color, id<MTLRenderCommandEncoder> render_encoder)
+{
+    if (!nd) return;
+    
+    struct vector3 min = vector3_host_byteorder(nd->min);
+    struct vector3 max = vector3_host_byteorder(nd->max);
+    
+    const float x = min.x + (max.x - min.x) / 2.0f;
+    const float y = min.y + (max.y - min.y) / 2.0f;
+    const float z = min.z + (max.z - min.z) / 2.0f;
+    
+    struct vector4 c = vector4_new(x, y, z, 1.0f);
+    c = vector4_mul_matrix4(c, transform);
+    
+    struct vector3 size = vector3_new(max.x - min.x, max.z - min.z, max.y - min.y);
+    draw_box(vector3_new(c.x, c.y, c.z), size, color, render_encoder);
+    //vector4_new(1.0f, 0.0f, 0.4f, 0.5f)
+    
+    const pointer* childlist = (const pointer*)pointer(nd->children);
+    if (childlist)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            const struct octree_node* node = (const struct octree_node*)pointer(*(childlist + i));
+            RenderOctreeNode(transform, node, color, render_encoder);
+        }
+    }
+}
+
+static void RenderOctrees(struct superobject* so, struct vector4 color, id<MTLRenderCommandEncoder> render_encoder)
+{
+    if (superobject_type(so) == superobject_type_ipo)
+    {
+        const struct ipo* ipo = (const struct ipo*)superobject_data(so);
+        if (!ipo) return;
+        
+        const struct collide_object* zdr = ipo_collide_object(ipo);
+        if (!zdr) return;
+        
+        const struct octree* octree = (const struct octree*)pointer(zdr->octree);
+        if (!octree) return;
+        
+        const struct octree_node* root = (const struct octree_node*)pointer(octree->root);
+        if (!root) return;
+        
+        
+//            int n_selected = 0;
+//            struct octree_node* selected[OCTREE_MAX_SELECTED_NODES];
+//            memset(selected, 0, sizeof(octree_node*) * OCTREE_MAX_SELECTED_NODES);
+//            float st[OCTREE_MAX_SELECTED_NODES];
+//
+//            const struct matrix4 raymat = actor_matrix(actor_rayman);
+//            const struct vector3 raypos = game_matrix4_position(raymat);
+//            octree_traverse_line_segment(root, superobject_matrix_global(child), raypos, vector3_sub(vector3_new(0.0f, 0.0f, 0.0f), raypos), selected, &n_selected, st);
+//
+//            for (int i = 0; i < n_selected; i++)
+//                RenderOctreeNode(superobject_matrix_global(child), selected[i], vector4_new(255.0f, 0.0f, 1.0f, 1.0f), render_encoder);
+        
+        RenderOctreeNode(superobject_matrix_global(so), root, color, render_encoder);
+    }
+    
+    superobject_for_each(so, child)
+    {
+        RenderOctrees(child, color, render_encoder);
+    };
+}
+
+static void DrawGeometryRecursive(const struct superobject* root, const struct matrix4 transform, id<MTLRenderCommandEncoder> render_encoder)
+{
+    if (!root) return;
+    
+    /* Calculate the new transformation matrix */
+    const struct matrix4 T = matrix4_mul(superobject_matrix_global(root), transform);
+    
+    if (superobject_type(root) == superobject_type_ipo)
+    {
+        const struct ipo* ipo = (const struct ipo*)superobject_data(root);
+        if (ipo)
+        {
+            const struct collide_object* zdr = ipo_collide_object(ipo);
+            if (zdr)
+            {
+                int mesh_idx = 0;
+                const struct collide_mesh* mesh;
+                while ((mesh = collide_object_mesh(zdr, mesh_idx)))
+                {
+                    uint16* indices = (uint16*)pointer(mesh->face_indices);
+                    struct vector3* vertices = (struct vector3*)pointer(zdr->vertices);
+                    
+                    if (vertices && indices)
+                    {
+                        
+                        const int16 n_faces = host_byteorder_16(mesh->n_faces);
+                        const int16 n_vertices = host_byteorder_16(zdr->n_vertices);
+                        //printf("n faces: %d %d\n", n_faces, n_vertices);
+                        
+                        id<MTLBuffer> indexBuffer = [device newBufferWithBytes: (void*)indices length: n_faces * 3 * sizeof(uint16) options: MTLResourceStorageModeShared];
+                        id<MTLBuffer> vertexBuffer = [device newBufferWithBytes: (void*)vertices length: n_vertices * sizeof(struct vector3) options: MTLResourceStorageModeShared];
+                        
+                        uniform.model = GameToMetalMatrix(T);
+                        
+                        id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
+                        [render_encoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
+                        [render_encoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
+                        [render_encoder setFragmentTexture: checker_texture atIndex: 0];
+                        [render_encoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
+                        [render_encoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
+                                                   indexCount: n_faces
+                                                    indexType: MTLIndexTypeUInt16
+                                                  indexBuffer: indexBuffer
+                                            indexBufferOffset: 0];
+                    }
+                    
+                    mesh_idx++;
+                }
+            }
+        }
+    }
+    
+    /* Draw children */
+    superobject_for_each(root, child) DrawGeometryRecursive(child, T, render_encoder);
+}
+
 
 void graphics_loop()
 {
-    
+    //return;
 //    if (main_render)
 //    {
 //        SDL_HideWindow(window);
@@ -291,7 +500,7 @@ void graphics_loop()
 //        SDL_ShowWindow(window);
 //    }
     
-    return;
+    //return;
     
     SDL_ShowWindow(window);
 
@@ -355,14 +564,12 @@ void graphics_loop()
 //    renderpass_descriptor.stencilAttachment.loadAction = MTLLoadActionClear;
 //    renderpass_descriptor.stencilAttachment.storeAction = MTLStoreActionStore;
     
-        id <MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor: renderpass_descriptor];
-        [renderEncoder pushDebugGroup: @"ImGui demo"];
-    
+    id <MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor: renderpass_descriptor];
+    [renderEncoder pushDebugGroup: @"ImGui demo"];
     [renderEncoder setCullMode: MTLCullModeNone];
     [renderEncoder setFrontFacingWinding: MTLWindingClockwise];
     [renderEncoder setRenderPipelineState: pipeline_state];
     [renderEncoder setDepthStencilState: depth_state];
-    
     [renderEncoder setViewport: (MTLViewport){0, 0, static_cast<double>(width), static_cast<double>(height), 0.0f, 1.0f /* 1.0f: important! */}];
     
     struct vector3 campos = *(struct vector3*)(memory.base + 0x00c531bc);
@@ -380,33 +587,21 @@ void graphics_loop()
     lookat.z = host_byteorder_f32(*(uint32_t*)&lookato.y);
     lookat.y = host_byteorder_f32(*(uint32_t*)&lookato.z);
     
-//    printf("pos: %f, %f, %f\n", position.x, position.y, position.z);
-//    printf("lookat: %f, %f, %f\n", lookat.x, lookat.y, lookat.z);
-    
-    simd_float4x4 view = matrix_look_at_left_hand(position,
-                                                   lookat,
-                                                   (simd_float3){0, 1, 0});
-    
+    /* Construct camera matrices */
+    simd_float4x4 view = matrix_look_at_left_hand(position, lookat, (simd_float3){0, 1, 0});
     simd_float4x4 projection = matrix_perspective_left_hand(fov, (float)width / (float)height, 0.1f, 1000.0f);
-    simd_float4x4 correction = matrix_make_rows(1.0f, 0.0f, 0.0f, 0.0f,
-                                                0.0f, 1.0f, 0.0f, 0.0f,
-                                                0.0f, 0.0f, 0.5f, 0.5f,
-                                                0.0f, 0.0f, 0.0f, 1.0f);
-    
-    //projection = matrix_multiply(correction, projection);
     
     uniform.view = view;
     uniform.projection = projection;
     uniform.model = matrix_identity_float4x4;
     uniform.camera_pos = position;
     uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
-    
     uniform.use_texture = true;
     
     for (int i = 0; i < current_mesh; i++)
     {
         struct mesh* mesh = meshlist[i];
-        
+
         const struct collide_material* material = (const struct collide_material*)pointer(mesh->material);
         if (material)
         {
@@ -417,27 +612,20 @@ void graphics_loop()
             if (identifier & collide_material_water) uniform.color = simd_make_float4(0.0f, 1.0f, 1.0f, 0.5f);
             if (identifier & collide_material_unknown) uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
         }
-        
+
         struct mesh_data* data = (struct mesh_data*)mesh->internal_data;
         if (!data) continue;
-        
-        const struct transform* T = (const struct transform*)mesh->transform_global;
-        if (T)
-        {
-            const struct matrix4 mat = matrix4_host_byteorder(T->matrix);
-            struct vector3 pos = game_matrix4_position(mat);
-            uniform.model = matrix4x4_translation(pos.x, pos.z, pos.y);
-        }
-        
+
+        /* Get transform */
+        const struct matrix4 mat = superobject_matrix_global(mesh->superobject);
+        uniform.model = GameToMetalMatrix(mat);
         uniform.normal_matrix = matrix3x3_upper_left(uniform.model);
-        
+
         id<MTLBuffer> uniformbuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-        
         [renderEncoder setVertexBuffer: data->vertex_buffer offset: 0 atIndex: 0];
         [renderEncoder setVertexBuffer: uniformbuffer offset: 0 atIndex: 1];
         [renderEncoder setFragmentTexture: checker_texture atIndex: 0];
         [renderEncoder setFragmentBuffer: uniformbuffer offset: 0 atIndex: 0];
-
         [renderEncoder drawIndexedPrimitives: MTLPrimitiveTypeTriangle
                                   indexCount: mesh->n_indices
                                    indexType: MTLIndexTypeUInt32
@@ -445,9 +633,38 @@ void graphics_loop()
                             indexBufferOffset: 0];
     }
     
+    
+    //DrawGeometryRecursive(father_sector, matrix4_identity, renderEncoder);
+    
     uniform.use_texture = false;
     
-    if (hierarchy)
+//    /* Octree rendering */
+//    [renderEncoder setTriangleFillMode: MTLTriangleFillModeLines];
+//    if (father_sector)
+//    {
+//        superobject_for_each(father_sector, subsector)
+//        {
+//            struct vector4 color = vector4_new(1.0f, 0.5f, 0.1f, 0.25f);
+//            extern struct superobject* viewed_sector;
+//            if (subsector == viewed_sector) color = vector4_new(0.0f, 1.0f, 0.75f, 0.25f);
+//            RenderOctrees(subsector, color, renderEncoder);
+//        };
+//    }
+//    [renderEncoder setTriangleFillMode: MTLTriangleFillModeFill];
+    
+    
+//    extern struct xray xray;
+//    for (int i = 0; i < xray.n_points; i++)
+//    {
+//        const struct vector3 point = vector3_host_byteorder(*xray.pointset[i]);
+//        const struct vector4 vertexT = vector4_mul_matrix4(vector4_new(point.x, point.y, point.z, 1.0f), T);
+//
+//        draw_sphere(point, 0.1f, vector4_new(1.0f, 0.0f, 0.0f, 1.0f), renderEncoder);
+//
+//
+//    }
+    
+    if (false)
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
         {
@@ -479,7 +696,7 @@ void graphics_loop()
             
             //printf("pos: %f %f %f\n", pos.x, pos.y, pos.z);
             
-            uniform.color = simd_make_float4(1.0f, 0.0f, 0.0f, 1.0f);
+            uniform.color = simd_make_float4(1.0f, 0.0f, 0.0f, 0.5f);
             if (actor == current_actor) uniform.color = simd_make_float4(1.0f, 1.0f, 0.0f, 1.0f);
             
             uniform.model = matrix4x4_translation(pos.x, pos.z, pos.y);
@@ -499,6 +716,20 @@ void graphics_loop()
                                indexBufferOffset: 0];
         }
     }
+    
+    draw_sphere(sphere_pos, 1.0f, vector4_new(1.0f, 0.0f, 1.0f, 1.0f), renderEncoder);
+    
+//    for (int i = 0; i < n_triangles; i++) /* draw ipo vertex calc */
+//    {
+//        struct triangle t = triangles[i];
+//        //printf("t: %f %f %f\n", t.a.x, t.a.y, t.a.z);
+//
+//
+//
+////        draw_sphere(t.a, 0.5f, vector4_new(1.0f, 0.0f, 1.0f, 1.0f), renderEncoder);
+////        draw_sphere(t.b, 0.5f, vector4_new(1.0f, 0.0f, 1.0f, 1.0f), renderEncoder);
+////        draw_sphere(t.c, 0.5f, vector4_new(1.0f, 0.0f, 1.0f, 1.0f), renderEncoder);
+//    }
     
     /* Draw ZDx */
     if (false)

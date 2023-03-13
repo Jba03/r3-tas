@@ -115,19 +115,8 @@ static std::string fmt_superobject(void* offset)
 {
     const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
     if (!so) return "NULL";
-    
-    const int type = superobject_type(so);
-    switch (type)
-    {
-        // No prefixing of the superobject type here - actors are
-        // easily identifiable, and IPOs are already prefixed with `IPO:`
-        case superobject_type_actor: return fmt_actor(offset);
-        case superobject_type_sector: return fmt_sector(so);
-        case superobject_type_ipo:
-        case superobject_type_ipo2: return fmt_ipo(so);
-    }
-    
-    return "NULL";
+    const char* name = superobject_name(so);
+    return name ? name : "NULL";
 }
 
 static std::string fmt_superobject_array(void* offset)

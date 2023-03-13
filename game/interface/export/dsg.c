@@ -3,6 +3,8 @@
 
 #include <sys/stat.h>
 
+extern const char* (*get_config_path)(void);
+
 static void export(struct SuperObject* so, void* param)
 {
     if (!so) return;
@@ -16,7 +18,7 @@ static void export(struct SuperObject* so, void* param)
     
     char path[1024];
     memset(path, 0, 1024);
-    sprintf(path, LIBR3TAS_DIR "/dsgdump/%X.dsg", actor->superobject->offset);
+    sprintf(path, "%s/dsgdump/%X.dsg", get_config_path(), actor->superobject->offset);
     
     FILE* fp = fopen(path, "wb");
     

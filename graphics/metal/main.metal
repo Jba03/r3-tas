@@ -56,6 +56,22 @@ constexpr sampler nearestSampler(address::repeat,
                                  mag_filter::nearest,
                                  mip_filter::none);
 
+#define swap16(data) \
+    ((((data) >> 8) & 0x00FF) | (((data) << 8) & 0xFF00))
+
+#define swap32(data) \
+    ((((data) >> 24) & 0x000000FF) | (((data) >>  8) & 0x0000FF00) | \
+    ( ((data) <<  8) & 0x00FF0000) | (((data) << 24) & 0xFF000000) )
+
+float3 swap_float3(float3 input)
+{
+    float3 result;
+    result.x = as_type<float>(swap32(as_type<uint32_t>(input.x)));
+    result.y = as_type<float>(swap32(as_type<uint32_t>(input.y)));
+    result.z = as_type<float>(swap32(as_type<uint32_t>(input.z)));
+    
+    return result;
+}
 
 vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
                                   constant Vertex *vertices [[ buffer(0) ]],
@@ -84,10 +100,14 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
 //    "   texcoord = aTexCoord;\n"                                        \
 //    "   gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"  \
     
+    //vertexID = swap16(vertexID);
+    
     float4 pos = vertices[vertexID].position;
+    //pos = swap_float3(pos);
+    
     //pos.x = -pos.x;
     
-    float4 position = uniform.projection * uniform.view * uniform.model * float4(pos.xyz, 1.0f);
+    float4 position = uniform.projection * uniform.view * float4(pos.xyz, 1.0f);
     //position.z = pos.z; //1.0-vertices[vertexID].position.z;
     
     //position.x = -position.x;
@@ -117,13 +137,13 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     
     float tex = uniform.use_texture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1;
     float3 normal = normalize(in.normal);
-    
-    float3 ambientTerm = float3(0.5f);
-    
+
+    float3 ambientTerm = float3(0.2f);
+
     float3 lightDir = float3(0,1,0);
     float diffuseIntensity = saturate(dot(normal, lightDir));
-    float3 diffuseTerm = float3(0.5f) * diffuseIntensity;
-     
+    float3 diffuseTerm = float3(0.1f) * diffuseIntensity;
+
     float3 specularTerm(0);
     if (diffuseIntensity > 0)
     {
@@ -132,9 +152,9 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
         float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
         specularTerm = specularFactor * 0.75f;
     }
-    
+
     out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
-    out.color.xyz *= tex;
+    //out.color.xyz = in.position.xyz;
     
     return out;
 }

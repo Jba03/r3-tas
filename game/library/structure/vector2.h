@@ -9,10 +9,14 @@
 #define vector2_h
 
 #include "mathc.h"
-#include "macrotricks.h"
 
 #define VECTOR2
-VECTOR2 VECTOR_DEFINITION(float, 2)
+
+struct vector2
+{
+    float x;
+    float y;
+};
 
 VECTOR2 static inline struct vector2 vector2_host_byteorder(const struct vector2 v)
 {

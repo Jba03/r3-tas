@@ -3,18 +3,27 @@
 
 #include "structure.h"
 #include "vector3.h"
+#include "matrix4.h"
 
 #define superobject_type_none                       0x0
 #define superobject_type_world                      0x1
 #define superobject_type_actor                      0x2
 #define superobject_type_sector                     0x4
 #define superobject_type_physical_object            0x8
+#define superobject_type_physical_object_mirror     0x10
 #define superobject_type_ipo                        0x20
-#define superobject_type_ipo2                       0x40
-#define superobject_type_geometric_object           0x400
-#define superobject_type_geometric_shadow_object    0x80000
+#define superobject_type_ipo_mirror                 0x40
+#define superobject_type_special_effect             0x80
+#define superobject_type_no_action                  0x100
+#define superobject_type_mirror                     0x200
 
 /* TODO: Add draw flags */
+
+static const char * const superobject_typenames[] =
+{
+    "World", "Actor", "Sector", "PhysicalObject", "PhysicalObject.Mirror",
+    "IPO", "IPO.Mirror", "SpecialEffect", "NoAction", "Unknown", "Mirror",
+};
 
 struct superobject
 {
@@ -46,6 +55,25 @@ struct superobject
     readonly uint8 transition;
     padding(1)
 };
+
+#if USE_FUNCTIONS
+
+/** superobject_typename: get the typename of a superobject*/
+const char* superobject_typename(const struct superobject* so);
+
+/** superobject_name: get the (instance) name of a superobject*/
+const char* superobject_name(const struct superobject* so);
+
+/** superobject_matrix_global: get the global world transform matrix of a superobject */
+const struct matrix4 superobject_matrix_global(const struct superobject* so);
+
+/** superobject_matrix_local: get the local world transform matrix of a superobject */
+const struct matrix4 superobject_matrix_local(const struct superobject* so);
+
+/** sector_by_location: get the sector in which the specified point is located */
+const struct superobject* sector_by_location(const struct superobject* father_sector, const struct vector3 point);
+
+#endif
 
 #define superobject_type(so) host_byteorder_32(so->type)
 #define superobject_n_children(so) host_byteorder_32(so->n_children)
@@ -85,27 +113,5 @@ struct superobject
     struct superobject* obj = (struct superobject*)pointer(root->first_child); \
     for (; obj != NULL; obj = (struct superobject*)pointer(obj->next)) \
     if (host_byteorder_32(obj->type) != type)
-
-/**
- * superobject_typename:
- *  Return the name of specified superobject's type
- */
-static inline const char* superobject_typename(struct superobject *so)
-{
-    if (!so) return NULL;
-    switch (superobject_type(so))
-    {
-        case superobject_type_none: return "Dummy";
-        case superobject_type_world: return "World";
-        case superobject_type_actor: return "Actor";
-        case superobject_type_sector: return "Sector";
-        case superobject_type_physical_object: return "PhysicalObject";
-        case superobject_type_ipo: return "IPO";
-        case superobject_type_ipo2: return "IPO.2";
-        case superobject_type_geometric_object: return "GeometricObject";
-        case superobject_type_geometric_shadow_object: return "GeometricShadowObject";
-        default: return "Invalid";
-    }
-}
 
 #endif /* superobject_h */

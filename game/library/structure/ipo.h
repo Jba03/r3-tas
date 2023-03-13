@@ -3,7 +3,8 @@
 
 #include "structure.h"
 
-struct ipo {
+struct ipo
+{
     readonly pointer physical_object;
     readonly pointer current_radiosity;
     readonly doublepointer radiosity;
@@ -16,4 +17,15 @@ struct ipo {
 #endif
 };
 
+#if USE_FUNCTIONS
+
+#include "collide_object.h"
+
+/** ipo_name: get the name of an IPO */
+const char* ipo_name(const struct ipo* ipo);
+
+/** ipo_collide_object: get the collide object (ZDR) of an IPO */
+const struct collide_object* ipo_collide_object(const struct ipo* ipo);
+
+#endif
 #endif /* ipo_h */

@@ -7,19 +7,20 @@
 
 static bool joypad_display = true;
 static const float joystick_radius = 35.0f;
+static const ImColor joystick_color = IM_COL32(255, 0, 0, 196);
 
-static void draw_joystick(ImDrawList* drawlist, ImVec2 pos, float radius, int joyx, int joyy)
+static void draw_joystick(ImDrawList* drawlist, ImVec2 pos, float radius, int joyx, int joyy, ImColor joy = joystick_color, ImColor bg = IM_COL32(255, 255, 255, 20))
 {
-    drawlist->AddRectFilled(pos, ImVec2(pos.x + joystick_radius * 2, pos.y + joystick_radius * 2), IM_COL32(255, 255, 255, 5));
-    drawlist->AddCircleFilled(ImVec2(pos.x + joystick_radius, pos.y + joystick_radius), joystick_radius, IM_COL32(255, 255, 255, 20));
-    drawlist->AddCircleFilled(ImVec2(pos.x + joystick_radius, pos.y + joystick_radius), 2.0f, IM_COL32(255, 255, 255, 20));
+    drawlist->AddRectFilled(pos, ImVec2(pos.x + radius * 2, pos.y + radius * 2), IM_COL32(255, 255, 255, 5));
+    drawlist->AddCircleFilled(ImVec2(pos.x + radius, pos.y + radius), radius, bg);
+    drawlist->AddCircleFilled(ImVec2(pos.x + radius, pos.y + radius), 2.0f, bg);
     
-    float x = (float(joyx) / 100.0f) * joystick_radius;
-    float y = -(float(joyy) / 100.0f) * joystick_radius;
+    float x = (float(joyx) / 100.0f) * radius;
+    float y = -(float(joyy) / 100.0f) * radius;
     
-    ImVec2 linestart = ImVec2(pos.x + joystick_radius, pos.y + joystick_radius);
-    ImVec2 lineend = ImVec2(pos.x + joystick_radius + x, pos.y + joystick_radius - y);
-    drawlist->AddLine(linestart, lineend, IM_COL32(255, 0, 0, 196));
+    ImVec2 linestart = ImVec2(pos.x + radius, pos.y + radius);
+    ImVec2 lineend = ImVec2(pos.x + radius + x, pos.y + radius - y);
+    drawlist->AddLine(linestart, lineend, joy);
 }
 
 static void display_joypad(bool *display)

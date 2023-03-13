@@ -263,7 +263,6 @@ struct intcpa_functions
     void (*GetSPOSighting)(struct intcpa* intr);
     void (*GetSPOHorizon)(struct intcpa* intr);
     void (*GetSPOBanking)(struct intcpa* intr);
-    
     void (*GetTractionFactor)(struct intcpa* intr);
     
     /* Collide object type */

@@ -20,6 +20,7 @@ static int selected_index;
 static bool scroll = true;
 
 struct actor* current_actor;
+static struct intelligence* current_intelligence_struct = NULL;
 static struct behavior* current_intelligence = NULL;
 static struct behavior* current_reflex = NULL;
 static struct macro* current_macro = NULL;
@@ -30,7 +31,7 @@ static void* aimodel_selected_data = NULL;
 
 static void display_translated_script(struct script_node* tree, bool nodes = false, int pc = -1)
 {
-    struct translation* translation = script_translate(tree);
+    struct translation* translation = script_node_translate(tree);
     if (translation)
     {
         
@@ -143,7 +144,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     struct input_entry* entry = (struct input_entry*)pointer(tok.node->param);
                     const char* name = (const char*)pointer(entry->action_name);
                     if ((host_byteorder_32(entry->state) & 0xFF000000) == 0)
-                        color = ImVec4(100.0f / 255.0f, 230.0f / 255.0f, 100.0f / 255.0f, 1.0f);
+                        color = ImVec4(100.0f / 255.0f, 255.0f / 255.0f, 255.0f, 1.0f);
                     else
                         color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f);
                     ImGui::TextColored(color, "\"%s\"", name);
@@ -164,10 +165,6 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     if (ImGui::IsItemClicked())
                     {
                         memory_viewer.GotoAddrAndHighlight(offset(action), offset(action));
-                        
-                        struct script_node* tree = (struct script_node*)pointer(action->tree);
-                        //printf("tree: %X\n", action->tree);
-                        //action_tree = tree;
                     }
                     ImGui::SameLine();
                     ImGui::PopStyleVar();
@@ -192,8 +189,8 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                             current_macro = macro;
                             aimodel_selected_data = (struct macro*)macro;
 //                            printf("ending macro\n");
-////                            struct script* scp = (struct script*)pointer(macro->script_current);
-////                            scp->tree = 0;
+//                            struct script* scp = (struct script*)pointer(macro->script_initial);
+//                            (*(struct script_node*)pointer(scp->tree)).type = script_node_type_end_macro;
 //                            struct script* scp = (struct script*)pointer(macro->script_initial);
 //                            struct script_node* node = (struct script_node*)pointer(scp->tree);
 //                            node->type = 8;
@@ -243,7 +240,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
             ImGui::PopStyleVar();
         }
         
-        translation_destroy(translation);
+        script_translation_free(translation);
     }
 }
 
@@ -420,6 +417,7 @@ static void display_ai(struct actor* actor)
         {
             if ((intelligence = (struct intelligence*)pointer(mind->intelligence)))
             {
+                current_intelligence_struct = intelligence;
                 current_intelligence = (struct behavior*)pointer(intelligence->current_behavior);
             }
             
@@ -438,99 +436,99 @@ static void display_ai(struct actor* actor)
             
             ImGui::BeginChild("Debugger", ImVec2(ImGui::GetContentRegionAvail().x, 0), false);
             {
-                ImGui::BeginChild("Debug panel", ImVec2(ImGui::GetContentRegionAvail().x, 100), true);
-                {
-                    ImGui::BeginChild("Debug tools", ImVec2(ImGui::GetContentRegionAvail().x / 3, 100), false);
-                    {
-                        const char* intelname = current_intelligence ? strchr(current_intelligence->name, ':') + 1 : NULL;
-                        const char* reflexname = current_reflex ? strchr(current_reflex->name, ':') + 1 : NULL;
-                        
-                        if (intelname) ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Intelligence: %s", intelname);
-                        if (reflexname) ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Reflex: %s", reflexname);
-                        
-                        if (!interpreter)
-                        {
-                            if (ImGui::Button("Break"))
-                            {
-                                extern void (*cpu_break)(void);
-                                extern bool main_render;
-                                
-                                cpu_break();
-                                main_render = false;
-                                
-                                struct intcpa_param param;
-                                param.actor_self = (actor_superobject(actor)->data);
-                                param.mirror = 1;
-                                param.nowrite = 0;
-                                
-                                interpreter = intcpa_interpreter_create(&param, (struct script*)pointer(current_intelligence->scripts));
-                                
-                                register_dsg_functions(interpreter);
-                            }
-                        }
-                        else
-                        {
-                            if (ImGui::Button("Step"))
-                            {
-                                intcpa_interpreter_step(interpreter);
-                                pc = intcpa_interpreter_pc(interpreter);
-//                                printf("pc: %d\n", pc);
-                            }
-                            
-                            ImGui::SameLine();
-                            if (ImGui::Button("Animate"))
-                            {
-                                animating = true;
-                            }
-                        }
-                        
-                        if (animating && interpreter)
-                        {
-                            intcpa_interpreter_step(interpreter);
-                            pc = intcpa_interpreter_pc(interpreter);
-//                            printf("pc: %d\n", pc);
-                        }
-                        
-                        
-                        if (ImGui::Button("Add program breakpoint"))
-                        {
-                            
-                        }
-                        
-                        ImGui::SameLine();
-                        if (ImGui::Button("Add global file breakpoint"))
-                        {
-                            
-                        }
-                    }
-                    ImGui::EndChild();
-                    
-                    ImGui::SameLine();
-                    ImGui::BeginChild("Breakpoints", ImVec2(ImGui::GetContentRegionAvail().x, 100), false);
-                    {
-                        ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Macro callstack");
-                        
-                        if (interpreter)
-                        {
-                            for (unsigned int i = interpreter->rsp / 4; i > 1; i--)
-                            {
-                                struct macro* m = (struct macro*)interpreter->rstack[i * 4 - 2];
-                                //printf("name: %s\n", m->name);
-                                ImGui::TextColored(ImVec4(1,1,1,0.5f), "%s", m->name);
-                            }
-                        }
-                    }
-                    ImGui::EndChild();
-                    
-                    ImGui::SameLine();
-                    ImGui::BeginChild("Macro callstack", ImVec2(ImGui::GetContentRegionAvail().x, 100), false);
-                    {
-                        //ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Macro callstack");
-                        
-                    }
-                    ImGui::EndChild();
-                }
-                ImGui::EndChild();
+//                ImGui::BeginChild("Debug panel", ImVec2(ImGui::GetContentRegionAvail().x, 100), true);
+//                {
+//                    ImGui::BeginChild("Debug tools", ImVec2(ImGui::GetContentRegionAvail().x / 3, 100), false);
+//                    {
+//                        const char* intelname = current_intelligence ? strchr(current_intelligence->name, ':') + 1 : NULL;
+//                        const char* reflexname = current_reflex ? strchr(current_reflex->name, ':') + 1 : NULL;
+//                        
+//                        if (intelname) ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Intelligence: %s", intelname);
+//                        if (reflexname) ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Reflex: %s", reflexname);
+//                        
+//                        if (!interpreter)
+//                        {
+//                            if (ImGui::Button("Break"))
+//                            {
+//                                extern void (*cpu_break)(void);
+//                                extern bool main_render;
+//                                
+//                                cpu_break();
+//                                main_render = false;
+//                                
+//                                struct intcpa_param param;
+//                                param.actor_self = (actor_superobject(actor)->data);
+//                                param.mirror = 1;
+//                                param.nowrite = 0;
+//                                
+//                                interpreter = intcpa_interpreter_create(&param, (struct script*)pointer(current_intelligence->scripts));
+//                                
+//                                register_dsg_functions(interpreter);
+//                            }
+//                        }
+//                        else
+//                        {
+//                            if (ImGui::Button("Step"))
+//                            {
+//                                intcpa_interpreter_step(interpreter);
+//                                pc = intcpa_interpreter_pc(interpreter);
+////                                printf("pc: %d\n", pc);
+//                            }
+//                            
+//                            ImGui::SameLine();
+//                            if (ImGui::Button("Animate"))
+//                            {
+//                                animating = true;
+//                            }
+//                        }
+//                        
+//                        if (animating && interpreter)
+//                        {
+//                            intcpa_interpreter_step(interpreter);
+//                            pc = intcpa_interpreter_pc(interpreter);
+////                            printf("pc: %d\n", pc);
+//                        }
+//                        
+//                        
+//                        if (ImGui::Button("Add program breakpoint"))
+//                        {
+//                            
+//                        }
+//                        
+//                        ImGui::SameLine();
+//                        if (ImGui::Button("Add global file breakpoint"))
+//                        {
+//                            
+//                        }
+//                    }
+//                    ImGui::EndChild();
+//                    
+//                    ImGui::SameLine();
+//                    ImGui::BeginChild("Breakpoints", ImVec2(ImGui::GetContentRegionAvail().x, 100), false);
+//                    {
+//                        ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Macro callstack");
+//                        
+//                        if (interpreter)
+//                        {
+//                            for (unsigned int i = interpreter->rsp / 4; i > 1; i--)
+//                            {
+//                                struct macro* m = (struct macro*)interpreter->rstack[i * 4 - 2];
+//                                //printf("name: %s\n", m->name);
+//                                ImGui::TextColored(ImVec4(1,1,1,0.5f), "%s", m->name);
+//                            }
+//                        }
+//                    }
+//                    ImGui::EndChild();
+//                    
+//                    ImGui::SameLine();
+//                    ImGui::BeginChild("Macro callstack", ImVec2(ImGui::GetContentRegionAvail().x, 100), false);
+//                    {
+//                        //ImGui::TextColored(ImVec4(1, 1, 1, 0.5f), "Macro callstack");
+//                        
+//                    }
+//                    ImGui::EndChild();
+//                }
+//                ImGui::EndChild();
                 
                 ImGui::BeginChild("Behavior", ImVec2(ImGui::GetContentRegionAvail().x, 0), true);
                 {
@@ -555,7 +553,12 @@ static void display_ai(struct actor* actor)
                                         if (tree)
                                         {
                                             ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(tree), tree_length(tree));
-                                            if (action_tree) display_translated_script(action_tree, false, pc);
+                                            //printf("script° tree: %X\n", offset(tree));
+                                            if (action_tree)
+                                            {
+                                                //printf("actoin tree: %X\n", offset(action_tree));
+                                                display_translated_script(action_tree);
+                                            }
                                             else if (interpreter) display_translated_script(interpreter->original_tree, false, pc);
                                             else display_translated_script(tree);
                                             ImGui::NewLine();

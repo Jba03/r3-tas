@@ -106,7 +106,6 @@ static const char * const script_operator_table[] =
     "Operator_Div",
     "Operator_UnaryMinus",
     "Operator_Mod", // 5
-    
     "Operator_PlusAffect", // 6
     "Operator_MinusAffect",
     "Operator_MulAffect",
@@ -115,21 +114,17 @@ static const char * const script_operator_table[] =
     "Operator_MinusMinusAffect",
     "Operator_Affect",
     "Operator_Dot", // 13
-    
     ".X", // 14
     ".Y",
     ".Z", // 16
-    
     "Operator_VectorPlusVector", // 17
     "Operator_VectorMinusVector",
     "Operator_VectorUnaryMinus",
     "Operator_VectorMulScalar",
     "Operator_VectorDivScalar", // 21
-    
     ".X:=", // 22
     ".Y:=",
     ".Z:=", // 24
-    
     "Operator_Ultra", // 25
     "Operator_ModelCast",
     "Operator_Array",

@@ -22,6 +22,7 @@ include_directories(graphics)
 include_directories(graphics/gui)
 include_directories(graphics/gui/imgui)
 include_directories(game/interface)
+include_directories(game/interface/analyse)
 include_directories(game/library/common)
 include_directories(game/library/function)
 include_directories(game/library/function/hierarchy)
@@ -34,6 +35,22 @@ add_library(r3tas SHARED
 	
 	common/configuration.c
 	
+	game/library/function/actor.c
+	game/library/function/input.c
+	game/library/function/superobject.c
+	game/library/function/rnd.c
+	game/library/function/object_type.c
+	game/library/function/engine.c
+	game/library/function/aifunction.c
+	game/library/function/dynamics.c
+	game/library/function/intersect.c
+	game/library/function/ipo.c
+	game/library/function/sector.c
+	game/library/function/octree.c
+	game/library/function/collide_object.c
+	game/library/function/intelligence.c
+	game/library/function/script.c
+
 	game/interface/export.c
 	game/interface/game.c
 	game/interface/intfun.c

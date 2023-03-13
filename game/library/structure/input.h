@@ -85,4 +85,11 @@ struct input_entry
     padding(3)
 };
 
+#if USE_FUNCTIONS
+
+/** input_entry_find: find an input entry by its action name */
+struct input_entry* input_entry_find(const struct input_structure* s, const char* action_name);
+
+#endif
+
 #endif /* input_h */

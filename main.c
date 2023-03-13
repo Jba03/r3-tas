@@ -35,17 +35,7 @@
 
 static uint8_t* mRAM = NULL;
 static uint8_t* (*get_mRAM)(void) = NULL;
-static bool ram_loaded = false;
-
-bool* render_xfb_main;
-
-void (*cpu_break)(void) = NULL;
-
-#if defined(__APPLE__)
-#include <dispatch/dispatch.h>
-static dispatch_queue_t timer_queue;
-static dispatch_source_t timer_source;
-#endif
+const char* (*get_config_path)(void) = NULL;
 
 #define EXTERN_MESSAGE_INITIALIZE         0
 #define EXTERN_MESSAGE_ON_UPDATE          1
@@ -56,7 +46,13 @@ static dispatch_source_t timer_source;
 #define EXTERN_MESSAGE_LOADSTATE_POINTER  6
 #define EXTERN_MESSAGE_SAVESTATE_FUNCTION 7
 #define EXTERN_MESSAGE_MRAM_POINTER       8
+#define EXTERN_MESSAGE_CONFIG_POINTER     9
 
+#if defined(WIN32)
+#   define LIBR3TAS_EXPORT __declspec(dllexport)
+#else
+#   define LIBR3TAS_EXPORT
+#endif
 
 static void r3_load()
 {
@@ -90,17 +86,27 @@ static void r3_load()
     info(COLOR_BLUE "global @ %X\n", offset(actor_global));
     info(COLOR_BLUE "World @ %X\n", offset(actor_world));
     info(COLOR_BLUE "NIN_m_ChangeMap @ %X\n", offset(actor_changemap));
+    
+    /* Derive the three worlds from the hierarchy */
+    if (hierarchy) dynamic_world = (struct superobject*)pointer(hierarchy->first_child);
+    if (dynamic_world) inactive_dynamic_world = (struct superobject*)pointer(dynamic_world->next);
+    if (inactive_dynamic_world) father_sector = (struct superobject*)pointer(hierarchy->last_child);
+    
+    if (engine) strcpy(previous_level_name, engine->current_level_name);
 }
 
 static void r3_unload()
 {
-    array_free(&demo_save_names);
-    array_free(&demo_level_names);
-    array_free(&level_names);
+    fix.header = NULL;
+    fix.trailer = NULL;
     
-    array_free(&family_names);
-    array_free(&model_names);
-    array_free(&instance_names);
+    lvl.header = NULL;
+    lvl.section_a = NULL;
+    
+    hierarchy = NULL;
+    dynamic_world = NULL;
+    inactive_dynamic_world = NULL;
+    father_sector = NULL;
 }
 
 //static void loadstate_handler(int slot)
@@ -137,11 +143,11 @@ static void load()
         input.button.l = input_entry_find(input_struct, "Action_Camera_TourneDroite");
     }
     
-    /* Engine */
+    r3_unload();
     r3_load();
     
 #ifdef OLD_VERSION
-    graphics_load();
+    //graphics_load();
 #endif
 }
 
@@ -156,12 +162,26 @@ static void update(const char* controller)
     if just_entered_mode(6)
     {
         info(BOLD COLOR_PINK "Level transition began (frame %d)\n", engine->timer.frame);
+        
+        r3_unload();
 #ifdef OLD_VERSION
-       // graphics_unload();
+        //graphics_unload();
 #endif
     }
-    
-    if just_entered_mode(9) load();
+
+    if just_entered_mode(9)
+    {
+        r3_unload();
+        load();
+    }
+    else if (previous_level_name[0] != '\0' && engine->mode == 9)
+    {
+        if (strcmp(previous_level_name, engine->current_level_name))
+        {
+            r3_unload();
+            load();
+        }
+    }
     
     if just_entered_mode(5)
         transition_frame = 0;
@@ -216,9 +236,6 @@ struct on_video_payload
 
 static void video(struct on_video_payload* payload)
 {
-#ifdef OLD_VERSION
-    *render_xfb_main = true;
-#endif
     
     //graphics_loop();
     
@@ -235,11 +252,13 @@ static void video(struct on_video_payload* payload)
 
 #pragma mark - Main
 
-int on_load(void)
+LIBR3TAS_EXPORT int on_load(void)
 {
 #ifdef OLD_VERSION
-    graphics_init();
+    //graphics_init();
 #endif
+    
+    memset(previous_level_name, 0, 30);
     
     info(BOLD "r3lib loaded successfully\n");
     return 1;
@@ -252,7 +271,7 @@ struct message
 };
 
 #ifdef OLD_VERSION
-void on_message(const char* message, void* data)
+LIBR3TAS_EXPORT void on_message(const char* message, void* data)
 {
 #define msg(type, code) if (!strcmp(message, type)) { code; }
     struct on_video_payload v;
@@ -260,21 +279,20 @@ void on_message(const char* message, void* data)
     
     msg("ram_func", get_mRAM = data)
     //msg("xfb_texture", gui_render_game(data))
-    msg("render_xfb_main", render_xfb_main = data)
-    msg("cpu_break", cpu_break = data)
     msg("update", update(data))
     msg("render", video(&v))
 #undef msg
 }
 #else
-void on_message(struct message message)
+LIBR3TAS_EXPORT void on_message(struct message message)
 {
     if (message.type == EXTERN_MESSAGE_ON_UPDATE) update("");
     if (message.type == EXTERN_MESSAGE_ON_VIDEO) video(message.data);
     if (message.type == EXTERN_MESSAGE_MRAM_POINTER) get_mRAM = message.data;
+    if (message.type == EXTERN_MESSAGE_CONFIG_POINTER) get_config_path = message.data;
 }
 #endif
 
-void on_unload(void)
+LIBR3TAS_EXPORT void on_unload(void)
 {
 }

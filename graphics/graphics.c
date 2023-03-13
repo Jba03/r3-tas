@@ -22,111 +22,107 @@
 #include "collide_mesh.h"
 
 struct mesh* meshlist[1000];
+struct collide_object* collide_objects[1000];
+struct matrix4 matrices[1000];
 int current_mesh = 0;
-
-//static void mesh_process(struct mesh* mesh)
-//{
-//}
+int current_matrix = 0;
+int current_collide_object = 0;
 
 static void mesh_create(struct ipo* ipo)
 {
-    /* Get physical object */
-    const struct physical_object* po = (struct physical_object*)pointer(ipo->physical_object);
-    if (!po) return;
+    int mesh_index = 0;
+    const struct collide_mesh* collmesh = NULL;
+    const struct collide_object* zdr = ipo_collide_object(ipo);
     
-    /* Get the collide set of that object */
-    const struct physical_collideset* collset = (const struct physical_collideset*)pointer(po->physical_collideset);
-    if (!collset) return;
-    
-    /* Level geometry is part of reaction zone. */
-    const struct collide_object* zdr = (const struct collide_object*)pointer(collset->zdr);
-    if (!zdr) return;
-    
-    for (int i = 0; i < host_byteorder_16(zdr->n_elements); i++)
+    while ((collmesh = collide_object_mesh(zdr, mesh_index)))
     {
-        const pointer element = (*((pointer*)pointer(zdr->elements) + i));
-        const int16_t type = host_byteorder_16(*((int16_t*)pointer(zdr->element_types) + i));
+        struct game_material* gamemat = (struct game_material*)pointer(collmesh->material);
         
-        const void* block = pointer(element);
+        struct mesh* mesh = malloc(sizeof *mesh);
+        mesh->name = ipo->name;
+        mesh->material = gamemat->collide_material;
         
-        switch (type)
+        mesh->n_vertices = host_byteorder_16(collmesh->n_faces) * 3;
+        mesh->n_indices = host_byteorder_16(collmesh->n_faces) * 3;
+        mesh->vertices = malloc(sizeof(struct vertex) * host_byteorder_16(collmesh->n_faces) * 3);
+        mesh->indices = malloc(sizeof(unsigned int) * host_byteorder_16(collmesh->n_faces) * 3);
+        
+        uint16_t* index = pointer(collmesh->face_indices);
+        
+        uint16_t indices[host_byteorder_16(collmesh->n_faces) * 3];
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
         {
-            case collide_object_indexed_triangles:
-            {
-                struct collide_mesh* collmesh = (struct collide_mesh*)block;
-                struct game_material* gamemat = (struct game_material*)pointer(collmesh->material);
+            indices[idx * 3 + 0] = host_byteorder_16(*(index + idx * 3 + 0));
+            indices[idx * 3 + 1] = host_byteorder_16(*(index + idx * 3 + 1));
+            indices[idx * 3 + 2] = host_byteorder_16(*(index + idx * 3 + 2));
+        }
+        
+        struct vector3* vertices = pointer(zdr->vertices);
+        struct vector3* normals = pointer(collmesh->normals);
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        {
+            mesh->vertices[idx].position.x = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].x);
+            mesh->vertices[idx].position.z = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].y);
+            mesh->vertices[idx].position.y = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].z);
+            
+            mesh->vertices[idx].normal.x = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].x);
+            mesh->vertices[idx].normal.z = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].y);
+            mesh->vertices[idx].normal.y = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].z);
+        }
+        
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
+        {
+            mesh->indices[idx * 3 + 0] = idx * 3 + 0;
+            mesh->indices[idx * 3 + 1] = idx * 3 + 2;
+            mesh->indices[idx * 3 + 2] = idx * 3 + 1;
+        }
+        
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        {
+            struct vector3 normal;
+            normal.x = fabs(mesh->vertices[idx].normal.x);
+            normal.y = fabs(mesh->vertices[idx].normal.y);
+            normal.z = fabs(mesh->vertices[idx].normal.z);
+            
+            float n = max(max(normal.x, normal.y), normal.z);
+            
+            float x = mesh->vertices[idx].position.x / 20.0f;
+            float y = mesh->vertices[idx].position.y / 20.0f;
+            float z = mesh->vertices[idx].position.z / 20.0f;
                 
-                struct mesh* mesh = malloc(sizeof *mesh);
-                mesh->name = ipo->name;
-                mesh->material = gamemat->collide_material;
-                
-                mesh->n_vertices = host_byteorder_16(collmesh->n_faces) * 3;
-                mesh->n_indices = host_byteorder_16(collmesh->n_faces) * 3;
-                mesh->vertices = malloc(sizeof(struct vertex) * host_byteorder_16(collmesh->n_faces) * 3);
-                mesh->indices = malloc(sizeof(unsigned int) * host_byteorder_16(collmesh->n_faces) * 3);
-                
-                uint16_t* index = pointer(collmesh->face_indices);
-                
-                uint16_t indices[host_byteorder_16(collmesh->n_faces) * 3];
-                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
-                {
-                    indices[idx * 3 + 0] = host_byteorder_16(*(index + idx * 3 + 0));
-                    indices[idx * 3 + 1] = host_byteorder_16(*(index + idx * 3 + 1));
-                    indices[idx * 3 + 2] = host_byteorder_16(*(index + idx * 3 + 2));
-                }
-                
-                struct vector3* vertices = pointer(zdr->vertices);
-                struct vector3* normals = pointer(collmesh->normals);
-                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
-                {
-                    mesh->vertices[idx].position.x = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].x);
-                    mesh->vertices[idx].position.z = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].y);
-                    mesh->vertices[idx].position.y = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].z);
-                    
-                    mesh->vertices[idx].normal.x = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].x);
-                    mesh->vertices[idx].normal.z = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].y);
-                    mesh->vertices[idx].normal.y = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].z);
-                }
-                
-                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
-                {
-                    mesh->indices[idx * 3 + 0] = idx * 3 + 0;
-                    mesh->indices[idx * 3 + 1] = idx * 3 + 2;
-                    mesh->indices[idx * 3 + 2] = idx * 3 + 1;
-                }
-                
-                for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
-                {
-                    struct vector3 normal;
-                    normal.x = fabs(mesh->vertices[idx].normal.x);
-                    normal.y = fabs(mesh->vertices[idx].normal.y);
-                    normal.z = fabs(mesh->vertices[idx].normal.z);
-                    
-                    float n = max(max(normal.x, normal.y), normal.z);
-                    
-                    float x = mesh->vertices[idx].position.x / 20.0f;
-                    float y = mesh->vertices[idx].position.y / 20.0f;
-                    float z = mesh->vertices[idx].position.z / 20.0f;
-                        
-                    if (n == fabs(normal.x)) {
-                        mesh->vertices[idx].texcoord.x = y;
-                        mesh->vertices[idx].texcoord.y = z;
-                    } else if (n == fabs(normal.y)) {
-                        mesh->vertices[idx].texcoord.x = x;
-                        mesh->vertices[idx].texcoord.y = z;
-                    } else {
-                        mesh->vertices[idx].texcoord.x = x;
-                        mesh->vertices[idx].texcoord.y = y;
-                    }
-                }
-                
-                mesh_process(mesh);
-                
-                meshlist[current_mesh++] = mesh;
-                
-                break;
+            if (n == fabs(normal.x)) {
+                mesh->vertices[idx].texcoord.x = y;
+                mesh->vertices[idx].texcoord.y = z;
+            } else if (n == fabs(normal.y)) {
+                mesh->vertices[idx].texcoord.x = x;
+                mesh->vertices[idx].texcoord.y = z;
+            } else {
+                mesh->vertices[idx].texcoord.x = x;
+                mesh->vertices[idx].texcoord.y = y;
             }
         }
+        
+        int n_valid_normals = 0;
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        {
+            struct vector3 normal;
+            normal.x = fabs(mesh->vertices[idx].normal.x);
+            normal.y = fabs(mesh->vertices[idx].normal.y);
+            normal.z = fabs(mesh->vertices[idx].normal.z);
+            
+            if (normal.y > 0.5f) n_valid_normals++;
+        }
+        
+        const float normal_average = (float)n_valid_normals / (float)(host_byteorder_16(collmesh->n_faces) * 3);
+        
+        //if (normal_average > 0.5f)
+        {
+            mesh_process(mesh);
+            
+            meshlist[current_mesh++] = mesh;
+        }
+        
+        mesh_index++;
     }
 }
 
@@ -195,6 +191,23 @@ static void export_obj(struct mesh* mesh, FILE* fp, int *prev_index)
     }
 }
 
+static void ipo_recurse(struct superobject* so)
+{
+    if (superobject_type(so) == superobject_type_ipo)
+    {
+        struct ipo* ipo = (struct ipo*)superobject_data(so);
+        if (!ipo) return;
+        
+        mesh_create(ipo);
+        if (meshlist[current_mesh-1])
+            meshlist[current_mesh-1]->superobject = so;
+    }
+    
+    superobject_for_each(so, child)
+    {
+        ipo_recurse(child);
+    };
+}
 
 void graphics_load(void)
 {
@@ -204,21 +217,10 @@ void graphics_load(void)
         
         int prev_index = 0;
         
-        superobject_for_each(superobject_last_child(hierarchy), sector)
-        {
-            superobject_for_each(sector, ipo_so)
-            {
-                const struct ipo* ipo = (const struct ipo*)superobject_data(ipo_so);
-                if (!ipo) continue;
-
-                mesh_create(ipo);
-                meshlist[current_mesh-1]->transform_global = pointer(ipo_so->transform_global);
-                //export_obj(meshlist[current_mesh-1], fp, &prev_index);
-            }
-        }
+        ipo_recurse(father_sector);
         
         fclose(fp);
-        printf("n meshes: %d\n", current_mesh);
+        printf("Number of meshes: %d\n", current_mesh);
     }
 }
 

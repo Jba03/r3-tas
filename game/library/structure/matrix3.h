@@ -23,19 +23,19 @@ static const struct matrix3 matrix3_identity =
     0.0f, 1.0f, 0.0f,
     0.0f, 0.0f, 1.0f,
 };
-
-/**
- * matrix3_new:
- * Constructs a matrix with three rows
- */
-MATRIX3 struct matrix3 matrix3_new(const struct vector3 row0, const struct vector3 row1, const struct vector3 row2)
-{
-    struct matrix3 m;
-    m.row0 = row0;
-    m.row1 = row1;
-    m.row2 = row2;
-    
-    return m;
-}
+//
+///**
+// * matrix3_new:
+// * Constructs a matrix with three rows
+// */
+//MATRIX3 struct matrix3 matrix3_new(const struct vector3 row0, const struct vector3 row1, const struct vector3 row2)
+//{
+//    struct matrix3 m;
+//    m.row0 = row0;
+//    m.row1 = row1;
+//    m.row2 = row2;
+//    
+//    return m;
+//}
 
 #endif /* matrix3_h */

@@ -3,7 +3,8 @@
 
 #include "structure.h"
 
-struct physical_object {
+struct physical_object
+{
     readonly pointer visualset;
     readonly pointer physical_collideset;
     readonly pointer visual_bounding_volume;
