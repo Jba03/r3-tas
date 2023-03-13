@@ -205,9 +205,9 @@ VECTOR3 static inline struct vector3 vector3_normalize(const struct vector3 vect
 VECTOR3 static inline struct vector3 vector3_random()
 {
     struct vector3 result;
-    result.x = drand48();
-    result.y = drand48();
-    result.z = drand48();
+    result.x = (float)rand() / (float)RAND_MAX;
+    result.y = (float)rand() / (float)RAND_MAX;
+    result.z = (float)rand() / (float)RAND_MAX;
     
     return result;
 }

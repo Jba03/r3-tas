@@ -6,7 +6,7 @@ static int start_at = 0;
 
 static FILE* recording_file = NULL;
 
-extern const char* (*get_config_path)(void);
+extern "C" const char* (*get_config_path)(void);
 
 static void record_input()
 {
