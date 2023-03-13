@@ -388,17 +388,17 @@ void superobject_info(struct superobject* so)
 //                    ImGui::EndTabItem();
 //                }
                 
+                if (ImGui::BeginTabItem("AI"))
+                {
+                    display_ai(actor);
+                    
+                    ImGui::EndTabItem();
+                }
+                
                 
                 const struct dynam* dynam = actor_dynam(actor);
                 if (dynam)
                 {
-                    if (ImGui::BeginTabItem("AI"))
-                    {
-                        display_ai(actor);
-                        
-                        ImGui::EndTabItem();
-                    }
-                    
                     if (ImGui::BeginTabItem("Dynamics"))
                     {
                         const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);

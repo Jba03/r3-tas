@@ -28,30 +28,45 @@ static const ImColor dark_purple = ImColor(0xff650183);
 
 static ImColor color_table[] =
 {
-    [dsgvar_type_boolean] = dark_blue,
-    [dsgvar_type_ubyte] = dark_yellow,
-    [dsgvar_type_int] = bright_blue,
-    [dsgvar_type_uint] = dark_blue,
-    [dsgvar_type_short] = bright_red,
-    
-    
-    [dsgvar_type_float] = bright_pink,
-    
-    [dsgvar_type_float_array] = bright_red,
-    [dsgvar_type_actor_array] = bright_red,
-    [dsgvar_type_text_ref_array] = bright_red,
-    
-    [dsgvar_type_vector] = bright_green,
-    
-    [dsgvar_type_actor] = bright_yellow,
-    [dsgvar_type_superobject] = orange,
-    [dsgvar_type_graph] = dark_green,
-    [dsgvar_type_waypoint] = dark_purple,
-    
-    [dsgvar_type_text] = dark_purple,
-    [dsgvar_type_soundevent] = dark_purple,
-    
-    [n_dsgvar_types] = orange,
+    dark_blue, /* boolean */
+    bright_blue, /* byte */
+    dark_yellow, /* ubyte */
+    bright_red, /* short */
+    dark_red, /* ushort */
+    bright_blue, /* int */
+    dark_blue, /* uint */
+    bright_pink, /* float */
+    bright_green, /* vector */
+    dark_green, /* list */
+    dark_purple, /* behavior */
+    dark_yellow, /* action */
+    dark_blue, /* capabilities */
+    dark_red, /* input */
+    dark_purple, /* soundevent */
+    bright_yellow, /* light */
+    dark_yellow, /* game material */
+    dark_yellow, /* visual material */
+    bright_yellow, /* actor */
+    bright_pink, /* waypoint */
+    dark_green, /* graph */
+    dark_purple, /* text */
+    orange, /* superobject */
+    orange, /* superobject links */
+    bright_red, /* actor array */
+    bright_red, /* vector array */
+    bright_red, /* float array */
+    bright_red, /* int array */
+    bright_red, /* waypoint array */
+    bright_red, /* text array */
+    bright_red, /* textref array */
+    bright_red, /* graph array */
+    bright_red, /* ? */
+    bright_red, /* sound event array */
+    bright_red, /* ? */
+    dark_purple, /* way */
+    bright_red, /* action array */
+    bright_red, /* superobject array */
+    orange, /* object list */
 };
 
 static std::string fmt_boolean(void* offset) { return (*(uint8_t*)(offset)) ? "TRUE" : "FALSE"; }
