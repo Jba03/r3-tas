@@ -2,7 +2,7 @@
 
 r3-tas is a utility tool for creating Tool-Assisted Speedruns of Rayman 3, and for viewing the internals of the game. Compatible with [this dolphin emulator fork](https://github.com/Jba03/dolphin).
 
-![](graphics/preview.png)
+![](preview.png)
 
 ## Installation
 1. Download the latest release of the [dolphin fork](https://github.com/Jba03/dolphin).
