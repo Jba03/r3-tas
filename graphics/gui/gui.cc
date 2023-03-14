@@ -15,24 +15,23 @@
 
 extern "C"
 {
-#include "game.h"
-#include "engine.h"
-#include "engine_timer.h"
-#include "rnd.h"
-#include "configuration.h"
-#include "vector3.h"
-#include "vector2.h"
-#include "stdgame.h"
-#include "sector.h"
-#include "graphics.h"
-#include "export.h"
-#include "script.h"
-#include "collideset.h"
-#include "geometry.h"
-#include "dynamics.h"
-
+    #include "game.h"
+    #include "engine.h"
+    #include "engine_timer.h"
+    #include "rnd.h"
+    #include "configuration.h"
+    #include "vector3.h"
+    #include "vector2.h"
+    #include "stdgame.h"
+    #include "sector.h"
+    #include "graphics.h"
+    #include "export.h"
+    #include "script.h"
+    #include "collideset.h"
+    #include "geometry.h"
+    #include "dynamics.h"
+    #include "camera.h"
 }
-
 
 /* ImGui */
 extern ImGuiContext* GImGui;
@@ -519,8 +518,6 @@ static void draw_hierarchy2(ImVec2 pos, ImVec2 size)
         ImGui::End();
     }
 }
-
-#include "camera.h"
 
 /* Should sum up to 1, I guess */
 static float projX = 0.377f;

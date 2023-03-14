@@ -51,8 +51,6 @@ static ImGuiContext* imctx;
 
 extern bool main_render;
 
-struct camera* camera;
-
 static id<MTLLibrary> shader_library()
 {
     printf("path: %s\n", LIBR3TAS_DIR);
@@ -523,8 +521,6 @@ void graphics_loop()
             
             if (event.type == SDL_MOUSEMOTION)
             {
-                ImGui::GetIO().MousePos = ImVec2(event.motion.x, event.motion.y);
-                camera_update(camera, event.motion.x, event.motion.y, true);
             }
             
             if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -891,8 +887,6 @@ void graphics_init(void)
     }
     
     metal_view = (__bridge MTKView*)SDL_Metal_CreateView(window);
-    
-    camera = camera_create(-90.0f, 0.0f, 0.1f, 0.25f, 90.0f);
     
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     

@@ -50,8 +50,6 @@ add_library(r3tas SHARED
 	game/interface/intfun.c
 
 	graphics/gui/gui.cc
-
-        graphics/camera.c
  	#graphics/graphics.c
 	#graphics/mesh.c
 	graphics/gui/gui.cc
