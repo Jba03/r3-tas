@@ -520,22 +520,37 @@ static void draw_hierarchy2(ImVec2 pos, ImVec2 size)
     }
 }
 
+#include "camera.h"
+
+/* Should sum up to 1, I guess */
+static float projX = 0.377f;
+static float projY = 0.708f;
+
 static ImVec4 project_world_coordinate(const struct vector3 P)
 {
-    const struct vector3 campos = actor_position(actor_camera);
-    const struct vector3 lookat = vector3_host_byteorder(*(struct vector3*)(memory.base + 0x00c53910));
-    float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
-    fov = fov == 0.0f ? 1.3 : fov;
+    const struct gli_camera* camera = (const struct gli_camera*)pointer(engine->viewport_camera[0]);
     
-    const struct matrix4 view = matrix4_lookat(campos, lookat, vector3_new(0, 0, -1));
+    struct matrix4 view = matrix4_host_byteorder(camera->transform.matrix);
+    /* Change sign of the two middle columns (flipping the rotation) */
+    view.m01 = -view.m01;
+    view.m11 = -view.m11;
+    view.m21 = -view.m21;
+    view.m31 = -view.m31;
+    view.m02 = -view.m02;
+    view.m12 = -view.m12;
+    view.m22 = -view.m22;
+    view.m32 = -view.m32;
+    /* const struct matrix4 view = matrix4_lookat(campos, vector3_host_byteorder(*(struct vector3*)(memory.base + 0x00c53910)) (dsgvar_150), vector3_new(0, 0, -1)); */
+    
+    const float fov = host_byteorder_f32(*(float32*)&camera->alpha_x);
+    
     const struct matrix4 projection = matrix4_perspective(fov, 528.0f / 640.0f, 0.1f, 1000.0f);
     const struct matrix4 viewprojection = matrix4_mul(projection, view);
-    
     const struct vector4 P2 = vector4_new(P.x, P.y, P.z, 1.0f);
     const struct vector4 R = vector4_mul_matrix4(P2, viewprojection);
     
-    float xp = (R.x / R.w) * 0.4f + 0.5f;
-    float yp = (R.y / R.w) * 0.7f + 0.5f;
+    float xp = (R.x / R.w) * projX + 0.5f;
+    float yp = (R.y / R.w) * projY + 0.5f;
     
     return ImVec4(xp, yp, R.z, R.w);
 }
@@ -676,7 +691,7 @@ static void DrawLevelGeometryRecursive(const struct superobject* root, const str
                     const uint16* indices = (const uint16*)pointer(mesh->face_indices);
                     const struct vector3* vertices = (const struct vector3*)pointer(zdr->vertices);
                     
-                    for (int16 index = 0; index < host_byteorder_16(mesh->n_faces) - 1; index++)
+                    for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
                     {
                         uint16 idx0 = host_byteorder_16(*(indices + index * 3 + 0));
                         uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
@@ -802,6 +817,11 @@ extern "C" void gui_render_callback(void* ctx)
     ImGui::SetWindowSize(ImVec2(150, display_size.y));
     display_rng_table();
     ImGui::SetWindowPos(ImVec2(display_size.x - ImGui::GetWindowWidth(), 140));
+    ImGui::End();
+    
+    ImGui::Begin("a");
+    ImGui::SliderFloat("Proj X", &projX, 0.0f, 1.0f);
+    ImGui::SliderFloat("Proj Y", &projY, 0.0f, 1.0f);
     ImGui::End();
     
     if (engine)

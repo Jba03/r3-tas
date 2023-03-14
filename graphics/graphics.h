@@ -12,7 +12,7 @@
 #include "vector4.h"
 #include "mesh.h"
 
-struct visualobject
+struct visualobject2
 {
     struct vertex* vertices;
     unsigned int n_vertices;

@@ -25,12 +25,12 @@ struct engine
     readonly int16 gld_device;
     readonly int16 gld_viewport[5];
     padding(5 * 28 * 4) /* viewport attributes */
-    padding(5 * 4) /* viewport camera */
+    readonly pointer viewport_camera[5];
     readonly int16 gld_fix_viewport[5];
     padding(2)
     padding(5 * 28 * 4) /* fix viewport attributes */
     padding(5 * 2 * 4) /* fix 3d attributes */
-    padding(5 * 4) /* fix camera */
+    readonly pointer fix_camera[5];
     padding(5 * 2 * 4) /* game 3d attributes */
     readonly pointer viewport_array;
     readonly doubly_linked_list camera_list;
