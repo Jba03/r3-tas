@@ -24,7 +24,7 @@ include_directories(game/library/function/script)
 include_directories(game/library/structure)
 include_directories(game/script)
 
-add_library(r3tas SHARED
+add_library(r3-tas SHARED
 	main.c
 	
 	common/configuration.c
@@ -60,6 +60,6 @@ add_library(r3tas SHARED
 	graphics/gui/imgui/imgui_widgets.cpp
 )
 
-set_property(TARGET r3tas PROPERTY CXX_STANDARD 17)
-target_link_libraries(r3tas ${SDL2_LIBRARIES})
-target_link_libraries(r3tas ${OPENGL_LIBRARIES})
+set_property(TARGET r3-tas PROPERTY CXX_STANDARD 17)
+target_link_libraries(r3-tas ${SDL2_LIBRARIES})
+target_link_libraries(r3-tas ${OPENGL_LIBRARIES})
