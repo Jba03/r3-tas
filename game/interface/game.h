@@ -82,6 +82,8 @@ uint32 color_table_index(unsigned idx);
 
 uint32 actor_color(const struct actor* actor);
 
+void game_memory_dump(void);
+
 /* Structure functions */
 #include "find.h"
 

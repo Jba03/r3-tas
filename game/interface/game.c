@@ -129,3 +129,12 @@ uint32 actor_color(const struct actor* actor)
     unsigned n = host_byteorder_32(stdgame->family_type);
     return color_table_index(2 * n + 1);
 }
+
+void game_memory_dump()
+{
+    char path[4096];
+    sprintf(path, "%s/memory.bin", LIBR3TAS_DIR);
+    FILE* fp = fopen(path, "wb");
+    fwrite(memory.base, sizeof(uint8), 24 * 1000 * 1000, fp);
+    fclose(fp);
+}

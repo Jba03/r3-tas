@@ -37,9 +37,6 @@ void display_rng_info()
 {
     const char* fmt = "RNG(%d, 0x%X, 0x%X)";
     if (rng_display_as_decimal) fmt = "RNG(%d, %d, %d)";
-    
-    //uint32_t value = rnd_table_index(rnd, 0, 0);
-    //ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 1.0), fmt, memory.read_32(rnd->ptr_table_indices), value, rnd.table_max);
 }
 
 void display_rng_table()

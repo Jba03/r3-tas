@@ -78,6 +78,7 @@ struct SuperobjectInfoWindow
                         selected = (struct superobject*)child;
                         sidebar_idx = i;
                     }
+                    
                     ImGui::PopStyleColor();
                     
                     i++;
@@ -153,6 +154,7 @@ static void superobject_draw_childlist(void* data, void* p)
         *param->stdgame = (struct standard_game_info*)pointer((*param->actor)->stdgame);
         if (!*param->stdgame) return;
     }
+    
     ImGui::PopStyleColor();
     
     param->i++;
@@ -270,6 +272,11 @@ void superobject_info(struct superobject* so)
                 selected = i;
                 just_selected = true;
             }
+            
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+            }
+            
             ImGui::PopStyleColor();
             
             i++;

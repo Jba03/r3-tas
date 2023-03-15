@@ -140,7 +140,6 @@ static std::string fmt_superobject_array(void* offset)
     
 //    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
 //    if (!so) return "NULL";
-//
     
     return "NULL";
 }
@@ -150,10 +149,9 @@ static std::string fmt_actor_array(void* offset)
     //printf("actor array: %X\n", offset(offset));
 //    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
 //    if (!so) return "NULL";
-//
+    
     return "NULL";
 }
-
 
 static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buffer)
 {
@@ -240,9 +238,7 @@ static void display_actor_dsg(struct actor* actor, bool initial = false)
         
     const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
     for (unsigned int var = 0; var < dsgvars->info_length; var++)
-    {
-        
-        
+    {        
         const struct dsgvar_info* info = (const struct dsgvar_info*)pointer(dsgvars->info) + var;
         
         const uint32_t type = host_byteorder_32(info->type);
@@ -253,6 +249,11 @@ static void display_actor_dsg(struct actor* actor, bool initial = false)
         ImVec4 color = color_table[type];
         
         ImGui::TextColored(color, "%s_%d: %s", dsgvar_typenames[type], var, fmt.c_str());
+        
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
+            memory_viewer.GotoAddr = offset((void*)(buffer + host_byteorder_32(info->mem_offset)));
+        }
     }
     
     

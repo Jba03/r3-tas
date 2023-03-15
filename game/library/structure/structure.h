@@ -76,4 +76,7 @@ static inline float32 game_byteorder_f32(float f)
     return game_byteorder_32(v);
 }
 
+/** convert an address to the game's addressing format */
+#define game_address(addr) ((addr) | 0x80000000)
+
 #endif /* structure_h */

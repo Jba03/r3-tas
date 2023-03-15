@@ -160,8 +160,8 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
     if (ImGui::IsItemHovered())
     {
         ImGui::BeginTooltip();
-        ImGui::Text("Left click to view information");
-        ImGui::Text("Right click to view in memory");
+        ImGui::Text("Left click to open/close node");
+        ImGui::Text("Right click to view information");
         ImGui::EndTooltip();
     }
     

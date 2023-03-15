@@ -287,6 +287,12 @@ static void display_aimodel(struct actor* actor,
                             selected_index = i;
                             if (out_data) *out_data = intelligence;
                         }
+                        
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                        {
+                            memory_viewer.GotoAddr = offset(intelligence);
+                        }
+                        
                         ImGui::PopStyleColor();
                         
                         if (intelligence == current_intelligence && scroll)
@@ -331,6 +337,11 @@ static void display_aimodel(struct actor* actor,
                             selected_type = 1;
                             selected_index = r;
                             if (out_data) *out_data = reflex;
+                        }
+                        
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                        {
+                            memory_viewer.GotoAddr = offset(reflex);
                         }
                         
 //                        if (reflex == current_reflex && scroll)

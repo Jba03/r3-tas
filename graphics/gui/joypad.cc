@@ -75,6 +75,7 @@ static void display_joypad(bool *display)
         const bool b = input.button.b ? !(host_byteorder_32(input.button.b->state) & 0xFF000000) : false;
         const bool x = input.button.x ? !(host_byteorder_32(input.button.x->state) & 0xFF000000) : false;
         const bool y = input.button.y ? !(host_byteorder_32(input.button.y->state) & 0xFF000000) : false;
+        const bool z = input.button.z ? !(host_byteorder_32(input.button.z->state) & 0xFF000000) : false;
         const bool S = input.button.S ? !(host_byteorder_32(input.button.S->state) & 0xFF000000) : false;
         const bool L = input.button.L ? !(host_byteorder_32(input.button.L->state) & 0xFF000000) : false;
         const bool R = input.button.R ? !(host_byteorder_32(input.button.R->state) & 0xFF000000) : false;
@@ -85,7 +86,7 @@ static void display_joypad(bool *display)
         drawlist->AddText(ImVec2(ctrlstickpos.x + 10, yy), b ? on : off, "B");
         drawlist->AddText(ImVec2(ctrlstickpos.x + 20, yy), x ? on : off, "X");
         drawlist->AddText(ImVec2(ctrlstickpos.x + 30, yy), y ? on : off, "Y");
-        //    drawlist->AddText(ImVec2(ctrlstickpos.x + 40, yy), input.z ? on : off, "Z");
+        drawlist->AddText(ImVec2(ctrlstickpos.x + 40, yy), z ? on : off, "Z");
         drawlist->AddText(ImVec2(ctrlstickpos.x + 50, yy), L ? on : off, "L");
         drawlist->AddText(ImVec2(ctrlstickpos.x + 60, yy), R ? on : off, "R");
         drawlist->AddText(ImVec2(ctrlstickpos.x + 70, yy), l ? on : off, "CAM");
