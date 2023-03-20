@@ -31,13 +31,13 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #define GCN_POINTER_RND         0x00436924
 #define GCN_POINTER_CINEMANAGER 0x003E9760
 
-extern tdstEngineStructure* engine;
-extern tdstSuperObject* hierarchy;
-extern tdstSuperObject* dynamic_world;
-extern tdstSuperObject* inactive_dynamic_world;
-extern tdstSuperObject* father_sector;
-extern tdstInputStructure* input_struct;
-extern tdstRandom* rnd;
+extern struct stEngineStructure* engine;
+extern struct stSuperObject* hierarchy;
+extern struct stSuperObject* dynamic_world;
+extern struct stSuperObject* inactive_dynamic_world;
+extern struct stSuperObject* father_sector;
+extern struct stInputStructure* input_struct;
+extern struct stRandom* rnd;
 extern struct fix fix;
 extern struct lvl lvl;
 

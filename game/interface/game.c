@@ -27,19 +27,19 @@ struct memory memory;
 #pragma mark - Globals
 
 /* Engine structure */
-tdstEngineStructure* engine = NULL;
+struct stEngineStructure* engine = NULL;
 /* Superobject hierarchy */
-tdstSuperObject* hierarchy = NULL;
+struct stSuperObject* hierarchy = NULL;
 /* Dynamic world: the world in which active game objects reside */
-tdstSuperObject* dynamic_world = NULL;
+struct stSuperObject* dynamic_world = NULL;
 /* Inactive dynamic world: the world in which non-loaded objects reside */
-tdstSuperObject* inactive_dynamic_world = NULL;
+struct stSuperObject* inactive_dynamic_world = NULL;
 /* Father sector: sector in which all collision geometry is stored */
-tdstSuperObject* father_sector = NULL;
+struct stSuperObject* father_sector = NULL;
 /* Input structure: global input data table */
-tdstInputStructure* input_struct = NULL;
+struct stInputStructure* input_struct = NULL;
 /* RND: random number device */
-tdstRandom* rnd = NULL;
+struct stRandom* rnd = NULL;
 /* FIX: fixed memory */
 struct fix fix;
 /* LVL: level memory */
@@ -75,6 +75,30 @@ static const uint32 color_table[] =
     0xc04020b0,
     0xc0d0ff20,
 };
+
+//struct fix_header
+//{
+//    padding(32)
+//    readonly pointer identity_matrix;
+//    readonly pointer localization_structure;
+//    readonly uint32 level_name_count;
+//    readonly uint32 demo_name_count;
+//};
+//
+//struct fix_trailer
+//{
+//    readonly char8 first_level[30];
+//    padding(2)
+//    readonly uint32 language_count;
+//    readonly uint32 language_offset;
+//    readonly uint32 texture_count;
+//};
+//
+//struct fix
+//{
+//    readonly struct fix_header* header;
+//    readonly struct fix_trailer* trailer;
+//};
 
 void level_read()
 {
