@@ -6,8 +6,9 @@
 //
 
 #include "stOctree.h"
-#include "intersect.h"
 #include "game.h"
+
+#include "fnPrimIntersections.c"
 
 static void octree_node_select(tdstOctreeNode* node,
                             tdstOctreeNode** selected,
@@ -54,7 +55,7 @@ void octree_traverse_line_segment(const tdstOctreeNode* node,
     min = vector3_new(min4.x, min4.y, min4.z);
     max = vector3_new(max4.x, max4.y, max4.z);
     
-    if (intersect_box_line_segment(min, max, A, AB, &t))
+    if (fnLineSegmentBoxIntersection(min, max, A, AB, &t))
     {
         const pointer* childlist = (const pointer*)pointer(node->children);
         if (childlist)

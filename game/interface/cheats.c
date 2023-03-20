@@ -9,9 +9,7 @@
 #include "stBrain.h"
 #include "stMind.h"
 #include "stIntelligence.h"
-// 10a4214
-// 80f95580
-// 80f742f4
+
 static void begin_carrying_object(const tdstSuperObject* carryable_actor)
 {
     uint32_t* dsgvar_167; /* DsgVar 167: currently carried actor superobject */

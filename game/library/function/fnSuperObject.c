@@ -9,7 +9,7 @@
 #include "stSuperObject.h"
 #include "stTransform.h"
 #include "stSector.h"
-#include "intersect.h"
+#include "fnPrimIntersections.c"
 
 /** superobject_typename: get the typename of a superobject */
 const char* superobject_typename(const tdstSuperObject* so)
@@ -84,7 +84,7 @@ const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, 
         const tdstVector3D min = vector3_host_byteorder(subsector->min);
         const tdstVector3D max = vector3_host_byteorder(subsector->max);
         
-        if (intersect_box_point(min, max, point))
+        if (fnBoxPointIntersection(min, max, point))
         {
             tdstVector3D distance;
             distance = vector3_add(min, max);
