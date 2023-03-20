@@ -5,15 +5,15 @@
 //  Created by Jba03 on 2023-03-05.
 //
 
-#include "collide_object.h"
+#include "stCollideObject.h"
 #include "game.h"
-#include "octree.h"
+#include "stOctree.h"
 #include "ray.h"
 
 #include <stdio.h>
 
 /** collide_object_mesh: get the collide mesh at specified index */
-const struct collide_mesh* collide_object_mesh(const struct collide_object* object, int idx)
+const tdstCollideElementIndexedTriangles* collide_object_mesh(const tdstCollideObject* object, int idx)
 {
     if (!object) return NULL;
     
@@ -32,7 +32,7 @@ const struct collide_mesh* collide_object_mesh(const struct collide_object* obje
 }
 
 /** collide_object_sphere: get collide sphere at specified index */
-const struct collide_mesh* collide_object_sphere(const struct collide_object* object, int idx)
+const tdstCollideElementIndexedTriangles* collide_object_sphere(const tdstCollideObject* object, int idx)
 {
     if (!object) return NULL;
     
@@ -51,29 +51,29 @@ const struct collide_mesh* collide_object_sphere(const struct collide_object* ob
 }
 
 float st[OCTREE_MAX_SELECTED_NODES];
-struct octree_node* selected_nodes[OCTREE_MAX_SELECTED_NODES];
+tdstOctreeNode* selected_nodes[OCTREE_MAX_SELECTED_NODES];
 int n_selected_nodes = 0;
 
-const bool collide_object_intersect_segment(const struct collide_object* object,
-                                            const struct matrix4 T,
-                                            const struct vector3 sA,
-                                            const struct vector3 sB,
+const bool collide_object_intersect_segment(const tdstCollideObject* object,
+                                            const tdstMatrix4D T,
+                                            const tdstVector3D sA,
+                                            const tdstVector3D sB,
                                             struct ray *out_ray,
-                                            struct vector3 *I)
+                                            tdstVector3D *I)
 {
     if (!object) return false;
     
-    const struct octree* octree = pointer(object->octree);
-    const struct octree_node* root = pointer(octree->root);
+    const tdstOctree* octree = pointer(object->octree);
+    const tdstOctreeNode* root = pointer(octree->root);
 
-    const struct vector3 sAB = vector3_sub(sB, sA);
+    const tdstVector3D sAB = vector3_sub(sB, sA);
     
     int n_selected = 0;
     //float st[OCTREE_MAX_SELECTED_NODES];
-    //struct octree_node* selected[OCTREE_MAX_SELECTED_NODES];
+    //tdstOctreeNode* selected[OCTREE_MAX_SELECTED_NODES];
     //octree_traverse_line_segment(root, T, sA, sAB, selected_nodes, &n_selected_nodes, st);
 
-    const struct vector3 sBA = vector3_sub(sB, sA);
+    const tdstVector3D sBA = vector3_sub(sB, sA);
     
     struct ray ray;
     ray.origin = sA;
@@ -87,12 +87,12 @@ const bool collide_object_intersect_segment(const struct collide_object* object,
 //    printf("ray direction: %f %f %f\n", ray.direction.x, ray.direction.y, ray.direction.z);
     
     int mesh_index = 0;
-    const struct collide_mesh* mesh = NULL;
+    const tdstCollideElementIndexedTriangles* mesh = NULL;
     while ((mesh = collide_object_mesh(object, mesh_index)))
     {
         const uint16* indices = (const uint16*)pointer(mesh->face_indices);
-        const struct vector3* vertices = (const struct vector3*)pointer(object->vertices);
-        const struct vector3* normals = (const struct vector3*)pointer(mesh->normals);
+        const tdstVector3D* vertices = (const tdstVector3D*)pointer(object->vertices);
+        const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
 
         for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
         {
@@ -100,15 +100,15 @@ const bool collide_object_intersect_segment(const struct collide_object* object,
             uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
             uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
 
-            struct vector3 A = vector3_host_byteorder(*(vertices + idx0));
-            struct vector3 B = vector3_host_byteorder(*(vertices + idx1));
-            struct vector3 C = vector3_host_byteorder(*(vertices + idx2));
+            tdstVector3D A = vector3_host_byteorder(*(vertices + idx0));
+            tdstVector3D B = vector3_host_byteorder(*(vertices + idx1));
+            tdstVector3D C = vector3_host_byteorder(*(vertices + idx2));
 
-            struct vector3 N = vector3_host_byteorder(*(normals + index / 3));
+            tdstVector3D N = vector3_host_byteorder(*(normals + index / 3));
             
-            const struct vector4 TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
-            const struct vector4 TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
-            const struct vector4 TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
+            const tdstVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
+            const tdstVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
+            const tdstVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
 
             A = vector3_new(TA.x, TA.y, TA.z);
             B = vector3_new(TB.x, TB.y, TB.z);

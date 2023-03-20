@@ -9,10 +9,10 @@
 #define glmesh_h
 
 #include "vertex.h"
-#include "matrix4.h"
-#include "transform.h"
-#include "collide_material.h"
-#include "superobject.h"
+#include "stMatrix4D.h"
+#include "stTransform.h"
+#include "stCollideMaterial.h"
+#include "stSuperObject.h"
 
 struct mesh
 {
@@ -24,9 +24,9 @@ struct mesh
     unsigned n_indices;
     unsigned* indices;
     
-    struct superobject* superobject;
-    struct transform* transform_global;
-    struct vector4 color;
+    tdstSuperObject* superobject;
+    tdstTransform* transform_global;
+    tdstVector4D color;
     pointer material;
     
     void* internal_data;

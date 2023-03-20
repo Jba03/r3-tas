@@ -7,13 +7,13 @@
 
 #include "game.h"
 #include "graphics.h"
-#include "camera.h"
+#include "stCameraGLI.h"
 #include "opengl.h"
 #include "configuration.h"
 #include "log.h"
 
-#include "engine.h"
-#include "dynamics.h"
+#include "stEngineStructure.h"
+#include "stDynamics.h"
 
 #if !defined(__APPLE__)
 
@@ -190,7 +190,7 @@ static void gen_checkerboard_texture()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
-void graphics_draw_triangle(const struct vector3 a, const struct vector3 b, const struct vector3 c)
+void graphics_draw_triangle(const tdstVector3D a, const tdstVector3D b, const tdstVector3D c)
 {
     GLuint vao;
     GLuint vbo;
@@ -221,7 +221,7 @@ void graphics_draw_triangle(const struct vector3 a, const struct vector3 b, cons
     glDeleteBuffers(1, &vbo);
 }
 
-void graphics_draw_line(const struct vector3 start, struct vector3 end)
+void graphics_draw_line(const tdstVector3D start, tdstVector3D end)
 {
     GLuint vao;
     GLuint vbo;
@@ -253,9 +253,9 @@ void graphics_draw_line(const struct vector3 start, struct vector3 end)
     glDeleteBuffers(1, &vbo);
 }
 
-void graphics_draw_box(struct vector3 position, struct vector3 scale, struct vector3 rotation, struct vector4 color)
+void graphics_draw_box(tdstVector3D position, tdstVector3D scale, tdstVector3D rotation, tdstVector4D color)
 {
-    matrix4 T = matrix4_identity;
+    tdstMatrix4D T = matrix4_identity;
     
     /* Rotate */
     T = matrix4_mul(T, matrix4_make_rotation_x(radians(rotation.x)));
@@ -272,9 +272,9 @@ void graphics_draw_box(struct vector3 position, struct vector3 scale, struct vec
     glmesh_draw(box);
 }
 
-void graphics_draw_sphere(struct vector3 center, const float r, struct vector4 color)
+void graphics_draw_sphere(tdstVector3D center, const float r, tdstVector4D color)
 {
-    matrix4 T;
+    tdstMatrix4D T;
     T = matrix4_make_scale(r * 2.0f, r * 2.0f, r * 2.0f);
     T = matrix4_mul(T, matrix4_make_translation(center.x, center.y, center.z));
     T = matrix4_transpose(T);
@@ -290,19 +290,19 @@ static void graphics_main_loop()
     const float fov = *(float*)(memory.base + 0x00C751B4);
     camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
     
-    matrix4 view = camera_view_matrix(camera);
+    tdstMatrix4D view = camera_view_matrix(camera);
     
     /* Camera parameters */
     if (!configuration.camera_unlocked)
     {
         camera->position = *(vector3*)(memory.base + 0x00c531bc);
-        struct vector3 eye = camera->position;
-        struct vector3 up = struct vector3_new(-0.0f, 0.0f, 1.0f);
-        struct vector3 look_at = *(vector3*)(memory.base + 0x00c53910);
+        tdstVector3D eye = camera->position;
+        tdstVector3D up = tdstVector3D_new(-0.0f, 0.0f, 1.0f);
+        tdstVector3D look_at = *(vector3*)(memory.base + 0x00c53910);
         view = matrix4_lookat(camera->position, look_at, up);
     }
     
-    matrix4 projection = camera_projection_matrix(camera, (float)width / (float)height);
+    tdstMatrix4D projection = camera_projection_matrix(camera, (float)width / (float)height);
     
     /* Set program */
     glUseProgram(shader_main);
@@ -338,7 +338,7 @@ static void graphics_main_loop()
     /* Default framebuffer */
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-    //struct vector3 rayman_position = *(vector3*)(memory.base + 0x00BF0D98);
+    //tdstVector3D rayman_position = *(vector3*)(memory.base + 0x00BF0D98);
 }
 
 int graphics_shader_id()

@@ -7,20 +7,20 @@
 
 #include <bitset>
 
-#include "actor.h"
-#include "brain.h"
-#include "mind.h"
-#include "intelligence.h"
-#include "behavior.h"
-#include "script.h"
-#include "dsg.h"
-#include "transform.h"
-#include "aimodel.h"
+#include "stEngineObject.h"
+#include "stBrain.h"
+#include "stMind.h"
+#include "stIntelligence.h"
+#include "stBehavior.h"
+#include "stTreeInterpret.h"
+#include "stDsg.h"
+#include "stTransform.h"
+#include "stAIModel.h"
 
 extern "C" {
     #include "translate.h"
     #include "interpret.h"
-    #include "input.h"
+    #include "stInputStructure.h"
     #include "intfun.h"
 }
 
@@ -31,7 +31,7 @@ struct SuperobjectInfoWindow
     bool active;
     bool sidebar;
     int sidebar_idx;
-    const struct superobject* selected;
+    const tdstSuperObject* selected;
     
     SuperobjectInfoWindow()
     {
@@ -54,14 +54,14 @@ struct SuperobjectInfoWindow
                 
                 int i = 0;
                 
-                const struct superobject* world = dynamic_world;
+                const tdstSuperObject* world = dynamic_world;
                 if (superobject_type(selected) == superobject_type_actor) world = dynamic_world;
                 if (superobject_type(selected) == superobject_type_ipo) world = father_sector;
                 if (superobject_type(selected) == superobject_type_sector) world = father_sector;
                 
                 superobject_for_each(world, child)
                 {
-                    const struct actor* actor = (const struct actor*)superobject_data(child);
+                    const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(child);
                     if (!actor) continue;
                     
                     /* Get actor instance name, or model name if spawnable actor */
@@ -75,7 +75,7 @@ struct SuperobjectInfoWindow
                     ImGui::PushStyleColor(ImGuiCol_Text, color);
                     if (ImGui::Selectable(name, sidebar_idx == i))
                     {
-                        selected = (struct superobject*)child;
+                        selected = (tdstSuperObject*)child;
                         sidebar_idx = i;
                     }
                     
@@ -101,7 +101,7 @@ struct SuperobjectInfoWindow
         
     }
     
-    static SuperobjectInfoWindow* CreateWindow(const struct superobject* target)
+    static SuperobjectInfoWindow* CreateWindow(const tdstSuperObject* target)
     {
         SuperobjectInfoWindow* window = new SuperobjectInfoWindow;
         window->selected = target;
@@ -115,11 +115,11 @@ struct SuperobjectInfoWindow
 
 static std::vector<SuperobjectInfoWindow*> superobject_info_windows;
 
-struct list_param { int *selected, i; struct superobject** so; struct actor** actor; struct standard_game_info** stdgame; };
+struct list_param { int *selected, i; tdstSuperObject** so; tdstEngineObject** actor; tdstStandardGameInfo** stdgame; };
 
 static void superobject_draw_childlist(void* data, void* p)
 {
-    struct superobject* so = (struct superobject*)data;
+    tdstSuperObject* so = (tdstSuperObject*)data;
     if (!data) return;
     
     struct list_param* param = (struct list_param*)p;
@@ -132,9 +132,9 @@ static void superobject_draw_childlist(void* data, void* p)
     switch (type)
     {
         case superobject_type_actor:
-            const struct actor* actor = (const struct actor*)pointer(so->data);
+            const tdstEngineObject* actor = (const tdstEngineObject*)pointer(so->data);
             if (!actor) return;
-            const struct standard_game_info* stdgame = (const struct standard_game_info*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
             if (!stdgame) return;
             name = actor_name(actor_instance_name, actor);
             if (!name) name = actor_name(actor_model_name, actor);
@@ -149,9 +149,9 @@ static void superobject_draw_childlist(void* data, void* p)
         *param->selected = param->i;
         *param->so = so;
         
-        *param->actor = (struct actor*)pointer(so->data);
+        *param->actor = (tdstEngineObject*)pointer(so->data);
         if (!*param->actor) return;
-        *param->stdgame = (struct standard_game_info*)pointer((*param->actor)->stdgame);
+        *param->stdgame = (tdstStandardGameInfo*)pointer((*param->actor)->stdgame);
         if (!*param->stdgame) return;
     }
     
@@ -223,9 +223,9 @@ static std::vector<std::string> ai_custom_bits_description =
     "PrincipalActor",
 };
 
-static struct superobject* selected_superobject = NULL;
+static tdstSuperObject* selected_superobject = NULL;
 
-void superobject_info(struct superobject* so)
+void superobject_info(tdstSuperObject* so)
 {
     if (!so) return;
     
@@ -249,10 +249,10 @@ void superobject_info(struct superobject* so)
         
         superobject_for_each_type(superobject_type_actor, so, object)
         {
-            const struct actor* actor = (const struct actor*)superobject_data(object);
+            const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
             if (!actor) continue;
             
-            const struct standard_game_info* stdgame = (const struct standard_game_info*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
             if (!stdgame) return;
             
             /* Get actor instance name, or model name if spawnable actor */
@@ -287,15 +287,15 @@ void superobject_info(struct superobject* so)
         ImGui::SameLine();
         
         
-        struct actor* actor;
-        struct standard_game_info* stdgame;
-        struct brain* brain;
-        struct mind* mind;
-        struct intelligence* intelligence;
-        struct behavior* behavior;
-        struct dsgmem* dsgmem;
-        struct dsgvar* vars;
-        struct script* script;
+        tdstEngineObject* actor;
+        tdstStandardGameInfo* stdgame;
+        tdstBrain* brain;
+        tdstMind* mind;
+        tdstIntelligence* intelligence;
+        tdstBehavior* behavior;
+        tdstDsgMem* dsgmem;
+        tdstDsgVar* vars;
+        tdstTreeInterpret* script;
         
         static int line;
         
@@ -311,9 +311,9 @@ void superobject_info(struct superobject* so)
             ImGui::BeginGroup();
             ImGui::BeginChild("SO Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()));
             
-            if ((actor = (struct actor*)superobject_data(selected_superobject)))
+            if ((actor = (tdstEngineObject*)superobject_data(selected_superobject)))
             {
-                if ((stdgame = (struct standard_game_info*)pointer(actor->stdgame)))
+                if ((stdgame = (tdstStandardGameInfo*)pointer(actor->stdgame)))
                 {
                     ImGui::BeginChild("Info", ImVec2(ImGui::GetContentRegionAvail().x, 250));
                     {
@@ -368,8 +368,8 @@ void superobject_info(struct superobject* so)
                             
                             ImGui::BeginChild("Transform");
                             {
-                                const struct transform* Tg = (const struct transform*)pointer(selected_superobject->transform_global);
-                                const struct transform* Tl = (const struct transform*)pointer(selected_superobject->transform_local);
+                                const tdstTransform* Tg = (const tdstTransform*)pointer(selected_superobject->transform_global);
+                                const tdstTransform* Tl = (const tdstTransform*)pointer(selected_superobject->transform_local);
                                 if (Tg) display_matrix4(matrix4_host_byteorder(Tg->matrix), ImVec4(1.0,1.0,1.0,1.0));
                                 if (Tl) display_matrix4(matrix4_host_byteorder(Tl->matrix), ImVec4(1.0,1.0,1.0,1.0));
                                 
@@ -389,8 +389,8 @@ void superobject_info(struct superobject* so)
             {
 //                if (ImGui::BeginTabItem("Object"))
 //                {
-//                    struct transform* transform = (struct transform*)pointer(selected_superobject->transform_global);
-//                    struct matrix4 matrix = matrix4_from_internal(transform->matrix);
+//                    tdstTransform* transform = (tdstTransform*)pointer(selected_superobject->transform_global);
+//                    tdstMatrix4D matrix = matrix4_from_internal(transform->matrix);
 //                    DisplayMatrix4(matrix, ImVec4(1, 1, 1, 1));
 //                    ImGui::EndTabItem();
 //                }
@@ -403,12 +403,12 @@ void superobject_info(struct superobject* so)
                 }
                 
                 
-                const struct dynam* dynam = actor_dynam(actor);
+                const tdstDynam* dynam = actor_dynam(actor);
                 if (dynam)
                 {
                     if (ImGui::BeginTabItem("Dynamics"))
                     {
-                        const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
+                        const tdstDynamics* dynamics = (const tdstDynamics*)pointer(dynam->dynamics);
                         display_dynamics(dynamics);
 
                         ImGui::EndTabItem();

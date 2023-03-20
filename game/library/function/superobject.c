@@ -6,13 +6,13 @@
 //
 
 #include "game.h"
-#include "superobject.h"
-#include "transform.h"
-#include "sector.h"
+#include "stSuperObject.h"
+#include "stTransform.h"
+#include "stSector.h"
 #include "intersect.h"
 
 /** superobject_typename: get the typename of a superobject */
-const char* superobject_typename(const struct superobject* so)
+const char* superobject_typename(const tdstSuperObject* so)
 {
     if (!so) return "None";
     const int type = superobject_type(so);
@@ -22,7 +22,7 @@ const char* superobject_typename(const struct superobject* so)
 }
 
 /** superobject_name: get the (instance) name of a superobject*/
-const char* superobject_name(const struct superobject* so)
+const char* superobject_name(const tdstSuperObject* so)
 {
     if (!so) return NULL;
     const int type = superobject_type(so);
@@ -45,25 +45,25 @@ const char* superobject_name(const struct superobject* so)
 }
 
 /** superobject_matrix_global: get the global world transform matrix of a superobject */
-const struct matrix4 superobject_matrix_global(const struct superobject* so)
+const tdstMatrix4D superobject_matrix_global(const tdstSuperObject* so)
 {
     if (!so) return matrix4_identity;
-    const struct transform* transform = pointer(so->transform_global);
+    const tdstTransform* transform = pointer(so->transform_global);
     if (!transform) return matrix4_identity;
     return matrix4_host_byteorder(transform->matrix);
 }
 
 /** superobject_matrix_local: get the local world transform matrix of a superobject */
-const struct matrix4 superobject_matrix_local(const struct superobject* so)
+const tdstMatrix4D superobject_matrix_local(const tdstSuperObject* so)
 {
     if (!so) return matrix4_identity;
-    const struct transform* transform = pointer(so->transform_local);
+    const tdstTransform* transform = pointer(so->transform_local);
     if (!transform) return matrix4_identity;
     return matrix4_host_byteorder(transform->matrix);
 }
 
 /** sector_by_location: get the sector in which the specified point is located */
-const struct superobject* sector_by_location(const struct superobject* father_sector, const struct vector3 point)
+const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, const tdstVector3D point)
 {
     if (!father_sector) return NULL;
     
@@ -73,20 +73,20 @@ const struct superobject* sector_by_location(const struct superobject* father_se
     int8 p = sector_priority_min;
     int8 v = sector_priority_min;
  
-    struct superobject* target_sector = NULL;
-    struct superobject* target_sector_virtual = NULL;
+    tdstSuperObject* target_sector = NULL;
+    tdstSuperObject* target_sector_virtual = NULL;
     
     superobject_for_each(father_sector, so)
     {
-        const struct sector* subsector = superobject_data(so);
+        const tdstSector* subsector = superobject_data(so);
         if (!subsector) continue;
         
-        const struct vector3 min = vector3_host_byteorder(subsector->min);
-        const struct vector3 max = vector3_host_byteorder(subsector->max);
+        const tdstVector3D min = vector3_host_byteorder(subsector->min);
+        const tdstVector3D max = vector3_host_byteorder(subsector->max);
         
         if (intersect_box_point(min, max, point))
         {
-            struct vector3 distance;
+            tdstVector3D distance;
             distance = vector3_add(min, max);
             distance = vector3_mulf(distance, 1.0f / 2.0f);
             distance = vector3_sub(distance, point);

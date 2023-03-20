@@ -1,8 +1,8 @@
-#include "intelligence.h"
-#include "aimodel.h"
-#include "behavior.h"
-#include "script.h"
-#include "input.h"
+#include "stIntelligence.h"
+#include "stAIModel.h"
+#include "stBehavior.h"
+#include "stTreeInterpret.h"
+#include "stInputStructure.h"
 
 #include "translate.h"
 #include "interpret.h"
@@ -10,7 +10,7 @@
 extern "C"
 {
 #include "intfun.h"
-#include "actiontable.h"
+#include "stActionTable.h"
 }
 
 static int line = 1;
@@ -19,17 +19,17 @@ static int selected_type;
 static int selected_index;
 static bool scroll = true;
 
-struct actor* current_actor;
-static struct intelligence* current_intelligence_struct = NULL;
-static struct behavior* current_intelligence = NULL;
-static struct behavior* current_reflex = NULL;
-static struct macro* current_macro = NULL;
-static struct script_node* action_tree = NULL;
+tdstEngineObject* current_actor;
+static tdstIntelligence* current_intelligence_struct = NULL;
+static tdstBehavior* current_intelligence = NULL;
+static tdstBehavior* current_reflex = NULL;
+static tdstMacro* current_macro = NULL;
+static tdstNodeInterpret* action_tree = NULL;
 
 static int aimodel_selected_type = 0;
 static void* aimodel_selected_data = NULL;
 
-static void display_translated_script(struct script_node* tree, bool nodes = false, int pc = -1)
+static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
     struct translation* translation = script_node_translate(tree);
     if (translation)
@@ -77,7 +77,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 
                 if (tok.node->type == script_node_type_actorref)
                 {
-                    struct actor* actor = (struct actor*)pointer(tok.node->param);
+                    tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
                     if (actor) {
                         strcpy(tok.string, actor_name(actor_instance_name, actor));
                         color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f);
@@ -150,7 +150,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 
                 if (tok.node->type == script_node_type_button)
                 {
-                    struct input_entry* entry = (struct input_entry*)pointer(tok.node->param);
+                    tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
                     const char* name = (const char*)pointer(entry->action_name);
                     if ((host_byteorder_32(entry->state) & 0xFF000000) == 0)
                         color = ImVec4(100.0f / 255.0f, 255.0f / 255.0f, 255.0f, 1.0f);
@@ -168,7 +168,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 
                 if (tok.node->type == script_node_type_actionref)
                 {
-                    struct action_entry* action = (struct action_entry*)pointer(tok.node->param);
+                    tdstActionTableEntry* action = (tdstActionTableEntry*)pointer(tok.node->param);
                     color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f);
                     ImGui::TextColored(color, "\"%s\"", action->name);
                     if (ImGui::IsItemClicked())
@@ -183,7 +183,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     int off = tok.node - translation->tree;
-                    struct script_node* orig = translation->original_tree + off;
+                    tdstNodeInterpret* orig = translation->original_tree + off;
                     memory_viewer.Open = true;
                     memory_viewer.GotoAddr = offset(orig);
                 }
@@ -191,7 +191,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                 {
                     int off = tok.node - translation->tree;
-                    struct script_node* orig = translation->original_tree + off;
+                    tdstNodeInterpret* orig = translation->original_tree + off;
                     orig->type = script_node_type_end_macro;
                 }
                 
@@ -204,27 +204,27 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     if (ImGui::IsItemClicked(0))
                     {
                         int off = tok.node - translation->tree;
-                        struct script_node* orig = translation->original_tree + off;
-                        struct macro* macro = (struct macro*)pointer(orig->param);
+                        tdstNodeInterpret* orig = translation->original_tree + off;
+                        tdstMacro* macro = (tdstMacro*)pointer(orig->param);
                         if (macro)
                         {
                             selected_type = aimodel_selected_type = 2;
                             selected_index = -1;
                             current_macro = macro;
-                            aimodel_selected_data = (struct macro*)macro;
+                            aimodel_selected_data = (tdstMacro*)macro;
                             printf("ending macro\n");
-                            //struct script* scp = (struct script*)pointer(macro->script_initial);
-                            //(*(struct script_node*)pointer(scp->tree)).type = script_node_type_end_macro;
-                            struct script* scp = (struct script*)pointer(macro->script_initial);
-                            struct script_node* node = (struct script_node*)pointer(scp->tree);
+                            //tdstTreeInterpret* scp = (tdstTreeInterpret*)pointer(macro->script_initial);
+                            //(*(tdstNodeInterpret*)pointer(scp->tree)).type = script_node_type_end_macro;
+                            tdstTreeInterpret* scp = (tdstTreeInterpret*)pointer(macro->script_initial);
+                            tdstNodeInterpret* node = (tdstNodeInterpret*)pointer(scp->tree);
                             node->type = 8;
 //
-//                            scp = (struct script*)pointer(macro->script_current);
-//                            node = (struct script_node*)pointer(scp->tree);
+//                            scp = (tdstTreeInterpret*)pointer(macro->script_current);
+//                            node = (tdstNodeInterpret*)pointer(scp->tree);
 //                            node->type = 8;
 //                            //scp->tree = 0;
 //
-                            //struct script_node* node_first = (struct script_node*)pointer(scp->tree);
+                            //tdstNodeInterpret* node_first = (tdstNodeInterpret*)pointer(scp->tree);
                         }
                             
                         memory_viewer.GotoAddrAndHighlight(offset(name), offset(name));
@@ -232,7 +232,7 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     else if (ImGui::IsItemClicked(1))
                     {
 //                        int off = tok.node - translation->tree;
-//                        struct script_node* orig = translation->original_tree + off;
+//                        tdstNodeInterpret* orig = translation->original_tree + off;
 //                        orig->type = 4;
 //                        orig->param = 0;
                         
@@ -268,17 +268,17 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
     }
 }
 
-static void display_aimodel(struct actor* actor,
-                            struct aimodel* aimodel,
-                            struct behavior* current_intelligence = NULL,
-                            struct behavior* current_reflex = NULL,
-                            struct macro* current_macro = NULL,
+static void display_aimodel(tdstEngineObject* actor,
+                            tdstAIModel* aimodel,
+                            tdstBehavior* current_intelligence = NULL,
+                            tdstBehavior* current_reflex = NULL,
+                            tdstMacro* current_macro = NULL,
                             int* out_type = NULL,
                             void** out_data = NULL)
 {
-    struct behavior_list* intelligence_list;
-    struct behavior_list* reflex_list;
-    struct macro_list* macro_list;
+    tdstScriptAI* intelligence_list;
+    tdstScriptAI* reflex_list;
+    tdstMacroList* macro_list;
     
     ImGui::BeginChild("AILists", ImVec2(max(200, ImGui::GetContentRegionAvail().x / 5), 0), false);
     {
@@ -290,14 +290,14 @@ static void display_aimodel(struct actor* actor,
         ImGui::EndChild();
         
         #pragma mark Intelligence list
-        if ((intelligence_list = (struct behavior_list*)pointer(aimodel->intelligence_behavior_list)))
+        if ((intelligence_list = (tdstScriptAI*)pointer(aimodel->intelligence_behavior_list)))
         {
             ImGui::BeginChild("Intelligence", ImVec2(0, ImGui::GetContentRegionAvail().y / 3), true);
             {
                 ImGui::Text("Intelligence");
                 for (unsigned int i = 0; i < host_byteorder_32(intelligence_list->n_behaviors); i++)
                 {
-                    struct behavior* intelligence = (struct behavior*)pointer(intelligence_list->behavior) + i;
+                    tdstBehavior* intelligence = (tdstBehavior*)pointer(intelligence_list->behavior) + i;
                     if (intelligence)
                     {
                         ImVec4 col = intelligence == current_intelligence ? ImVec4(0, 1, 0, 1.0f) : ImVec4(1, 1, 1, 0.5f);
@@ -329,9 +329,9 @@ static void display_aimodel(struct actor* actor,
                             
 //                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 //                        {
-//                            struct brain* br = (struct brain*)actor_brain(actor);
-//                            struct mind* mind = (struct mind*)pointer(br->mind);
-//                            struct intelligence* intel = (struct intelligence*)pointer(mind->intelligence);
+//                            tdstBrain* br = (tdstBrain*)actor_brain(actor);
+//                            tdstMind* mind = (tdstMind*)pointer(br->mind);
+//                            tdstIntelligence* intel = (tdstIntelligence*)pointer(mind->intelligence);
 //                            intel->current_behavior = intelligence_list->behavior;
 //                        }
                     }
@@ -341,14 +341,14 @@ static void display_aimodel(struct actor* actor,
         }
         
         #pragma mark Reflex list
-        if ((reflex_list = (struct behavior_list*)pointer(aimodel->reflex_behavior_list)))
+        if ((reflex_list = (tdstScriptAI*)pointer(aimodel->reflex_behavior_list)))
         {
             ImGui::BeginChild("Reflex", ImVec2(0, ImGui::GetContentRegionAvail().y / 3), true);
             {
                 ImGui::Text("Reflex");
                 for (unsigned int r = 0; r < host_byteorder_32(reflex_list->n_behaviors); r++)
                 {
-                    struct behavior* reflex = (struct behavior*)pointer(reflex_list->behavior) + r;
+                    tdstBehavior* reflex = (tdstBehavior*)pointer(reflex_list->behavior) + r;
                     if (reflex)
                     {
                         ImVec4 col = reflex == current_reflex ? ImVec4(0, 1, 0, 1.0f) : ImVec4(1, 1, 1, 0.5f);
@@ -384,7 +384,7 @@ static void display_aimodel(struct actor* actor,
         }
         
         #pragma mark Macro list
-        macro_list = (struct macro_list*)pointer(aimodel->macrolist);
+        macro_list = (tdstMacroList*)pointer(aimodel->macrolist);
         if (macro_list && pointer(macro_list->macros))
         {
             ImGui::BeginChild("Macros", ImVec2(0, ImGui::GetContentRegionAvail().y - 30), true);
@@ -393,7 +393,7 @@ static void display_aimodel(struct actor* actor,
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 0.5f));
                 for (unsigned m = 0; m < macro_list->n_macros; m++)
                 {
-                    struct macro* macro = ((struct macro*)pointer(macro_list->macros)) + m;
+                    tdstMacro* macro = ((tdstMacro*)pointer(macro_list->macros)) + m;
                     if (macro && macro->script_initial)
                     {
                         const char* name = strchr(macro->name, ':') + 1;
@@ -431,37 +431,37 @@ static void display_aimodel(struct actor* actor,
 static intcpa* interpreter = NULL;
 static bool animating = false;
 
-static void display_ai(struct actor* actor)
+static void display_ai(tdstEngineObject* actor)
 {
-    struct brain* brain;
-    struct mind* mind;
-    struct aimodel* aimodel;
-    struct intelligence* intelligence;
-    struct intelligence* reflex;
-    struct script* script;
+    tdstBrain* brain;
+    tdstMind* mind;
+    tdstAIModel* aimodel;
+    tdstIntelligence* intelligence;
+    tdstIntelligence* reflex;
+    tdstTreeInterpret* script;
     
     current_actor = actor;
     
     static int pc = -1;
     
-    if ((brain = (struct brain*)actor_brain(actor)))
+    if ((brain = (tdstBrain*)actor_brain(actor)))
     {
         current_actor = actor;
         
-        if ((mind = (struct mind*)pointer(brain->mind)))
+        if ((mind = (tdstMind*)pointer(brain->mind)))
         {
-            if ((intelligence = (struct intelligence*)pointer(mind->intelligence)))
+            if ((intelligence = (tdstIntelligence*)pointer(mind->intelligence)))
             {
                 current_intelligence_struct = intelligence;
-                current_intelligence = (struct behavior*)pointer(intelligence->current_behavior);
+                current_intelligence = (tdstBehavior*)pointer(intelligence->current_behavior);
             }
             
-            if ((reflex = (struct intelligence*)pointer(mind->reflex)))
+            if ((reflex = (tdstIntelligence*)pointer(mind->reflex)))
             {
-                current_reflex = (struct behavior*)pointer(reflex->current_behavior);
+                current_reflex = (tdstBehavior*)pointer(reflex->current_behavior);
             }
             
-            if ((aimodel = (struct aimodel*)pointer(mind->ai_model)))
+            if ((aimodel = (tdstAIModel*)pointer(mind->ai_model)))
             {
                 display_aimodel(actor, aimodel, current_intelligence, current_reflex, current_macro, &aimodel_selected_type, &aimodel_selected_data);
             }
@@ -496,7 +496,7 @@ static void display_ai(struct actor* actor)
 //                                param.mirror = 1;
 //                                param.nowrite = 0;
 //                                
-//                                interpreter = intcpa_interpreter_create(&param, (struct script*)pointer(current_intelligence->scripts));
+//                                interpreter = intcpa_interpreter_create(&param, (tdstTreeInterpret*)pointer(current_intelligence->scripts));
 //                                
 //                                register_dsg_functions(interpreter);
 //                            }
@@ -547,7 +547,7 @@ static void display_ai(struct actor* actor)
 //                        {
 //                            for (unsigned int i = interpreter->rsp / 4; i > 1; i--)
 //                            {
-//                                struct macro* m = (struct macro*)interpreter->rstack[i * 4 - 2];
+//                                tdstMacro* m = (tdstMacro*)interpreter->rstack[i * 4 - 2];
 //                                //printf("name: %s\n", m->name);
 //                                ImGui::TextColored(ImVec4(1,1,1,0.5f), "%s", m->name);
 //                            }
@@ -571,7 +571,7 @@ static void display_ai(struct actor* actor)
                     {
                         if (aimodel_selected_type <= 1) // Intelligence & REFLEX
                         {
-                            struct behavior* b = (struct behavior*)aimodel_selected_data;
+                            tdstBehavior* b = (tdstBehavior*)aimodel_selected_data;
                             if (b)
                             {
                                 const char* name = strchr(b->name, ':') + 1;
@@ -579,12 +579,12 @@ static void display_ai(struct actor* actor)
                                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "/* %s: %s */", typen, name);
                                 ImGui::NewLine();
                                 
-                                struct script* script = (struct script*)pointer(b->scripts);
+                                tdstTreeInterpret* script = (tdstTreeInterpret*)pointer(b->scripts);
                                 if (script)
                                 {
                                     for (unsigned int i = 0; i < b->n_scripts; i++)
                                     {
-                                        struct script_node* tree = (struct script_node*)pointer((script + i)->tree);
+                                        tdstNodeInterpret* tree = (tdstNodeInterpret*)pointer((script + i)->tree);
                                         if (tree)
                                         {
                                             ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(tree), tree_length(tree));
@@ -605,15 +605,15 @@ static void display_ai(struct actor* actor)
                         }
                         else if (aimodel_selected_type == 2) // Macro
                         {
-                            struct macro* macro = (struct macro*)aimodel_selected_data;
-                            struct script* initial = (struct script*)pointer(macro->script_initial);
+                            tdstMacro* macro = (tdstMacro*)aimodel_selected_data;
+                            tdstTreeInterpret* initial = (tdstTreeInterpret*)pointer(macro->script_initial);
                             if (initial)
                             {
                                 const char* name = strchr(macro->name, ':') + 1;
                                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "/* MACRO: %s */", name);
                                 ImGui::NewLine();
                                 
-                                struct script_node* tree = (struct script_node*)pointer(initial->tree);
+                                tdstNodeInterpret* tree = (tdstNodeInterpret*)pointer(initial->tree);
                                 if (tree) display_translated_script(tree);
                             }
                         }
@@ -647,9 +647,9 @@ static void display_ai(struct actor* actor)
 ////                    main_render = false;
 ////                }
 ////
-//                if ((intelligence = (struct intelligence*)pointer(mind->intelligence)))
+//                if ((intelligence = (tdstIntelligence*)pointer(mind->intelligence)))
 //                {
-//                    if ((behavior = (struct behavior*)pointer(intelligence->current_behavior))) {
+//                    if ((behavior = (tdstBehavior*)pointer(intelligence->current_behavior))) {
 //
 //                        const char* scriptname = strchr(behavior->name, ':') + 1;
 ////                        if (interpreter)
@@ -662,7 +662,7 @@ static void display_ai(struct actor* actor)
 //
 //                        for (int i = 0; i < behavior->n_scripts; i++) {
 //
-//                            if ((script = (struct script*)pointer(behavior->scripts) + i)) {
+//                            if ((script = (tdstTreeInterpret*)pointer(behavior->scripts) + i)) {
 //
 ////                                if (just_selected)
 ////                                {
@@ -671,7 +671,7 @@ static void display_ai(struct actor* actor)
 ////                                    param.nowrite = 0;
 ////                                    param.actor_self = selected_superobject->data;
 ////
-////                                    interpreter = intcpa_interpreter_create(&param, (struct script*)pointer(behavior->scripts));
+////                                    interpreter = intcpa_interpreter_create(&param, (tdstTreeInterpret*)pointer(behavior->scripts));
 ////
 ////                                    register_dsg_functions(interpreter);
 ////
@@ -679,7 +679,7 @@ static void display_ai(struct actor* actor)
 ////
 ////
 //////                                                    IntCPA_Init(&interpreter);
-//////                                                    struct script_node* tr = (struct script_node*)pointer(script->tree);
+//////                                                    tdstNodeInterpret* tr = (tdstNodeInterpret*)pointer(script->tree);
 //////
 //////                                                    while (!IsEndOfTree(tr))
 //////                                                    {
@@ -695,7 +695,7 @@ static void display_ai(struct actor* actor)
 ////                                    just_selected = false;
 ////                                }
 ////
-////                                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(pointer(script->tree)), tree_length((struct script_node*)pointer(script->tree)));
+////                                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(pointer(script->tree)), tree_length((tdstNodeInterpret*)pointer(script->tree)));
 ////
 ////
 ////                                //memory_viewer.GotoAddrAndHighlight(offset(tree), offset(tree));
@@ -704,7 +704,7 @@ static void display_ai(struct actor* actor)
 ////                                                                            int i = 0;
 ////                                                                            while (1)
 ////                                                                            {
-////                                                                                struct script_node node = *(interpreter->tree + i);
+////                                                                                tdstNodeInterpret node = *(interpreter->tree + i);
 ////
 ////                                                                                ImVec4 color = intcpa_interpreter_pc(interpreter) == i ? ImVec4(0,1,0,1) : ImVec4(1,1,1,1);
 ////

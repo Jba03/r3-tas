@@ -14,29 +14,29 @@
 //#include "vector3.h"
 #include "game.h"
 #include "structure.h"
-#include "superobject.h"
-#include "ipo.h"
-#include "physical_object.h"
-#include "collideset.h"
-#include "collide_object.h"
-#include "collide_mesh.h"
+#include "stSuperObject.h"
+#include "stInstantiatedPhysicalObject.h"
+#include "stPhysicalObject.h"
+#include "stCollideSet.h"
+#include "stCollideObject.h"
+#include "stCollideElementIndexedTriangles.h"
 
 struct mesh* meshlist[1000];
-struct collide_object* collide_objects[1000];
-struct matrix4 matrices[1000];
+tdstCollideObject* collide_objects[1000];
+tdstMatrix4D matrices[1000];
 int current_mesh = 0;
 int current_matrix = 0;
 int current_collide_object = 0;
 
-static void mesh_create(struct ipo* ipo)
+static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
 {
     int mesh_index = 0;
-    const struct collide_mesh* collmesh = NULL;
-    const struct collide_object* zdr = ipo_collide_object(ipo);
+    const tdstCollideElementIndexedTriangles* collmesh = NULL;
+    const tdstCollideObject* zdr = ipo_collide_object(ipo);
     
     while ((collmesh = collide_object_mesh(zdr, mesh_index)))
     {
-        struct game_material* gamemat = (struct game_material*)pointer(collmesh->material);
+        tdstGameMaterial* gamemat = (tdstGameMaterial*)pointer(collmesh->material);
         
         struct mesh* mesh = malloc(sizeof *mesh);
         mesh->name = ipo->name;
@@ -57,8 +57,8 @@ static void mesh_create(struct ipo* ipo)
             indices[idx * 3 + 2] = host_byteorder_16(*(index + idx * 3 + 2));
         }
         
-        struct vector3* vertices = pointer(zdr->vertices);
-        struct vector3* normals = pointer(collmesh->normals);
+        tdstVector3D* vertices = pointer(zdr->vertices);
+        tdstVector3D* normals = pointer(collmesh->normals);
         for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
         {
             mesh->vertices[idx].position.x = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].x);
@@ -79,7 +79,7 @@ static void mesh_create(struct ipo* ipo)
         
         for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
         {
-            struct vector3 normal;
+            tdstVector3D normal;
             normal.x = fabs(mesh->vertices[idx].normal.x);
             normal.y = fabs(mesh->vertices[idx].normal.y);
             normal.z = fabs(mesh->vertices[idx].normal.z);
@@ -105,7 +105,7 @@ static void mesh_create(struct ipo* ipo)
         int n_valid_normals = 0;
         for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
         {
-            struct vector3 normal;
+            tdstVector3D normal;
             normal.x = fabs(mesh->vertices[idx].normal.x);
             normal.y = fabs(mesh->vertices[idx].normal.y);
             normal.z = fabs(mesh->vertices[idx].normal.z);
@@ -156,14 +156,14 @@ static void export_obj(struct mesh* mesh, FILE* fp, int *prev_index)
         {
             struct vertex v = mesh->vertices[t];
                                             
-            struct vector4 v2;
+            tdstVector4D v2;
             v2.x = v.position.x;
             v2.z = v.position.y;
             v2.y = v.position.z;
             v2.w = 1;
                                             
-//            matrix4 transform = obj->matrix_default;
-//            struct vector4 computed = vector4_mul_matrix4(v2, transform);
+//            tdstMatrix4D transform = obj->matrix_default;
+//            tdstVector4D computed = vector4_mul_matrix4(v2, transform);
 //
             char buf[128];
             memset(buf, 0, 128);
@@ -191,11 +191,11 @@ static void export_obj(struct mesh* mesh, FILE* fp, int *prev_index)
     }
 }
 
-static void ipo_recurse(struct superobject* so)
+static void ipo_recurse(tdstSuperObject* so)
 {
     if (superobject_type(so) == superobject_type_ipo)
     {
-        struct ipo* ipo = (struct ipo*)superobject_data(so);
+        tdstInstantiatedPhysicalObject* ipo = (tdstInstantiatedPhysicalObject*)superobject_data(so);
         if (!ipo) return;
         
         mesh_create(ipo);

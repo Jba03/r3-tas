@@ -12,7 +12,7 @@
 
 struct cheats
 {
-    void (*begin_carrying_object)(const struct superobject* carryable_actor);
+    void (*begin_carrying_object)(const tdstSuperObject* carryable_actor);
 };
 
 const extern struct cheats cheats;

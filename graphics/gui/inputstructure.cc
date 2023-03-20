@@ -1,4 +1,4 @@
-#include "input.h"
+#include "stInputStructure.h"
 
 static void display_input_structure(bool *display)
 {
@@ -19,7 +19,7 @@ static void display_input_structure(bool *display)
             ImGui::TableSetupColumn("Analog state");
             ImGui::TableHeadersRow();
             
-            struct input_entry* entry = (struct input_entry*)pointer(input_struct->entries);
+            tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(input_struct->entries);
             int c = host_byteorder_32(input_struct->n_entries);
             while (c-- && entry)
             {

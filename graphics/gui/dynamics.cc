@@ -1,5 +1,5 @@
-#include "actor.h"
-#include "dynamics.h"
+#include "stEngineObject.h"
+#include "stDynamics.h"
 
 #define TableColumn(label, ...)     \
     ImGui::TableNextColumn();       \
@@ -9,14 +9,14 @@
 
 #define f32(v) host_byteorder_f32(*(uint32_t*)&v)
 
-static void display_dynamics(const struct dynamics* dynamics)
+static void display_dynamics(const tdstDynamics* dynamics)
 {
     if (!dynamics) return;
     
-    const struct dynamics_base base = dynamics->base;
-    const struct dynamics_advanced advanced = dynamics->advanced;
-    const struct dynamics_complex complex = dynamics->complex;
-    const struct dynamics_report* report = (const struct dynamics_report*)pointer(base.report);
+    const tdstDynamicsBaseBlock base = dynamics->base;
+    const tdstDynamicsAdvancedBlock advanced = dynamics->advanced;
+    const tdstDynamicsComplexBlock complex = dynamics->complex;
+    const tdstDynamicsReport* report = (const tdstDynamicsReport*)pointer(base.report);
     
     const char* type = "Base";
     if (host_byteorder_32(dynamics->base.endflags) & dynamics_size_advanced) type = "Advanced";
@@ -40,13 +40,13 @@ static void display_dynamics(const struct dynamics* dynamics)
             ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Base @ %X", offset(&dynamics->base));
             if (ImGui::BeginTable("Dynamics base block", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg))
             {
-                const vector3 imposedSpeed = vector3_host_byteorder(dynamics->base.speed_impose);
-                const vector3 proposedSpeed = vector3_host_byteorder(dynamics->base.speed_propose);
-                const vector3 previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
-                const vector3 scale = vector3_host_byteorder(dynamics->base.scale);
-                const vector3 animSpeed = vector3_host_byteorder(dynamics->base.anim_speed);
-                const vector3 safeTranslation = vector3_host_byteorder(dynamics->base.translation_safe);
-                const vector3 addedTranslation = vector3_host_byteorder(dynamics->base.translation_add);
+                const tdstVector3D imposedSpeed = vector3_host_byteorder(dynamics->base.speed_impose);
+                const tdstVector3D proposedSpeed = vector3_host_byteorder(dynamics->base.speed_propose);
+                const tdstVector3D previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
+                const tdstVector3D scale = vector3_host_byteorder(dynamics->base.scale);
+                const tdstVector3D animSpeed = vector3_host_byteorder(dynamics->base.anim_speed);
+                const tdstVector3D safeTranslation = vector3_host_byteorder(dynamics->base.translation_safe);
+                const tdstVector3D addedTranslation = vector3_host_byteorder(dynamics->base.translation_add);
                 
                 TableColumn("Object type", "%X", host_byteorder_32(base.object_type))
                 TableColumn("ID card", "%X", host_byteorder_32(base.idcard))
@@ -79,14 +79,14 @@ static void display_dynamics(const struct dynamics* dynamics)
             ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", offset(&dynamics->advanced));
             if (ImGui::BeginTable("Dynamics advanced block", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg))
             {
-                const vector3 maxSpeed = vector3_host_byteorder(advanced.speed_max);
-                const vector3 streamSpeed = vector3_host_byteorder(advanced.speed_stream);
-                const vector3 addSpeed = vector3_host_byteorder(advanced.speed_add);
-                const vector3 limit = vector3_host_byteorder(advanced.limit);
-                const vector3 collisionTranslation = vector3_host_byteorder(advanced.collision_translation);
-                const vector3 inertiaTranslation = vector3_host_byteorder(advanced.inertia_translation);
-                const vector3 groundNormal = vector3_host_byteorder(advanced.ground_normal);
-                const vector3 wallNormal = vector3_host_byteorder(advanced.wall_normal);
+                const tdstVector3D maxSpeed = vector3_host_byteorder(advanced.speed_max);
+                const tdstVector3D streamSpeed = vector3_host_byteorder(advanced.speed_stream);
+                const tdstVector3D addSpeed = vector3_host_byteorder(advanced.speed_add);
+                const tdstVector3D limit = vector3_host_byteorder(advanced.limit);
+                const tdstVector3D collisionTranslation = vector3_host_byteorder(advanced.collision_translation);
+                const tdstVector3D inertiaTranslation = vector3_host_byteorder(advanced.inertia_translation);
+                const tdstVector3D groundNormal = vector3_host_byteorder(advanced.ground_normal);
+                const tdstVector3D wallNormal = vector3_host_byteorder(advanced.wall_normal);
                 
                 TableColumn("Inertia", "[%.2f, %.2f, %.2f]", f32(advanced.inertia_x), f32(advanced.inertia_y), f32(advanced.inertia_z));
                 TableColumn("Stream priority", "%f", f32(advanced.streamprio));
@@ -116,8 +116,8 @@ static void display_dynamics(const struct dynamics* dynamics)
             ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Complex @ %X", offset(&dynamics->complex));
             if (ImGui::BeginTable("Dynamics complex block", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg))
             {
-                const vector3 contact = vector3_host_byteorder(complex.contact);
-                const vector3 fallTranslation = vector3_host_byteorder(complex.fall_translation);
+                const tdstVector3D contact = vector3_host_byteorder(complex.contact);
+                const tdstVector3D fallTranslation = vector3_host_byteorder(complex.fall_translation);
                 
                 TableColumn("Tilt strength", "%f", f32(complex.tilt_strength));
                 TableColumn("Tilt inertia", "%f", f32(complex.tilt_inertia));
@@ -142,34 +142,34 @@ static void display_dynamics(const struct dynamics* dynamics)
         ImGui::BeginChild("Dynamics report");
         ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Report @ %X", offset(&dynamics->base.report));
         
-        const dynamics_obstacle obstacle = report->obstacle;
-        const dynamics_obstacle ground = report->ground;
-        const dynamics_obstacle wall = report->wall;
-        const dynamics_obstacle character = report->character;
-        const dynamics_obstacle water = report->water;
-        const dynamics_obstacle ceiling = report->ceiling;
+        const tdstDynamicsObstacle obstacle = report->obstacle;
+        const tdstDynamicsObstacle ground = report->ground;
+        const tdstDynamicsObstacle wall = report->wall;
+        const tdstDynamicsObstacle character = report->character;
+        const tdstDynamicsObstacle water = report->water;
+        const tdstDynamicsObstacle ceiling = report->ceiling;
         
-        const vector3 groundNormal = vector3_host_byteorder(ground.normal);
-        const vector3 wallNormal = vector3_host_byteorder(wall.normal);
-        const vector3 characterNormal = vector3_host_byteorder(character.normal);
-        const vector3 waterNormal = vector3_host_byteorder(water.normal);
-        const vector3 ceilingNormal = vector3_host_byteorder(ceiling.normal);
+        const tdstVector3D groundNormal = vector3_host_byteorder(ground.normal);
+        const tdstVector3D wallNormal = vector3_host_byteorder(wall.normal);
+        const tdstVector3D characterNormal = vector3_host_byteorder(character.normal);
+        const tdstVector3D waterNormal = vector3_host_byteorder(water.normal);
+        const tdstVector3D ceilingNormal = vector3_host_byteorder(ceiling.normal);
         
-        const vector3 groundContact = vector3_host_byteorder(ground.contact);
-        const vector3 wallContact = vector3_host_byteorder(wall.contact);
-        const vector3 characterContact = vector3_host_byteorder(character.contact);
-        const vector3 waterContact = vector3_host_byteorder(water.contact);
-        const vector3 ceilingContact = vector3_host_byteorder(ceiling.contact);
+        const tdstVector3D groundContact = vector3_host_byteorder(ground.contact);
+        const tdstVector3D wallContact = vector3_host_byteorder(wall.contact);
+        const tdstVector3D characterContact = vector3_host_byteorder(character.contact);
+        const tdstVector3D waterContact = vector3_host_byteorder(water.contact);
+        const tdstVector3D ceilingContact = vector3_host_byteorder(ceiling.contact);
         
-        const vector3 currentPosition = vector3_host_byteorder(report->position_absolute_current.linear);
-        const vector3 previousPosition = vector3_host_byteorder(report->position_absolute_previous.linear);
-        const vector3 currentSpeed = vector3_host_byteorder(report->speed_absolute_current.linear);
-        const vector3 previousSpeed = vector3_host_byteorder(report->speed_absolute_previous.linear);
+        const tdstVector3D currentPosition = vector3_host_byteorder(report->position_absolute_current.linear);
+        const tdstVector3D previousPosition = vector3_host_byteorder(report->position_absolute_previous.linear);
+        const tdstVector3D currentSpeed = vector3_host_byteorder(report->speed_absolute_current.linear);
+        const tdstVector3D previousSpeed = vector3_host_byteorder(report->speed_absolute_previous.linear);
         
-        const superobject* ground_so = (const superobject*)pointer(ground.superobject);
-        const superobject* wall_so = (const superobject*)pointer(wall.superobject);
-        const superobject* ceiling_so = (const superobject*)pointer(ceiling.superobject);
-        const superobject* character_so = (const superobject*)pointer(character.superobject);
+        const tdstSuperObject* ground_so = (const tdstSuperObject*)pointer(ground.superobject);
+        const tdstSuperObject* wall_so = (const tdstSuperObject*)pointer(wall.superobject);
+        const tdstSuperObject* ceiling_so = (const tdstSuperObject*)pointer(ceiling.superobject);
+        const tdstSuperObject* character_so = (const tdstSuperObject*)pointer(character.superobject);
         
         if (ImGui::BeginTable("Dynamics report", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg))
         {

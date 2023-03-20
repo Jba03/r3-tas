@@ -7,13 +7,13 @@
 
 #include "export.h"
 
-#include "actor.h"
-#include "brain.h"
-#include "mind.h"
-#include "aimodel.h"
-#include "behavior.h"
-#include "script.h"
-#include "input.h"
+#include "stEngineObject.h"
+#include "stBrain.h"
+#include "stMind.h"
+#include "stAIModel.h"
+#include "stBehavior.h"
+#include "stTreeInterpret.h"
+#include "stInputStructure.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@
 
 extern const char* (*get_config_path)(void);
 
-static void export_behavior(struct behavior* behavior)
+static void export_behavior(tdstBehavior* behavior)
 {
     char path[4096];
     memset(path, 0, 4096);
@@ -35,8 +35,8 @@ static void export_behavior(struct behavior* behavior)
     
     for (int i = 0; i < behavior->n_scripts; i++)
     {
-        struct script* script = (struct script*)pointer(behavior->scripts) + i;
-        struct script_node* tree = pointer(script->tree);
+        tdstTreeInterpret* script = (tdstTreeInterpret*)pointer(behavior->scripts) + i;
+        tdstNodeInterpret* tree = pointer(script->tree);
         if (!tree) continue;
         
         struct translation* translation = script_translate(tree);
@@ -72,7 +72,7 @@ static void export_behavior(struct behavior* behavior)
                     {
                         
                         
-                        struct actor* actor = (struct actor*)pointer(tok.node->param);
+                        tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
                         if (actor) {
                             fprintf(fp, "\"%s\"", actor_name(actor_instance_name, actor));
                         }
@@ -89,7 +89,7 @@ static void export_behavior(struct behavior* behavior)
                     
                     if (tok.node->type == script_node_type_button)
                     {
-                        struct input_entry* entry = (struct input_entry*)pointer(tok.node->param);
+                        tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
                         const char* name = (const char*)pointer(entry->action_name);
                         fprintf(fp, "\"%s\"", name);
                         continue;
@@ -131,24 +131,24 @@ static void export_behavior(struct behavior* behavior)
 
 void export_scripts(void)
 {
-    struct superobject* root = superobject_first_child(hierarchy);
+    tdstSuperObject* root = superobject_first_child(hierarchy);
     superobject_for_each_type(superobject_type_actor, root, object)
     {
-        const struct actor* actor = (const struct actor*)superobject_data(object);
+        const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
         if (!actor) continue;
         
-        const struct brain* brain = (const struct brain*)pointer(actor->brain);
+        const tdstBrain* brain = (const tdstBrain*)pointer(actor->brain);
         if (!brain) continue;
         
-        const struct mind* mind = (const struct mind*)pointer(brain->mind);
+        const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
         if (!mind) continue;
         
-        const struct aimodel* aimodel = (const struct aimodel*)pointer(mind->ai_model);
+        const tdstAIModel* aimodel = (const tdstAIModel*)pointer(mind->ai_model);
         if (!aimodel) continue;
         
-        const struct behavior_list* intelligence_list = (const struct behavior_list*)pointer(aimodel->intelligence_behavior_list);
-        const struct behavior_list* reflex_list = (const struct behavior_list*)pointer(aimodel->reflex_behavior_list);
-        const struct macro_list* macro_list = (const struct macro_list*)pointer(aimodel->macrolist);
+        const tdstScriptAI* intelligence_list = (const tdstScriptAI*)pointer(aimodel->intelligence_behavior_list);
+        const tdstScriptAI* reflex_list = (const tdstScriptAI*)pointer(aimodel->reflex_behavior_list);
+        const tdstMacroList* macro_list = (const tdstMacroList*)pointer(aimodel->macrolist);
         
         /* Get actor instance name, or model name if spawnable actor */
         const char* name = actor_name(actor_instance_name, actor);
@@ -159,7 +159,7 @@ void export_scripts(void)
         {
             for (int i = 0; i < host_byteorder_32(intelligence_list->n_behaviors); i++)
             {
-                struct behavior* behavior = (struct behavior*)pointer(intelligence_list->behavior) + i;
+                tdstBehavior* behavior = (tdstBehavior*)pointer(intelligence_list->behavior) + i;
                 
                 if (behavior) export_behavior(behavior);
             }

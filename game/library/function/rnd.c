@@ -5,7 +5,7 @@
 //  Created by Jba03 on 2023-02-20.
 //
 
-#include "rnd.h"
+#include "stRandom.h"
 #include "game.h"
 
 /**
@@ -32,7 +32,7 @@
  * LaunchAGO seems to be the function responsible for the internal RNG update in most cases.
  */
 
-int32 rnd_table_index(const struct rnd *rnd, unsigned index, int offset)
+int32 rnd_table_index(const tdstRandom *rnd, unsigned index, int offset)
 {
     if (host_byteorder_32(rnd->table) == 0x00) return 0;
     
@@ -45,7 +45,7 @@ int32 rnd_table_index(const struct rnd *rnd, unsigned index, int offset)
     return value;
 }
 
-int32 rnd_call(const struct rnd *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
+int32 rnd_call(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
 {
     int32_t value = 0;
     int32_t tmax = host_byteorder_32(rnd->table_max);

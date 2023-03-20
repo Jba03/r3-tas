@@ -6,9 +6,9 @@
 //
 
 
-static struct superobject* info_target_so = NULL;
+static tdstSuperObject* info_target_so = NULL;
 
-struct superobject* viewed_sector;
+tdstSuperObject* viewed_sector;
 
 static void display_superobject_info()
 {
@@ -17,10 +17,10 @@ static void display_superobject_info()
         uint32_t type = host_byteorder_32(info_target_so->type);
         if (type == superobject_type_actor)
         {
-            const struct actor* actor = (const struct actor*)pointer(info_target_so->data);
+            const tdstEngineObject* actor = (const tdstEngineObject*)pointer(info_target_so->data);
             if (!actor) return;
             
-            const struct standard_game_info* stdgame = (const struct standard_game_info*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
             if (!stdgame) return;
             
             /* Get actor names */
@@ -49,7 +49,7 @@ static void display_superobject_info()
     }
 }
 
-static void display_hierarchy(struct superobject *so, const char* first_obj_name = NULL)
+static void display_hierarchy(struct stSuperObject *so, const char* first_obj_name = NULL)
 {
     if (!so) return;
     
@@ -60,8 +60,8 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
     const char* name = first_obj_name ? first_obj_name : _typename;
     ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
     
-    const struct superobject* first_child = superobject_first_child(so);
-    const struct superobject* last_child = superobject_last_child(so);
+    const tdstSuperObject* first_child = superobject_first_child(so);
+    const tdstSuperObject* last_child = superobject_last_child(so);
     const uint32_t n_children = superobject_n_children(so);
     
     std::string extra = "";
@@ -72,10 +72,10 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
     {
         if (host_byteorder_32(so->data) != 0x00)
         {
-            struct actor* actor = (struct actor*)pointer(so->data);
+            tdstEngineObject* actor = (tdstEngineObject*)pointer(so->data);
             if (!actor) goto end;
             
-            struct standard_game_info* stdgame = (struct standard_game_info* )pointer(actor->stdgame);
+            tdstStandardGameInfo* stdgame = (tdstStandardGameInfo* )pointer(actor->stdgame);
             if (!stdgame) goto end;
             
             uint32_t col = actor_color(actor);
@@ -92,7 +92,7 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
     
     if (type == superobject_type_ipo || type == superobject_type_ipo_mirror)
     {
-        struct ipo* ipo = (struct ipo*)superobject_data(so);
+        tdstInstantiatedPhysicalObject* ipo = (tdstInstantiatedPhysicalObject*)superobject_data(so);
         if (ipo)
         {
             name = ipo->name;
@@ -101,7 +101,7 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
     
     if (type == superobject_type_sector)
     {
-        struct sector* sector = (struct sector*)superobject_data(so);
+        tdstSector* sector = (tdstSector*)superobject_data(so);
         if (sector)
         {
             name = strchr(sector->name, ':') + 1;
@@ -124,7 +124,7 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
         
 //        if (first_child != 0x00 && last_child != 0x00)
 //        {
-//            struct superobject* obj = (struct superobject*)pointer(so->first_child);
+//            tdstSuperObject* obj = (tdstSuperObject*)pointer(so->first_child);
 //            if (!obj)
 //            {
 //                ImGui::TreePop();
@@ -134,7 +134,7 @@ static void display_hierarchy(struct superobject *so, const char* first_obj_name
 //            for (unsigned int n = 0; n < n_children; n++)
 //            {
 //                display_hierarchy(obj);
-//                obj = (struct superobject*)pointer(obj->next);
+//                obj = (tdstSuperObject*)pointer(obj->next);
 //                if (!obj) break;
 //            }
 //        }

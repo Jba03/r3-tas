@@ -14,13 +14,13 @@
 #include "log.h"
 #include "game.h"
 #include "structure.h"
-#include "engine.h"
-#include "superobject.h"
-#include "actor.h"
-#include "stdgame.h"
+#include "stEngineStructure.h"
+#include "stSuperObject.h"
+#include "stEngineObject.h"
+#include "stStandardGameInfo.h"
 #include "gui.h"
 #include "graphics.h"
-#include "input.h"
+#include "stInputStructure.h"
 
 #pragma mark - Main
 
@@ -61,7 +61,7 @@ static void r3_load()
     uint32_t hierarchy_entry = max(entry1, entry2); /* Weird structure at this address. */
     hierarchy_entry = host_byteorder_32(*(uint32_t*)(mRAM + hierarchy_entry + 4 * 5)) & 0xFFFFFFF;
     
-    hierarchy = (struct superobject*)(mRAM + hierarchy_entry);
+    hierarchy = (tdstSuperObject*)(mRAM + hierarchy_entry);
     
     info(BOLD COLOR_GREEN "HIE @ [0x%X : %p]\n\n", hierarchy_entry, hierarchy);
     
@@ -79,9 +79,9 @@ static void r3_load()
     info(COLOR_BLUE "NIN_m_ChangeMap @ %X\n", offset(actor_changemap));
     
     /* Derive the three worlds from the hierarchy */
-    if (hierarchy) dynamic_world = (struct superobject*)pointer(hierarchy->first_child);
-    if (dynamic_world) inactive_dynamic_world = (struct superobject*)pointer(dynamic_world->next);
-    if (inactive_dynamic_world) father_sector = (struct superobject*)pointer(hierarchy->last_child);
+    if (hierarchy) dynamic_world = (tdstSuperObject*)pointer(hierarchy->first_child);
+    if (dynamic_world) inactive_dynamic_world = (tdstSuperObject*)pointer(dynamic_world->next);
+    if (inactive_dynamic_world) father_sector = (tdstSuperObject*)pointer(hierarchy->last_child);
     
     if (engine) strcpy(previous_level_name, engine->current_level_name);
 }
@@ -115,8 +115,8 @@ static void load()
 {
     #pragma mark Input structure
     {
-        unsigned long io = offsetof(struct input_structure, entries);
-        input_struct = (struct input_structure*)(memory.base + GCN_POINTER_INPUT - io);
+        unsigned long io = offsetof(tdstInputStructure, entries);
+        input_struct = (tdstInputStructure*)(memory.base + GCN_POINTER_INPUT - io);
         
         input.stick.main.x = input_entry_find(input_struct, "Action_Pad0_AxeX");
         input.stick.main.y = input_entry_find(input_struct, "Action_Pad0_AxeY");
@@ -147,8 +147,8 @@ static void update(const char* controller)
     if (!mRAM) memory.base = mRAM = get_mRAM();
     
     /* Read global structures */
-    engine = (struct engine*)(mRAM + GCN_POINTER_ENGINE);
-    rnd = (struct rnd*)(mRAM + GCN_POINTER_RND);
+    engine = (tdstEngineStructure*)(mRAM + GCN_POINTER_ENGINE);
+    rnd = (tdstRandom*)(mRAM + GCN_POINTER_RND);
     
     if just_entered_mode(6)
     {

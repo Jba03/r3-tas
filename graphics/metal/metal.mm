@@ -16,12 +16,12 @@
 extern "C"
 {
 #include "graphics.h"
-#include "camera.h"
+#include "stCameraGLI.h"
 #include "SDL.h"
-#include "dynamics.h"
+#include "stDynamics.h"
 #include "game.h"
-#include "octree.h"
-#include "sector.h"
+#include "stOctree.h"
+#include "stSector.h"
 }
 
 #include "gui.h"
@@ -172,7 +172,7 @@ static int metal_setup()
     vertex_descriptor.attributes[2].offset = offsetof(struct vertex, texcoord);
     vertex_descriptor.attributes[2].bufferIndex = 0;
     
-    vertex_descriptor.layouts[0].stride = sizeof(struct vector3);
+    vertex_descriptor.layouts[0].stride = sizeof(tdstVector3D);
     vertex_descriptor.layouts[0].stepRate = 1;
     vertex_descriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
     
@@ -241,12 +241,12 @@ void mesh_process(struct mesh *mesh)
 
 #include "game.h"
 #include "structure.h"
-#include "superobject.h"
-#include "ipo.h"
-#include "physical_object.h"
-#include "collideset.h"
-#include "collide_object.h"
-#include "collide_mesh.h"
+#include "stSuperObject.h"
+#include "stInstantiatedPhysicalObject.h"
+#include "stPhysicalObject.h"
+#include "stCollideSet.h"
+#include "stCollideObject.h"
+#include "stCollideElementIndexedTriangles.h"
 #include "geometry.h"
 
 struct Uniform
@@ -260,13 +260,13 @@ struct Uniform
     bool use_texture;
 } uniform;
 
-extern struct collide_object* collide_objects[1000];
-extern struct matrix4 matrices[1000];
+extern tdstCollideObject* collide_objects[1000];
+extern tdstMatrix4D matrices[1000];
 extern struct mesh* meshlist[1000];
 extern int current_mesh;
 extern int current_matrix;
 extern int current_collide_object;
-extern struct actor* current_actor;
+extern tdstEngineObject* current_actor;
 
 void copyDepthStencilConfigurationFrom(MTLRenderPassDescriptor *src, MTLRenderPassDescriptor *dest)
 {
@@ -287,9 +287,9 @@ void* graphics_get_texture()
 int n_triangles = 0;
 struct triangle* triangles;
 
-struct vector3 sphere_pos;
+tdstVector3D sphere_pos;
 
-static void draw_sphere(struct vector3 center, const float radius, struct vector4 color, const id<MTLRenderCommandEncoder> renderEncoder)
+static void draw_sphere(tdstVector3D center, const float radius, tdstVector4D color, const id<MTLRenderCommandEncoder> renderEncoder)
 {
     uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
     uniform.model = matrix4x4_translation(center.x, center.z, center.y);
@@ -310,7 +310,7 @@ static void draw_sphere(struct vector3 center, const float radius, struct vector
                        indexBufferOffset: 0];
 }
 
-static void draw_box(struct vector3 center, struct vector3 size, struct vector4 color, const id<MTLRenderCommandEncoder> renderEncoder)
+static void draw_box(tdstVector3D center, tdstVector3D size, tdstVector4D color, const id<MTLRenderCommandEncoder> renderEncoder)
 {
     uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
     uniform.model = matrix4x4_translation(center.x, center.z, center.y);
@@ -349,7 +349,7 @@ Implementation of vector, matrix, and quaternion math utility functions useful f
 
   The "cr" names are for <column><row>
 */
-static simd_float4x4 GameToMetalMatrix(const struct matrix4 mat)
+static simd_float4x4 GameToMetalMatrix(const tdstMatrix4D mat)
 {
     simd_float4x4 m;
     m.columns[0] = simd_make_float4(mat.m00, mat.m01, mat.m02, mat.m03);
@@ -361,21 +361,21 @@ static simd_float4x4 GameToMetalMatrix(const struct matrix4 mat)
 }
 
 
-static void RenderOctreeNode(const struct matrix4 transform, const struct octree_node* nd, struct vector4 color, id<MTLRenderCommandEncoder> render_encoder)
+static void RenderOctreeNode(const tdstMatrix4D transform, const tdstOctreeNode* nd, tdstVector4D color, id<MTLRenderCommandEncoder> render_encoder)
 {
     if (!nd) return;
     
-    struct vector3 min = vector3_host_byteorder(nd->min);
-    struct vector3 max = vector3_host_byteorder(nd->max);
+    tdstVector3D min = vector3_host_byteorder(nd->min);
+    tdstVector3D max = vector3_host_byteorder(nd->max);
     
     const float x = min.x + (max.x - min.x) / 2.0f;
     const float y = min.y + (max.y - min.y) / 2.0f;
     const float z = min.z + (max.z - min.z) / 2.0f;
     
-    struct vector4 c = vector4_new(x, y, z, 1.0f);
+    tdstVector4D c = vector4_new(x, y, z, 1.0f);
     c = vector4_mul_matrix4(c, transform);
     
-    struct vector3 size = vector3_new(max.x - min.x, max.z - min.z, max.y - min.y);
+    tdstVector3D size = vector3_new(max.x - min.x, max.z - min.z, max.y - min.y);
     draw_box(vector3_new(c.x, c.y, c.z), size, color, render_encoder);
     //vector4_new(1.0f, 0.0f, 0.4f, 0.5f)
     
@@ -384,36 +384,36 @@ static void RenderOctreeNode(const struct matrix4 transform, const struct octree
     {
         for (int i = 0; i < 8; i++)
         {
-            const struct octree_node* node = (const struct octree_node*)pointer(*(childlist + i));
+            const tdstOctreeNode* node = (const tdstOctreeNode*)pointer(*(childlist + i));
             RenderOctreeNode(transform, node, color, render_encoder);
         }
     }
 }
 
-static void RenderOctrees(struct superobject* so, struct vector4 color, id<MTLRenderCommandEncoder> render_encoder)
+static void RenderOctrees(tdstSuperObject* so, tdstVector4D color, id<MTLRenderCommandEncoder> render_encoder)
 {
     if (superobject_type(so) == superobject_type_ipo)
     {
-        const struct ipo* ipo = (const struct ipo*)superobject_data(so);
+        const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(so);
         if (!ipo) return;
         
-        const struct collide_object* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = ipo_collide_object(ipo);
         if (!zdr) return;
         
-        const struct octree* octree = (const struct octree*)pointer(zdr->octree);
+        const tdstOctree* octree = (const tdstOctree*)pointer(zdr->octree);
         if (!octree) return;
         
-        const struct octree_node* root = (const struct octree_node*)pointer(octree->root);
+        const tdstOctreeNode* root = (const tdstOctreeNode*)pointer(octree->root);
         if (!root) return;
         
         
 //            int n_selected = 0;
-//            struct octree_node* selected[OCTREE_MAX_SELECTED_NODES];
+//            tdstOctreeNode* selected[OCTREE_MAX_SELECTED_NODES];
 //            memset(selected, 0, sizeof(octree_node*) * OCTREE_MAX_SELECTED_NODES);
 //            float st[OCTREE_MAX_SELECTED_NODES];
 //
-//            const struct matrix4 raymat = actor_matrix(actor_rayman);
-//            const struct vector3 raypos = game_matrix4_position(raymat);
+//            const tdstMatrix4D raymat = actor_matrix(actor_rayman);
+//            const tdstVector3D raypos = game_matrix4_position(raymat);
 //            octree_traverse_line_segment(root, superobject_matrix_global(child), raypos, vector3_sub(vector3_new(0.0f, 0.0f, 0.0f), raypos), selected, &n_selected, st);
 //
 //            for (int i = 0; i < n_selected; i++)
@@ -428,27 +428,27 @@ static void RenderOctrees(struct superobject* so, struct vector4 color, id<MTLRe
     };
 }
 
-static void DrawGeometryRecursive(const struct superobject* root, const struct matrix4 transform, id<MTLRenderCommandEncoder> render_encoder)
+static void DrawGeometryRecursive(const tdstSuperObject* root, const tdstMatrix4D transform, id<MTLRenderCommandEncoder> render_encoder)
 {
     if (!root) return;
     
     /* Calculate the new transformation matrix */
-    const struct matrix4 T = matrix4_mul(superobject_matrix_global(root), transform);
+    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(root), transform);
     
     if (superobject_type(root) == superobject_type_ipo)
     {
-        const struct ipo* ipo = (const struct ipo*)superobject_data(root);
+        const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(root);
         if (ipo)
         {
-            const struct collide_object* zdr = ipo_collide_object(ipo);
+            const tdstCollideObject* zdr = ipo_collide_object(ipo);
             if (zdr)
             {
                 int mesh_idx = 0;
-                const struct collide_mesh* mesh;
+                const tdstCollideElementIndexedTriangles* mesh;
                 while ((mesh = collide_object_mesh(zdr, mesh_idx)))
                 {
                     uint16* indices = (uint16*)pointer(mesh->face_indices);
-                    struct vector3* vertices = (struct vector3*)pointer(zdr->vertices);
+                    tdstVector3D* vertices = (tdstVector3D*)pointer(zdr->vertices);
                     
                     if (vertices && indices)
                     {
@@ -458,7 +458,7 @@ static void DrawGeometryRecursive(const struct superobject* root, const struct m
                         //printf("n faces: %d %d\n", n_faces, n_vertices);
                         
                         id<MTLBuffer> indexBuffer = [device newBufferWithBytes: (void*)indices length: n_faces * 3 * sizeof(uint16) options: MTLResourceStorageModeShared];
-                        id<MTLBuffer> vertexBuffer = [device newBufferWithBytes: (void*)vertices length: n_vertices * sizeof(struct vector3) options: MTLResourceStorageModeShared];
+                        id<MTLBuffer> vertexBuffer = [device newBufferWithBytes: (void*)vertices length: n_vertices * sizeof(tdstVector3D) options: MTLResourceStorageModeShared];
                         
                         uniform.model = GameToMetalMatrix(T);
                         
@@ -502,7 +502,7 @@ void graphics_loop()
     
     SDL_ShowWindow(window);
 
-    //camera->position = struct vector3_new(0, 0, 0);
+    //camera->position = tdstVector3D_new(0, 0, 0);
     
 //    printf("position: (%f, %f, %f)\n", camera->position.x, camera->position.z, camera->position.y);
 //    printf("lookat: (%f, %f, %f)\n", lookat.x, lookat.z, lookat.y);
@@ -568,8 +568,8 @@ void graphics_loop()
     [renderEncoder setDepthStencilState: depth_state];
     [renderEncoder setViewport: (MTLViewport){0, 0, static_cast<double>(width), static_cast<double>(height), 0.0f, 1.0f /* 1.0f: important! */}];
     
-    struct vector3 campos = *(struct vector3*)(memory.base + 0x00c531bc);
-    struct vector3 lookato = *(struct vector3*)(memory.base + 0x00c53910);
+    tdstVector3D campos = *(tdstVector3D*)(memory.base + 0x00c531bc);
+    tdstVector3D lookato = *(tdstVector3D*)(memory.base + 0x00c53910);
     float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
     fov = fov == 0.0f ? 1.3 : fov;
     
@@ -598,7 +598,7 @@ void graphics_loop()
     {
         struct mesh* mesh = meshlist[i];
 
-        const struct collide_material* material = (const struct collide_material*)pointer(mesh->material);
+        const tdstCollideMaterial* material = (const tdstCollideMaterial*)pointer(mesh->material);
         if (material)
         {
             //printf("material: %X\n", offset(material));
@@ -613,7 +613,7 @@ void graphics_loop()
         if (!data) continue;
 
         /* Get transform */
-        const struct matrix4 mat = superobject_matrix_global(mesh->superobject);
+        const tdstMatrix4D mat = superobject_matrix_global(mesh->superobject);
         uniform.model = GameToMetalMatrix(mat);
         uniform.normal_matrix = matrix3x3_upper_left(uniform.model);
 
@@ -640,8 +640,8 @@ void graphics_loop()
 //    {
 //        superobject_for_each(father_sector, subsector)
 //        {
-//            struct vector4 color = vector4_new(1.0f, 0.5f, 0.1f, 0.25f);
-//            extern struct superobject* viewed_sector;
+//            tdstVector4D color = vector4_new(1.0f, 0.5f, 0.1f, 0.25f);
+//            extern tdstSuperObject* viewed_sector;
 //            if (subsector == viewed_sector) color = vector4_new(0.0f, 1.0f, 0.75f, 0.25f);
 //            RenderOctrees(subsector, color, renderEncoder);
 //        };
@@ -652,8 +652,8 @@ void graphics_loop()
 //    extern struct xray xray;
 //    for (int i = 0; i < xray.n_points; i++)
 //    {
-//        const struct vector3 point = vector3_host_byteorder(*xray.pointset[i]);
-//        const struct vector4 vertexT = vector4_mul_matrix4(vector4_new(point.x, point.y, point.z, 1.0f), T);
+//        const tdstVector3D point = vector3_host_byteorder(*xray.pointset[i]);
+//        const tdstVector4D vertexT = vector4_mul_matrix4(vector4_new(point.x, point.y, point.z, 1.0f), T);
 //
 //        draw_sphere(point, 0.1f, vector4_new(1.0f, 0.0f, 0.0f, 1.0f), renderEncoder);
 //
@@ -664,7 +664,7 @@ void graphics_loop()
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
         {
-            const struct actor* actor = (const struct actor*)superobject_data(object);
+            const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
             if (!actor) continue;
             
             /* The camera blocks the view; skip it. */
@@ -672,16 +672,16 @@ void graphics_loop()
             
             struct mesh_data* data = (struct mesh_data*)sphere_mesh->internal_data;
             
-            const struct transform* T = (const struct transform*)pointer(object->transform_global);
-            const struct matrix4 mat = ( matrix4_host_byteorder(T->matrix));
-            struct vector3 pos = game_matrix4_position(mat);
+            const tdstTransform* T = (const tdstTransform*)pointer(object->transform_global);
+            const tdstMatrix4D mat = ( matrix4_host_byteorder(T->matrix));
+            tdstVector3D pos = game_matrix4_position(mat);
             
             //printf("matrix: %X\n", offset(&T->matrix));
             
-//            const struct dynam* dynam = (const struct dynam*)actor_dynam(actor);
+//            const tdstDynam* dynam = (const tdstDynam*)actor_dynam(actor);
 //            if (dynam)
 //            {
-//                const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
+//                const tdstDynamics* dynamics = (const tdstDynamics*)pointer(dynam->dynamics);
 //                if (dynamics)
 //                {
 //                    pos = vector3_add(pos, vector3_host_byteorder(dynamics->advanced.wall_normal));
@@ -732,13 +732,13 @@ void graphics_loop()
     {
         superobject_for_each_type(superobject_type_actor, superobject_first_child(hierarchy), object)
         {
-            const struct actor* actor = (const struct actor*)superobject_data(object);
+            const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
             if (!actor) continue;
 
-            const struct actor_collideset* collset = (const struct actor_collideset*)actor_collset(actor);
+            const tdstCollideSet* collset = (const tdstCollideSet*)actor_collset(actor);
             if (!collset) continue;
             
-            const struct zdx_list* zddlist = (const struct zdx_list*)pointer(collset->zde_list);
+            const tdstZdxList* zddlist = (const tdstZdxList*)pointer(collset->zde_list);
             //printf("zdd list: %X\n", offset(&zddlist->list));
             if (zddlist)
             {
@@ -747,7 +747,7 @@ void graphics_loop()
                     pointer* zonesetptr = (pointer*)pointer(zddlist->list.first);
                     if (zonesetptr)
                     {
-                        const struct collide_object* obj = (const struct collide_object*)pointer(*zonesetptr);
+                        const tdstCollideObject* obj = (const tdstCollideObject*)pointer(*zonesetptr);
                         if (obj)
                         {
                             //printf("zdd list: %X\n", offset(obj));
@@ -760,13 +760,13 @@ void graphics_loop()
                     }
                     
 //                    const pointer* zddoffset = ((pointer*)pointer(zddlist->first_element)) + i;
-//                    const struct collide_object* zdd = (const struct collide_object*)zddoffset;
+//                    const tdstCollideObject* zdd = (const tdstCollideObject*)zddoffset;
 //                    if (zdd)
 //                    {
 //                        printf("list: %X, %d\n", offset(zdd), host_byteorder_16(zdd->n_elements));
 //                    }
 
-                    //struct collide_object* zdd = (struct collide_object*)(*list);
+                    //tdstCollideObject* zdd = (tdstCollideObject*)(*list);
 //                    if (zdd)
 //                    {
 //                        for (unsigned int e = 0; e < host_byteorder_16(zdd->n_elements); e++)

@@ -5,7 +5,7 @@
 //  Created by Jba03 on 2023-03-06.
 //
 
-#include "script.h"
+#include "stTreeInterpret.h"
 #include "tables.h"
 
 #include <stdio.h>
@@ -22,7 +22,7 @@
     sprintf(tok->string, __VA_ARGS__); \
     tok->node = Node; \
     tok->offset = 0; \
-    if (Node) tok->offset = (int)(((struct script_node*)Node) - t->tree); \
+    if (Node) tok->offset = (int)(((tdstNodeInterpret*)Node) - t->tree); \
     t->n_tokens++; \
 }
 
@@ -383,8 +383,8 @@ static void translate_childnode(struct translation* t, int child)
     unsigned min = t->current->depth;
     unsigned occ = 0;
     
-    struct script_node* orig = t->current;
-    struct script_node* node = orig + 1;
+    tdstNodeInterpret* orig = t->current;
+    tdstNodeInterpret* node = orig + 1;
     while (!IsEndOfTree(node) && node->depth > min)
     {
         if (node->depth == min + 1 && occ++ == child)
@@ -403,9 +403,9 @@ static void translate_branch(struct translation* t, bool args)
 {
     unsigned depth = t->current->depth + 1;
     
-    struct script_node* orig = t->current;
-    struct script_node* node = orig + 1;
-    struct script_node* last = NULL;
+    tdstNodeInterpret* orig = t->current;
+    tdstNodeInterpret* node = orig + 1;
+    tdstNodeInterpret* last = NULL;
     while (!IsEndOfTree(node) && node->depth >= depth)
     {
         if (node->depth == depth)
@@ -434,18 +434,18 @@ static void translate_branch(struct translation* t, bool args)
 }
 
 /** script_node_translate: translate a script into readable text */
-struct translation* script_node_translate(const struct script_node* tree)
+struct translation* script_node_translate(const tdstNodeInterpret* tree)
 {
     if (!tree) return -1;
-//    struct script_node* tree = (struct script_node*)pointer(script->tree);
+//    tdstNodeInterpret* tree = (tdstNodeInterpret*)pointer(script->tree);
 //    if (!tree) return NULL;
     
     unsigned N = 0;
-    struct script_node* dup = tree;
+    tdstNodeInterpret* dup = tree;
     while (!IsEndOfTree(dup++)) N++;
     
     /* Duplicate the tree, so platform memory stays unmodified. */
-    dup = (struct script_node*)malloc(sizeof *tree * (N+1));
+    dup = (tdstNodeInterpret*)malloc(sizeof *tree * (N+1));
     memcpy(dup, tree, sizeof *tree * (N+1));
     
     struct translation* t = malloc(sizeof *t);
@@ -462,9 +462,9 @@ struct translation* script_node_translate(const struct script_node* tree)
 }
 
 /** script_translate: translate a script into readable text */
-struct translation* script_translate(const struct script* script)
+struct translation* script_translate(const tdstTreeInterpret* script)
 {
-    const struct script_node* tree = pointer(script->tree);
+    const tdstNodeInterpret* tree = pointer(script->tree);
     return script_node_translate(tree);
 }
 

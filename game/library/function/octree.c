@@ -5,12 +5,12 @@
 //  Created by Jba03 on 2023-03-04.
 //
 
-#include "octree.h"
+#include "stOctree.h"
 #include "intersect.h"
 #include "game.h"
 
-static void octree_node_select(struct octree_node* node,
-                            struct octree_node** selected,
+static void octree_node_select(tdstOctreeNode* node,
+                            tdstOctreeNode** selected,
                             int *n_selected,
                             float *st,
                             float t)
@@ -35,11 +35,11 @@ static void octree_node_select(struct octree_node* node,
 }
 
 /* octree_traverse_line_segment: traverse an octree with a line segment. AB is a vector from point A.  */
-void octree_traverse_line_segment(const struct octree_node* node,
-                                  const struct matrix4 octree_transform,
-                                  const struct vector3 A,
-                                  const struct vector3 AB,
-                                  struct octree_node** selected,
+void octree_traverse_line_segment(const tdstOctreeNode* node,
+                                  const tdstMatrix4D octree_transform,
+                                  const tdstVector3D A,
+                                  const tdstVector3D AB,
+                                  tdstOctreeNode** selected,
                                   int *n_selected,
                                   float *st)
 {
@@ -47,10 +47,10 @@ void octree_traverse_line_segment(const struct octree_node* node,
     
     float t;
     
-    struct vector3 min = vector3_host_byteorder(node->min);
-    struct vector3 max = vector3_host_byteorder(node->max);
-    struct vector4 min4 = vector4_mul_matrix4(vector4_new(min.x, min.y, min.z, 1.0f), octree_transform);
-    struct vector4 max4 = vector4_mul_matrix4(vector4_new(max.x, max.y, max.z, 1.0f), octree_transform);
+    tdstVector3D min = vector3_host_byteorder(node->min);
+    tdstVector3D max = vector3_host_byteorder(node->max);
+    tdstVector4D min4 = vector4_mul_matrix4(vector4_new(min.x, min.y, min.z, 1.0f), octree_transform);
+    tdstVector4D max4 = vector4_mul_matrix4(vector4_new(max.x, max.y, max.z, 1.0f), octree_transform);
     min = vector3_new(min4.x, min4.y, min4.z);
     max = vector3_new(max4.x, max4.y, max4.z);
     
@@ -61,14 +61,14 @@ void octree_traverse_line_segment(const struct octree_node* node,
         {
             for (int i = 0; i < 8; i++)
             {
-                const struct octree_node* node = (const struct octree_node*)pointer(*(childlist + i));
+                const tdstOctreeNode* node = (const tdstOctreeNode*)pointer(*(childlist + i));
                 octree_traverse_line_segment(node, octree_transform, A, AB, selected, n_selected, st);
             }
         }
         else
         {
             const pointer* face_indices = pointer(node->face_indices);
-            if (face_indices) octree_node_select((struct octree_node*)node, selected, n_selected, st, t);
+            if (face_indices) octree_node_select((tdstOctreeNode*)node, selected, n_selected, st, t);
         }
     }
 }

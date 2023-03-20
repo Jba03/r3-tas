@@ -12,9 +12,13 @@
 
 struct memory { const uint8_t* base, *tmp; } extern memory;
 
+#include "stEngineStructure.h"
+#include "stSuperobject.h"
+#include "stEngineObject.h"
+#include "stRandom.h"
 #include "structure.h"
 #include "array.h"
-#include "input.h"
+#include "stInputStructure.h"
 #include "fix.h"
 #include "lvl.h"
 
@@ -27,21 +31,21 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #define GCN_POINTER_RND         0x00436924
 #define GCN_POINTER_CINEMANAGER 0x003E9760
 
-extern struct engine* engine;
-extern struct superobject* hierarchy;
-extern struct superobject* dynamic_world;
-extern struct superobject* inactive_dynamic_world;
-extern struct superobject* father_sector;
-extern struct input_structure* input_struct;
-extern struct rnd* rnd;
+extern tdstEngineStructure* engine;
+extern tdstSuperObject* hierarchy;
+extern tdstSuperObject* dynamic_world;
+extern tdstSuperObject* inactive_dynamic_world;
+extern tdstSuperObject* father_sector;
+extern tdstInputStructure* input_struct;
+extern tdstRandom* rnd;
 extern struct fix fix;
 extern struct lvl lvl;
 
-extern struct actor* actor_rayman;
-extern struct actor* actor_camera;
-extern struct actor* actor_global;
-extern struct actor* actor_world;
-extern struct actor* actor_changemap;
+extern tdstEngineObject* actor_rayman;
+extern tdstEngineObject* actor_camera;
+extern tdstEngineObject* actor_global;
+extern tdstEngineObject* actor_world;
+extern tdstEngineObject* actor_changemap;
 
 /* */
 extern uint8_t previous_engine_mode;
@@ -55,24 +59,24 @@ extern struct inputstructure
 {
     struct
     {
-        struct { struct input_entry *x, *y; } main;
-        struct { struct input_entry *x, *y; } c;
+        struct { tdstInputEntryElement *x, *y; } main;
+        struct { tdstInputEntryElement *x, *y; } c;
     } stick;
     
     struct
     {
-        struct input_entry* a;
-        struct input_entry* b;
-        struct input_entry* x;
-        struct input_entry* y;
-        struct input_entry* z;
-        struct input_entry* l;
-        struct input_entry* r;
-        struct input_entry* S;
-        struct input_entry* L;
-        struct input_entry* U;
-        struct input_entry* D;
-        struct input_entry* R;
+        tdstInputEntryElement* a;
+        tdstInputEntryElement* b;
+        tdstInputEntryElement* x;
+        tdstInputEntryElement* y;
+        tdstInputEntryElement* z;
+        tdstInputEntryElement* l;
+        tdstInputEntryElement* r;
+        tdstInputEntryElement* S;
+        tdstInputEntryElement* L;
+        tdstInputEntryElement* U;
+        tdstInputEntryElement* D;
+        tdstInputEntryElement* R;
     } button;
 } input;
 
@@ -80,7 +84,7 @@ void level_read(void);
 
 uint32 color_table_index(unsigned idx);
 
-uint32 actor_color(const struct actor* actor);
+uint32 actor_color(const tdstEngineObject* actor);
 
 void game_memory_dump(void);
 

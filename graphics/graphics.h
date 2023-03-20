@@ -9,7 +9,7 @@
 #define graphics_h
 
 //#include "vector3.h"
-#include "vector4.h"
+#include "stVector4D.h"
 #include "mesh.h"
 
 struct visualobject2
@@ -20,7 +20,7 @@ struct visualobject2
     unsigned int* indices;
     unsigned int n_indices;
     
-    struct vector4 sphere_position;
+    tdstVector4D sphere_position;
 };
 
 void graphics_init(void);
@@ -33,13 +33,13 @@ void graphics_unload(void);
 
 void graphics_set_viewport(int width, int height);
 
-void graphics_draw_box(struct vector3 position, struct vector3 scale, struct vector3 rotation, struct vector4 color);
+void graphics_draw_box(tdstVector3D position, tdstVector3D scale, tdstVector3D rotation, tdstVector4D color);
 
-void graphics_draw_line(struct vector3 start, struct vector3 end);
+void graphics_draw_line(tdstVector3D start, tdstVector3D end);
 
-void graphics_draw_triangle(struct vector3 a, struct vector3 b, struct vector3 c);
+void graphics_draw_triangle(tdstVector3D a, tdstVector3D b, tdstVector3D c);
 
-void graphics_draw_sphere(struct vector3 center, const float radius, struct vector4 color);
+void graphics_draw_sphere(tdstVector3D center, const float radius, tdstVector4D color);
 
 int graphics_shader_id(void);
 

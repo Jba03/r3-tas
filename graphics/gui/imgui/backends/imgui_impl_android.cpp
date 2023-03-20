@@ -26,7 +26,7 @@
 #include <map>
 #include <queue>
 #include <android/native_window.h>
-#include <android/input.h>
+#include <android/stInputStructure.h>
 #include <android/keycodes.h>
 #include <android/log.h>
 

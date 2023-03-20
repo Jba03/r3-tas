@@ -20,6 +20,6 @@ EXTERNC void gui_render_callback(void* ctx);
 
 EXTERNC void gui_render_game(void* xfb_texture);
 
-EXTERNC void superobject_info(struct superobject* so);
+EXTERNC void superobject_info(void* so);
 
 #endif /* gui_hpp */

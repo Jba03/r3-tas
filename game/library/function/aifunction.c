@@ -6,7 +6,7 @@
 //
 
 #include "game.h"
-#include "engine.h"
+#include "stEngineStructure.h"
 
 #include <stdio.h>
 

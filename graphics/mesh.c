@@ -102,7 +102,7 @@ struct mesh *mesh_sphere(const float sectors, const float stacks)
     sphere->vertices = malloc(sizeof(struct vertex) * sphere->n_vertices * 3);
     sphere->indices = malloc(sizeof(unsigned) * sphere->n_indices);
     
-    //sphere->vertices[1].position = struct vector3_new(0.0f, 10.0f, 0.0f);
+    //sphere->vertices[1].position = tdstVector3D_new(0.0f, 10.0f, 0.0f);
     
     int vertex = 0;
     for (int i = 0; i <= stacks; ++i)

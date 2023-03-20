@@ -4,8 +4,8 @@
 #ifndef intcpa_h
 #define intcpa_h
 
-#include "script.h"
-#include "dsg.h"
+#include "stTreeInterpret.h"
+#include "stDsg.h"
 #include "structure.h"
 #include "game.h"
 
@@ -45,11 +45,11 @@ typedef void (*intcpa_userfunc)(struct intcpa* intr);
 
 struct intcpa
 {
-    struct script_node* original_tree;
+    tdstNodeInterpret* original_tree;
     /* script node tree */
-    struct script_node* tree;
+    tdstNodeInterpret* tree;
     /* currently interpreted node */
-    struct script_node* current;
+    tdstNodeInterpret* current;
     /* in assign mode? */
     bool assign;
     /* global frame counter randomizer */
@@ -57,10 +57,10 @@ struct intcpa
     /* is the interpreter finished? */
     bool finished;
     /* return stack */
-    struct script_node* rstack[intcpa_rstack_size];
+    tdstNodeInterpret* rstack[intcpa_rstack_size];
     unsigned rsp;
     /* current macro, if any */
-    struct macro* macro;
+    tdstMacro* macro;
     
     /* user callbacks */
     intcpa_userfunc function[intcpa_n_functions];
@@ -86,16 +86,16 @@ struct intcpa
 #define ulval(nd)   *((uint32_t*)&nd->param)
 #define rval(nd)    host_byteorder_f32((nd)->param)
 
-static inline struct script_node* intcpa_advance(struct intcpa* intr);
-static inline struct script_node* intcpa_current(struct intcpa* intr);
-static inline void intcpa_open(struct intcpa* intr, struct script_node* tree, struct intcpa_param* param);
+static inline tdstNodeInterpret* intcpa_advance(struct intcpa* intr);
+static inline tdstNodeInterpret* intcpa_current(struct intcpa* intr);
+static inline void intcpa_open(struct intcpa* intr, tdstNodeInterpret* tree, struct intcpa_param* param);
 static inline void intcpa_close(struct intcpa* intr);
 
 // Find next node whose depth is lower or same as that of the current.
-static inline struct script_node* intcpa_find_next(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_find_next(struct intcpa* intr)
 {
-    struct script_node* test = intr->current;
-    struct script_node* next = intr->current + 1;
+    tdstNodeInterpret* test = intr->current;
+    tdstNodeInterpret* next = intr->current + 1;
     while (!IsEndOfTree(next) && !(next->depth <= test->depth)) next++;
     return next; // The node will be found at prefetch.
 }
@@ -108,9 +108,9 @@ static inline void intcpa_seek_next(struct intcpa* intr)
 
 #pragma mark - Keyword
 
-static inline struct script_node* intcpa_keyword(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_keyword(struct intcpa* intr)
 {
-    struct script_node* keyword = intr->current - 1;
+    tdstNodeInterpret* keyword = intr->current - 1;
     
     if (keyword->param >= 0 && keyword->param <= 13) // If, IfNot, IfX, IfNotX
     {
@@ -118,7 +118,7 @@ static inline struct script_node* intcpa_keyword(struct intcpa* intr)
         // After the keyword comes the keyword's condition, which does not
         // necessarily need to be a condition node, but can also be dsgvars or
         // operators, assuming the result can be treated as a condition.
-        struct script_node *condition = intcpa_advance(intr);
+        tdstNodeInterpret *condition = intcpa_advance(intr);
         // Parity for framerule-dependent conditional keywords
         unsigned par = intr->randomizer % (1 << (keyword->param - 1));
         
@@ -133,7 +133,7 @@ static inline struct script_node* intcpa_keyword(struct intcpa* intr)
             // Seek to `Then`
             intcpa_seek_next(intr);
             // Find `Else`, if any
-            struct script_node* else_node = intcpa_find_next(intr);
+            tdstNodeInterpret* else_node = intcpa_find_next(intr);
             if (else_node->type == script_node_type_keyword && else_node->param == 17)
                 // Change the parameter of the else statement, so we can skip it later.
                 // It is possible that the script node structure reserves some field for
@@ -161,9 +161,9 @@ static inline struct script_node* intcpa_keyword(struct intcpa* intr)
 
 #pragma mark - Condition
 
-static inline struct script_node* intcpa_condition(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_condition(struct intcpa* intr)
 {
-    struct script_node* condition = intr->current - 1;
+    tdstNodeInterpret* condition = intr->current - 1;
     
     #pragma mark Boolean condition
     if (condition->param >= 0 && condition->param <= 3)
@@ -177,8 +177,8 @@ static inline struct script_node* intcpa_condition(struct intcpa* intr)
     #pragma mark Comparison condition
     if (condition->param >= 4 && condition->param <= 9)
     {
-        struct script_node* A = op();
-        struct script_node* B = op();
+        tdstNodeInterpret* A = op();
+        tdstNodeInterpret* B = op();
         
         float x = 0.0f;
         float y = 0.0f;
@@ -225,15 +225,15 @@ static inline struct script_node* intcpa_condition(struct intcpa* intr)
 
 #pragma mark - Operator
 
-static inline struct script_node* intcpa_operator(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_operator(struct intcpa* intr)
 {
-    struct script_node* op = intr->current - 1;
+    tdstNodeInterpret* op = intr->current - 1;
     
     #pragma mark Add, subtract, multiply, divide
     if (op->param <= 3)
     {
-        struct script_node* A = op();
-        struct script_node* B = op();
+        tdstNodeInterpret* A = op();
+        tdstNodeInterpret* B = op();
         
         #define arithmeticOP(t,a) \
         if (op->param == t && A->type == 12 && B->type == 12) op->param = lval(A) a lval(B); \
@@ -250,7 +250,7 @@ static inline struct script_node* intcpa_operator(struct intcpa* intr)
     #pragma mark Negate
     if (op->param == 4)
     {
-        struct script_node* A = op();
+        tdstNodeInterpret* A = op();
         if (A->type == 12) op->param = -lval(A);
         if (A->type == 13) *((float*)&op->param) = -rval(A);
     }
@@ -258,23 +258,23 @@ static inline struct script_node* intcpa_operator(struct intcpa* intr)
     #pragma mark Modulo
     if (op->param == 5)
     {
-        struct script_node* A = op();
-        struct script_node* B = op();
+        tdstNodeInterpret* A = op();
+        tdstNodeInterpret* B = op();
         if (A->type == 12 && B->type == 12) op->param = lval(A) % lval(B);
     }
     
     #pragma mark Affect and assign
     if (op->param >= 6 && op->param <= 11)
     {
-        struct script_node* A = op();
-        struct script_node* B = op();
+        tdstNodeInterpret* A = op();
+        tdstNodeInterpret* B = op();
     }
     
     #pragma mark Assign
     if (op->param == 12)
     {
-        struct script_node* A = op();
-        struct script_node* B = op();
+        tdstNodeInterpret* A = op();
+        tdstNodeInterpret* B = op();
         
         if (intr->dsg.Write)
         {
@@ -294,9 +294,9 @@ static inline struct script_node* intcpa_operator(struct intcpa* intr)
 
 #pragma mark - Function
 
-static inline struct script_node* intcpa_function(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_function(struct intcpa* intr)
 {
-    struct script_node* function = intr->current - 1;
+    tdstNodeInterpret* function = intr->current - 1;
     
     if (function->param < intcpa_n_functions)
     {
@@ -316,9 +316,9 @@ static inline struct script_node* intcpa_function(struct intcpa* intr)
 
 #pragma mark - Reference
 
-static inline struct script_node* intcpa_dsgvarref(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_dsgvarref(struct intcpa* intr)
 {
-    struct script_node* dsgvar = intr->current - 1;
+    tdstNodeInterpret* dsgvar = intr->current - 1;
     
     uint32_t type = 0;
     void* data = NULL;
@@ -388,26 +388,26 @@ static inline struct script_node* intcpa_dsgvarref(struct intcpa* intr)
 
 #pragma mark - Vector
 
-static inline struct script_node* intcpa_vector(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_vector(struct intcpa* intr)
 {
-    struct script_node* vector = intr->current - 1;
+    tdstNodeInterpret* vector = intr->current - 1;
     // Assume each vector has only three components.
-    struct script_node* nx = op();
-    struct script_node* ny = op();
-    struct script_node* nz = op();
+    tdstNodeInterpret* nx = op();
+    tdstNodeInterpret* ny = op();
+    tdstNodeInterpret* nz = op();
     
     return vector;
 }
 
 #pragma mark - Subroutine
 
-static inline struct script_node* intcpa_subroutine(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_subroutine(struct intcpa* intr)
 {
-    struct script_node* subroutine = intr->current - 1;
+    tdstNodeInterpret* subroutine = intr->current - 1;
     
-    struct macro* macro = (struct macro*)pointer(host_byteorder_32(subroutine->param));
+    tdstMacro* macro = (tdstMacro*)pointer(host_byteorder_32(subroutine->param));
     // Fetch initial tree
-    struct script_node* tree_initial = (struct script_node*)doublepointer(macro->script_initial);
+    tdstNodeInterpret* tree_initial = (tdstNodeInterpret*)doublepointer(macro->script_initial);
     
     if (macro && tree_initial)
     {
@@ -416,7 +416,7 @@ static inline struct script_node* intcpa_subroutine(struct intcpa* intr)
         // Push the tree root onto the stack
         intr->rstack[intr->rsp++] = intr->tree;
         // Push the macro onto the stack
-        intr->rstack[intr->rsp++] = (struct script_node*)macro;
+        intr->rstack[intr->rsp++] = (tdstNodeInterpret*)macro;
         // Push the current node onto the stack
         intr->rstack[intr->rsp++] = intr->current;
         
@@ -432,9 +432,9 @@ static inline struct script_node* intcpa_subroutine(struct intcpa* intr)
 
 #pragma mark - Endtree
 
-static inline struct script_node* intcpa_endtree(struct intcpa* intr)
+static inline tdstNodeInterpret* intcpa_endtree(struct intcpa* intr)
 {
-    struct script_node* endtree = intr->current - 1;
+    tdstNodeInterpret* endtree = intr->current - 1;
     // Close the current script and free it if necessary
     //intcpa_close(intr);
     
@@ -445,7 +445,7 @@ static inline struct script_node* intcpa_endtree(struct intcpa* intr)
         // Return to the current node
         intr->current = intr->rstack[--intr->rsp];
         // Pop tree off the stack
-        intr->macro = (struct macro*)intr->rstack[--intr->rsp];
+        intr->macro = (tdstMacro*)intr->rstack[--intr->rsp];
         // Pop tree off the stack
         intr->tree = intr->rstack[--intr->rsp];
         // Pop original tree off the stack
@@ -465,14 +465,14 @@ static inline struct script_node* intcpa_endtree(struct intcpa* intr)
     return endtree;
 }
 
-INTCPA static inline struct script_node* intcpa_advance(struct intcpa* intr)
+INTCPA static inline tdstNodeInterpret* intcpa_advance(struct intcpa* intr)
 {
     if (intr->finished) return intr->current - 1;
     
     printf("advance: %X!\n", intr->current->type);
     
-    struct script_node* branch_root = intr->current;
-    struct script_node* branch_entry = fetch();
+    tdstNodeInterpret* branch_root = intr->current;
+    tdstNodeInterpret* branch_entry = fetch();
     
     switch (branch_root->type)
     {
@@ -505,20 +505,20 @@ INTCPA static inline struct script_node* intcpa_advance(struct intcpa* intr)
     return intr->current - 1;
 }
 
-INTCPA static inline struct script_node* intcpa_current(struct intcpa* intr)
+INTCPA static inline tdstNodeInterpret* intcpa_current(struct intcpa* intr)
 {
     return intcpa_advance(intr) - 1;
 };
 
-INTCPA static inline void intcpa_open(struct intcpa* intr, struct script_node* tree, struct intcpa_param* param)
+INTCPA static inline void intcpa_open(struct intcpa* intr, tdstNodeInterpret* tree, struct intcpa_param* param)
 {
     intr->original_tree = tree;
     
     if (intr->i_opt.mirror)
     {
         /* Copy the original tree into an internal buffer. */
-        unsigned int L = tree_length(tree) * sizeof(struct script_node);
-        intr->tree = (struct script_node*)malloc(L);
+        unsigned int L = tree_length(tree) * sizeof(tdstNodeInterpret);
+        intr->tree = (tdstNodeInterpret*)malloc(L);
         memcpy(intr->tree, tree, L);
     }
     else
@@ -528,7 +528,7 @@ INTCPA static inline void intcpa_open(struct intcpa* intr, struct script_node* t
     }
     
     // Convert node byteorder
-    struct script_node* cc = intr->tree;
+    tdstNodeInterpret* cc = intr->tree;
     while (!IsEndOfTree(cc))
     {
         cc->param = host_byteorder_32(cc->param);
@@ -547,9 +547,9 @@ INTCPA static inline void intcpa_close(struct intcpa* intr)
 
 #pragma mark - Interface
 
-INTCPA static struct intcpa* intcpa_interpreter_create(struct intcpa_param* param, struct script* scpt)
+INTCPA static struct intcpa* intcpa_interpreter_create(struct intcpa_param* param, tdstTreeInterpret* scpt)
 {
-    struct script_node* original_tree = (struct script_node*)pointer(scpt->tree);
+    tdstNodeInterpret* original_tree = (tdstNodeInterpret*)pointer(scpt->tree);
     if (!original_tree)
         return NULL;
     
@@ -568,7 +568,7 @@ INTCPA static struct intcpa* intcpa_interpreter_create(struct intcpa_param* para
     memset(&intr->condition, 0, sizeof(intcpa_userfunc) * intcpa_n_conditions);
     memset(&intr->function, 0, sizeof(intcpa_userfunc) * intcpa_n_functions);
     memset(&intr->dsg, 0, sizeof intr->dsg);
-    memset(&intr->rstack, 0, sizeof(struct script_node*) * intcpa_rstack_size);
+    memset(&intr->rstack, 0, sizeof(tdstNodeInterpret*) * intcpa_rstack_size);
     
     intcpa_open(intr, original_tree, param);
     

@@ -5,10 +5,10 @@
 //  Created by Jba03 on 2022-12-08.
 //
 
-#include "dsg.h"
-#include "mind.h"
-#include "brain.h"
-#include "physical_object.h"
+#include "stDsg.h"
+#include "stMind.h"
+#include "stBrain.h"
+#include "stPhysicalObject.h"
 
 #include <sstream>
 #include <iomanip>
@@ -80,7 +80,7 @@ static std::string fmt_float(void* offset) { std::stringstream s; s << std::setp
 
 static std::string fmt_vector(void* offset)
 {
-    struct vector3 v = *(struct vector3*)(offset);
+    tdstVector3D v = *(tdstVector3D*)(offset);
     uint32_t ix = host_byteorder_32(*(uint32_t*)&v.x);
     uint32_t iy = host_byteorder_32(*(uint32_t*)&v.y);
     uint32_t iz = host_byteorder_32(*(uint32_t*)&v.z);
@@ -98,10 +98,10 @@ static std::string fmt_vector(void* offset)
 
 static std::string fmt_actor(void* offset)
 {
-    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+    const tdstSuperObject* so = (const tdstSuperObject*)pointer(*(address*)offset);
     if (!so) return "NULL";
     
-    const struct actor* actor = (const struct actor*)superobject_data(so);
+    const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(so);
     if (!actor) return "NULL";
     
     const char* name = actor_name(actor_instance_name, actor);
@@ -110,17 +110,17 @@ static std::string fmt_actor(void* offset)
     return std::string(name ? name : "NULL");
 }
 
-static std::string fmt_sector(const struct superobject* offset)
+static std::string fmt_sector(const tdstSuperObject* offset)
 {
-    const struct sector* sct = (const struct sector*)superobject_data(offset);
+    const tdstSector* sct = (const tdstSector*)superobject_data(offset);
     if (!sct) return "NULL";
     
     return std::string(sct->name);
 }
 
-static std::string fmt_ipo(const struct superobject* offset)
+static std::string fmt_ipo(const tdstSuperObject* offset)
 {
-    const struct ipo* ipo = (const struct ipo*)superobject_data(offset);
+    const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(offset);
     if (!ipo) return "NULL";
     
     return std::string(ipo->name);
@@ -128,7 +128,7 @@ static std::string fmt_ipo(const struct superobject* offset)
 
 static std::string fmt_superobject(void* offset)
 {
-    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+    const tdstSuperObject* so = (const tdstSuperObject*)pointer(*(address*)offset);
     if (!so) return "NULL";
     const char* name = superobject_name(so);
     return name ? name : "NULL";
@@ -138,7 +138,7 @@ static std::string fmt_superobject_array(void* offset)
 {
     //printf("spo array: %X\n", offset(offset));
     
-//    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+//    const tdstSuperObject* so = (const tdstSuperObject*)pointer(*(address*)offset);
 //    if (!so) return "NULL";
     
     return "NULL";
@@ -147,13 +147,13 @@ static std::string fmt_superobject_array(void* offset)
 static std::string fmt_actor_array(void* offset)
 {
     //printf("actor array: %X\n", offset(offset));
-//    const struct superobject* so = (const struct superobject*)pointer(*(address*)offset);
+//    const tdstSuperObject* so = (const tdstSuperObject*)pointer(*(address*)offset);
 //    if (!so) return "NULL";
     
     return "NULL";
 }
 
-static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buffer)
+static std::string dsgvar_fmt(const tdstDsgVarInfo* info, const uint8_t* buffer)
 {
     void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
     
@@ -183,9 +183,9 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
 }
 
 //static bool display_dsg_info = false;
-//static struct DSGVariableInfo dsg_display_var;
+//static tdstDsgVariableInfo dsg_display_var;
 //static int dsg_display_var_id = 0;
-//static struct Actor* dsg_display_actor;
+//static tdstEngineObject* dsg_display_actor;
 //
 //static void display_dsg_editor()
 //{
@@ -197,24 +197,24 @@ static std::string dsgvar_fmt(const struct dsgvar_info* info, const uint8_t* buf
 //    ImGui::End();
 //}
 
-static void* actor_dsgvar(struct actor* actor, unsigned var)
+static void* actor_dsgvar(tdstEngineObject* actor, unsigned var)
 {
     if (!actor) return NULL;
     
-    const struct brain* brain = (const struct brain*)actor_brain(actor);
+    const tdstBrain* brain = (const tdstBrain*)actor_brain(actor);
     if (!brain) return NULL;
     
-    const struct mind* mind = (const struct mind*)pointer(brain->mind);
+    const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
     if (!mind) return NULL;
     
-    const struct dsgmem* dsgmem = (const struct dsgmem*)pointer(mind->dsgmemory);
+    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgmemory);
     if (!dsgmem) return NULL;
     
-    const struct dsgvar* dsgvars = (const struct dsgvar*)doublepointer(dsgmem->dsgvars);
+    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgvars);
     if (!dsgvars) return NULL;
         
     const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
-    const struct dsgvar_info* info = (const struct dsgvar_info*)pointer(dsgvars->info) + var;
+    const tdstDsgVarInfo* info = (const tdstDsgVarInfo*)pointer(dsgvars->info) + var;
     if (!info) return NULL;
     
     void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
@@ -222,24 +222,24 @@ static void* actor_dsgvar(struct actor* actor, unsigned var)
     return data;
 }
 
-static void display_actor_dsg(struct actor* actor, bool initial = false)
+static void display_actor_dsg(tdstEngineObject* actor, bool initial = false)
 {
-    const struct brain* brain = (const struct brain*)actor_brain(actor);
+    const tdstBrain* brain = (const tdstBrain*)actor_brain(actor);
     if (!brain) return;
     
-    const struct mind* mind = (const struct mind*)pointer(brain->mind);
+    const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
     if (!mind) return;
     
-    const struct dsgmem* dsgmem = (const struct dsgmem*)pointer(mind->dsgmemory);
+    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgmemory);
     if (!dsgmem) return;
     
-    const struct dsgvar* dsgvars = (const struct dsgvar*)doublepointer(dsgmem->dsgvars);
+    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgvars);
     if (!dsgvars) return;
         
     const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
     for (unsigned int var = 0; var < dsgvars->info_length; var++)
     {        
-        const struct dsgvar_info* info = (const struct dsgvar_info*)pointer(dsgvars->info) + var;
+        const tdstDsgVarInfo* info = (const tdstDsgVarInfo*)pointer(dsgvars->info) + var;
         
         const uint32_t type = host_byteorder_32(info->type);
         //const uint8_t* data = buffer + host_byteorder_32(info->mem_offset);
@@ -264,11 +264,11 @@ static void display_actor_dsg(struct actor* actor, bool initial = false)
     
     
     
-//    struct DSGMemory* mem = actor->brain->mind->dsg;
+//    tdstDsgMemory* mem = actor->brain->mind->dsg;
 //
 //    for (int i = 0; i < mem->n_variables; i++)
 //    {
-//        struct DSGVariableInfo var = mem->current[i];
+//        tdstDsgVariableInfo var = mem->current[i];
 //        var.type_id += 1;
 //
 //        std::string fmt = "";

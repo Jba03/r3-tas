@@ -6,14 +6,14 @@
 //
 
 #include "game.h"
-#include "stdgame.h"
+#include "stStandardGameInfo.h"
 #include "log.h"
-#include "rnd.h"
-#include "engine.h"
-#include "brain.h"
-#include "mind.h"
-#include "intelligence.h"
-#include "dsg.h"
+#include "stRandom.h"
+#include "stEngineStructure.h"
+#include "stBrain.h"
+#include "stMind.h"
+#include "stIntelligence.h"
+#include "stDsg.h"
 #include "fix.h"
 #include "lvl.h"
 //#include "vector3.h"
@@ -27,19 +27,19 @@ struct memory memory;
 #pragma mark - Globals
 
 /* Engine structure */
-struct engine* engine = NULL;
+tdstEngineStructure* engine = NULL;
 /* Superobject hierarchy */
-struct superobject* hierarchy = NULL;
+tdstSuperObject* hierarchy = NULL;
 /* Dynamic world: the world in which active game objects reside */
-struct superobject* dynamic_world = NULL;
+tdstSuperObject* dynamic_world = NULL;
 /* Inactive dynamic world: the world in which non-loaded objects reside */
-struct superobject* inactive_dynamic_world = NULL;
+tdstSuperObject* inactive_dynamic_world = NULL;
 /* Father sector: sector in which all collision geometry is stored */
-struct superobject* father_sector = NULL;
+tdstSuperObject* father_sector = NULL;
 /* Input structure: global input data table */
-struct input_structure* input_struct = NULL;
+tdstInputStructure* input_struct = NULL;
 /* RND: random number device */
-struct rnd* rnd = NULL;
+tdstRandom* rnd = NULL;
 /* FIX: fixed memory */
 struct fix fix;
 /* LVL: level memory */
@@ -47,11 +47,11 @@ struct lvl lvl;
 
 #pragma mark - Important actors
 
-struct actor* actor_rayman = NULL;
-struct actor* actor_camera = NULL;
-struct actor* actor_global = NULL;
-struct actor* actor_world = NULL;
-struct actor* actor_changemap = NULL;
+tdstEngineObject* actor_rayman = NULL;
+tdstEngineObject* actor_camera = NULL;
+tdstEngineObject* actor_global = NULL;
+tdstEngineObject* actor_world = NULL;
+tdstEngineObject* actor_changemap = NULL;
 
 #pragma mark - Engine
 
@@ -119,11 +119,11 @@ uint32 color_table_index(unsigned idx)
     return color_table[idx % 9];
 }
 
-uint32 actor_color(const struct actor* actor)
+uint32 actor_color(const tdstEngineObject* actor)
 {
     if (!actor) return 0x80808080;
     
-    const struct standard_game_info* stdgame = pointer(actor->stdgame);
+    const tdstStandardGameInfo* stdgame = pointer(actor->stdgame);
     if (!stdgame) return 0x80808080;
     
     unsigned n = host_byteorder_32(stdgame->family_type);

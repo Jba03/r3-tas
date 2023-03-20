@@ -8,32 +8,32 @@
 #ifndef ray_h
 #define ray_h
 
-#include "vector2.h"
-#include "vector3.h"
-#include "matrix4.h"
+#include "stVector2D.h"
+#include "stVector3D.h"
+#include "stMatrix4D.h"
 
 #define RAY
 
 struct ray
 {
-    struct vector3 origin;
-    struct vector3 direction;
+    tdstVector3D origin;
+    tdstVector3D direction;
 };
 
-RAY static inline struct ray raycast(const struct vector2 coord, const struct matrix4 projection, const struct matrix4 view, const float near, const float far)
+RAY static inline struct ray raycast(const tdstVector2D coord, const tdstMatrix4D projection, const tdstMatrix4D view, const float near, const float far)
 {
     struct ray ray;
     
-    const matrix4 combined = matrix4_mul(projection, view);
-    const matrix4 inverse = matrix4_inverse(combined);
+    const tdstMatrix4D combined = matrix4_mul(projection, view);
+    const tdstMatrix4D inverse = matrix4_inverse(combined);
 
-    const struct vector4 a = vector4_new(coord.x, coord.y, -1.0f, 1.0f);
-    const struct vector4 p1 = vector4_mulf(a, near);
-    const struct vector2 xy = vector2_mulf(coord, far - near);
+    const tdstVector4D a = vector4_new(coord.x, coord.y, -1.0f, 1.0f);
+    const tdstVector4D p1 = vector4_mulf(a, near);
+    const tdstVector2D xy = vector2_mulf(coord, far - near);
     
-    const struct vector4 p2 = vector4_new(xy.x, xy.y, far + near, far - near);
-    const struct vector4 origin = vector4_mul_matrix4(p1, inverse);
-    const struct vector4 direction = vector4_mul_matrix4(p2, inverse);
+    const tdstVector4D p2 = vector4_new(xy.x, xy.y, far + near, far - near);
+    const tdstVector4D origin = vector4_mul_matrix4(p1, inverse);
+    const tdstVector4D direction = vector4_mul_matrix4(p2, inverse);
     
     ray.origin = vector3_new(origin.x, origin.y, origin.z);
     ray.direction = vector3_new(direction.x, direction.y, direction.z);
@@ -41,14 +41,14 @@ RAY static inline struct ray raycast(const struct vector2 coord, const struct ma
     return ray;
 }
 
-RAY static inline bool ray_triangle_intersection(const struct ray ray, const struct vector3 A, const struct vector3 B, const struct vector3 C, float* t)
+RAY static inline bool ray_triangle_intersection(const struct ray ray, const tdstVector3D A, const tdstVector3D B, const tdstVector3D C, float* t)
 {
     #define EPSILON 1e-6
     #define CULLING 1
     
-    struct vector3 E1 = vector3_sub(B, A);
-    struct vector3 E2 = vector3_sub(C, A);
-    struct vector3 H = vector3_cross(ray.direction, E2);
+    tdstVector3D E1 = vector3_sub(B, A);
+    tdstVector3D E2 = vector3_sub(C, A);
+    tdstVector3D H = vector3_cross(ray.direction, E2);
     
     const double det = vector3_dot(E1, H);
     const double invdet = 1.0f / det;
@@ -58,11 +58,11 @@ RAY static inline bool ray_triangle_intersection(const struct ray ray, const str
     if (fabs(det) < EPSILON) return false;
 #endif
     
-    const struct vector3 S = vector3_sub(ray.origin, A);
+    const tdstVector3D S = vector3_sub(ray.origin, A);
     const double u = vector3_dot(S, H) * invdet;
     if (u < 0.0f || u > 1.0f) return false;
     
-    const struct vector3 Q = vector3_cross(S, E1);
+    const tdstVector3D Q = vector3_cross(S, E1);
     const double v = vector3_dot(ray.direction, Q) * invdet;
     if (v < 0.0f || u + v > 1.0f) return false;
     

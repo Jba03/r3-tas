@@ -11,14 +11,14 @@ extern "C" const char* (*get_config_path)(void);
 static void record_input()
 {
     /* Write */
-    fwrite(input_struct, sizeof(struct input_structure), 1, recording_file);
+    fwrite(input_struct, sizeof(tdstInputStructure), 1, recording_file);
     ++recording_frame;
 }
 
 static void playback_input()
 {
     ++recording_frame;
-    if (fread(input_struct, sizeof(struct input_structure), 1, recording_file) == 0 || recording_frame == n_frames)
+    if (fread(input_struct, sizeof(tdstInputStructure), 1, recording_file) == 0 || recording_frame == n_frames)
     {
         is_playback = false;
         recording_frame = 0;
@@ -41,7 +41,7 @@ static void display_recording_tool(bool *display)
         ImGui::Spacing();
         
         if (!is_recording && !is_playback) ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.0f, 1.0f), "Status: Not recording");
-        if (is_recording) ImGui::TextColored(ImVec4(0.1f, 0.5f, 1.0f, 1.0f), "Recording frame %d (%.3fmb)", recording_frame, (recording_frame * sizeof(struct input_structure)) / 10e+5);
+        if (is_recording) ImGui::TextColored(ImVec4(0.1f, 0.5f, 1.0f, 1.0f), "Recording frame %d (%.3fmb)", recording_frame, (recording_frame * sizeof(tdstInputStructure)) / 10e+5);
         if (is_playback && host_byteorder_32(engine->timer.frame) < start_at) ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "%d", host_byteorder_32(engine->timer.frame) - start_at);
         if (is_playback) ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Playing back frame (%d / %d)", recording_frame, n_frames);
         

@@ -1,6 +1,6 @@
-#include "matrix4.h"
+#include "stMatrix4D.h"
 
-static void display_matrix4(struct matrix4 matrix, ImVec4 color)
+static void display_matrix4(tdstMatrix4D matrix, ImVec4 color)
 {
     ImGui::PushStyleColor(ImGuiCol_Text, color);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));

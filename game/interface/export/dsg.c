@@ -1,20 +1,20 @@
 #include "global.h"
-#include "engine.h"
+#include "stEngineStructure.h"
 
 #include <sys/stat.h>
 
 extern const char* (*get_config_path)(void);
 
-static void export(struct SuperObject* so, void* param)
+static void export(tdstSuperObject* so, void* param)
 {
     if (!so) return;
-    struct Actor* actor = so->data;
+    tdstEngineObject* actor = so->data;
     if (!actor->brain) return;
-    struct Brain* brain = actor->brain;
+    tdstBrain* brain = actor->brain;
     if (!brain->mind) return;
-    struct Mind* mind = brain->mind;
+    tdstMind* mind = brain->mind;
     if (!mind->dsg) return;
-    struct DSGMemory* mem = mind->dsg;
+    tdstDsgMemory* mem = mind->dsg;
     
     char path[1024];
     memset(path, 0, 1024);
@@ -24,7 +24,7 @@ static void export(struct SuperObject* so, void* param)
     
     for (int i = 0; i < mem->n_variables; i++)
     {
-        struct DSGVariableInfo var = mem->current[i];
+        tdstDsgVariableInfo var = mem->current[i];
         fwrite(&var.offset, sizeof(uint32_t), 1, fp);
         fwrite(&var.type_id, sizeof(uint32_t), 1, fp);
         //fwrite(&var.data_offset, sizeof(uint32_t), 1, fp);
@@ -82,7 +82,7 @@ static void export(struct SuperObject* so, void* param)
                 
             case DSGVAR_TYPE_VECTOR:
             {
-                struct vector3 value = struct vector3_read(var.data_offset);
+                tdstVector3D value = tdstVector3D_read(var.data_offset);
                 fwrite(&value.x, 1, sizeof(float), fp);
                 fwrite(&value.y, 1, sizeof(float), fp);
                 fwrite(&value.z, 1, sizeof(float), fp);

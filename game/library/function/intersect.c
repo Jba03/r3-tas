@@ -12,7 +12,7 @@
 
 #define square(v) ((v) * (v))
 
-static const float vectorindex(const struct vector3 v, unsigned i)
+static const float vectorindex(const tdstVector3D v, unsigned i)
 {
     if (i == 0) return v.x;
     if (i == 1) return v.y;
@@ -20,7 +20,7 @@ static const float vectorindex(const struct vector3 v, unsigned i)
     return 0.0f;
 }
 
-static const uint8 planecrossing(const struct vector3 A, const struct vector3 AB, const struct vector3 bmin, const struct vector3 bmax, float t, int8 face)
+static const uint8 planecrossing(const tdstVector3D A, const tdstVector3D AB, const tdstVector3D bmin, const tdstVector3D bmax, float t, int8 face)
 {
     unsigned i1 = 0;
     unsigned i2 = 0;
@@ -77,13 +77,13 @@ static const uint8 planecrossing(const struct vector3 A, const struct vector3 AB
 }
 
 /** intersect_box_point: test if point lies in box */
-bool intersect_box_point(const struct vector3 bmin, const struct vector3 bmax, const struct vector3 p)
+bool intersect_box_point(const tdstVector3D bmin, const tdstVector3D bmax, const tdstVector3D p)
 {
     return (p.x >= bmin.x && p.x <= bmax.x) && (p.y >= bmin.y && p.y <= bmax.y) && (p.z >= bmin.z && p.z <= bmax.z);
 }
 
 /** intersect_box_point_facetest: check on which box face the point lies outside of */
-unsigned intersect_box_point_facetest(const struct vector3 bmin, const struct vector3 bmax, const struct vector3 point)
+unsigned intersect_box_point_facetest(const tdstVector3D bmin, const tdstVector3D bmax, const tdstVector3D point)
 {
     unsigned mask = box_face_none;
     point.x < bmin.x ? (mask |= box_face_x_min) : (point.x > bmax.x ? (mask |= box_face_x_max) : 0);
@@ -93,12 +93,12 @@ unsigned intersect_box_point_facetest(const struct vector3 bmin, const struct ve
 }
 
 /** intersect_box_line_segment: intersect box with line segment. AB is the offset from A. */
-bool intersect_box_line_segment(const struct vector3 bmin, const struct vector3 bmax, const struct vector3 A, const struct vector3 AB, float *t)
+bool intersect_box_line_segment(const tdstVector3D bmin, const tdstVector3D bmax, const tdstVector3D A, const tdstVector3D AB, float *t)
 {
     unsigned mA;
     unsigned mB;
     unsigned mXYZ;
-    struct vector3 B = vector3_add(A, AB);
+    tdstVector3D B = vector3_add(A, AB);
     
     /* Test if any of the points are inside the box.  */
     mA = intersect_box_point_facetest(bmin, bmax, A);
@@ -138,8 +138,8 @@ bool intersect_box_line_segment(const struct vector3 bmin, const struct vector3 
 }
 
 /** intersect_box_box: box and box intersection test */
-bool intersect_box_box(const struct vector3 a_min, const struct vector3 a_max,
-                       const struct vector3 b_min, const struct vector3 b_max)
+bool intersect_box_box(const tdstVector3D a_min, const tdstVector3D a_max,
+                       const tdstVector3D b_min, const tdstVector3D b_max)
 {
     return max(a_min.x, b_min.x) <= min(a_max.x, b_max.x) &&
            max(a_min.y, b_min.y) <= min(a_max.y, b_max.y) &&
@@ -147,8 +147,8 @@ bool intersect_box_box(const struct vector3 a_min, const struct vector3 a_max,
 }
 
 /** intersect_sphere_box: sphere and box intersection test */
-bool intersect_sphere_box(const struct vector3 c, const float r,
-                          const struct vector3 bmin, const struct vector3 bmax)
+bool intersect_sphere_box(const tdstVector3D c, const float r,
+                          const tdstVector3D bmin, const tdstVector3D bmax)
 {
     float d = 0.0f;
     
@@ -163,8 +163,8 @@ bool intersect_sphere_box(const struct vector3 c, const float r,
 }
 
 /** intersect_sphere_sphere: sphere and sphere intersection test */
-bool intersect_sphere_sphere(const struct vector3 ca, const float ra,
-                             const struct vector3 cb, const float rb)
+bool intersect_sphere_sphere(const tdstVector3D ca, const float ra,
+                             const tdstVector3D cb, const float rb)
 {
     return square(vector3_length(vector3_sub(ca, cb))) <= square(ra + rb);
 }

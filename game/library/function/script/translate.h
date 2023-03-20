@@ -9,7 +9,7 @@
 #define translate_h
 
 #include "tables.h"
-#include "script.h"
+#include "stTreeInterpret.h"
 #include <string.h>
 
 #endif /* translate_h */

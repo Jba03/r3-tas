@@ -9,10 +9,10 @@
 #define xray_h
 
 #include "structure.h"
-#include "superobject.h"
-#include "actor.h"
-#include "sector.h"
-#include "octree.h"
+#include "stSuperObject.h"
+#include "stEngineObject.h"
+#include "stSector.h"
+#include "stOctree.h"
 
 #define XRAY_MAX_OBJECTS   256
 #define XRAY_MAX_ROUTES     16
@@ -22,13 +22,13 @@
 struct xray_node
 {
     /* node's position */
-    struct vector3 position;
+    tdstVector3D position;
     /* normal of the node */
-    struct vector3 normal;
+    tdstVector3D normal;
     /* for transformation of the node */
-    struct superobject* superobject;
+    tdstSuperObject* superobject;
     /* the sector this node belongs to */
-    struct superobject* sector;
+    tdstSuperObject* sector;
     
     /* node parent */
     struct xray_node* parent;
@@ -53,27 +53,27 @@ struct xray_node
 struct xray_route
 {
     /* source point */
-    struct vector3 source;
+    tdstVector3D source;
     /* destination point */
-    struct vector3 destination;
+    tdstVector3D destination;
     
     /* number of octree nodes */
     int n_octree_nodes;
     /* list of route octree nodes */
-    const struct octree_node* octree[XRAY_MAX_OCTREE_NODES];
+    const tdstOctreeNode* octree[XRAY_MAX_OCTREE_NODES];
     /* list of ipos that contain above octrees at the same indices */
-    const struct superobject* octree_ipo[XRAY_MAX_OCTREE_NODES];
+    const tdstSuperObject* octree_ipo[XRAY_MAX_OCTREE_NODES];
     
 
     
     /* current target, null if none */
-    //struct superobject* target;
+    //tdstSuperObject* target;
 };
 
 struct xray_line
 {
-    struct vector4 a;
-    struct vector4 b;
+    tdstVector4D a;
+    tdstVector4D b;
 };
 
 struct xray
@@ -83,7 +83,7 @@ struct xray
     
     int n_points;
     int n_lines;
-    struct vector3 pointset[65536 * 4];
+    tdstVector3D pointset[65536 * 4];
     struct xray_line lines[10000];
     
     int n_nodes;
@@ -103,7 +103,7 @@ struct xray_output
 void xray_init(struct xray* h);
 
 /** xray_analyse: analyse the scene and generate an optimal route to the specified destination. */
-void xray_analyse(struct xray* h, const struct vector3 destination);
+void xray_analyse(struct xray* h, const tdstVector3D destination);
 
 void xray_frame(struct xray* h, struct xray_output* output);
 

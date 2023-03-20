@@ -1,9 +1,9 @@
 #ifndef lvl_h
 #define lvl_h
 
-#include "list.h"
-#include "object_type.h"
-#include "always.h"
+#include "stLinkedList.h"
+#include "stObjectType.h"
+#include "stAlways.h"
 
 struct lvl_header
 {
@@ -20,8 +20,8 @@ struct lvl_section_a
     readonly pointer inactive_dynamic_world;
     readonly pointer father_sector;
     readonly pointer first_submap_position;
-    readonly struct always always_structure;
-    readonly struct object_type_structure object_type;
+    readonly tdstAlways always_structure;
+    readonly tdstObjectType object_type;
 };
 
 struct lvl

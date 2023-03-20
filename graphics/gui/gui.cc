@@ -16,21 +16,20 @@
 extern "C"
 {
     #include "game.h"
-    #include "engine.h"
-    #include "engine_timer.h"
-    #include "rnd.h"
+    #include "stEngineStructure.h"
+    #include "stEngineTimer.h"
+    #include "stRandom.h"
     #include "configuration.h"
-    #include "vector3.h"
-    #include "vector2.h"
-    #include "stdgame.h"
-    #include "sector.h"
+    #include "stVector3D.h"
+    #include "stStandardGameInfo.h"
+    #include "stSector.h"
     #include "graphics.h"
     #include "export.h"
-    #include "script.h"
-    #include "collideset.h"
+    #include "stTreeInterpret.h"
+    #include "stCollideSet.h"
     #include "geometry.h"
-    #include "dynamics.h"
-    #include "camera.h"
+    #include "stDynamics.h"
+    #include "stCameraGLI.h"
     #include "xray.h"
 }
 
@@ -131,27 +130,27 @@ static void draw_rayman_info()
 {
     if (actor_rayman)
     {
-        const struct dynam* dynam = actor_dynam(actor_rayman);
+        const tdstDynam* dynam = actor_dynam(actor_rayman);
         if (!dynam) return;
         
-        const struct dynamics* dynamics = (const struct dynamics*)pointer(dynam->dynamics);
+        const tdstDynamics* dynamics = (const tdstDynamics*)pointer(dynam->dynamics);
         if (!dynamics) return;
         
-        const vector3 previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
+        const tdstVector3D previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
         const float speed_x = previousSpeed.x;
         const float speed_y = previousSpeed.y;
         const float speed_h = sqrt(speed_x * speed_x + speed_y * speed_y);
         const float speed_z = previousSpeed.z;
         const float gravity = host_byteorder_f32(*(float32*)&dynamics->base.gravity);
         
-        const struct superobject* ray = (const struct superobject*)actor_superobject(actor_rayman);
+        const tdstSuperObject* ray = (const tdstSuperObject*)actor_superobject(actor_rayman);
         if (!ray) return;
         
-        const struct transform* T_ray = (const struct transform*)pointer(ray->transform_global);
+        const tdstTransform* T_ray = (const tdstTransform*)pointer(ray->transform_global);
         if (T_ray)
         {
-            const matrix4 M_ray = matrix4_host_byteorder(T_ray->matrix); // Player matrix
-            const vector3 P_ray = game_matrix4_position(M_ray); // Player position
+            const tdstMatrix4D M_ray = matrix4_host_byteorder(T_ray->matrix); // Player matrix
+            const tdstVector3D P_ray = game_matrix4_position(M_ray); // Player position
             
             float time = (float)host_byteorder_32(engine->timer.timer_count_delta) / 1000.0f;
             
@@ -230,12 +229,12 @@ static void draw_rayman_info()
             
             if (T_ray)
             {
-                const matrix4 M_ray = matrix4_host_byteorder(T_ray->matrix); // Player matrix
-                const vector3 P_ray = game_matrix4_position(M_ray); // Player position
-                const struct superobject* current_sector = sector_by_location(father_sector, P_ray);
+                const tdstMatrix4D M_ray = matrix4_host_byteorder(T_ray->matrix); // Player matrix
+                const tdstVector3D P_ray = game_matrix4_position(M_ray); // Player position
+                const tdstSuperObject* current_sector = sector_by_location(father_sector, P_ray);
                 if (current_sector)
                 {
-                    const struct sector* sect = (const struct sector*)superobject_data(current_sector);
+                    const tdstSector* sect = (const tdstSector*)superobject_data(current_sector);
                     if (sect) ImGui::Text("Current sector: %s", sector_name(sect));
                 }
             }
@@ -446,7 +445,7 @@ static void draw_hierarchy(ImVec2 pos)
     }
 }
 
-static void draw_hierarchy_list(const struct superobject* root)
+static void draw_hierarchy_list(const tdstSuperObject* root)
 {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5.0f, 5.0f));
@@ -457,10 +456,10 @@ static void draw_hierarchy_list(const struct superobject* root)
     int i = 0;
     superobject_for_each_type(superobject_type_actor, root, object)
     {
-        const struct actor* actor = (const struct actor*)superobject_data(object);
+        const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
         if (!actor) continue;
         
-        const struct standard_game_info* stdgame = (const struct standard_game_info*)pointer(actor->stdgame);
+        const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
         if (!stdgame) return;
         
         /* Get actor instance name, or model name if spawnable actor */
@@ -543,7 +542,7 @@ extern "C" void gui_render_callback(void* ctx)
     if (ImGui::Button("Initialize"))
     {
         memset(xray.nodes, 0, 200000 * sizeof(struct xray_node));
-        memset(xray.pointset, 0, 65536 * 4 * sizeof(struct vector3));
+        memset(xray.pointset, 0, 65536 * 4 * sizeof(tdstVector3D));
         xray.n_points = 0;
         xray.n_nodes = 0;
         xray_init(&xray);
@@ -560,8 +559,8 @@ extern "C" void gui_render_callback(void* ctx)
     ImVec2 sz = ImGui::GetWindowSize();
     ImDrawList* drawlist = ImGui::GetBackgroundDrawList();
         
-    const struct vector3 playerposition = game_matrix4_position(actor_matrix(actor_rayman));
-//    const struct vector3 speed = vector3_add(playerposition, actor_speed(actor_rayman));
+    const tdstVector3D playerposition = game_matrix4_position(actor_matrix(actor_rayman));
+//    const tdstVector3D speed = vector3_add(playerposition, actor_speed(actor_rayman));
 //
 //    ImVec4 r = project_world_coordinate(playerposition);
 //    ImVec4 spd = project_world_coordinate(speed);
@@ -620,7 +619,7 @@ extern "C" void gui_render_callback(void* ctx)
         if (screen_projections_draw) ProjectSuperobjectPositions(dynamic_world);
         if (screen_projections_ipos) ProjectSuperobjectPositions(father_sector);
         
-        const struct superobject* sector = sector_by_location(father_sector, actor_position(actor_rayman));
+        const tdstSuperObject* sector = sector_by_location(father_sector, actor_position(actor_rayman));
         if (level_geometry_draw) DrawLevelGeometry(level_geometry_draw_all_sectors ? father_sector : sector);
         
     }
@@ -670,26 +669,26 @@ extern "C" void gui_render_callback(void* ctx)
     
 //    #pragma mark IPO closest vertex
 //    {
-//        extern struct vector3 sphere_pos;
+//        extern tdstVector3D sphere_pos;
 //        extern int n_triangles;
 //        extern struct triangle* triangles;
 //        
 //        ImGui::SetNextWindowPos(ImVec2(400,50));
 //        ImGui::Begin("Calculate nearest point");
-//        struct superobject* soo;
-//        const struct ipo* ipo = ipo_find("IPO:IPO_w_e_clairiere", father_sector, &soo);
+//        tdstSuperObject* soo;
+//        const tdstInstantiatedPhysicalObject* ipo = ipo_find("IPO:IPO_w_e_clairiere", father_sector, &soo);
 //        ImGui::Text("IPO: %X\n", offset(ipo));
-//        static struct vector3 pointa = {};
-//        const struct matrix4 T = actor_matrix(actor_rayman);
+//        static tdstVector3D pointa = {};
+//        const tdstMatrix4D T = actor_matrix(actor_rayman);
 //        if (actor_rayman)
 //        {
-//            const struct physical_object* po = (const struct physical_object*)pointer(ipo->physical_object);
+//            const struct tdstPhysicalObject* po = (const struct tdstPhysicalObject*)pointer(ipo->tdstPhysicalObject);
 //            if (!po) goto skip;
 //            
-//            const struct physical_collideset* collset = (const struct physical_collideset*)pointer(po->physical_collideset);
+//            const tdstPhysicalCollideSet* collset = (const tdstPhysicalCollideSet*)pointer(po->physical_collideset);
 //            if (!collset) goto skip;
 //            
-//            const struct collide_object* zdr = (const struct collide_object*)pointer(collset->zdr);
+//            const tdstCollideObject* zdr = (const tdstCollideObject*)pointer(collset->zdr);
 //            if (!zdr) goto skip;
 //            
 //            //n_triangles = collide_object_triangles_combined(zdr, matrix4_identity, &triangles);
@@ -708,20 +707,20 @@ extern "C" void gui_render_callback(void* ctx)
         extern bool line_of_sight(struct xray *h, struct xray_node *a, struct xray_node *b);
         
         extern float st[OCTREE_MAX_SELECTED_NODES];
-        extern struct octree_node* selected_nodes[OCTREE_MAX_SELECTED_NODES];
+        extern tdstOctreeNode* selected_nodes[OCTREE_MAX_SELECTED_NODES];
         extern int n_selected_nodes;
         
         n_selected_nodes = 0;
         memset(st, 0, sizeof(float) * OCTREE_MAX_SELECTED_NODES);
-        memset(selected_nodes, 0, sizeof(struct octree_node*) * OCTREE_MAX_SELECTED_NODES);
+        memset(selected_nodes, 0, sizeof(tdstOctreeNode*) * OCTREE_MAX_SELECTED_NODES);
             
         struct xray_node a;
         a.position = actor_position(actor_rayman);
-        a.sector = (struct superobject*)sector_by_location(father_sector, a.position);
+        a.sector = (tdstSuperObject*)sector_by_location(father_sector, a.position);
         
         struct xray_node b;
         b.position = actor_position(actor_find(actor_instance_name, "BEN_Box2", dynamic_world));
-        b.sector = (struct superobject*)sector_by_location(father_sector, b.position);
+        b.sector = (tdstSuperObject*)sector_by_location(father_sector, b.position);
         
         ImGui::Text("Line of sight: %s", line_of_sight(&xray, &a, &b) ? "true" : "false");
     }

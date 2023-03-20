@@ -5,21 +5,21 @@
 //  Created by Jba03 on 2023-03-06.
 //
 
-#include "intelligence.h"
-#include "superobject.h"
-#include "mind.h"
-#include "script.h"
+#include "stIntelligence.h"
+#include "stSuperObject.h"
+#include "stMind.h"
+#include "stTreeInterpret.h"
 
 struct intcpa
 {
-    struct superobject* actor;
+    tdstSuperObject* actor;
     /* Mind of current actor */
-    struct mind* mind;
+    tdstMind* mind;
 };
 
 #define advance() intcpa_tree(h);
 //
-//struct script_node *intcpa_tree(struct intcpa *h)
+//tdstNodeInterpret *intcpa_tree(struct intcpa *h)
 //{
 //
 //}

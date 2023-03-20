@@ -6,40 +6,40 @@
 //
 
 #include "xray.h"
-#include "dynamics.h"
-#include "collide_object.h"
-#include "octree.h"
-#include "ipo.h"
+#include "stDynamics.h"
+#include "stCollideObject.h"
+#include "stOctree.h"
+#include "stInstantiatedPhysicalObject.h"
 #include "game.h"
 #include "ray.h"
 
 #include <stdio.h>
 
-static const struct vector3 xray_player_pos()
+static const tdstVector3D xray_player_pos()
 {
-    const struct matrix4 T = actor_matrix(actor_rayman);
+    const tdstMatrix4D T = actor_matrix(actor_rayman);
     return game_matrix4_position(T);
 }
 
-static const struct vector3 xray_get_destination(struct xray* h)
+static const tdstVector3D xray_get_destination(struct xray* h)
 {
     return vector3_new(0.0f, 0.0f, 0.0f);
 }
 
 static bool xray_player_grounded()
 {
-    const struct dynamics* dynamics = actor_dynamics(actor_rayman);
+    const tdstDynamics* dynamics = actor_dynamics(actor_rayman);
     return dynamics_collide_with(dynamics, dynamics_obstacle_ground);
 }
 
-static struct collide_object* xray_nearest_platform()
+static tdstCollideObject* xray_nearest_platform()
 {
     
     
     return NULL;
 }
 
-static struct octree_node* xray_current_octree_node(struct xray* h)
+static tdstOctreeNode* xray_current_octree_node(struct xray* h)
 {
     
     
@@ -69,23 +69,23 @@ static struct xray_route* xray_route_alloc(struct xray* h)
 #pragma mark - Route octree
 
 /* xray_recursive_find_octrees: find appropriate octree nodes */
-static void xray_route_recursive_get_octrees(struct xray* h, struct superobject* root)
+static void xray_route_recursive_get_octrees(struct xray* h, tdstSuperObject* root)
 {
     struct xray_route* route = h->current_route;
     
     if (superobject_type(root) == superobject_type_ipo)
     {
-        const struct ipo* ipo = superobject_data(root);
+        const tdstInstantiatedPhysicalObject* ipo = superobject_data(root);
         if (!ipo) return;
         
         /* Get the reaction zone */
-        const struct collide_object* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = ipo_collide_object(ipo);
         if (zdr)
         {
-            const struct octree* octree = pointer(zdr->octree);
+            const tdstOctree* octree = pointer(zdr->octree);
             if (octree)
             {
-                const struct octree_node* node = pointer(octree->root);
+                const tdstOctreeNode* node = pointer(octree->root);
                 if (node)
                 {
                     route->octree[route->n_octree_nodes] = node;
@@ -107,8 +107,8 @@ static void xray_route_get_octrees(struct xray* h)
     struct xray_route* route = h->current_route;
     
     route->n_octree_nodes = 0;
-    memset(route->octree, 0, sizeof(struct octree_node*) * XRAY_MAX_OCTREE_NODES);
-    memset(route->octree_ipo, 0, sizeof(struct superobject*) * XRAY_MAX_OCTREE_NODES);
+    memset(route->octree, 0, sizeof(tdstOctreeNode*) * XRAY_MAX_OCTREE_NODES);
+    memset(route->octree_ipo, 0, sizeof(tdstSuperObject*) * XRAY_MAX_OCTREE_NODES);
     
     xray_route_recursive_get_octrees(h, father_sector);
 }
@@ -120,12 +120,12 @@ static const float xray_node_distance(struct xray_node* a, struct xray_node* b)
 
 #pragma mark - Route pointset
 
-static const struct superobject* current_sector = NULL;
+static const tdstSuperObject* current_sector = NULL;
 
-static void xray_line_generate_points(struct xray *h, const struct vector3 a, const struct vector3 b)
+static void xray_line_generate_points(struct xray *h, const tdstVector3D a, const tdstVector3D b)
 {
-    const struct vector3 AB = vector3_sub(b, a);
-    const struct vector3 ABn = vector3_normalize(AB);
+    const tdstVector3D AB = vector3_sub(b, a);
+    const tdstVector3D ABn = vector3_normalize(AB);
     const float l = vector3_length(AB);
     
     #define S 2.0f
@@ -142,32 +142,32 @@ static void xray_line_generate_points(struct xray *h, const struct vector3 a, co
     #undef S
 }
 
-static void xray_recursive_derive_pointset(struct xray* h, const struct superobject* root, const struct matrix4 transform, struct xray_node* start, struct xray_node* end, const float z)
+static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject* root, const tdstMatrix4D transform, struct xray_node* start, struct xray_node* end, const float z)
 {
     int mesh_index = 0;
-    const struct collide_mesh* mesh = NULL;
+    const tdstCollideElementIndexedTriangles* mesh = NULL;
     
-    const struct matrix4 T = matrix4_mul(superobject_matrix_global(root), transform);
+    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(root), transform);
     
     if (superobject_type(root) == superobject_type_sector)
         current_sector = root;
     
     if (superobject_type(root) == superobject_type_ipo)
     {
-        const struct ipo* ipo = superobject_data(root);
+        const tdstInstantiatedPhysicalObject* ipo = superobject_data(root);
         if (!ipo) return;
         
         printf("IPO: %s\n", ipo_name(ipo));
         /* Get the reaction zone */
-        const struct collide_object* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = ipo_collide_object(ipo);
         if (zdr)
         {
             while ((mesh = collide_object_mesh(zdr, mesh_index)))
             {
                 printf("\tmesh %d: %d faces\n", mesh_index, host_byteorder_16(mesh->n_faces));
                 const uint16* indices = (const uint16*)pointer(mesh->face_indices);
-                const struct vector3* vertices = (const struct vector3*)pointer(zdr->vertices);
-                const struct vector3* normals = (const struct vector3*)pointer(mesh->normals);
+                const tdstVector3D* vertices = (const tdstVector3D*)pointer(zdr->vertices);
+                const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
                 
                 for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
                 {
@@ -175,20 +175,20 @@ static void xray_recursive_derive_pointset(struct xray* h, const struct superobj
                     uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
                     uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
                     
-                    struct vector3 A = vector3_host_byteorder(*(vertices + index * 3 + 0));
-                    struct vector3 B = vector3_host_byteorder(*(vertices + index * 3 + 1));
-                    struct vector3 C = vector3_host_byteorder(*(vertices + index * 3 + 2));
+                    tdstVector3D A = vector3_host_byteorder(*(vertices + index * 3 + 0));
+                    tdstVector3D B = vector3_host_byteorder(*(vertices + index * 3 + 1));
+                    tdstVector3D C = vector3_host_byteorder(*(vertices + index * 3 + 2));
                     
-                    const struct vector4 TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
-                    const struct vector4 TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
-                    const struct vector4 TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
+                    const tdstVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
+                    const tdstVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
+                    const tdstVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
                     
                     A = vector3_new(TA.x, TA.y, TA.z);
                     B = vector3_new(TB.x, TB.y, TB.z);
                     C = vector3_new(TC.x, TC.y, TC.z);
                     
-                    const struct vector3 center = vector3_new((A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f, (A.z + B.z + C.z) / 3.0f);
-                    struct vector3 N = vector3_host_byteorder(*(normals + index));
+                    const tdstVector3D center = vector3_new((A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f, (A.z + B.z + C.z) / 3.0f);
+                    tdstVector3D N = vector3_host_byteorder(*(normals + index));
                     
                     
                     //printf("normal: %.2f %.2f %.2f\n", N.x, N.y, N.z);
@@ -231,28 +231,28 @@ static void xray_recursive_derive_pointset(struct xray* h, const struct superobj
 
 struct ray rays[1024];
 int n_rays = 0;
-struct vector3 inters[1024];
+tdstVector3D inters[1024];
 
 /** Can node `a` be reached directly, by a straight line to node `b`? */
-static void line_of_sight_recursive(struct xray *h, const struct superobject* target, const struct matrix4 transform, struct xray_node *a, struct xray_node *b, bool *v)
+static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* target, const tdstMatrix4D transform, struct xray_node *a, struct xray_node *b, bool *v)
 {
     //printf("object: %X\n", offset(target));
     
     if (!target) return;
     
-    const struct matrix4 T = matrix4_mul(superobject_matrix_local(target), transform);
+    const tdstMatrix4D T = matrix4_mul(superobject_matrix_local(target), transform);
     
     if (superobject_type(target) == superobject_type_ipo)
     {
-        const struct ipo* ipo = superobject_data(target);
+        const tdstInstantiatedPhysicalObject* ipo = superobject_data(target);
         if (ipo)
         {
             /* Get the reaction zone */
-            const struct collide_object* zdr = ipo_collide_object(ipo);
+            const tdstCollideObject* zdr = ipo_collide_object(ipo);
             if (zdr)
             {
                 struct ray ray;
-                struct vector3 intersection_point = vector3_new(0.0f, 0.0f, 0.0f);
+                tdstVector3D intersection_point = vector3_new(0.0f, 0.0f, 0.0f);
                 if (collide_object_intersect_segment(zdr, T, a->position, b->position, &ray, &intersection_point))
                 {
                     *v = false;
@@ -263,8 +263,8 @@ static void line_of_sight_recursive(struct xray *h, const struct superobject* ta
                     //                    n_rays++;
                     
                     /* Check normal-offset nodes? */
-//                    const struct vector3 na = vector3_add(a->position, vector3_add(a->normal, vector3_new(0.0f, 0.0f, 0.1f)));
-//                    const struct vector3 nb = vector3_add(b->position, vector3_add(b->normal, vector3_new(0.0f, 0.0f, 0.1f)));
+//                    const tdstVector3D na = vector3_add(a->position, vector3_add(a->normal, vector3_new(0.0f, 0.0f, 0.1f)));
+//                    const tdstVector3D nb = vector3_add(b->position, vector3_add(b->normal, vector3_new(0.0f, 0.0f, 0.1f)));
 //                    if (collide_object_intersect_segment(zdr, T, na, nb, NULL))
 //                    {
 //                        *v = false;
@@ -284,12 +284,12 @@ static void line_of_sight_recursive(struct xray *h, const struct superobject* ta
 bool line_of_sight(struct xray *h, struct xray_node *a, struct xray_node *b)
 {
     memset(rays, 0, 1024 * sizeof(struct ray));
-    memset(inters, 0, sizeof(struct vector3) * 1024);
+    memset(inters, 0, sizeof(tdstVector3D) * 1024);
     n_rays = 0;
     
     /* Get the sectors to which the nodes belong. */
-    const struct superobject* sectorA = a->sector;
-    const struct superobject* sectorB = b->sector;
+    const tdstSuperObject* sectorA = a->sector;
+    const tdstSuperObject* sectorB = b->sector;
     
     bool v = true;
     if (sectorA != sectorB)
@@ -506,9 +506,9 @@ static void xray_gen_route_swim(struct xray* h)
 #pragma mark - xray
 
 /** xray_analyse: analyse the scene and generate an optimal route to the specified destination. */
-void xray_analyse(struct xray* h, const struct vector3 destination)
+void xray_analyse(struct xray* h, const tdstVector3D destination)
 {
-    const struct vector3 pos = xray_player_pos();
+    const tdstVector3D pos = xray_player_pos();
     
 }
 
@@ -580,8 +580,8 @@ void xray_init(struct xray* h)
     
     h->nodes[h->n_nodes++] = start;
     
-    const struct superobject* sectorStart = sector_by_location(father_sector, start.position);
-    const struct superobject* sectorEnd = sector_by_location(father_sector, end.position);
+    const tdstSuperObject* sectorStart = sector_by_location(father_sector, start.position);
+    const tdstSuperObject* sectorEnd = sector_by_location(father_sector, end.position);
     
     xray_recursive_derive_pointset(h, sectorStart, matrix4_identity, &start, &end, 0.75f);
     //if (sectorStart != sectorEnd) xray_derive_pointset(h, sectorEnd, 0.75f);
