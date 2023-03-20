@@ -5,6 +5,8 @@
 //  Created by Jba03 on 2022-11-22.
 //
 
+#if OPENGL
+
 #include "game.h"
 #include "graphics.h"
 #include "stCameraGLI.h"
@@ -416,5 +418,7 @@ void glmesh_destroy(struct glmesh *mesh)
     free(mesh);
 }
 
+
+#endif
 
 #endif

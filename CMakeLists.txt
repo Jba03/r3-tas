@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
 
 add_compile_definitions(LIBR3TAS_DIR="${CMAKE_BINARY_DIR}")
 
+# Include
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(common)
 include_directories(common/console)
@@ -25,43 +26,15 @@ include_directories(game/library/function/script)
 include_directories(game/library/structure)
 include_directories(game/script)
 
-add_library(r3-tas SHARED
-	main.c
-	
-	common/configuration.c
-	
-	game/library/function/actor.c
-	game/library/function/input.c
-	game/library/function/superobject.c
-	game/library/function/rnd.c
-	game/library/function/object_type.c
-	game/library/function/engine.c
-	game/library/function/aifunction.c
-	game/library/function/dynamics.c
-	game/library/function/intersect.c
-	game/library/function/ipo.c
-	game/library/function/sector.c
-	game/library/function/octree.c
-	game/library/function/collide_object.c
-	game/library/function/intelligence.c
-        game/library/function/intersect.c
-	game/library/function/script.c
+# Source files
+file(GLOB common "common/**.c")
+file(GLOB library "game/library/function/*.c")
+file(GLOB interface "game/interface/**.c")
+file(GLOB xray "game/interface/xray/**.c")
+file(GLOB gui "graphics/gui/gui.cc")
+file(GLOB imgui "graphics/gui/imgui/*.cpp")
 
-	game/interface/export.c
-	game/interface/game.c
-	game/interface/intfun.c
-        game/interface/xray/xray.c
-
-	graphics/gui/gui.cc
- 	#graphics/graphics.c
-	#graphics/mesh.c
-	graphics/gui/gui.cc
-
-	graphics/gui/imgui/imgui.cpp
-	graphics/gui/imgui/imgui_draw.cpp
-	graphics/gui/imgui/imgui_tables.cpp
-	graphics/gui/imgui/imgui_widgets.cpp
-)
+add_library(r3-tas SHARED main.c ${common} ${library} ${interface} ${xray} ${gui} ${imgui})
 
 set_property(TARGET r3-tas PROPERTY CXX_STANDARD 17)
 target_link_libraries(r3-tas ${SDL2_LIBRARIES})
