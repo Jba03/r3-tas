@@ -48,7 +48,7 @@ static void ReadDSG(struct intcpa* intr, pointer actor_address, unsigned var, ui
     
     if (*type <= n_dsgvar_types)
     {
-        const char* name = actor_name(actor_instance_name, actor);
+        const char* name = actor_name(actor_instance_name, actor, objectType);
         info(BOLD "Read dsgvar %s_%d @ %X (%d) from actor %s\n", dsgvar_typenames[*type], var, offset(*result), host_byteorder_32(*(uint32_t*)*result), name);
     }
         

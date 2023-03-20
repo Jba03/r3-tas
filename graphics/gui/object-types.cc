@@ -1,10 +1,10 @@
 static void display_object_types(bool *display)
 {
-    if (*display && lvl.section_a)
+    if (*display && objectType)
     {
-        tdstDoublyLinkedList family_list = lvl.section_a->object_type.family;
-        tdstDoublyLinkedList model_list = lvl.section_a->object_type.model;
-        tdstDoublyLinkedList instance_list = lvl.section_a->object_type.instance;
+        tdstDoublyLinkedList family_list = objectType->family;
+        tdstDoublyLinkedList model_list =  objectType->model;
+        tdstDoublyLinkedList instance_list = objectType->instance;
         
         if (!pointer(family_list.first) || !pointer(model_list.first) || !pointer(instance_list.first)) return;
         if ((int32)host_byteorder_32(family_list.n_entries) < 0) return;

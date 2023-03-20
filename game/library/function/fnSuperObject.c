@@ -31,9 +31,9 @@ const char* superobject_name(const tdstSuperObject* so)
     {
         case superobject_type_actor:
         {
-            const char* name = actor_name(actor_instance_name, data);
-            if (!name) name = actor_name(actor_model_name, data);
-            if (!name) name = actor_name(actor_family_name, data);
+            const char* name = actor_name(actor_instance_name, data, objectType);
+            if (!name) name = actor_name(actor_model_name, data, objectType);
+            if (!name) name = actor_name(actor_family_name, data, objectType);
             return name;
         }
             

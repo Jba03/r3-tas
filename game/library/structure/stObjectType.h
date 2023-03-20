@@ -26,7 +26,7 @@ struct stObjectType {
 #if USE_FUNCTIONS
 
 /** object_name_type: get the name of an object type with specified id */
-const char* object_type_name(int name_type, int id);
+const char* object_type_name(const tdstObjectType* objectType, int name_type, int id);
 
 #endif
 

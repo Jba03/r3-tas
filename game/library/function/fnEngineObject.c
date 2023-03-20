@@ -13,6 +13,7 @@
 #include "stStandardGameInfo.h"
 #include "stDynamics.h"
 #include "stDsg.h"
+#include "stObjectType.h"
 #include "game.h"
 
 #include <stdio.h>
@@ -160,7 +161,7 @@ const int actor_dsgvar(const tdstEngineObject* actor, unsigned var, int* type, v
 }
 
 /** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
-const char* actor_name(int name, const tdstEngineObject* actor)
+const char* actor_name(int name, const tdstEngineObject* actor, const tdstObjectType* objectType)
 {
     if (!actor) return NULL;
     
@@ -169,9 +170,9 @@ const char* actor_name(int name, const tdstEngineObject* actor)
     
     switch (name)
     {
-        case actor_family_name: return object_type_name(object_family_name, host_byteorder_32(stdgame->family_type));
-        case actor_model_name: return object_type_name(object_model_name, host_byteorder_32(stdgame->model_type));
-        case actor_instance_name: return object_type_name(object_instance_name, host_byteorder_32(stdgame->instance_type));
+        case actor_family_name: return object_type_name(objectType, object_family_name, host_byteorder_32(stdgame->family_type));
+        case actor_model_name: return object_type_name(objectType, object_model_name, host_byteorder_32(stdgame->model_type));
+        case actor_instance_name: return object_type_name(objectType, object_instance_name, host_byteorder_32(stdgame->instance_type));
     }
     
     return NULL;

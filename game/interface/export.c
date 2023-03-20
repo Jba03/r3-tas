@@ -74,7 +74,7 @@ static void export_behavior(tdstBehavior* behavior)
                         
                         tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
                         if (actor) {
-                            fprintf(fp, "\"%s\"", actor_name(actor_instance_name, actor));
+                            fprintf(fp, "\"%s\"", actor_name(actor_instance_name, actor, objectType));
                         }
                         continue;
                     }
@@ -151,8 +151,8 @@ void export_scripts(void)
         const tdstMacroList* macro_list = (const tdstMacroList*)pointer(aimodel->macrolist);
         
         /* Get actor instance name, or model name if spawnable actor */
-        const char* name = actor_name(actor_instance_name, actor);
-        if (!name) name = actor_name(actor_model_name, actor);
+        const char* name = actor_name(actor_instance_name, actor, objectType);
+        if (!name) name = actor_name(actor_model_name, actor, objectType);
         
         
         if (intelligence_list)

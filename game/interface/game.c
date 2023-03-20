@@ -6,17 +6,15 @@
 //
 
 #include "game.h"
-#include "stStandardGameInfo.h"
 #include "log.h"
+#include "stStandardGameInfo.h"
 #include "stRandom.h"
 #include "stEngineStructure.h"
+#include "stAlways.h"
 #include "stBrain.h"
 #include "stMind.h"
 #include "stIntelligence.h"
 #include "stDsg.h"
-#include "fix.h"
-#include "lvl.h"
-//#include "vector3.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,12 +36,63 @@ struct stSuperObject* inactive_dynamic_world = NULL;
 struct stSuperObject* father_sector = NULL;
 /* Input structure: global input data table */
 struct stInputStructure* input_struct = NULL;
+/* Always structure: always-active objects */
+struct stAlways* alwaysStructure = NULL;
+/* Object types: object types structure */
+struct stObjectType* objectType = NULL;
 /* RND: random number device */
 struct stRandom* rnd = NULL;
 /* FIX: fixed memory */
 struct fix fix;
 /* LVL: level memory */
 struct lvl lvl;
+
+#pragma mark - FIX
+
+struct fix_header {
+    padding(32)
+    readonly pointer identity_matrix;
+    readonly pointer localization_structure;
+    readonly uint32 level_name_count;
+    readonly uint32 demo_name_count;
+};
+
+struct fix_trailer {
+    readonly char8 first_level[30];
+    padding(2)
+    readonly uint32 language_count;
+    readonly uint32 language_offset;
+    readonly uint32 texture_count;
+};
+
+struct fix {
+    readonly struct fix_header* header;
+    readonly struct fix_trailer* trailer;
+};
+
+#pragma mark - LVL
+
+struct lvl_header {
+    padding(4 * 4) /* ? */
+    readonly char8 text[24];
+    padding(4 * 60) /* ? */
+    readonly uint32 texture_count;
+};
+
+struct lvl_section_a {
+    readonly pointer actual_world;
+    readonly pointer dynamic_world;
+    readonly pointer inactive_dynamic_world;
+    readonly pointer father_sector;
+    readonly pointer first_submap_position;
+    readonly tdstAlways always_structure;
+    readonly tdstObjectType object_type;
+};
+
+struct lvl {
+    readonly struct lvl_header* header;
+    readonly struct lvl_section_a* section_a;
+};
 
 #pragma mark - Important actors
 
@@ -76,30 +125,6 @@ static const uint32 color_table[] =
     0xc0d0ff20,
 };
 
-//struct fix_header
-//{
-//    padding(32)
-//    readonly pointer identity_matrix;
-//    readonly pointer localization_structure;
-//    readonly uint32 level_name_count;
-//    readonly uint32 demo_name_count;
-//};
-//
-//struct fix_trailer
-//{
-//    readonly char8 first_level[30];
-//    padding(2)
-//    readonly uint32 language_count;
-//    readonly uint32 language_offset;
-//    readonly uint32 texture_count;
-//};
-//
-//struct fix
-//{
-//    readonly struct fix_header* header;
-//    readonly struct fix_trailer* trailer;
-//};
-
 void level_read()
 {
     const uint8* fixptr = memory.base + (host_byteorder_32(*(uint32_t*)(memory.base + GCN_POINTER_FIX)) & 0xFFFFFFF);
@@ -118,7 +143,7 @@ void level_read()
         offset += 12 * host_byteorder_32(fix.header->demo_name_count);
         /* Skip level names (these are derived from the engine struct) */
         offset += 30 * host_byteorder_32(fix.header->level_name_count);
-        
+        /* Trailer */
         fix.trailer = (struct fix_trailer*)offset;
     }
     
@@ -135,6 +160,9 @@ void level_read()
         offset += n_textures * 4 * 2;
         /* Read dynamically aligned section 1 */
         lvl.section_a = (struct lvl_section_a*)offset;
+        
+        objectType = &lvl.section_a->object_type;
+        alwaysStructure = &lvl.section_a->always_structure;
     }
 }
 
@@ -152,6 +180,18 @@ uint32 actor_color(const tdstEngineObject* actor)
     
     unsigned n = host_byteorder_32(stdgame->family_type);
     return color_table_index(2 * n + 1);
+}
+
+void game_unload(void)
+{
+    fix.header = NULL;
+    fix.trailer = NULL;
+    
+    lvl.header = NULL;
+    lvl.section_a = NULL;
+    
+    alwaysStructure = NULL;
+    objectType = NULL;
 }
 
 void game_memory_dump()

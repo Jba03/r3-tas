@@ -19,8 +19,6 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #include "structure.h"
 #include "array.h"
 #include "stInputStructure.h"
-#include "fix.h"
-#include "lvl.h"
 
 #define GCN_POINTER_ENGINE      0x003E7C0C
 #define GCN_POINTER_INPUT       0x00430904
@@ -38,8 +36,8 @@ extern struct stSuperObject* inactive_dynamic_world;
 extern struct stSuperObject* father_sector;
 extern struct stInputStructure* input_struct;
 extern struct stRandom* rnd;
-extern struct fix fix;
-extern struct lvl lvl;
+extern struct stAlways* alwaysStructure;
+extern struct stObjectType* objectType;
 
 extern tdstEngineObject* actor_rayman;
 extern tdstEngineObject* actor_camera;
@@ -81,6 +79,8 @@ extern struct inputstructure
 } input;
 
 void level_read(void);
+
+void game_unload(void);
 
 uint32 color_table_index(unsigned idx);
 

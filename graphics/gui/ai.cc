@@ -79,7 +79,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                 {
                     tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
                     if (actor) {
-                        strcpy(tok.string, actor_name(actor_instance_name, actor));
+                        strcpy(tok.string, actor_name(actor_instance_name, actor, objectType));
                         color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f);
                     }
                 }

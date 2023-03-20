@@ -25,6 +25,7 @@ struct stEngineObject {
 
 #include "stMatrix4D.h"
 #include "stDynamics.h"
+#include "stObjectType.h"
 
 /** actor_matrix: get the global transformation matrix of an actor */
 const tdstMatrix4D actor_matrix(const tdstEngineObject* actor);
@@ -60,7 +61,7 @@ const float actor_trajectory_angle_relative(const tdstEngineObject* A, const tds
 const int actor_dsgvar(const tdstEngineObject* actor, unsigned var, int* type, void** data);
 
 /** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
-const char* actor_name(int name, const tdstEngineObject* actor);
+const char* actor_name(int name, const tdstEngineObject* actor, const tdstObjectType* objectType);
 
 /** actor_current_behavior_name: return the name of the actor's current behavior */
 const char* actor_current_behavior_name(const tdstEngineObject* actor);

@@ -88,11 +88,7 @@ static void r3_load()
 
 static void r3_unload()
 {
-    fix.header = NULL;
-    fix.trailer = NULL;
-    
-    lvl.header = NULL;
-    lvl.section_a = NULL;
+    game_unload();
     
     hierarchy = NULL;
     dynamic_world = NULL;

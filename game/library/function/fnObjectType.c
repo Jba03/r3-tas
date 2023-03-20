@@ -11,14 +11,12 @@
 #include <stdio.h>
 
 /** object_name_type: get the name of an object type with specified id */
-const char* object_type_name(int name_type, int id)
+const char* object_type_name(const tdstObjectType* objectType, int name_type, int id)
 {
-    if (!lvl.section_a) return NULL;
-    
     tdstDoublyLinkedList list;
-    if (name_type == object_family_name) list = lvl.section_a->object_type.family;
-    if (name_type == object_model_name) list = lvl.section_a->object_type.model;
-    if (name_type == object_instance_name) list = lvl.section_a->object_type.instance;
+    if (name_type == object_family_name) list = objectType->family;
+    if (name_type == object_model_name) list = objectType->model;
+    if (name_type == object_instance_name) list = objectType->instance;
     
     if (!pointer(list.first) || !pointer(list.last)) return NULL;
     if ((int32)host_byteorder_32(list.n_entries) < 0) return NULL;
