@@ -17,6 +17,18 @@
 #define superobject_type_no_action                  0x100
 #define superobject_type_mirror                     0x200
 
+#define superobject_flag_not_pickable               0x1
+#define superobject_flag_hidden                     0x2
+#define superobject_flag_no_transformation_matrix   0x4
+#define superobject_flag_zoom_instead_of_scale      0x8
+#define superobject_flag_type_of_bounding_volume    0x10
+#define superobject_flag_superimposed               0x20
+#define superobject_flag_no_ray_intersections       0x40
+#define superobject_flag_no_shadow                  0x80
+#define superobject_flag_semi_lookat                0x100
+#define superobject_flag_check_children             0x200
+#define superobject_flag_render_on_near_plane       0x400
+
 /* TODO: Add draw flags */
 
 static const char * const superobject_typenames[] =

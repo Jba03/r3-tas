@@ -254,6 +254,12 @@ static void display_actor_dsg(struct actor* actor, bool initial = false)
         {
             memory_viewer.GotoAddr = offset((void*)(buffer + host_byteorder_32(info->mem_offset)));
         }
+        
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && configuration.cheats.enabled)
+        {
+            void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
+            *(uint8*)data = !*(uint8*)data;
+        }
     }
     
     

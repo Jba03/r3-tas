@@ -33,12 +33,23 @@ struct collide_object
 #if USE_FUNCTIONS
 
 #include "collide_mesh.h"
+#include "matrix4.h"
+#include "vector3.h"
+#include "ray.h"
 
 /** collide_object_mesh: get collide mesh at specified index */
 const struct collide_mesh* collide_object_mesh(const struct collide_object* object, int idx);
 
 /** collide_object_sphere: get collide sphere at specified index */
 const struct collide_mesh* collide_object_sphere(const struct collide_object* object, int idx);
+
+/** collide_object_intersect_segment: intersect a collide object with a line segment */
+const bool collide_object_intersect_segment(const struct collide_object* object,
+                                            const struct matrix4 T,
+                                            const struct vector3 sA,
+                                            const struct vector3 sB,
+                                            struct ray *out_ray,
+                                            struct vector3 *I);
 
 #endif
 

@@ -31,6 +31,7 @@ extern "C"
     #include "geometry.h"
     #include "dynamics.h"
     #include "camera.h"
+    #include "xray.h"
 }
 
 /* ImGui */
@@ -56,7 +57,7 @@ static bool view_object_types = false;
 
 static bool display_transition_counter = true;
 
-static bool screen_projections_draw = true;
+static bool screen_projections_draw = false;
 static bool screen_projections_ipos = false;
 static bool screen_projections_use_cliprect = true;
 static float screen_projections_bg_alpha = 0.1f;
@@ -70,6 +71,7 @@ static float level_geometry_tri_fill = 0.75f;
 static float level_geometry_fade_factor = 0.1f;
 
 static MemoryEditor memory_viewer;
+static struct xray xray;
 
 #pragma mark - GUI
 
@@ -537,6 +539,37 @@ extern "C" void gui_render_callback(void* ctx)
         first = false;
     }
     
+    ImGui::Begin("XRAY");
+    if (ImGui::Button("Initialize"))
+    {
+        memset(xray.nodes, 0, 200000 * sizeof(struct xray_node));
+        memset(xray.pointset, 0, 65536 * 4 * sizeof(struct vector3));
+        xray.n_points = 0;
+        xray.n_nodes = 0;
+        xray_init(&xray);
+    }
+    ImGui::End();
+    
+    const float ar = display_size.x / display_size.y;
+    const float new_width = display_size.y * (640.0f / 528.0f) * 1.075f;
+    const float x_offset = display_size.x - new_width;
+    ImGui::SetWindowPos(ImVec2(x_offset / 2.0f, 0));
+    ImGui::SetWindowSize(ImVec2(new_width, display_size.y));
+    
+    ImVec2 off = ImGui::GetWindowPos();
+    ImVec2 sz = ImGui::GetWindowSize();
+    ImDrawList* drawlist = ImGui::GetBackgroundDrawList();
+        
+    const struct vector3 playerposition = game_matrix4_position(actor_matrix(actor_rayman));
+//    const struct vector3 speed = vector3_add(playerposition, actor_speed(actor_rayman));
+//
+//    ImVec4 r = project_world_coordinate(playerposition);
+//    ImVec4 spd = project_world_coordinate(speed);
+//    ImVec2 rpos = ImVec2(off.x + sz.x - r.x * sz.x, off.y + r.y * sz.y);
+//    ImVec2 spos = ImVec2(off.x + sz.x - spd.x * sz.x, off.y + spd.y * sz.y);
+//
+//    drawlist->AddLine(rpos, spos, ImColor(1.0f, 0.0f, 0.0f, 1.0f));
+    
     if (engine->mode == 5)
     {
         const ImGuiWindowFlags flags =
@@ -592,6 +625,49 @@ extern "C" void gui_render_callback(void* ctx)
         
     }
     
+    if (xray.path[0] != NULL)
+    {
+        for (int i = 0; i < 1000; i++)
+        {
+            struct xray_node* node1 = xray.path[i + 0];
+            struct xray_node* node2 = xray.path[i + 1];
+            if (node1 && node2)
+            {
+                ImVec4 projected1 = project_world_coordinate(node1->position);
+                ImVec4 projected2 = project_world_coordinate(node2->position);
+                
+                ImVec2 screen1 = ImVec2(off.x + sz.x - projected1.x * sz.x, off.y + projected1.y * sz.y);
+                ImVec2 screen2 = ImVec2(off.x + sz.x - projected2.x * sz.x, off.y + projected2.y * sz.y);
+                
+                //if (screen.x >= 0 && screen.x < display_size.x && screen.y >= 0 && screen.y < display_size.y && projected.z > 0)
+                //drawlist->AddNgon(screen, 10.0f, ImColor(10.0f, 0.0, 0.0f, 1.0f), 3);
+                if (projected1.w < 0 && projected2.w < 0 && projected1.z < 0 && projected2.z < 0) {} else
+                    drawlist->AddLine(screen1, screen2, ImColor(10.0f, 0.0, 0.0f, 1.0f));
+            }
+        }
+        
+        
+     
+        //printf("node: %d\n", xray.n_nodes);
+        for (int i = 0; i < xray.n_nodes; i++)
+        {
+            struct xray_node node1 = xray.nodes[i];
+            {
+                ImVec4 projected1 = project_world_coordinate(node1.position);
+                ImVec2 screen = ImVec2(off.x + sz.x - projected1.x * sz.x, off.y + projected1.y * sz.y);
+                
+                if (screen.x >= 0 && screen.x < display_size.x && screen.y >= 0 && screen.y < display_size.y && projected1.z > 0)
+                {
+                    drawlist->AddNgonFilled(screen, 3.0f, ImColor(10.0f, 0.0, 0.0f, 1.0f), 3);
+                    //drawlist->AddText(screen, ImColor(0.0f, 1.0f, 0.0f), std::to_string(i).c_str());
+                }
+                
+            }
+        }
+    }
+
+    
+    
 //    #pragma mark IPO closest vertex
 //    {
 //        extern struct vector3 sphere_pos;
@@ -625,6 +701,31 @@ extern "C" void gui_render_callback(void* ctx)
 //        ImGui::Text("%.3f %.3f %.3f", pointa.x, pointa.y, pointa.z);
 //        ImGui::End();
 //    }
+    
+    ImGui::Begin("a");
+    //if (ImGui::Button("Check visibility"))
+    {
+        extern bool line_of_sight(struct xray *h, struct xray_node *a, struct xray_node *b);
+        
+        extern float st[OCTREE_MAX_SELECTED_NODES];
+        extern struct octree_node* selected_nodes[OCTREE_MAX_SELECTED_NODES];
+        extern int n_selected_nodes;
+        
+        n_selected_nodes = 0;
+        memset(st, 0, sizeof(float) * OCTREE_MAX_SELECTED_NODES);
+        memset(selected_nodes, 0, sizeof(struct octree_node*) * OCTREE_MAX_SELECTED_NODES);
+            
+        struct xray_node a;
+        a.position = actor_position(actor_rayman);
+        a.sector = (struct superobject*)sector_by_location(father_sector, a.position);
+        
+        struct xray_node b;
+        b.position = actor_position(actor_find(actor_instance_name, "BEN_Box2", dynamic_world));
+        b.sector = (struct superobject*)sector_by_location(father_sector, b.position);
+        
+        ImGui::Text("Line of sight: %s", line_of_sight(&xray, &a, &b) ? "true" : "false");
+    }
+    ImGui::End();
     
     draw_menubar();
     draw_general_info();

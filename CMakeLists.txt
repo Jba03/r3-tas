@@ -17,6 +17,7 @@ include_directories(graphics/gui)
 include_directories(graphics/gui/imgui)
 include_directories(game/interface)
 include_directories(game/interface/analyse)
+include_directories(game/interface/xray)
 include_directories(game/library/common)
 include_directories(game/library/function)
 include_directories(game/library/function/hierarchy)
@@ -43,11 +44,13 @@ add_library(r3-tas SHARED
 	game/library/function/octree.c
 	game/library/function/collide_object.c
 	game/library/function/intelligence.c
+        game/library/function/intersect.c
 	game/library/function/script.c
 
 	game/interface/export.c
 	game/interface/game.c
 	game/interface/intfun.c
+        game/interface/xray/xray.c
 
 	graphics/gui/gui.cc
  	#graphics/graphics.c

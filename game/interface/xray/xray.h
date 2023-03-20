@@ -23,6 +23,8 @@ struct xray_node
 {
     /* node's position */
     struct vector3 position;
+    /* normal of the node */
+    struct vector3 normal;
     /* for transformation of the node */
     struct superobject* superobject;
     /* the sector this node belongs to */
@@ -31,11 +33,21 @@ struct xray_node
     /* node parent */
     struct xray_node* parent;
     /* immediate neighbors */
-    struct xray_node* neighbors[16];
+    
+    int n_neighbors;
+    struct xray_node* neighbor[1024*2];
     
     bool in_open;
     bool in_closed;
-    float cost;
+    
+    unsigned long io;
+    unsigned long ic;
+    
+    float score;
+    
+    float G;
+    float H;
+    float GH;
 };
 
 struct xray_route
@@ -52,10 +64,7 @@ struct xray_route
     /* list of ipos that contain above octrees at the same indices */
     const struct superobject* octree_ipo[XRAY_MAX_OCTREE_NODES];
     
-    int n_open_set_nodes;
-    int n_closed_set_nodes;
-    struct xray_node open_set[XRAY_MAX_THETA_NODES];
-    struct xray_node closed_set[XRAY_MAX_THETA_NODES];
+
     
     /* current target, null if none */
     //struct superobject* target;
@@ -74,12 +83,14 @@ struct xray
     
     int n_points;
     int n_lines;
-    struct vector3 pointset[65536 * 20];
-    struct xray_line lines[1000000];
+    struct vector3 pointset[65536 * 4];
+    struct xray_line lines[10000];
     
     int n_nodes;
-    struct xray_node nodes[10000];
+    struct xray_node nodes[200000];
         
+    struct xray_node* path[10000];
+    
     struct xray_route* current_route;
 };
 

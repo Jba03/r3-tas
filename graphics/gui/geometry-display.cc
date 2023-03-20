@@ -1,4 +1,5 @@
 /* Should sum up to 1, I guess */
+/* NOTE: These projection parameters vary per level */
 static const float projX = 0.377f;
 static const float projY = 0.708f;
 
@@ -210,13 +211,12 @@ static void DrawLevelGeometryRecursive(const struct superobject* root, const str
                             uint16 idx0 = host_byteorder_16(*(indices + index * 3 + 0));
                             uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
                             uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
-                            uint16 idxN = host_byteorder_16(*(indices + index));
                             
                             const struct vector3 Pa = vector3_host_byteorder(*(vertices + idx0));
                             const struct vector3 Pb = vector3_host_byteorder(*(vertices + idx1));
                             const struct vector3 Pc = vector3_host_byteorder(*(vertices + idx2));
                             
-                            const struct vector3 Na = vector3_host_byteorder(*(normals + idxN));
+                            const struct vector3 Na = vector3_host_byteorder(*(normals + index / 3));
                             
                             const struct vector4 TpA = vector4_mul_matrix4(vector4_new(Pa.x, Pa.y, Pa.z, 1.0f), T);
                             const struct vector4 TpB = vector4_mul_matrix4(vector4_new(Pb.x, Pb.y, Pb.z, 1.0f), T);
@@ -248,8 +248,8 @@ static void DrawLevelGeometryRecursive(const struct superobject* root, const str
                                 ImColor base = outline;
                                 base.Value.w *= level_geometry_tri_fill;
                                 
-                                //drawlist->AddTriangle(pos1, pos2, pos3, outline);
-                                //drawlist->AddTriangleFilled(pos1, pos2, pos3, base);
+                                drawlist->AddTriangle(pos1, pos2, pos3, outline);
+                                drawlist->AddTriangleFilled(pos1, pos2, pos3, base);
                                 
                                 struct vector3 normal = vector3_new(TnA.x, TnA.y, TnA.z);
                                 ImVec4 coord_center = project_world_coordinate(vector4_mul_matrix4(vector4_new(center.x, center.y, center.z, 1.0f), T));
@@ -258,7 +258,7 @@ static void DrawLevelGeometryRecursive(const struct superobject* root, const str
                                 ImVec2 posnorm = ImVec2(off.x + sz.x - coord_norm.x * sz.x, off.y + coord_norm.y * sz.y);
                                 
                                 /* To the center vector, add the offset of the normal. */
-                                if (normals && 1.0f / vector3_length(vector3_sub(Na, center)) < 1.0f) drawlist->AddLine(poscenter, posnorm, ImColor(normal.x, normal.y, normal.z, 1.0f));
+                                //if (normals && 1.0f / vector3_length(vector3_sub(Na, center)) < 1.0f) drawlist->AddLine(poscenter, posnorm, ImColor(normal.x, normal.y, normal.z, 1.0f));
                             }
                         }
                     }
@@ -311,6 +311,43 @@ static void DrawLevelGeometryRecursive(const struct superobject* root, const str
     
     /* Draw children */
     superobject_for_each(root, child) DrawLevelGeometryRecursive(child, T, player, off, sz, drawlist, color);
+}
+
+static void DrawOctreeRecursive(const struct octree_node* node, const struct matrix4 T, ImVec2 off, ImVec2 sz, ImDrawList* drawlist, ImColor color = ImColor(1.0f, 0.75f, 0.0f, 1.0f))
+{
+    if (!node) return;
+    
+    struct vector3 min = vector3_host_byteorder(node->min);
+    struct vector3 max = vector3_host_byteorder(node->max);
+    struct vector4 min4 = vector4_mul_matrix4(vector4_new(min.x, min.y, min.z, 1.0f), T);
+    struct vector4 max4 = vector4_mul_matrix4(vector4_new(max.x, max.y, max.z, 1.0f), T);
+    min = vector3_new(min4.x, min4.y, min4.z);
+    max = vector3_new(max4.x, max4.y, max4.z);
+    
+    
+    ImVec4 coord_min = project_world_coordinate(min);
+    ImVec4 coord_max = project_world_coordinate(max);
+    
+    if (coord_min.w >= 0.0f && coord_max.w >= 0.0f)
+    {
+        ImVec2 pos1 = ImVec2(off.x + sz.x - coord_min.x * sz.x, off.y + coord_min.y * sz.y);
+        ImVec2 pos2 = ImVec2(off.x + sz.x - coord_max.x * sz.x, off.y + coord_max.y * sz.y);
+        
+        drawlist->AddNgonFilled(pos1, 5.0f, color, 3);
+        drawlist->AddNgonFilled(pos2, 5.0f, color, 3);
+        drawlist->AddLine(pos1, pos2, color);
+    }
+    
+    
+    const pointer* childlist = (const pointer*)pointer(node->children);
+    if (childlist)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            const struct octree_node* node = (const struct octree_node*)pointer(*(childlist + i));
+            DrawOctreeRecursive(node, T, off, sz, drawlist, color);
+        }
+    }
 }
 
 static void DrawLevelGeometry(const struct superobject* sector)

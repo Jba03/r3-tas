@@ -126,11 +126,20 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                 {
                     ImGui::TextColored(color, "%s", tok.string);
                  
-//                    void* data = actor_dsgvar(current_actor, 22);
-//                    if (data)
-//                    {
-                        if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(tree) + tok.offset, offset(tree) + tok.offset);
-//                    }
+                    uint32 var = host_byteorder_32(tok.node->param);
+                    int type = 0;
+                    void* data = NULL;
+                    if (actor_dsgvar(current_actor, var, &type, &data) == 0)
+                    {
+                        if (ImGui::IsItemHovered())
+                        {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("%s_%d\n", dsgvar_typenames[type], var);
+                            ImGui::EndTooltip();
+                        }
+                        
+                        if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(data), offset(data));
+                    }
                         
                     if (tok.string[0] == '\n') linenn++;
                     if (tok.string[0] != '\n') ImGui::SameLine();
@@ -171,6 +180,21 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                     continue;
                 }
                 
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                {
+                    int off = tok.node - translation->tree;
+                    struct script_node* orig = translation->original_tree + off;
+                    memory_viewer.Open = true;
+                    memory_viewer.GotoAddr = offset(orig);
+                }
+                
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                {
+                    int off = tok.node - translation->tree;
+                    struct script_node* orig = translation->original_tree + off;
+                    orig->type = script_node_type_end_macro;
+                }
+                
                 if (tok.node->type == script_node_type_subroutine)
                 {
                     const char* name = (const char*)pointer(tok.node->param);
@@ -188,12 +212,12 @@ static void display_translated_script(struct script_node* tree, bool nodes = fal
                             selected_index = -1;
                             current_macro = macro;
                             aimodel_selected_data = (struct macro*)macro;
-//                            printf("ending macro\n");
-//                            struct script* scp = (struct script*)pointer(macro->script_initial);
-//                            (*(struct script_node*)pointer(scp->tree)).type = script_node_type_end_macro;
-//                            struct script* scp = (struct script*)pointer(macro->script_initial);
-//                            struct script_node* node = (struct script_node*)pointer(scp->tree);
-//                            node->type = 8;
+                            printf("ending macro\n");
+                            //struct script* scp = (struct script*)pointer(macro->script_initial);
+                            //(*(struct script_node*)pointer(scp->tree)).type = script_node_type_end_macro;
+                            struct script* scp = (struct script*)pointer(macro->script_initial);
+                            struct script_node* node = (struct script_node*)pointer(scp->tree);
+                            node->type = 8;
 //
 //                            scp = (struct script*)pointer(macro->script_current);
 //                            node = (struct script_node*)pointer(scp->tree);
