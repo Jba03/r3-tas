@@ -17,8 +17,9 @@ struct memory { const uint8_t* base, *tmp; } extern memory;
 #include "stEngineObject.h"
 #include "stRandom.h"
 #include "structure.h"
-#include "array.h"
 #include "stInputStructure.h"
+#include "array.h"
+#include "route.h"
 
 #define GCN_POINTER_ENGINE      0x003E7C0C
 #define GCN_POINTER_INPUT       0x00430904
@@ -77,6 +78,10 @@ extern struct inputstructure
         tdstInputEntryElement* R;
     } button;
 } input;
+
+extern struct route routes[16];
+extern unsigned int current_route;
+extern unsigned int n_routes;
 
 void level_read(void);
 

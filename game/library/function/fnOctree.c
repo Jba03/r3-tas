@@ -10,7 +10,7 @@
 
 #include "fnPrimIntersections.c"
 
-static void octree_node_select(tdstOctreeNode* node,
+void octree_node_select(tdstOctreeNode* node,
                             tdstOctreeNode** selected,
                             int *n_selected,
                             float *st,

@@ -18,7 +18,7 @@ struct stOctreeNode {
     readonly tdstVector3D min;
     readonly tdstVector3D max;
     readonly doublepointer children;
-    readonly pointer face_indices;
+    readonly pointer face_indices; /* ::uchar8 */
 } typedef tdstOctreeNode;
 
 #if USE_FUNCTIONS

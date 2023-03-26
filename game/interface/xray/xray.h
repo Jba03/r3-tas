@@ -19,8 +19,20 @@
 #define XRAY_MAX_OCTREE_NODES   2048
 #define XRAY_MAX_THETA_NODES    2048
 
-struct xray_node
-{
+typedef struct xray xray;
+typedef struct xray_node xrayNode;
+typedef struct xraySourceRecord xraySourceRecord;
+
+#define XRAY_NODE_TYPE_WALK         0
+#define XRAY_NODE_TYPE_ROLL         1
+#define XRAY_NODE_TYPE_JUMP         2
+#define XRAY_NODE_TYPE_FALL         3
+#define XRAY_NODE_TYPE_HOVER        4
+#define XRAY_NODE_TYPE_LEDGEGRAB    5
+
+struct xray_node {
+    
+    unsigned type;
     /* node's position */
     tdstVector3D position;
     /* normal of the node */
@@ -50,6 +62,45 @@ struct xray_node
     float GH;
 };
 
+struct xraySourceRecord {
+#define XRAY_MAX_TAGGED_FACES   2048
+    /* List of recorded nodes */
+    xrayNode* nodes;
+    /* List of objects collided with */
+    const tdstSuperObject** objects;
+    /* List of tagged faces */
+    int16 taggedFaces[XRAY_MAX_TAGGED_FACES];
+    
+    unsigned int numNodes;
+    unsigned int numNodesAllocated;
+    unsigned int numObjects;
+    unsigned int numObjectsAllocated;
+    unsigned int numTaggedFaces;
+    unsigned int locked;
+};
+
+struct xray {
+    int n_routes;
+    struct xray_route* routes[XRAY_MAX_ROUTES];
+    
+    int n_points;
+    int n_lines;
+    tdstVector3D pointset[65536 * 4];
+    
+    int n_nodes;
+    struct xray_node nodes[200000];
+        
+    struct xray_node* path[10000];
+    
+    struct xray_route* current_route;
+    
+    
+    struct xraySourceRecord sourceRecord;
+    
+    
+    
+};
+
 struct xray_route
 {
     /* source point */
@@ -70,41 +121,22 @@ struct xray_route
     //tdstSuperObject* target;
 };
 
-struct xray_line
-{
-    tdstVector4D a;
-    tdstVector4D b;
-};
-
-struct xray
-{
-    int n_routes;
-    struct xray_route* routes[XRAY_MAX_ROUTES];
-    
-    int n_points;
-    int n_lines;
-    tdstVector3D pointset[65536 * 4];
-    struct xray_line lines[10000];
-    
-    int n_nodes;
-    struct xray_node nodes[200000];
-        
-    struct xray_node* path[10000];
-    
-    struct xray_route* current_route;
-};
-
 struct xray_output
 {
     bool jump;
     bool hover;
 };
 
-void xray_init(struct xray* h);
+void xrayInitialize(xray* h);
+
+void xraySourceAddNode(xray* h, xrayNode node);
+
+void xraySourceFinished(xray* h);
 
 /** xray_analyse: analyse the scene and generate an optimal route to the specified destination. */
-void xray_analyse(struct xray* h, const tdstVector3D destination);
+void xrayAnalyse(xray* h);
 
-void xray_frame(struct xray* h, struct xray_output* output);
+
+void xray_frame(xray* h, struct xray_output* output);
 
 #endif /* xray_h */

@@ -112,6 +112,10 @@ unsigned transition_frame = 0;
 /* TAS */
 struct inputstructure input;
 
+struct route routes[16];
+unsigned int current_route = 0;
+unsigned int n_routes = 0;
+
 static const uint32 color_table[] =
 {
     0xc020ff20,

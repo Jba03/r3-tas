@@ -115,7 +115,7 @@ const bool collide_object_intersect_segment(const tdstCollideObject* object,
             C = vector3_new(TC.x, TC.y, TC.z);
 
             float t;
-            if (ray_triangle_intersection(ray, A, B, C, &t))
+            if (rayTriangleIntersection(ray, A, B, C, &t))
             {
                 /* Limit ray to segment */
                 //printf("%.2f vs %.2f\n", t, d);

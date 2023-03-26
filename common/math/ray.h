@@ -41,7 +41,7 @@ RAY static inline struct ray raycast(const tdstVector2D coord, const tdstMatrix4
     return ray;
 }
 
-RAY static inline bool ray_triangle_intersection(const struct ray ray, const tdstVector3D A, const tdstVector3D B, const tdstVector3D C, float* t)
+RAY static inline bool rayTriangleIntersection(const struct ray ray, const tdstVector3D A, const tdstVector3D B, const tdstVector3D C, float* t)
 {
     #define EPSILON 1e-6
     #define CULLING 1

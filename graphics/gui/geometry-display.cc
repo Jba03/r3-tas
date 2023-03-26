@@ -342,11 +342,11 @@ static void DrawOctreeRecursive(const tdstOctreeNode* node, const tdstMatrix4D T
     const pointer* childlist = (const pointer*)pointer(node->children);
     if (childlist)
     {
-        for (int i = 0; i < 8; i++)
-        {
-            const tdstOctreeNode* node = (const tdstOctreeNode*)pointer(*(childlist + i));
-            DrawOctreeRecursive(node, T, off, sz, drawlist, color);
-        }
+//        for (int i = 0; i < 8; i++)
+//        {
+//            const tdstOctreeNode* node = (const tdstOctreeNode*)pointer(*(childlist + i));
+//            DrawOctreeRecursive(node, T, off, sz, drawlist, color);
+//        }
     }
 }
 
