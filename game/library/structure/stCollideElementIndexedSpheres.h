@@ -10,8 +10,8 @@ struct stIndexedSphere {
 
 struct stCollideElementSpheres {
     readonly pointer spheres; /* ::tdstIndexedSphere */
-    readonly int16 n_spheres;
-    readonly int16 aabb_index;
+    readonly int16 numSpheres;
+    readonly int16 aabbIndex;
 } typedef tdstCollideElementSpheres;
 
 #endif /* stCollideElementSpheres_h */

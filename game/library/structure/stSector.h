@@ -10,30 +10,30 @@
 #define sector_priority_max     127
 
 struct stSector {
-    readonly tdstDoublyLinkedList characters;
-    readonly tdstDoublyLinkedList static_lights;
-    readonly tdstDoublyLinkedList dynamic_lights;
-    readonly tdstDoublyLinkedList graphic_sectors;
-    readonly tdstDoublyLinkedList collision_sectors;
-    readonly tdstDoublyLinkedList activity_sectors;
-    readonly tdstDoublyLinkedList sound_sectors;
-    readonly tdstDoublyLinkedList sound_events;
+    readonly tdstDoublyLinkedList characterList;
+    readonly tdstDoublyLinkedList staticLightList;
+    readonly tdstDoublyLinkedList dynamicLightList;
+    readonly tdstDoublyLinkedList graphicSectorList;
+    readonly tdstDoublyLinkedList collisionSectorList;
+    readonly tdstDoublyLinkedList activitySectorList;
+    readonly tdstDoublyLinkedList soundSectorList;
+    readonly tdstDoublyLinkedList soundEventList;
     readonly tdstVector3D min;
     readonly tdstVector3D max;
-    readonly float32 far_plane;
-    readonly uint8 is_virtual;
-    readonly int8 camera_type;
+    readonly float32 farPlane;
+    readonly uint8 isVirtual;
+    readonly int8 cameraType;
     readonly int8 counter;
     readonly int8 priority;
-    readonly pointer skymaterial;
+    readonly pointer skyMaterial;
     readonly uint8 fog;
 #if platform == GCN
     readonly char8 name[0x104];
 #endif
 } typedef tdstSector;
 
-#define sector_is_virtual(sector) sector->is_virtual
-#define sector_camera_type(sector) sector->camera_type
+#define sector_is_virtual(sector) sector->isVirtual
+#define sector_camera_type(sector) sector->cameraType
 #define sector_get_counter(sector) sector->counter
 #define sector_priority(sector) sector->priority
 

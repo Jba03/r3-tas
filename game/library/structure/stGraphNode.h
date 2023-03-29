@@ -7,10 +7,10 @@ struct stGraphNode {
     readonly pointer next;
     readonly pointer prev;
     readonly pointer parent;
-    readonly pointer waypoint;
+    readonly pointer wayPoint;
     readonly int32 type;
-    readonly int32 type_initial;
-    readonly pointer arc_list;
+    readonly int32 initialType;
+    readonly pointer arcList;
 } typedef tdstGraphNode;
 
 #endif /* stGraphNode_h */

@@ -8,67 +8,67 @@
 
 struct stEngineStructure {
     readonly uint8 mode;
-    readonly char8 current_level_name[30];
-    readonly char8 next_level_name[30];
-    readonly char8 first_level_name[30];
-    readonly uint8 input_mode;
-    readonly uint8 display_fix_mode;
+    readonly char8 currentLevelName[30];
+    readonly char8 nextLevelName[30];
+    readonly char8 firstLevelName[30];
+    readonly uint8 inputMode;
+    readonly uint8 displayFixMode;
     padding(3)
-    readonly uint32 display_mode;
+    readonly uint32 displayMode;
     readonly tdstEngineTimer timer;
-    readonly uint8 multimode_player_count;
-    readonly uint8 multimode_column_count;
-    readonly uint8 multimode_mini_screen_ratio;
+    readonly uint8 multimodePlayerCount;
+    readonly uint8 multimodeColumnCount;
+    readonly uint8 multimodeMiniScreenRatio;
     padding(1)
-    readonly pointer current_main_players[4]; /* ::superobject */
-    readonly int16 gld_device;
-    readonly int16 gld_viewport[5];
+    readonly pointer currentMainPlayers[4]; /* ::superobject */
+    readonly int16 gldDevice;
+    readonly int16 gldViewport[5];
     padding(5 * 28 * 4) /* viewport attributes */
-    readonly pointer viewport_camera[5];
-    readonly int16 gld_fix_viewport[5];
+    readonly pointer viewportCamera[5];
+    readonly int16 gldFixViewport[5];
     padding(2)
     padding(5 * 28 * 4) /* fix viewport attributes */
     padding(5 * 2 * 4) /* fix 3d attributes */
-    readonly pointer fix_camera[5];
+    readonly pointer fixCamera[5];
     padding(5 * 2 * 4) /* game 3d attributes */
-    readonly pointer viewport_array;
-    readonly tdstDoublyLinkedList camera_list;
-    readonly pointer draw_sem;
-    readonly tdstDoublyLinkedList family_list;
-    readonly tdstDoublyLinkedList always_list;
-    readonly tdstDoublyLinkedList main_character_list;
-    readonly pointer standard_camera;
-    readonly pointer debug_camera;
-    readonly pointer language_structure;
-    readonly pointer level_filename_list;
-    readonly tdstTransform main_actor_transform;
-    readonly tdstTransform main_camera_transform;
-    readonly int32 submap_number;
-    readonly uint8 engine_paused;
-    readonly uint8 engine_paused2;
-    readonly uint8 engine_game_save;
-    readonly char8 level_names[150][30];
-    readonly char8 demo_names[30][12];
-    readonly char8 demo_level_names[30][12];
-    readonly uint8 demo_count;
-    readonly uint8 level_count;
-    readonly uint8 current_level;
-    readonly uint8 previous_level;
-    readonly uint8 previous_level_exit_id;
-    readonly uint8 global_level_counter;
-    readonly uint8 demo_mode;
-    readonly uint8 current_language;
-    readonly uint8 language_count;
-    readonly uint8 engine_frozen;
+    readonly pointer viewportArray;
+    readonly tdstDoublyLinkedList cameraList;
+    readonly pointer drawSem;
+    readonly tdstDoublyLinkedList familyList;
+    readonly tdstDoublyLinkedList alwaysList;
+    readonly tdstDoublyLinkedList mainCharacterList;
+    readonly pointer standardCamera;
+    readonly pointer debugCamera;
+    readonly pointer languageStructure;
+    readonly pointer levelFilenameList;
+    readonly tdstTransform mainActorTransform;
+    readonly tdstTransform mainCameraTransform;
+    readonly int32 submapNumber;
+    readonly uint8 paused;
+    readonly uint8 paused2;
+    readonly uint8 doGameSave;
+    readonly char8 levelNames[150][30];
+    readonly char8 demoNames[30][12];
+    readonly char8 demoLevelNames[30][12];
+    readonly uint8 demoCount;
+    readonly uint8 levelCount;
+    readonly uint8 currentLevel;
+    readonly uint8 previousLevel;
+    readonly uint8 previousLevelExitID;
+    readonly uint8 globalLevelCounter;
+    readonly uint8 demoMode;
+    readonly uint8 currentLanguage;
+    readonly uint8 languageCount;
+    readonly uint8 engineFrozen;
     readonly uint8 resurrection;
-    readonly int8 camera_mode;
-    readonly uint8 current_importance;
-    readonly uint8 n_superobjects_allocated;
-    readonly uint8 n_superobjects_loaded;
-    readonly uint8 n_nonpersistent_so_links;
-    readonly doublepointer so_links;
-    readonly pointer graph_chained_list;
-    readonly pointer cine_manager;
+    readonly int8 cameraMode;
+    readonly uint8 currentImportance;
+    readonly uint8 numSuperObjectsAllocated;
+    readonly uint8 numSuperObjectsLoaded;
+    readonly uint8 numNonPersistentSOLinks;
+    readonly doublepointer SOLinks;
+    readonly pointer graphChainedList;
+    readonly pointer cineManager;
 } typedef tdstEngineStructure;
 
 #if USE_FUNCTIONS

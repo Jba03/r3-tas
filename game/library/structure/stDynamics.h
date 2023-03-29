@@ -82,66 +82,65 @@ struct macdpid
 };
 
 struct stDynamicsBaseBlock {
-    readonly int32 object_type;
+    readonly int32 objectType;
     readonly pointer idcard;
     readonly uint32 flags;
-    readonly uint32 endflags;
+    readonly uint32 endFlags;
     readonly float32 gravity;
-    readonly float32 slopelimit;
-    readonly float32 slope_cosine;
+    readonly float32 slopeLimit;
+    readonly float32 slopeCosine;
     readonly float32 slide;
     readonly float32 rebound;
-    readonly tdstVector3D speed_impose;
-    readonly tdstVector3D speed_propose;
-    readonly tdstVector3D speed_previous;
+    readonly tdstVector3D imposedSpeed;
+    readonly tdstVector3D proposedSpeed;
+    readonly tdstVector3D previousSpeed;
     readonly tdstVector3D scale;
-    readonly tdstVector3D anim_speed;
-    readonly tdstVector3D translation_safe;
-    readonly tdstVector3D translation_add;
-    //padding(8)
-    readonly tdstTransform transform_previous;
-    readonly tdstTransform transform_current;
-    readonly tdstMatrix3D rotation_imposed;
-    readonly uint8 nframe;
+    readonly tdstVector3D animationSpeed;
+    readonly tdstVector3D safeTranslation;
+    readonly tdstVector3D addedTranslation;
+    readonly tdstTransform previousTransform;
+    readonly tdstTransform currentTransform;
+    readonly tdstMatrix3D imposedRotation;
+    readonly uint8 nFrame;
     padding(3)
     readonly pointer report;
 } typedef tdstDynamicsBaseBlock;
 
 struct stDynamicsAdvancedBlock {
-    readonly float32 inertia_x;
-    readonly float32 inertia_y;
-    readonly float32 inertia_z;
-    readonly float32 streamprio;
-    readonly float32 streamfactor;
-    readonly float32 slide_factor_x;
-    readonly float32 slide_factor_y;
-    readonly float32 slide_factor_z;
-    readonly float32 slide_previous;
-    readonly tdstVector3D speed_max;
-    readonly tdstVector3D speed_stream;
-    readonly tdstVector3D speed_add;
+    readonly float32 xInertia;
+    readonly float32 yInertia;
+    readonly float32 zInertia;
+    readonly float32 streamPriority;
+    readonly float32 streamFactor;
+    readonly float32 xSlideFactor;
+    readonly float32 ySlideFactor;
+    readonly float32 zSlideFactor;
+    readonly float32 previousSlide;
+    readonly tdstVector3D maxSpeed;
+    readonly tdstVector3D streamSpeed;
+    readonly tdstVector3D addedSpeed;
     readonly tdstVector3D limit;
-    readonly tdstVector3D collision_translation;
-    readonly tdstVector3D inertia_translation;
-    readonly tdstVector3D ground_normal;
-    readonly tdstVector3D wall_normal;
-    readonly int8 collide_count;
+    readonly tdstVector3D collisionTranslation;
+    readonly tdstVector3D inertiaTranslation;
+    readonly tdstVector3D groundNormal;
+    readonly tdstVector3D wallNormal;
+    readonly int8 collideCount;
     padding(3)
 } typedef tdstDynamicsAdvancedBlock;
 
 struct stDynamicsComplexBlock {
-    readonly float32 tilt_strength;
-    readonly float32 tilt_inertia;
-    readonly float32 tilt_origin;
-    readonly float32 tilt_angle;
-    readonly float32 hanging_limit;
+    readonly float32 tiltStrength;
+    readonly float32 tiltInertia;
+    readonly float32 tiltOrigin;
+    readonly float32 tiltAngle;
+    readonly float32 hangingLimit;
     readonly tdstVector3D contact;
-    readonly tdstVector3D fall_translation;
+    readonly tdstVector3D fallTranslation;
     readonly struct macdpid macdpid;
-    readonly pointer platform_so;
+    readonly pointer platformSuperObject;
     padding(4)
-    readonly tdstTransform matrix_previous_absolute;
-    readonly tdstTransform matrix_previous_previous;
+    readonly tdstTransform previousMatrixAbsolute;
+    readonly tdstTransform previousMatrixPrevious;
 } typedef tdstDynamicsComplexBlock;
 
 struct stDynamicsObstacle {
@@ -149,8 +148,8 @@ struct stDynamicsObstacle {
     readonly tdstVector3D normal;
     readonly tdstVector3D contact;
     readonly pointer material;
-    readonly pointer collide_material;
-    readonly pointer superobject;
+    readonly pointer collideMaterial;
+    readonly pointer superObject;
 } typedef tdstDynamicsObstacle;
 
 struct stDynamicsMovevement {
@@ -159,19 +158,19 @@ struct stDynamicsMovevement {
 } typedef tdstDynamicsMovevement;
 
 struct stDynamicsReport {
-    readonly uint32 surface_state_previous;
-    readonly uint32 surface_state_current;
+    readonly uint32 previousSurfaceState;
+    readonly uint32 currentSurfaceState;
     readonly tdstDynamicsObstacle obstacle;
     readonly tdstDynamicsObstacle ground;
     readonly tdstDynamicsObstacle wall;
     readonly tdstDynamicsObstacle character;
     readonly tdstDynamicsObstacle water;
     readonly tdstDynamicsObstacle ceiling;
-    readonly tdstDynamicsMovevement speed_absolute_previous;
-    readonly tdstDynamicsMovevement speed_absolute_current;
-    readonly tdstDynamicsMovevement position_absolute_previous;
-    readonly tdstDynamicsMovevement position_absolute_current;
-    readonly char8 bitfield;
+    readonly tdstDynamicsMovevement previousAbsoluteSpeed;
+    readonly tdstDynamicsMovevement currentAbsoluteSpeed;
+    readonly tdstDynamicsMovevement previousAbsolutePosition;
+    readonly tdstDynamicsMovevement currentAbsolutePosition;
+    readonly char8 bitField;
     padding(3)
 } typedef tdstDynamicsReport;
 
@@ -183,8 +182,8 @@ struct stDynamics {
 
 struct stDynam {
     readonly pointer dynamics;
-    readonly pointer parsedata;
-    readonly uint32 used_mechanics;
+    readonly pointer parsData;
+    readonly uint32 usedMechanics;
 } typedef tdstDynam;
 
 #define dynamics_size(dynam) (host_byteorder_32((dynam).base.endflags) & 0x3)

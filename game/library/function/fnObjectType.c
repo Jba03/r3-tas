@@ -19,9 +19,9 @@ const char* fnObjectTypeGetName(const tdstObjectType* objectType, int name_type,
     if (name_type == object_instance_name) list = objectType->instance;
     
     if (!pointer(list.first) || !pointer(list.last)) return NULL;
-    if ((int32)host_byteorder_32(list.n_entries) < 0) return NULL;
+    if ((int32)host_byteorder_32(list.numEntries) < 0) return NULL;
     
-    if (id >= 0 && id < (int32)host_byteorder_32(list.n_entries))
+    if (id >= 0 && id < (int32)host_byteorder_32(list.numEntries))
     {
         int n = 0;
         tdstObjectTypeElement* t = pointer(list.first);

@@ -8,17 +8,17 @@
 #define actor_instance_name 2
 
 struct stEngineObject {
-    readonly pointer p_3ddata;
-    readonly pointer stdgame;
+    readonly pointer p3DData;
+    readonly pointer stdGame;
     readonly pointer dynam;
     readonly pointer brain;
-    readonly pointer cineinfo;
-    readonly pointer collset;
-    readonly pointer msway;
-    readonly pointer mslight;
-    readonly pointer sectorinfo;
+    readonly pointer cineInfo;
+    readonly pointer collSet;
+    readonly pointer msWay;
+    readonly pointer msLight;
+    readonly pointer sectorInfo;
     readonly pointer micro;
-    readonly pointer mssound;
+    readonly pointer msSound;
 } typedef tdstEngineObject, tdstActor;
 
 #if USE_FUNCTIONS
@@ -76,17 +76,17 @@ bool fnActorIsInBehavior(const tdstEngineObject* actor, const char* behavior_nam
 
 #endif
 
-#define actor_3Ddata(actor) ((void*)pointer(actor->p_3ddata))
-#define actor_stdgame(actor) ((tdstStandardGameInfo*)pointer(actor->stdgame))
+#define actor_3Ddata(actor) ((void*)pointer(actor->p3DData))
+#define actor_stdgame(actor) ((tdstStandardGameInfo*)pointer(actor->stdGame))
 #define actor_dynam(actor) ((tdstDynam*)pointer(actor->dynam))
 #define actor_brain(actor) ((tdstBrain*)pointer(actor->brain))
-#define actor_cineinfo(actor) ((struct cineinfo*)pointer(actor->cineinfo))
-#define actor_collset(actor) ((tdstCollideSet*)pointer(actor->collset))
-#define actor_msway(actor) ((struct msway*)pointer(actor->msway))
-#define actor_mslight(actor) ((struct mslight*)pointer(actor->mslight))
-#define actor_sectorinfo(actor) ((struct sectorinfo*)pointer(actor->sectorinfo))
+#define actor_cineinfo(actor) ((struct cineinfo*)pointer(actor->cineInfo))
+#define actor_collset(actor) ((tdstCollideSet*)pointer(actor->collSet))
+#define actor_msway(actor) ((struct msway*)pointer(actor->msWay))
+#define actor_mslight(actor) ((struct mslight*)pointer(actor->msLight))
+#define actor_sectorinfo(actor) ((struct sectorinfo*)pointer(actor->sectorInfo))
 #define actor_micro(actor) ((struct micro*)pointer(actor->micro))
-#define actor_mssound(actor) ((struct mssound*)pointer(actor->mssound))
+#define actor_mssound(actor) ((struct mssound*)pointer(actor->msSound))
 
 /* Object type */
 #define actor_family_type(actor) (actor_stdgame(actor) ? stdgame_family_type(actor_stdgame(actor)) : -1)

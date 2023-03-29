@@ -56,25 +56,25 @@ static const char * const dsgvar_typenames[] = {
 };
 
 struct stDsgVarInfo {
-    readonly uint32 mem_offset;
+    readonly uint32 memOffset;
     readonly uint32 type;
-    readonly int16 save_type;
+    readonly int16 saveType;
     padding(2)
-    readonly uint32 objtree_init_type;
+    readonly uint32 objectTreeInitialType;
 } typedef tdstDsgVarInfo;
 
 struct stDsgVar {
     readonly pointer memory;
     readonly pointer info;
-    readonly uint32 memory_size;
-    readonly uint8 info_length;
+    readonly uint32 memorySize;
+    readonly uint8 infoLength;
     padding(3)
 } typedef tdstDsgVar;
 
 struct stDsgMem {
-    readonly doublepointer dsgvars;
-    readonly pointer buffer_initial;
-    readonly pointer buffer_current;
+    readonly doublepointer dsgVars;
+    readonly pointer initialBuffer;
+    readonly pointer currentBuffer;
 } typedef tdstDsgMem;
 
 #endif /* stDsg_h */

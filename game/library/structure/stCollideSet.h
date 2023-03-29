@@ -11,41 +11,41 @@ struct stPhysicalCollideSet {
 } typedef tdstPhysicalCollideSet;
 
 struct stColliderInfo {
-    readonly pointer collider_actors[2]; /* ::so */
-    readonly tdstVector3D collider_vectors[2];
-    readonly float32 collider_real[2];
-    readonly uint8 collider_type;
-    readonly uint8 collider_prio;
+    readonly pointer colliderActors[2]; /* ::so */
+    readonly tdstVector3D colliderVectors[2];
+    readonly float32 colliderReal[2];
+    readonly uint8 colliderType;
+    readonly uint8 colliderPriority;
     readonly uint8 unused[2];
 } typedef tdstColliderInfo;
 
 struct stCollideSet {
-    readonly pointer zdd_list;
-    readonly pointer zde_list;
-    readonly pointer zdm_list;
-    readonly pointer zdr_list;
-    readonly pointer zdd_activation_list;
-    readonly pointer zde_activation_list;
-    readonly pointer zdm_activation_list;
-    readonly pointer zdr_activation_list;
-    readonly pointer zdd_activation_current;
-    readonly pointer zde_activation_current;
-    readonly pointer zdr_activation_current;
-    readonly pointer zdm_activation_current;
-    readonly uint32 zdd_privileged_zone;
-    readonly uint32 zde_privileged_zone;
-    readonly uint32 zdm_privileged_zone;
-    readonly uint32 zdr_privileged_zone;
-    readonly uint8 computefrequency;
-    readonly uint8 character_priority;
-    readonly uint8 collision_flag;
+    readonly pointer zddList;
+    readonly pointer zdeList;
+    readonly pointer zdmList;
+    readonly pointer zdrList;
+    readonly pointer zddActivationList;
+    readonly pointer zdeActivationList;
+    readonly pointer zdmActivationList;
+    readonly pointer zdrActivationList;
+    readonly pointer zddCurrentActivation;
+    readonly pointer zdeCurrentActivation;
+    readonly pointer zdrCurrentActivation;
+    readonly pointer zdmCurrentActivation;
+    readonly uint32 zddPrivilegedZone;
+    readonly uint32 zdePrivilegedZone;
+    readonly uint32 zdmPrivilegedZone;
+    readonly uint32 zdrPrivilegedZone;
+    readonly uint8 computeFrequency;
+    readonly uint8 characterPriority;
+    readonly uint8 collisionFlag;
     padding(1)
-    readonly tdstColliderInfo collider_info;
+    readonly tdstColliderInfo colliderInfo;
 } typedef tdstCollideSet;
 
 struct stZdxList {
     readonly tdstDoublyLinkedList list;
-    readonly uint16 n_zdx;
+    readonly uint16 numZdx;
     padding(2)
 } typedef tdstZdxList;
 

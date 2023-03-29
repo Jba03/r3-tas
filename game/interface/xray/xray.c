@@ -166,12 +166,12 @@ static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject
         {
             while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_index)))
             {
-                printf("\tmesh %d: %d faces\n", mesh_index, host_byteorder_16(mesh->n_faces));
-                const uint16* indices = (const uint16*)pointer(mesh->face_indices);
+                printf("\tmesh %d: %d faces\n", mesh_index, host_byteorder_16(mesh->numFaces));
+                const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
                 const tdstVector3D* vertices = (const tdstVector3D*)pointer(zdr->vertices);
                 const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
                 
-                for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
+                for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
                 {
                     uint16 idx0 = host_byteorder_16(*(indices + index * 3 + 0));
                     uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
@@ -631,9 +631,9 @@ static void xrayDerivePointset(xray* h)
 static void xrayOctreeNodeDerivePointset(xray* h, const tdstSuperObject *object, const tdstMatrix4D T, const tdstCollideObject* colObj, const tdstOctreeNode *octreeNode, const tdstOctree* octreeBase)
 {
     /* The list begins with the number of elements, */
-    uint16 numElements = host_byteorder_16(*(uint16*)pointer(octreeNode->face_indices));
+    uint16 numElements = host_byteorder_16(*(uint16*)pointer(octreeNode->faceIndices));
     /* followed by the encoded element indices. */
-    uint8* indexList = (uint8*)(((uint16*)pointer(octreeNode->face_indices)) + 1);
+    uint8* indexList = (uint8*)(((uint16*)pointer(octreeNode->faceIndices)) + 1);
     printf("num elements: %d\n", numElements);
     for (unsigned int index = 0; index < numElements; index++)
     {
@@ -670,7 +670,7 @@ static void xrayOctreeNodeDerivePointset(xray* h, const tdstSuperObject *object,
             dataElementIndex = (data);
         }
         
-        uint16 elementType = host_byteorder_16(*(((uint16*)pointer(colObj->element_types) + staticElementIndex)));
+        uint16 elementType = host_byteorder_16(*(((uint16*)pointer(colObj->elementTypes) + staticElementIndex)));
         if (elementType == collide_object_indexed_triangles)
         {
             const pointer element = *((pointer*)pointer(colObj->elements) + staticElementIndex);
@@ -701,7 +701,7 @@ static void xraySourceDeriveStaticNodesRecursive(xray* h, const tdstSuperObject 
         
     if (fnBoxBoxIntersection(bMin, bMax, point, point))
     {
-        if (octreeNode->face_indices != 0x00) xrayOctreeNodeDerivePointset(h, object, T, colObj, octreeNode, octreeBase);
+        if (octreeNode->faceIndices != 0x00) xrayOctreeNodeDerivePointset(h, object, T, colObj, octreeNode, octreeBase);
         if (children)
         {
             for (unsigned int n = 0; n < 8; n++)
@@ -779,11 +779,11 @@ static void xraySourceDeriveStaticNodesRecursive2(xray *h, const tdstSuperObject
     
     while ((mesh = fnCollideObjectGetElementIndexedTriangles(collObj, mesh_index)))
     {
-        const uint16* indices = (const uint16*)pointer(mesh->face_indices);
+        const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
         const tdstVector3D* vertices = (const tdstVector3D*)pointer(collObj->vertices);
         const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
         
-        for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
+        for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
         {
             for (unsigned int f = 0; f < h->sourceRecord.numTaggedFaces; f++)
                 if (h->sourceRecord.taggedFaces[f] == index) goto end;

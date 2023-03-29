@@ -33,7 +33,7 @@ static void export_behavior(tdstBehavior* behavior)
     
     fprintf(fp, "/* %s */\n\n", behavior->name);
     
-    for (int i = 0; i < behavior->n_scripts; i++)
+    for (int i = 0; i < behavior->numScripts; i++)
     {
         tdstTreeInterpret* script = (tdstTreeInterpret*)pointer(behavior->scripts) + i;
         tdstNodeInterpret* tree = pointer(script->tree);
@@ -90,7 +90,7 @@ static void export_behavior(tdstBehavior* behavior)
                     if (tok.node->type == script_node_type_button)
                     {
                         tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
-                        const char* name = (const char*)pointer(entry->action_name);
+                        const char* name = (const char*)pointer(entry->actionName);
                         fprintf(fp, "\"%s\"", name);
                         continue;
                     }
@@ -143,12 +143,12 @@ void export_scripts(void)
         const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
         if (!mind) continue;
         
-        const tdstAIModel* aimodel = (const tdstAIModel*)pointer(mind->ai_model);
+        const tdstAIModel* aimodel = (const tdstAIModel*)pointer(mind->aiModel);
         if (!aimodel) continue;
         
-        const tdstScriptAI* intelligence_list = (const tdstScriptAI*)pointer(aimodel->intelligence_behavior_list);
-        const tdstScriptAI* reflex_list = (const tdstScriptAI*)pointer(aimodel->reflex_behavior_list);
-        const tdstMacroList* macro_list = (const tdstMacroList*)pointer(aimodel->macrolist);
+        const tdstScriptAI* intelligence_list = (const tdstScriptAI*)pointer(aimodel->intelligenceBehaviorList);
+        const tdstScriptAI* reflex_list = (const tdstScriptAI*)pointer(aimodel->reflexBehaviorList);
+        const tdstMacroList* macro_list = (const tdstMacroList*)pointer(aimodel->macroList);
         
         /* Get actor instance name, or model name if spawnable actor */
         const char* name = fnActorGetName(actor_instance_name, actor, objectType);
@@ -157,7 +157,7 @@ void export_scripts(void)
         
         if (intelligence_list)
         {
-            for (int i = 0; i < host_byteorder_32(intelligence_list->n_behaviors); i++)
+            for (int i = 0; i < host_byteorder_32(intelligence_list->numBehaviors); i++)
             {
                 tdstBehavior* behavior = (tdstBehavior*)pointer(intelligence_list->behavior) + i;
                 

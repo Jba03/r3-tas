@@ -75,7 +75,7 @@ static void fnOctreeTraverseLineSegment(const tdstOctreeNode* node,
         }
         else
         {
-            const pointer* face_indices = pointer(node->face_indices);
+            const pointer* face_indices = pointer(node->faceIndices);
             if (face_indices) fnOctreeSelectNode((tdstOctreeNode*)node, selected, n_selected, st, t);
         }
     }

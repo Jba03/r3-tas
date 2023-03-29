@@ -5,17 +5,17 @@
 
 struct stEngineTimer {
     readonly uint32 frame;
-    readonly int16 timer_handle;
+    readonly int16 timerHandle;
     padding(2)
-    readonly uint32 timer_count_current;
-    readonly uint32 timer_count_delta;
+    readonly uint32 currentCount;
+    readonly uint32 deltaCount;
     readonly uint32 counter[16];
-    readonly uint32 delta_time_useful;
-    readonly uint32 pause_time;
-    readonly float32 frame_length;
-    readonly struct { readonly uint32_t low, high; } time_real;
-    readonly struct { readonly uint32_t low, high; } time_pause;
-    readonly uint32 ticks_per_ms;
+    readonly uint32 usefulDeltaTime;
+    readonly uint32 pauseTime;
+    readonly float32 frameLength;
+    readonly struct { readonly uint32_t low, high; } totalRealTime;
+    readonly struct { readonly uint32_t low, high; } totalPauseTime;
+    readonly uint32 ticksPerMs;
 } typedef tdstEngineTimer;
 
 #endif /* stEngineTimer_h */

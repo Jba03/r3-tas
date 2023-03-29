@@ -104,7 +104,7 @@ static void display_counters()
     {
         #define y(x) host_byteorder_32(*(engine->timer.counter + i * 4 + x))
         ImGui::SetWindowPos(ImVec2(display_size.x - 105, 45));
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "F(%d,%d)", host_byteorder_32(engine->timer.frame), host_byteorder_32(engine->timer.delta_time_useful));
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "F(%d,%d)", host_byteorder_32(engine->timer.frame), host_byteorder_32(engine->timer.usefulDeltaTime));
         for (unsigned int i = 0; i < 4; i++) ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.25f), "%02d %02d %02d %02d", y(0), y(1), y(2), y(3));
         ImGui::End();
     }
@@ -137,7 +137,7 @@ static void draw_rayman_info()
         const tdstDynamics* dynamics = (const tdstDynamics*)pointer(dynam->dynamics);
         if (!dynamics) return;
         
-        const tdstVector3D previousSpeed = vector3_host_byteorder(dynamics->base.speed_previous);
+        const tdstVector3D previousSpeed = vector3_host_byteorder(dynamics->base.previousSpeed);
         const float speed_x = previousSpeed.x;
         const float speed_y = previousSpeed.y;
         const float speed_h = sqrt(speed_x * speed_x + speed_y * speed_y);
@@ -147,13 +147,13 @@ static void draw_rayman_info()
         const tdstSuperObject* ray = (const tdstSuperObject*)actor_superobject(actor_rayman);
         if (!ray) return;
         
-        const tdstTransform* T_ray = (const tdstTransform*)pointer(ray->transform_global);
+        const tdstTransform* T_ray = (const tdstTransform*)pointer(ray->globalTransform);
         if (T_ray)
         {
             const tdstMatrix4D M_ray = matrix4_host_byteorder(T_ray->matrix); // Player matrix
             const tdstVector3D P_ray = game_matrix4_position(M_ray); // Player position
             
-            float time = (float)host_byteorder_32(engine->timer.timer_count_delta) / 1000.0f;
+            float time = (float)host_byteorder_32(engine->timer.deltaCount) / 1000.0f;
             
             /*  */
 #define h(t,p) (-0.5f * gravity * (t * t) + (speed_z * t) + p)
@@ -321,9 +321,9 @@ static void draw_menubar()
             {
                 if (ImGui::BeginMenu("Change map"))
                 {
-                    for (int i = 0; i < engine->level_count; i++)
+                    for (int i = 0; i < engine->levelCount; i++)
                     {
-                        const char* level = engine->level_names[i];
+                        const char* level = engine->levelNames[i];
                         if (ImGui::MenuItem(level)) fnEngineLoadLevel(engine, level);
                     }
                     ImGui::EndMenu();
@@ -460,7 +460,7 @@ static void draw_hierarchy_list(const tdstSuperObject* root)
         const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
         if (!actor) continue;
         
-        const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
+        const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdGame);
         if (!stdgame) return;
         
         /* Get actor instance name, or model name if spawnable actor */

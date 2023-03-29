@@ -20,10 +20,10 @@ const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedTriang
     if (!object) return NULL;
     
     int counter = 0;
-    for (int i = 0; i < host_byteorder_16(object->n_elements); i++)
+    for (int i = 0; i < host_byteorder_16(object->numElements); i++)
     {
         const pointer element = (*((pointer*)pointer(object->elements) + i));
-        const int16_t type = host_byteorder_16(*((int16_t*)pointer(object->element_types) + i));
+        const int16_t type = host_byteorder_16(*((int16_t*)pointer(object->elementTypes) + i));
         const void* block = pointer(element);
         
         if (type == collide_object_indexed_triangles)
@@ -39,10 +39,10 @@ const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedSphere
     if (!object) return NULL;
     
     int counter = 0;
-    for (int i = 0; i < host_byteorder_16(object->n_elements); i++)
+    for (int i = 0; i < host_byteorder_16(object->numElements); i++)
     {
         const pointer element = (*((pointer*)pointer(object->elements) + i));
-        const int16_t type = host_byteorder_16(*((int16_t*)pointer(object->element_types) + i));
+        const int16_t type = host_byteorder_16(*((int16_t*)pointer(object->elementTypes) + i));
         const void* block = pointer(element);
         
         if (type == fnCollideObjectGetElementIndexedSpheres)
@@ -91,11 +91,11 @@ const bool fnCollideObjectIntersectSegment(const tdstCollideObject* object,
     const tdstCollideElementIndexedTriangles* mesh = NULL;
     while ((mesh = fnCollideObjectGetElementIndexedTriangles(object, mesh_index)))
     {
-        const uint16* indices = (const uint16*)pointer(mesh->face_indices);
+        const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
         const tdstVector3D* vertices = (const tdstVector3D*)pointer(object->vertices);
         const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
 
-        for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
+        for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
         {
             uint16 idx0 = host_byteorder_16(*(indices + index * 3 + 0));
             uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));

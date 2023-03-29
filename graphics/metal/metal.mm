@@ -447,14 +447,14 @@ static void DrawGeometryRecursive(const tdstSuperObject* root, const tdstMatrix4
                 const tdstCollideElementIndexedTriangles* mesh;
                 while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_idx)))
                 {
-                    uint16* indices = (uint16*)pointer(mesh->face_indices);
+                    uint16* indices = (uint16*)pointer(mesh->faceIndices);
                     tdstVector3D* vertices = (tdstVector3D*)pointer(zdr->vertices);
                     
                     if (vertices && indices)
                     {
                         
-                        const int16 n_faces = host_byteorder_16(mesh->n_faces);
-                        const int16 n_vertices = host_byteorder_16(zdr->n_vertices);
+                        const int16 n_faces = host_byteorder_16(mesh->numFaces);
+                        const int16 n_vertices = host_byteorder_16(zdr->numVertices);
                         //printf("n faces: %d %d\n", n_faces, n_vertices);
                         
                         id<MTLBuffer> indexBuffer = [device newBufferWithBytes: (void*)indices length: n_faces * 3 * sizeof(uint16) options: MTLResourceStorageModeShared];
@@ -672,7 +672,7 @@ void graphics_loop()
             
             struct mesh_data* data = (struct mesh_data*)sphere_mesh->internal_data;
             
-            const tdstTransform* T = (const tdstTransform*)pointer(object->transform_global);
+            const tdstTransform* T = (const tdstTransform*)pointer(object->globalTransform);
             const tdstMatrix4D mat = ( matrix4_host_byteorder(T->matrix));
             tdstVector3D pos = game_matrix4_position(mat);
             
@@ -738,11 +738,11 @@ void graphics_loop()
             const tdstCollideSet* collset = (const tdstCollideSet*)actor_collset(actor);
             if (!collset) continue;
             
-            const tdstZdxList* zddlist = (const tdstZdxList*)pointer(collset->zde_list);
+            const tdstZdxList* zddlist = (const tdstZdxList*)pointer(collset->zdeList);
             //printf("zdd list: %X\n", offset(&zddlist->list));
             if (zddlist)
             {
-                for (unsigned int i = 0; i < host_byteorder_32(zddlist->list.n_entries); i++)
+                for (unsigned int i = 0; i < host_byteorder_32(zddlist->list.numEntries); i++)
                 {
                     pointer* zonesetptr = (pointer*)pointer(zddlist->list.first);
                     if (zonesetptr)
@@ -753,9 +753,9 @@ void graphics_loop()
                             //printf("zdd list: %X\n", offset(obj));
                             
                             printf("sphere center: %f %f %f\n",
-                                    host_byteorder_f32(obj->bounding_sphere_position.x),
-                                   host_byteorder_f32(obj->bounding_sphere_position.y),
-                                   host_byteorder_f32(obj->bounding_sphere_position.z));
+                                    host_byteorder_f32(obj->boundingSpherePosition.x),
+                                   host_byteorder_f32(obj->boundingSpherePosition.y),
+                                   host_byteorder_f32(obj->boundingSpherePosition.z));
                         }
                     }
                     

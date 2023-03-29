@@ -45,10 +45,10 @@ static void display_joypad(bool *display)
         cstickpos.y += 15;
         cstickpos.x += joystick_radius * 2.0f + 5.0f;
         
-        const float mjoy_x = input.stick.main.x ? host_byteorder_f32(*(uint32_t*)&input.stick.main.x->analogvalue) : 0.0f;
-        const float mjoy_y = input.stick.main.y ? host_byteorder_f32(*(uint32_t*)&input.stick.main.y->analogvalue) : 0.0f;
-        const float cjoy_x = input.stick.c.x ? host_byteorder_f32(*(uint32_t*)&input.stick.c.x->analogvalue) : 0.0f;
-        const float cjoy_y = input.stick.c.y ? host_byteorder_f32(*(uint32_t*)&input.stick.c.y->analogvalue) : 0.0f;
+        const float mjoy_x = input.stick.main.x ? host_byteorder_f32(*(uint32_t*)&input.stick.main.x->analogValue) : 0.0f;
+        const float mjoy_y = input.stick.main.y ? host_byteorder_f32(*(uint32_t*)&input.stick.main.y->analogValue) : 0.0f;
+        const float cjoy_x = input.stick.c.x ? host_byteorder_f32(*(uint32_t*)&input.stick.c.x->analogValue) : 0.0f;
+        const float cjoy_y = input.stick.c.y ? host_byteorder_f32(*(uint32_t*)&input.stick.c.y->analogValue) : 0.0f;
         
         draw_joystick(drawlist, ctrlstickpos, joystick_radius, mjoy_x, mjoy_y);
         draw_joystick(drawlist, cstickpos, joystick_radius, cjoy_x, cjoy_y);

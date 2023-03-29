@@ -7,9 +7,9 @@
 
 struct stOctree {
     readonly pointer root;
-    readonly int16 n_faces;
+    readonly int16 numFaces;
     padding(2)
-    readonly pointer element_bases;
+    readonly pointer elementBases;
     readonly tdstVector3D min;
     readonly tdstVector3D max;
 } typedef tdstOctree;
@@ -18,7 +18,7 @@ struct stOctreeNode {
     readonly tdstVector3D min;
     readonly tdstVector3D max;
     readonly doublepointer children;
-    readonly pointer face_indices; /* ::uchar8 */
+    readonly pointer faceIndices; /* ::uchar8 */
 } typedef tdstOctreeNode;
 
 #endif /* stOctree_h */

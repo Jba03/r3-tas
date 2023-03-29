@@ -5,9 +5,9 @@
 
 struct stBrain {
     readonly pointer mind;
-    readonly pointer last_nocollide_material;
-    readonly uint8 warn_mechanics;
-    readonly uint8 active_during_transition;
+    readonly pointer lastNoCollideMaterial;
+    readonly uint8 warnMechanics;
+    readonly uint8 activeDuringTransition;
     padding(2)
 } typedef tdstBrain;
 

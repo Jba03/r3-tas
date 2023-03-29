@@ -155,7 +155,7 @@ static std::string fmt_actor_array(void* offset)
 
 static std::string dsgvar_fmt(const tdstDsgVarInfo* info, const uint8_t* buffer)
 {
-    void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
+    void* data = (void*)(buffer + host_byteorder_32(info->memOffset));
     
     std::setprecision(3);
     
@@ -207,17 +207,17 @@ static void* actor_dsgvar(tdstEngineObject* actor, unsigned var)
     const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
     if (!mind) return NULL;
     
-    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgmemory);
+    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgMem);
     if (!dsgmem) return NULL;
     
-    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgvars);
+    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgVars);
     if (!dsgvars) return NULL;
         
-    const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
+    const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->currentBuffer);
     const tdstDsgVarInfo* info = (const tdstDsgVarInfo*)pointer(dsgvars->info) + var;
     if (!info) return NULL;
     
-    void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
+    void* data = (void*)(buffer + host_byteorder_32(info->memOffset));
     
     return data;
 }
@@ -230,14 +230,14 @@ static void display_actor_dsg(tdstEngineObject* actor, bool initial = false)
     const tdstMind* mind = (const tdstMind*)pointer(brain->mind);
     if (!mind) return;
     
-    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgmemory);
+    const tdstDsgMem* dsgmem = (const tdstDsgMem*)pointer(mind->dsgMem);
     if (!dsgmem) return;
     
-    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgvars);
+    const tdstDsgVar* dsgvars = (const tdstDsgVar*)doublepointer(dsgmem->dsgVars);
     if (!dsgvars) return;
         
-    const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->buffer_current);
-    for (unsigned int var = 0; var < dsgvars->info_length; var++)
+    const uint8_t* buffer = (const uint8_t*)pointer(dsgmem->currentBuffer);
+    for (unsigned int var = 0; var < dsgvars->infoLength; var++)
     {        
         const tdstDsgVarInfo* info = (const tdstDsgVarInfo*)pointer(dsgvars->info) + var;
         
@@ -252,12 +252,12 @@ static void display_actor_dsg(tdstEngineObject* actor, bool initial = false)
         
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
         {
-            memory_viewer.GotoAddr = offset((void*)(buffer + host_byteorder_32(info->mem_offset)));
+            memory_viewer.GotoAddr = offset((void*)(buffer + host_byteorder_32(info->memOffset)));
         }
         
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && configuration.cheats.enabled)
         {
-            void* data = (void*)(buffer + host_byteorder_32(info->mem_offset));
+            void* data = (void*)(buffer + host_byteorder_32(info->memOffset));
             *(uint8*)data = !*(uint8*)data;
         }
     }

@@ -5,11 +5,11 @@
 
 struct stInstantiatedPhysicalObject {
     readonly pointer tdstPhysicalObject;
-    readonly pointer current_radiosity;
+    readonly pointer currentRadiosity;
     readonly doublepointer radiosity;
-    readonly pointer portal_camera;
-    readonly uint32 last_transition_id;
-    readonly float32 last_ratio_used;
+    readonly pointer portalCamera;
+    readonly uint32 lastTransitionID;
+    readonly float32 lastRatioUsed;
 #if platform == GCN || platform == PC
     padding(4) /* Unknown? */
     readonly char8 name[0x32];

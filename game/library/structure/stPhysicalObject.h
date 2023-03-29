@@ -4,10 +4,10 @@
 #include "structure.h"
 
 struct stPhysicalObject {
-    readonly pointer visualset;
-    readonly pointer physical_collideset;
-    readonly pointer visual_bounding_volume;
-    readonly pointer collide_bounding_volume;
+    readonly pointer visualSet;
+    readonly pointer physicalCollideset;
+    readonly pointer visualBoundingVolume;
+    readonly pointer collideBoundingVolume;
 } typedef tdstPhysicalObject, tdstPO;
 
 #endif /* stPhysicalObject_h */

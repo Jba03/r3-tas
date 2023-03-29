@@ -179,10 +179,10 @@ uint32 actor_color(const tdstEngineObject* actor)
 {
     if (!actor) return 0x80808080;
     
-    const tdstStandardGameInfo* stdgame = pointer(actor->stdgame);
+    const tdstStandardGameInfo* stdgame = pointer(actor->stdGame);
     if (!stdgame) return 0x80808080;
     
-    unsigned n = host_byteorder_32(stdgame->family_type);
+    unsigned n = host_byteorder_32(stdgame->familyType);
     return color_table_index(2 * n + 1);
 }
 

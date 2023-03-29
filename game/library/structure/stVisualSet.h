@@ -4,18 +4,18 @@
 #include "structure.h"
 
 struct stVisualSet {
-    readonly float32 last_distance;
-    readonly int16 n_lod;
+    readonly float32 lastDistance;
+    readonly int16 numLod;
     readonly int16 type;
-    readonly pointer threshold_table;
-    readonly pointer lod_definitions;
-    readonly doublepointer rli;
-    readonly int32 n_rli;
+    readonly pointer thresholdTable;
+    readonly pointer lodDefinitions;
+    readonly doublepointer RLI;
+    readonly int32 numRLI;
 } typedef tdstVisualSet;
 
 union stVisualObject {
-    readonly pointer geometric_object;
-    readonly pointer morph_object;
+    readonly pointer geometricObject;
+    readonly pointer morphObject;
 } typedef tdstVisualObject;
 
 #endif /* stVisualSet_h */

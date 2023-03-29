@@ -16,17 +16,17 @@
 #define collide_object_deformationsetinfo   13
 
 struct stCollideObject {
-    readonly int16 n_vertices;
-    readonly int16 n_elements;
-    readonly int16 n_bboxes;
+    readonly int16 numVertices;
+    readonly int16 numElements;
+    readonly int16 numBoundingBoxes;
     padding(2)
     readonly pointer vertices;
-    readonly pointer element_types;
+    readonly pointer elementTypes;
     readonly doublepointer elements;
     readonly pointer octree;
-    readonly pointer bboxes;
-    readonly float32 bounding_sphere_radius;
-    readonly tdstVector4D bounding_sphere_position;
+    readonly pointer boundingBoxes;
+    readonly float32 boundingSphereRadius;
+    readonly tdstVector4D boundingSpherePosition;
 } typedef tdstCollideObject;
 
 #if USE_FUNCTIONS

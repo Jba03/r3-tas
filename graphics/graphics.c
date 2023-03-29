@@ -40,17 +40,17 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
         
         struct mesh* mesh = malloc(sizeof *mesh);
         mesh->name = ipo->name;
-        mesh->material = gamemat->collide_material;
+        mesh->material = gamemat->collideMaterial;
         
-        mesh->n_vertices = host_byteorder_16(collmesh->n_faces) * 3;
-        mesh->n_indices = host_byteorder_16(collmesh->n_faces) * 3;
-        mesh->vertices = malloc(sizeof(struct vertex) * host_byteorder_16(collmesh->n_faces) * 3);
-        mesh->indices = malloc(sizeof(unsigned int) * host_byteorder_16(collmesh->n_faces) * 3);
+        mesh->n_vertices = host_byteorder_16(collmesh->numFaces) * 3;
+        mesh->n_indices = host_byteorder_16(collmesh->numFaces) * 3;
+        mesh->vertices = malloc(sizeof(struct vertex) * host_byteorder_16(collmesh->numFaces) * 3);
+        mesh->indices = malloc(sizeof(unsigned int) * host_byteorder_16(collmesh->numFaces) * 3);
         
-        uint16_t* index = pointer(collmesh->face_indices);
+        uint16_t* index = pointer(collmesh->faceIndices);
         
-        uint16_t indices[host_byteorder_16(collmesh->n_faces) * 3];
-        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
+        uint16_t indices[host_byteorder_16(collmesh->numFaces) * 3];
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->numFaces); idx++)
         {
             indices[idx * 3 + 0] = host_byteorder_16(*(index + idx * 3 + 0));
             indices[idx * 3 + 1] = host_byteorder_16(*(index + idx * 3 + 1));
@@ -59,7 +59,7 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
         
         tdstVector3D* vertices = pointer(zdr->vertices);
         tdstVector3D* normals = pointer(collmesh->normals);
-        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->numFaces) * 3; idx++)
         {
             mesh->vertices[idx].position.x = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].x);
             mesh->vertices[idx].position.z = host_byteorder_f32(*(uint32_t*)&vertices[indices[idx]].y);
@@ -70,14 +70,14 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
             mesh->vertices[idx].normal.y = host_byteorder_f32(*(uint32_t*)&normals[idx / 3].z);
         }
         
-        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces); idx++)
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->numFaces); idx++)
         {
             mesh->indices[idx * 3 + 0] = idx * 3 + 0;
             mesh->indices[idx * 3 + 1] = idx * 3 + 2;
             mesh->indices[idx * 3 + 2] = idx * 3 + 1;
         }
         
-        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->numFaces) * 3; idx++)
         {
             tdstVector3D normal;
             normal.x = fabs(mesh->vertices[idx].normal.x);
@@ -103,7 +103,7 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
         }
         
         int n_valid_normals = 0;
-        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->n_faces) * 3; idx++)
+        for (unsigned idx = 0; idx < host_byteorder_16(collmesh->numFaces) * 3; idx++)
         {
             tdstVector3D normal;
             normal.x = fabs(mesh->vertices[idx].normal.x);
@@ -113,7 +113,7 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
             if (normal.y > 0.5f) n_valid_normals++;
         }
         
-        const float normal_average = (float)n_valid_normals / (float)(host_byteorder_16(collmesh->n_faces) * 3);
+        const float normal_average = (float)n_valid_normals / (float)(host_byteorder_16(collmesh->numFaces) * 3);
         
         //if (normal_average > 0.5f)
         {

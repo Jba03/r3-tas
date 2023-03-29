@@ -24,10 +24,10 @@ static void begin_carrying_object(const tdstSuperObject* carryable_actor)
     if (!mind) return;
     
     tdstIntelligence* intell = (tdstIntelligence*)pointer(mind->intelligence);
-    if (intell) intell->current_behavior = game_byteorder_32(0x80BF2574);
+    if (intell) intell->currentBehavior = game_byteorder_32(0x80BF2574);
     
     tdstIntelligence* reflex = (tdstIntelligence*)pointer(mind->reflex);
-    reflex->current_behavior = game_byteorder_32(0x80C25104);
+    reflex->currentBehavior = game_byteorder_32(0x80C25104);
 }
 
 const struct cheats cheats =

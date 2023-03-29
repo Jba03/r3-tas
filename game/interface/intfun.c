@@ -29,21 +29,21 @@ static void ReadDSG(struct intcpa* intr, pointer actor_address, unsigned var, ui
     const tdstMind* mind = pointer(brain->mind);
     if (!mind) goto fail;
     
-    const tdstDsgMem* dsgmem = pointer(mind->dsgmemory);
+    const tdstDsgMem* dsgmem = pointer(mind->dsgMem);
     if (!dsgmem) goto fail;
     
-    const tdstDsgVar* dsgvars = doublepointer(dsgmem->dsgvars);
+    const tdstDsgVar* dsgvars = doublepointer(dsgmem->dsgVars);
     if (!dsgvars) goto fail;
     
-    if (var >= dsgvars->info_length) goto fail;
+    if (var >= dsgvars->infoLength) goto fail;
     
     const tdstDsgVarInfo* variable = (tdstDsgVarInfo*)pointer(dsgvars->info) + var;
     *type = host_byteorder_32(variable->type);
     
-    const uint8_t* data = (uint8_t*)pointer(dsgmem->buffer_current);
+    const uint8_t* data = (uint8_t*)pointer(dsgmem->currentBuffer);
     if (data)
     {
-        *result = (void*)(data + host_byteorder_32(variable->mem_offset));
+        *result = (void*)(data + host_byteorder_32(variable->memOffset));
     }
     
     if (*type <= n_dsgvar_types)

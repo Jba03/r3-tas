@@ -79,11 +79,11 @@ static void r3_load()
     info(COLOR_BLUE "NIN_m_ChangeMap @ %X\n", offset(actor_changemap));
     
     /* Derive the three worlds from the hierarchy */
-    if (hierarchy) dynamic_world = (tdstSuperObject*)pointer(hierarchy->first_child);
+    if (hierarchy) dynamic_world = (tdstSuperObject*)pointer(hierarchy->firstChild);
     if (dynamic_world) inactive_dynamic_world = (tdstSuperObject*)pointer(dynamic_world->next);
-    if (inactive_dynamic_world) father_sector = (tdstSuperObject*)pointer(hierarchy->last_child);
+    if (inactive_dynamic_world) father_sector = (tdstSuperObject*)pointer(hierarchy->lastChild);
     
-    if (engine) strcpy(previous_level_name, engine->current_level_name);
+    if (engine) strcpy(previous_level_name, engine->currentLevelName);
 }
 
 static void r3_unload()
@@ -163,7 +163,7 @@ static void update(const char* controller)
     }
     else if (previous_level_name[0] != '\0' && engine->mode == 9)
     {
-        if (strcmp(previous_level_name, engine->current_level_name))
+        if (strcmp(previous_level_name, engine->currentLevelName))
         {
             r3_unload();
             load();

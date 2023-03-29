@@ -5,7 +5,7 @@ static const float projY = 0.708f;
 
 static ImVec4 project_world_coordinate(const tdstVector3D P)
 {
-    tdstCameraGLI* camera = (tdstCameraGLI*)pointer(engine->viewport_camera[0]);
+    tdstCameraGLI* camera = (tdstCameraGLI*)pointer(engine->viewportCamera[0]);
     
     tdstMatrix4D view = matrix4_host_byteorder(camera->transform.matrix);
     /* Change sign of the two middle columns (flipping the rotation) */
@@ -19,7 +19,7 @@ static ImVec4 project_world_coordinate(const tdstVector3D P)
     view.m32 = -view.m32;
     /* const tdstMatrix4D view = matrix4_lookat(campos, vector3_host_byteorder(*(tdstVector3D*)(memory.base + 0x00c53910)) (dsgvar_150), vector3_new(0, 0, -1)); */
     
-    const float fov = host_byteorder_f32(*(float32*)&camera->alpha_x);
+    const float fov = host_byteorder_f32(*(float32*)&camera->xAlpha);
     
     const tdstMatrix4D projection = matrix4_perspective(fov, 528.0f / 640.0f, 0.1f, 1000.0f);
     const tdstMatrix4D viewprojection = matrix4_mul(projection, view);
@@ -204,9 +204,9 @@ static void DrawLevelGeometryRecursive(const tdstSuperObject* root, const tdstMa
                     if (!edges)
                     {
                         const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
-                        const uint16* indices = (const uint16*)pointer(mesh->face_indices);
+                        const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
                         
-                        for (int16 index = 0; index < host_byteorder_16(mesh->n_faces); index++)
+                        for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
                         {
                             uint16 idx0 = host_byteorder_16(*(indices + index * 3 + 0));
                             uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));

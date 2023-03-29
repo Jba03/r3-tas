@@ -11,7 +11,7 @@
 /** fnEngineLoadLevel: load level with specified name */
 void fnEngineLoadLevel(tdstEngineStructure* engine, const char* levelName)
 {
-    memset((void*)engine->next_level_name, 0, 30);
-    strcpy((void*)engine->next_level_name, levelName);
+    memset((void*)engine->nextLevelName, 0, 30);
+    strcpy((void*)engine->nextLevelName, levelName);
     engine->mode = 6; /* Change map */
 }

@@ -6,10 +6,10 @@
 
 struct stPadReadingOutput {
     readonly tdstVector3D vector;
-    readonly int16 horizontal_axis;
-    readonly int16 vertical_axis;
-    readonly float32 analog_force;
-    readonly float32 analog_force_true;
+    readonly int16 horizontalAxis;
+    readonly int16 verticalAxis;
+    readonly float32 analogForce;
+    readonly float32 trueAnalogForce;
     readonly float32 angle;
     readonly int32 sector;
 } typedef tdstPadReadingOutput;
@@ -18,65 +18,65 @@ struct stInputDevice {
     readonly uint8 valid;
     padding(3)
     readonly pointer handle;
-    readonly uint8 joypad_counter[44];
-    readonly int8 joy_min_x;
-    readonly int8 joy_max_x;
-    readonly int8 joy_min_y;
-    readonly int8 joy_max_y;
-    readonly int8 joy_center_x;
-    readonly int8 joy_center_y;
+    readonly uint8 joypadCounter[44];
+    readonly int8 joyMinX;
+    readonly int8 joyMaxX;
+    readonly int8 joyMinY;
+    readonly int8 joyMaxY;
+    readonly int8 joyCenterX;
+    readonly int8 joyCenterY;
     padding(2)
-    readonly pointer joy_axis_x;
-    readonly pointer joy_axis_y;
-    readonly pointer joy_axis_z;
-    readonly pointer joy_axis_r;
-    readonly pointer key_up;
-    readonly pointer key_down;
-    readonly pointer key_left;
-    readonly pointer key_right;
-    readonly pointer key_speed;
-    readonly uint8 no_keyboard_inertia;
+    readonly pointer joyAxisX;
+    readonly pointer joyAxisY;
+    readonly pointer joyAxisZ;
+    readonly pointer joyAxisR;
+    readonly pointer keyUp;
+    readonly pointer keyDown;
+    readonly pointer keyLeft;
+    readonly pointer keyRight;
+    readonly pointer keySpeed;
+    readonly uint8 noKeyboardInertia;
     padding(3)
-    readonly pointer joy_button[16];
-    readonly pointer key_button[16];
+    readonly pointer joyButton[16];
+    readonly pointer keyButton[16];
     readonly tdstPadReadingOutput pad;
 } typedef tdstInputDevice;
 
 struct stInputStructure {
-    readonly uint8 one_pad_activate;
+    readonly uint8 onePadActivate;
     padding(3)
     readonly tdstInputDevice device[18];
-    readonly uint8 keyboard_counter[256];
-    readonly uint8 keyboard_type;
-    readonly uint8 mousebutton_counter[9];
+    readonly uint8 keyboardCounter[256];
+    readonly uint8 keyboardType;
+    readonly uint8 mouseButtonCounter[9];
     padding(2)
-    readonly uint32 n_entries;
+    readonly uint32 numEntries;
     readonly pointer entries;
-    readonly uint32 n_commands;
+    readonly uint32 numCommands;
     readonly pointer commands;
-    readonly int16 event_size;
+    readonly int16 eventSize;
     padding(2)
-    readonly pointer historic_event;
-    readonly uint8 one_action_validated;
+    readonly pointer historicEvent;
+    readonly uint8 oneActionValidated;
     readonly char8 line[78];
-    readonly char8 line_internal[78];
-    readonly char8 line_search[78];
-    readonly char8 line_last[10][78];
+    readonly char8 lineInternal[78];
+    readonly char8 lineSearch[78];
+    readonly char8 lineLast[10][78];
     padding(1)
-    readonly int32 index_historic;
-    readonly pointer command_searched;
-    readonly pointer command_mode_entry_swap;
-    readonly pointer command_mode_entry_clear;
+    readonly int32 historicIndex;
+    readonly pointer searchedCommand;
+    readonly pointer commandModeEntrySwap;
+    readonly pointer commandModeEntryClear;
 } typedef tdstInputStructure;
 
 struct stInputEntryElement {
     padding(6 * 4) /* ? */
-    readonly uint32 num_keywords;
-    readonly pointer keyword_array;
-    readonly pointer action_name;
-    readonly pointer entry_name;
+    readonly uint32 numKeywords;
+    readonly pointer keywordArray;
+    readonly pointer actionName;
+    readonly pointer entryName;
     readonly int32 state;
-    readonly float32 analogvalue;
+    readonly float32 analogValue;
     readonly int8 active;
     padding(3)
 } typedef tdstInputEntryElement;

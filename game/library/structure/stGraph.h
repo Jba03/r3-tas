@@ -4,9 +4,9 @@
 #include "structure.h"
 
 struct stGraph {
-    readonly pointer node_first;
-    readonly pointer node_last;
-    readonly int32 n_nodes;
+    readonly pointer firstNode;
+    readonly pointer lastNode;
+    readonly int32 numNodes;
 } typedef tdstGraph;
 
 #endif /* stGraph_h */

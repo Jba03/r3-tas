@@ -24,7 +24,7 @@ void display_calculate_rng()
     ImGui::InputInt("min", &calc_rng_min);
     ImGui::InputInt("max", &calc_rng_max);
     
-    const uint32_t Tmax = host_byteorder_32(rnd->table_max);
+    const uint32_t Tmax = host_byteorder_32(rnd->tableMax);
     const int R = (calc_rng_min + ((calc_rng_max - calc_rng_min + 1) * calc_rng_value) / (Tmax + 1));
     ImGui::Text("Result: %d", R);
     
@@ -42,7 +42,7 @@ void display_rng_info()
 void display_rng_table()
 {
     #define RNG_TABLE_DISPLAY 20
-    uint32_t base_index = host_byteorder_32(rnd->table_indices[0]);
+    uint32_t base_index = host_byteorder_32(rnd->tableIndices[0]);
     if (base_index == 0) previous_rng_index = 0;
     
     std::string fmt = "0x%X: 0x%X";
@@ -64,7 +64,7 @@ void display_rng_table()
             marker = "->";
         }
         
-        if (base_index + i < host_byteorder_32(rnd->table_size))
+        if (base_index + i < host_byteorder_32(rnd->tableSize))
         {
             ImGui::TextColored(color, ("%-2s " + fmt).c_str(), marker.c_str(), base_index + i, value);
             if (ImGui::IsItemHovered())

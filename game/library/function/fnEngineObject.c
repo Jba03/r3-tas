@@ -121,7 +121,7 @@ const float fnActorTrajectoryAngleRelative(const tdstEngineObject* A, const tdst
     if (!dynamics) return M_PI; /* has no dynamics => static */
     
     /* Resolve the speed angle. The previous speed is same as the current speed. */
-    const tdstVector3D speed = vector3_host_byteorder(dynamics->base.speed_previous);
+    const tdstVector3D speed = vector3_host_byteorder(dynamics->base.previousSpeed);
     const float sA = atan2(speed.y, speed.x);
     
     const tdstMatrix4D mA = fnActorGetMatrix(A);
@@ -164,7 +164,7 @@ tdstIntelligence* fnActorGetIntelligence(const tdstEngineObject *object, bool re
 tdstDsgMem* fnActorGetDsgMem(const tdstEngineObject *object)
 {
     const tdstMind *mind = fnActorGetMind(object);
-    return mind ? pointer(mind->dsgmemory) : NULL;
+    return mind ? pointer(mind->dsgMem) : NULL;
 }
 
 void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type)
@@ -173,49 +173,19 @@ void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type)
     return fnDsgMemGetDsgVar(mem, var, false, type);
 }
 
-///** fnActorGetDSGVar: get the offset of an actor's dsgvar. Negative on failure. */
-//const int fnActorGetDSGVar(const tdstEngineObject* actor, unsigned var, int* type, void** data)
-//{
-//    if (!actor) return -1;
-//    if (!data) return -1;
-//
-//    const tdstBrain* brain = actor_brain(actor);
-//    if (!brain) return -1;
-//
-//    const tdstMind* mind = pointer(brain->mind);
-//    if (!mind) return -1;
-//
-//    const tdstDsgMem* dsgmem = pointer(mind->dsgmemory);
-//    if (!dsgmem) return -1;
-//
-//    const tdstDsgVar* dsgvars = doublepointer(dsgmem->dsgvars);
-//    if (!dsgvars) return -1;
-//
-//    if (var >= dsgvars->info_length) return -1;
-//
-//    const tdstDsgVarInfo* variable = (tdstDsgVarInfo*)pointer(dsgvars->info) + var;
-//    if (type) *type = host_byteorder_32(variable->type);
-//
-//    const uint8_t* dataptr = (uint8_t*)pointer(dsgmem->buffer_current);
-//    if (!dataptr) return -1;
-//
-//    *data = (void*)(dataptr + host_byteorder_32(variable->mem_offset));
-//    return 0;
-//}
-
 /** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
 const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstObjectType* objectType)
 {
     if (!actor) return NULL;
     
-    const tdstStandardGameInfo* stdgame = pointer(actor->stdgame);
+    const tdstStandardGameInfo* stdgame = pointer(actor->stdGame);
     if (!stdgame) return NULL;
     
     switch (name)
     {
-        case actor_family_name: return fnObjectTypeGetName(objectType, object_family_name, host_byteorder_32(stdgame->family_type));
-        case actor_model_name: return fnObjectTypeGetName(objectType, object_model_name, host_byteorder_32(stdgame->model_type));
-        case actor_instance_name: return fnObjectTypeGetName(objectType, object_instance_name, host_byteorder_32(stdgame->instance_type));
+        case actor_family_name: return fnObjectTypeGetName(objectType, object_family_name, host_byteorder_32(stdgame->familyType));
+        case actor_model_name: return fnObjectTypeGetName(objectType, object_model_name, host_byteorder_32(stdgame->modelType));
+        case actor_instance_name: return fnObjectTypeGetName(objectType, object_instance_name, host_byteorder_32(stdgame->instanceType));
     }
     
     return NULL;
@@ -225,7 +195,7 @@ const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstOb
 const char* fnActorGetCurrentBehaviorName(const tdstEngineObject* actor)
 {
     tdstIntelligence *intelligence = fnActorGetIntelligence(actor, false);
-    const tdstBehavior* behavior = pointer(intelligence->current_behavior);
+    const tdstBehavior* behavior = pointer(intelligence->currentBehavior);
     if (!behavior) return NULL;
     
     return behavior->name;

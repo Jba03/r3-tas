@@ -11,28 +11,28 @@ struct stVertex2DGLI {
 } typedef tdstVertex2DGLI;
 
 struct stCameraGLI {
-    readonly int32 camera_mode;
+    readonly int32 cameraMode;
     readonly tdstTransform transform;
-    readonly float32 alpha_x;
-    readonly float32 alpha_y;
+    readonly float32 xAlpha;
+    readonly float32 yAlpha;
     readonly float32 near;
     readonly float32 far;
     readonly float32 screen;
     readonly tdstVertex2DGLI scale;
     readonly tdstVertex2DGLI trans;
-    readonly float32 projection_xr;
-    readonly float32 projection_yr;
+    readonly float32 xProjectionR;
+    readonly float32 yprojectionR;
     readonly tdstVector3D left;
-    readonly float32 d_left;
+    readonly float32 dLeft;
     readonly tdstVector3D right;
-    readonly float32 d_right;
+    readonly float32 dRight;
     readonly tdstVector3D up;
-    readonly float32 d_up;
+    readonly float32 dUp;
     readonly tdstVector3D down;
-    readonly float32 d_down;
+    readonly float32 dDown;
     readonly float32 ratio;
     readonly uint8 transparency;
-    readonly float32 transp_dist;
+    readonly float32 transpDist;
     readonly uint8 mirrored;
 } typedef tdstCameraGLI;
 

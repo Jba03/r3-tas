@@ -17,7 +17,6 @@
 
 struct stTransform {
     readonly uint32_t type;
-    //padding(12)
     readonly tdstMatrix4D matrix;
     readonly tdstVector4D scale;
 } typedef tdstTransform;

@@ -77,7 +77,7 @@ static void DisplayRouteWindow()
     {
         const tdstDynamics* dynamics = fnActorGetDynamics(actor_rayman);
         tdstDynamicsReport* report = (tdstDynamicsReport*)pointer(dynamics->base.report);
-        tdstSuperObject* obstacle = (tdstSuperObject*)pointer(report->ground.superobject);
+        tdstSuperObject* obstacle = (tdstSuperObject*)pointer(report->ground.superObject);
         
         xrayNode node;
         node.position = vector3_host_byteorder(report->ground.contact); //vector3_add(actor_position(actor_rayman), vector3_host_byteorder(report->ground.normal));

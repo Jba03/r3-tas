@@ -4,38 +4,38 @@
 #include "structure.h"
 
 struct stElementIndexedTrianglesVisual {
-    readonly pointer visual_material;
-    readonly int16 n_faces;
-    readonly int16 n_uvs;
-    readonly int16 n_uv_stages;
+    readonly pointer visualMaterial;
+    readonly int16 numFaces;
+    readonly int16 numUVs;
+    readonly int16 numUVStages;
     padding(2)
-    readonly pointer face_indices;
-    readonly pointer face_indices_uv;
-    readonly pointer face_normals;
-    readonly pointer uv_elements;
+    readonly pointer faceIndices;
+    readonly pointer faceUVIndices;
+    readonly pointer faceNormals;
+    readonly pointer UVElements;
     readonly pointer edges;
-    readonly pointer adjacent_faces;
-    readonly pointer this_indexlist;
-    readonly int16 n_used_indices;
-    readonly int16 bbox_index;
-    readonly uint32 displaylist;
+    readonly pointer adjacentFaces;
+    readonly pointer thisIndexList;
+    readonly int16 numUsedIndices;
+    readonly int16 boundingBoxIndex;
+    readonly uint32 displayList;
     readonly pointer unknown;
-    readonly uint8 portalvisibility;
+    readonly uint8 portalVisibility;
     padding(3)
     readonly uint32 vao[4];
 } typedef tdstElementIndexedTrianglesVisual;
 
 struct stCollideElementIndexedTriangles {
     readonly pointer material;
-    readonly pointer face_indices;
+    readonly pointer faceIndices;
     readonly pointer normals;
-    readonly int16 n_faces;
-    readonly int16 aabb_index;
-    readonly pointer geo_visualization; /* above struct */
-    readonly pointer face_edges;
-    readonly pointer edge_normals;
-    readonly pointer edge_coefficients;
-    readonly int16 n_edges;
+    readonly int16 numFaces;
+    readonly int16 aabbIndex;
+    readonly pointer geometryVisualization; /* above struct */
+    readonly pointer faceEdges;
+    readonly pointer edgeNormals;
+    readonly pointer edgeCoefficients;
+    readonly int16 numEdges;
     padding(2)
 } typedef tdstCollideElementIndexedTriangles;
 

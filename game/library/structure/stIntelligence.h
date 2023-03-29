@@ -4,12 +4,12 @@
 #include "structure.h"
 
 struct stIntelligence {
-    readonly doublepointer script_ai;
-    readonly pointer current_tree;
-    readonly pointer current_behavior;
-    readonly pointer previous_behavior;
-    readonly pointer action_table;
-    readonly uint32 initialize_behavior;
+    readonly doublepointer scriptAI;
+    readonly pointer currentTree;
+    readonly pointer currentBehavior;
+    readonly pointer previousBehavior;
+    readonly pointer actionTable;
+    readonly uint32 initializeBehavior;
 } typedef tdstIntelligence;
 
 #endif /* stIntelligence_h */

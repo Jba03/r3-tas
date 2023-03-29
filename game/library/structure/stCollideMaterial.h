@@ -23,18 +23,18 @@
 #define collide_material_all                0xffff
 
 struct stGameMaterial {
-    readonly int32 material_sound;
-    readonly pointer collide_material;
+    readonly int32 materialSound;
+    readonly pointer collideMaterial;
 } typedef tdstGameMaterial;
 
 struct stCollideMaterial {
-    readonly int16 zonetype;
+    readonly int16 zoneType;
     readonly uint16 identifier;
-    readonly float32 direction_x;
-    readonly float32 direction_y;
-    readonly float32 direction_z;
+    readonly float32 xDirection;
+    readonly float32 yDirection;
+    readonly float32 zDirection;
     readonly float32 coefficient;
-    readonly uint16 aitype;
+    readonly uint16 aiType;
     padding(2)
 } typedef tdstCollideMaterial;
 

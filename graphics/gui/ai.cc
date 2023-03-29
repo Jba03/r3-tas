@@ -151,7 +151,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                 if (tok.node->type == script_node_type_button)
                 {
                     tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
-                    const char* name = (const char*)pointer(entry->action_name);
+                    const char* name = (const char*)pointer(entry->actionName);
                     if ((host_byteorder_32(entry->state) & 0xFF000000) == 0)
                         color = ImVec4(100.0f / 255.0f, 255.0f / 255.0f, 255.0f, 1.0f);
                     else
@@ -290,12 +290,12 @@ static void display_aimodel(tdstEngineObject* actor,
         ImGui::EndChild();
         
         #pragma mark Intelligence list
-        if ((intelligence_list = (tdstScriptAI*)pointer(aimodel->intelligence_behavior_list)))
+        if ((intelligence_list = (tdstScriptAI*)pointer(aimodel->intelligenceBehaviorList)))
         {
             ImGui::BeginChild("Intelligence", ImVec2(0, ImGui::GetContentRegionAvail().y / 3), true);
             {
                 ImGui::Text("Intelligence");
-                for (unsigned int i = 0; i < host_byteorder_32(intelligence_list->n_behaviors); i++)
+                for (unsigned int i = 0; i < host_byteorder_32(intelligence_list->numBehaviors); i++)
                 {
                     tdstBehavior* intelligence = (tdstBehavior*)pointer(intelligence_list->behavior) + i;
                     if (intelligence)
@@ -341,12 +341,12 @@ static void display_aimodel(tdstEngineObject* actor,
         }
         
         #pragma mark Reflex list
-        if ((reflex_list = (tdstScriptAI*)pointer(aimodel->reflex_behavior_list)))
+        if ((reflex_list = (tdstScriptAI*)pointer(aimodel->reflexBehaviorList)))
         {
             ImGui::BeginChild("Reflex", ImVec2(0, ImGui::GetContentRegionAvail().y / 3), true);
             {
                 ImGui::Text("Reflex");
-                for (unsigned int r = 0; r < host_byteorder_32(reflex_list->n_behaviors); r++)
+                for (unsigned int r = 0; r < host_byteorder_32(reflex_list->numBehaviors); r++)
                 {
                     tdstBehavior* reflex = (tdstBehavior*)pointer(reflex_list->behavior) + r;
                     if (reflex)
@@ -384,7 +384,7 @@ static void display_aimodel(tdstEngineObject* actor,
         }
         
         #pragma mark Macro list
-        macro_list = (tdstMacroList*)pointer(aimodel->macrolist);
+        macro_list = (tdstMacroList*)pointer(aimodel->macroList);
         if (macro_list && pointer(macro_list->macros))
         {
             ImGui::BeginChild("Macros", ImVec2(0, ImGui::GetContentRegionAvail().y - 30), true);
@@ -453,15 +453,15 @@ static void display_ai(tdstEngineObject* actor)
             if ((intelligence = (tdstIntelligence*)pointer(mind->intelligence)))
             {
                 current_intelligence_struct = intelligence;
-                current_intelligence = (tdstBehavior*)pointer(intelligence->current_behavior);
+                current_intelligence = (tdstBehavior*)pointer(intelligence->currentBehavior);
             }
             
             if ((reflex = (tdstIntelligence*)pointer(mind->reflex)))
             {
-                current_reflex = (tdstBehavior*)pointer(reflex->current_behavior);
+                current_reflex = (tdstBehavior*)pointer(reflex->currentBehavior);
             }
             
-            if ((aimodel = (tdstAIModel*)pointer(mind->ai_model)))
+            if ((aimodel = (tdstAIModel*)pointer(mind->aiModel)))
             {
                 display_aimodel(actor, aimodel, current_intelligence, current_reflex, current_macro, &aimodel_selected_type, &aimodel_selected_data);
             }
@@ -582,7 +582,7 @@ static void display_ai(tdstEngineObject* actor)
                                 tdstTreeInterpret* script = (tdstTreeInterpret*)pointer(b->scripts);
                                 if (script)
                                 {
-                                    for (unsigned int i = 0; i < b->n_scripts; i++)
+                                    for (unsigned int i = 0; i < b->numScripts; i++)
                                     {
                                         tdstNodeInterpret* tree = (tdstNodeInterpret*)pointer((script + i)->tree);
                                         if (tree)

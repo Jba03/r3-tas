@@ -20,7 +20,7 @@ static void display_superobject_info()
             const tdstEngineObject* actor = (const tdstEngineObject*)pointer(info_target_so->data);
             if (!actor) return;
             
-            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdGame);
             if (!stdgame) return;
             
             /* Get actor names */
@@ -75,7 +75,7 @@ static void display_hierarchy(struct stSuperObject *so, const char* first_obj_na
             tdstEngineObject* actor = (tdstEngineObject*)pointer(so->data);
             if (!actor) goto end;
             
-            tdstStandardGameInfo* stdgame = (tdstStandardGameInfo* )pointer(actor->stdgame);
+            tdstStandardGameInfo* stdgame = (tdstStandardGameInfo* )pointer(actor->stdGame);
             if (!stdgame) goto end;
             
             uint32_t col = actor_color(actor);

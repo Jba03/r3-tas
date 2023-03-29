@@ -4,11 +4,11 @@
 #include "structure.h"
 
 struct stRandom {
-    readonly uint32 table_size;
-    readonly uint32 table_indices[50];
-    readonly uint32 last_index;
-    readonly uint32 table_max;
-    readonly float32 table_max_inverse;
+    readonly uint32 tableSize;
+    readonly uint32 tableIndices[50];
+    readonly uint32 lastIndex;
+    readonly uint32 tableMax;
+    readonly float32 tableMaxInverse;
     readonly pointer table;
 } typedef tdstRandom;
 

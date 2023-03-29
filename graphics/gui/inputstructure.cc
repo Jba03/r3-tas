@@ -20,13 +20,13 @@ static void display_input_structure(bool *display)
             ImGui::TableHeadersRow();
             
             tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(input_struct->entries);
-            int c = host_byteorder_32(input_struct->n_entries);
+            int c = host_byteorder_32(input_struct->numEntries);
             while (c-- && entry)
             {
-                const char* action_name = (const char*)pointer(entry->action_name);
-                const char* entry_name = (const char*)pointer(entry->entry_name);
+                const char* action_name = (const char*)pointer(entry->actionName);
+                const char* entry_name = (const char*)pointer(entry->entryName);
                 const int32 state = host_byteorder_32(entry->state);
-                const float analog = host_byteorder_f32(*(float32*)&entry->analogvalue);
+                const float analog = host_byteorder_f32(*(float32*)&entry->analogValue);
                 
                 ImGui::TableNextColumn();
                 ImGui::Text("%s", action_name);

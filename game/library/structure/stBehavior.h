@@ -6,16 +6,16 @@
 struct stBehavior {
     readonly char8 name[256]; /* 256 on GCN, at least */
     readonly pointer scripts;
-    readonly pointer script_first;
-    readonly uint8 n_scripts;
+    readonly pointer firstScript;
+    readonly uint8 numScripts;
     padding(3)
 } typedef tdstBehavior, tdstComport;
 
 struct stScriptAI {
     readonly pointer behavior;
-    readonly uint32 n_behaviors;
-    readonly uint32 no_initialization;
-    readonly uint8 n_acttable_entries;
+    readonly uint32 numBehaviors;
+    readonly uint32 noInitialization;
+    readonly uint8 numActionTableEntries;
     padding(3)
 } typedef tdstScriptAI;
 

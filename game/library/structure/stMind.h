@@ -4,11 +4,11 @@
 #include "structure.h"
 
 struct stMind {
-    readonly pointer ai_model;
+    readonly pointer aiModel;
     readonly pointer intelligence;
     readonly pointer reflex;
-    readonly pointer dsgmemory;
-    readonly uint8 run_intelligence;
+    readonly pointer dsgMem;
+    readonly uint8 runIntelligence;
     padding(3)
 } typedef tdstMind;
 

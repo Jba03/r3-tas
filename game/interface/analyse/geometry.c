@@ -18,10 +18,10 @@ int collide_object_triangles_combined(const tdstCollideObject* object, const tds
     
     const tdstVector3D* vertices = pointer(object->vertices);
     /* Loop through all elements in the collide object. */
-    for (int16 n = 0; n < host_byteorder_16(object->n_elements); n++)
+    for (int16 n = 0; n < host_byteorder_16(object->numElements); n++)
     {
         const pointer element = *((pointer*)pointer(object->elements) + n);
-        const int16 type = host_byteorder_16(*((int16*)pointer(object->element_types) + n));
+        const int16 type = host_byteorder_16(*((int16*)pointer(object->elementTypes) + n));
         
         const tdstCollideElementIndexedTriangles* mesh = pointer(element);
         if (!mesh) continue;
@@ -29,7 +29,7 @@ int collide_object_triangles_combined(const tdstCollideObject* object, const tds
         /* Only care to process indexed triangles. */
         if (type != collide_object_indexed_triangles) continue;
         
-        const int16 n_faces = host_byteorder_16(mesh->n_faces);
+        const int16 n_faces = host_byteorder_16(mesh->numFaces);
         /* Allocate triangles */
         list = realloc(list, sizeof(struct triangle) * (list_size + n_faces));
         
@@ -73,10 +73,10 @@ int collide_object_closest_vertex_to(const tdstCollideObject* object,
     tdstCollideElementIndexedTriangles* collmesh_out = NULL;
     int16 idx = 0;
     
-    for (int16 n = 0; n < host_byteorder_16(object->n_elements); n++)
+    for (int16 n = 0; n < host_byteorder_16(object->numElements); n++)
     {
         const pointer element = *((pointer*)pointer(object->elements) + n);
-        const int16 type = host_byteorder_16(*((int16*)pointer(object->element_types) + n));
+        const int16 type = host_byteorder_16(*((int16*)pointer(object->elementTypes) + n));
         /* Ignore all types except indexed triangles. */
         if (type != collide_object_indexed_triangles) continue;
         
@@ -84,7 +84,7 @@ int collide_object_closest_vertex_to(const tdstCollideObject* object,
         tdstCollideElementIndexedTriangles* mesh = pointer(element);
         const tdstVector3D* vertices = pointer(object->vertices);
 
-        for (int16 v = 0; v < host_byteorder_16(mesh->n_faces) * 3; v++)
+        for (int16 v = 0; v < host_byteorder_16(mesh->numFaces) * 3; v++)
         {
             tdstVector3D vertex = vector3_host_byteorder(vertices[v]);
             tdstVector4D transformed = vector4_mul_matrix4(vector4_new(vertex.x, vertex.y, vertex.z, 1.0f), object_transform);

@@ -134,7 +134,7 @@ static void superobject_draw_childlist(void* data, void* p)
         case superobject_type_actor:
             const tdstEngineObject* actor = (const tdstEngineObject*)pointer(so->data);
             if (!actor) return;
-            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdGame);
             if (!stdgame) return;
             name = fnActorGetName(actor_instance_name, actor, objectType);
             if (!name) name = fnActorGetName(actor_model_name, actor, objectType);
@@ -151,7 +151,7 @@ static void superobject_draw_childlist(void* data, void* p)
         
         *param->actor = (tdstEngineObject*)pointer(so->data);
         if (!*param->actor) return;
-        *param->stdgame = (tdstStandardGameInfo*)pointer((*param->actor)->stdgame);
+        *param->stdgame = (tdstStandardGameInfo*)pointer((*param->actor)->stdGame);
         if (!*param->stdgame) return;
     }
     
@@ -252,7 +252,7 @@ void superobject_info(tdstSuperObject* so)
             const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(object);
             if (!actor) continue;
             
-            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
+            const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdGame);
             if (!stdgame) return;
             
             /* Get actor instance name, or model name if spawnable actor */
@@ -313,7 +313,7 @@ void superobject_info(tdstSuperObject* so)
             
             if ((actor = (tdstEngineObject*)superobject_data(selected_superobject)))
             {
-                if ((stdgame = (tdstStandardGameInfo*)pointer(actor->stdgame)))
+                if ((stdgame = (tdstStandardGameInfo*)pointer(actor->stdGame)))
                 {
                     ImGui::BeginChild("Info", ImVec2(ImGui::GetContentRegionAvail().x, 250));
                     {
@@ -355,9 +355,9 @@ void superobject_info(tdstSuperObject* so)
                                 
                                 ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
                                 DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
-                                DisplayBits(&selected_superobject->draw_flags, false);
-                                DisplayBits(&stdgame->custom_bits, true);
-                                DisplayBits(&stdgame->ai_custom_bits, true, ai_custom_bits_description);
+                                DisplayBits(&selected_superobject->drawFlags, false);
+                                DisplayBits(&stdgame->customBits, true);
+                                DisplayBits(&stdgame->aiCustomBits, true, ai_custom_bits_description);
                                 ImGui::EndChild();
                                 
                                 ImGui::PopStyleVar();
@@ -368,8 +368,8 @@ void superobject_info(tdstSuperObject* so)
                             
                             ImGui::BeginChild("Transform");
                             {
-                                const tdstTransform* Tg = (const tdstTransform*)pointer(selected_superobject->transform_global);
-                                const tdstTransform* Tl = (const tdstTransform*)pointer(selected_superobject->transform_local);
+                                const tdstTransform* Tg = (const tdstTransform*)pointer(selected_superobject->globalTransform);
+                                const tdstTransform* Tl = (const tdstTransform*)pointer(selected_superobject->localTransform);
                                 if (Tg) display_matrix4(matrix4_host_byteorder(Tg->matrix), ImVec4(1.0,1.0,1.0,1.0));
                                 if (Tl) display_matrix4(matrix4_host_byteorder(Tl->matrix), ImVec4(1.0,1.0,1.0,1.0));
                                 

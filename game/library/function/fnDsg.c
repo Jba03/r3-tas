@@ -11,19 +11,19 @@
 static tdstDsgVar* fnDsgMemGetDsgVars(const tdstDsgMem *mem)
 {
     if (!mem) return NULL;
-    return doublepointer(mem->dsgvars);
+    return doublepointer(mem->dsgVars);
 }
 
 static void* fnDsgMemGetInitialBuffer(const tdstDsgMem *mem)
 {
     if (!mem) return NULL;
-    return pointer(mem->buffer_initial);
+    return pointer(mem->initialBuffer);
 }
 
 static void* fnDsgMemGetCurrentBuffer(const tdstDsgMem *mem)
 {
     if (!mem) return NULL;
-    return pointer(mem->buffer_current);
+    return pointer(mem->currentBuffer);
 }
 
 static tdstDsgVarInfo* fnDsgMemGetDsgVarInfo(const tdstDsgMem *mem, uint8 var)
@@ -32,7 +32,7 @@ static tdstDsgVarInfo* fnDsgMemGetDsgVarInfo(const tdstDsgMem *mem, uint8 var)
     if (!variables)
         return NULL;
     
-    if (var >= variables->info_length)
+    if (var >= variables->infoLength)
         return NULL;
     
     tdstDsgVarInfo *info = (tdstDsgVarInfo*)pointer(variables->info);
@@ -53,5 +53,5 @@ static void *fnDsgMemGetDsgVar(const tdstDsgMem *mem, uint8 var, bool initialMem
         return NULL;
     
     if (type) *type = host_byteorder_32(info->type);
-    return (void*)(buffer + host_byteorder_32(info->mem_offset));
+    return (void*)(buffer + host_byteorder_32(info->memOffset));
 }

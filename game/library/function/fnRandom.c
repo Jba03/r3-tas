@@ -38,7 +38,7 @@ int32 fnRNDTableIndex(const tdstRandom *rnd, unsigned index, int offset)
     
     /* The RNG table index is fetched from a table of 50 RNG "channels", */
     /* index 0 being the most common (if not the only) used by the game. */
-    int32 idx = host_byteorder_32(*(int32*)(rnd->table_indices + index));
+    int32 idx = host_byteorder_32(*(int32*)(rnd->tableIndices + index));
     /* The RNG table of 10000 entries is then indexed by previous index, together with an optional offset. */
     int32 value = host_byteorder_32(*(int32*)((uint8*)pointer(rnd->table) + max(0, idx + offset) * 4));
     
@@ -48,7 +48,7 @@ int32 fnRNDTableIndex(const tdstRandom *rnd, unsigned index, int offset)
 int32 fnRNDCall(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
 {
     int32_t value = 0;
-    int32_t tmax = host_byteorder_32(rnd->table_max);
+    int32_t tmax = host_byteorder_32(rnd->tableMax);
     
     for (unsigned n = 0; n < n_calls; n++)
         value = (mi + ((ma + 1 - mi) * fnRNDTableIndex(rnd, index, n)) / (tmax + 1));

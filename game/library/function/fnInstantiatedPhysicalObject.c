@@ -41,7 +41,7 @@ const tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObj
     const tdstPhysicalObject* po = pointer(ipo->tdstPhysicalObject);
     if (!po) return NULL;
     
-    const tdstPhysicalCollideSet* collset = pointer(po->physical_collideset);
+    const tdstPhysicalCollideSet* collset = pointer(po->physicalCollideset);
     if (!collset) return NULL;
     
     /* Collision geometry is part of reaction zone. */

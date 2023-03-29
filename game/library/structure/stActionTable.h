@@ -8,19 +8,19 @@ struct stActionTableEntry {
     readonly uint32 param[8];
     padding(4) /* ? */
     padding(4) /* ? */
-    readonly pointer name_pointer; /* ? */
+    readonly pointer namePointer; /* ? */
     readonly pointer tree;
     readonly uint8 used;
-    readonly uint8 n_rules;
-    readonly uint8 use_default_return;
-    readonly uint8 new_return;
+    readonly uint8 numRules;
+    readonly uint8 useDefaultReturn;
+    readonly uint8 newReturn;
 } typedef tdstActionTableEntry;
 
 struct stActionTable {
     readonly pointer entries;
-    readonly uint8 n_entries;
-    readonly uint8 n_entries_used;
-    readonly uint8 entry_current;
+    readonly uint8 numEntries;
+    readonly uint8 numEntriesUsed;
+    readonly uint8 currentEntry;
     padding(1)
 } typedef tdstActionTable;
 

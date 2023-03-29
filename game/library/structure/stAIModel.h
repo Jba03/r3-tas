@@ -4,11 +4,11 @@
 #include "structure.h"
 
 struct stAIModel {
-    readonly pointer intelligence_behavior_list;
-    readonly pointer reflex_behavior_list;
-    readonly pointer dsgvar;
-    readonly pointer macrolist;
-    readonly uint8 secondpass;
+    readonly pointer intelligenceBehaviorList;
+    readonly pointer reflexBehaviorList;
+    readonly pointer dsgVar;
+    readonly pointer macroList;
+    readonly uint8 secondPass;
     padding(3)
 } typedef tdstAIModel;
 

@@ -46,7 +46,7 @@ const char* fnSuperobjectGetName(const tdstSuperObject* so)
 
 tdstTransform* fnSuperobjectGetTransform(const tdstSuperObject *obj, bool local)
 {
-    return obj ? pointer(local ? obj->transform_local : obj->transform_global) : NULL;
+    return obj ? pointer(local ? obj->localTransform : obj->globalTransform) : NULL;
 }
 
 tdstMatrix4D fnSuperobjectGetGlobalMatrix(const tdstSuperObject *obj)
@@ -89,7 +89,7 @@ const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, 
             distance = vector3_sub(distance, point);
             d_near = vector3_length(distance);
             
-            if (!subsector->is_virtual)
+            if (!subsector->isVirtual)
             {
                 if (subsector->priority > p)
                 {

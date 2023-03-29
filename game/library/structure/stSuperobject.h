@@ -40,29 +40,29 @@ static const char * const fnSuperobjectGetTypenames[] =
 struct stSuperObject {
     readonly uint32 type;
     readonly pointer data;
-    readonly pointer first_child;
-    readonly pointer last_child;
-    readonly int32 n_children;
+    readonly pointer firstChild;
+    readonly pointer lastChild;
+    readonly int32 numChildren;
     readonly pointer next;
     readonly pointer prev;
     readonly pointer parent;
-    readonly pointer transform_local;
-    readonly pointer transform_global;
-    readonly int32 prev_frame_processed;
-    readonly int32 draw_flags;
+    readonly pointer localTransform;
+    readonly pointer globalTransform;
+    readonly int32 prevFrameProcessed;
+    readonly int32 drawFlags;
     readonly uint32 flags;
-    readonly pointer visual_bbox;
-    readonly pointer collide_bbox;
-    readonly tdstVector3D semi_lookat;
+    readonly pointer visualBBox;
+    readonly pointer collideBBox;
+    readonly tdstVector3D semiLookat;
     readonly float32 transparency;
-    readonly uint32 outline_color;
-    readonly int32 display_priority;
+    readonly uint32 outlineColor;
+    readonly int32 displayPriority;
     readonly int32 ilstatus; /* ? */
-    readonly tdstVector3D ambient_color;
-    readonly tdstVector3D parallel_direction;
-    readonly tdstVector3D parallel_color;
+    readonly tdstVector3D ambientColor;
+    readonly tdstVector3D parallelDirection;
+    readonly tdstVector3D parallelColor;
     readonly uint8 superimpose;
-    readonly uint8 is_superobject;
+    readonly uint8 isSuperObject;
     readonly uint8 transition;
     padding(1)
 } typedef tdstSuperObject;
@@ -87,24 +87,24 @@ const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, 
 #endif
 
 #define superobject_type(so) host_byteorder_32(so->type)
-#define superobject_n_children(so) host_byteorder_32(so->n_children)
+#define superobject_n_children(so) host_byteorder_32(so->numChildren)
 #define superobject_flags(so) host_byteorder_32(so->flags)
-#define superobject_drawflags(so) host_byteorder_32(so->draw_flags)
+#define superobject_drawflags(so) host_byteorder_32(so->drawFlags)
 #define superobject_type(so) host_byteorder_32(so->type)
 
 #define superobject_data(so) ((void*)pointer(so->data))
 #define superobject_next(so) ((tdstSuperObject*)pointer(so->next))
 #define superobject_prev(so) ((tdstSuperObject*)pointer(so->prev))
 #define superobject_parent(so) ((tdstSuperObject*)pointer(so->parent))
-#define superobject_first_child(so) ((tdstSuperObject*)pointer(so->first_child))
-#define superobject_last_child(so) ((tdstSuperObject*)pointer(so->last_child))
+#define superobject_first_child(so) ((tdstSuperObject*)pointer(so->firstChild))
+#define superobject_last_child(so) ((tdstSuperObject*)pointer(so->lastChild))
 
 /**
  * superobject_for_each:
  *  Recurse the hierarchy under `root`.
  */
 #define superobject_for_each(root, obj) \
-    tdstSuperObject* obj = (tdstSuperObject*)pointer(root->first_child); \
+    tdstSuperObject* obj = (tdstSuperObject*)pointer(root->firstChild); \
     for (; obj != NULL; obj = (tdstSuperObject*)pointer(obj->next))
 
 /**
@@ -121,7 +121,7 @@ const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, 
  *  Recurse the hierarchy under `root`, finding only objects that are -not- of specified type.
  */
 #define superobject_for_each_type_but(type, root, obj) \
-    tdstSuperObject* obj = (tdstSuperObject*)pointer(root->first_child); \
+    tdstSuperObject* obj = (tdstSuperObject*)pointer(root->firstChild); \
     for (; obj != NULL; obj = (tdstSuperObject*)pointer(obj->next)) \
     if (host_byteorder_32(obj->type) != type)
 

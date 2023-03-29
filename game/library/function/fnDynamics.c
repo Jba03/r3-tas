@@ -17,9 +17,9 @@ const struct stVector3D fnDynamicsGetSpeed(const tdstDynamics* dynamics)
     const tdstDynamicsReport* report = pointer(dynamics->base.report);
     /* If the report for the frame doesn't exist, return the previous speed, */
     /* which in most cases, happens to be the same as the current speed. */
-    if (!report) return vector3_host_byteorder(dynamics->base.speed_previous);
+    if (!report) return vector3_host_byteorder(dynamics->base.previousSpeed);
     
-    return vector3_host_byteorder(report->speed_absolute_current.linear);
+    return vector3_host_byteorder(report->currentAbsoluteSpeed.linear);
 }
 
 /** fnDynamicsCollideWith: get the surface collision state for the specified obstacle type */
@@ -30,5 +30,5 @@ bool fnDynamicsCollideWith(const tdstDynamics* dynamics, unsigned obstacle)
     if (!report) return false;
     
     
-    return (host_byteorder_32(report->surface_state_current) & obstacle) == obstacle;
+    return (host_byteorder_32(report->currentSurfaceState) & obstacle) == obstacle;
 }
