@@ -5,6 +5,7 @@
 #include "stVector3D.h"
 #include "stMatrix4D.h"
 
+/* TYPES */
 #define superobject_type_none                       0x0
 #define superobject_type_world                      0x1
 #define superobject_type_actor                      0x2
@@ -17,6 +18,7 @@
 #define superobject_type_no_action                  0x100
 #define superobject_type_mirror                     0x200
 
+/* FLAGS */
 #define superobject_flag_not_pickable               0x1
 #define superobject_flag_hidden                     0x2
 #define superobject_flag_no_transformation_matrix   0x4
@@ -29,9 +31,7 @@
 #define superobject_flag_check_children             0x200
 #define superobject_flag_render_on_near_plane       0x400
 
-/* TODO: Add draw flags */
-
-static const char * const fnSuperobjectGetTypenames[] =
+static const char * const superObjectTypeNames[] =
 {
     "World", "Actor", "Sector", "PhysicalObject", "PhysicalObject.Mirror",
     "IPO", "IPO.Mirror", "SpecialEffect", "NoAction", "Unknown", "Mirror",

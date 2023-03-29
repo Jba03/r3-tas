@@ -17,8 +17,8 @@ const char* fnSuperobjectGetTypename(const tdstSuperObject* so)
 {
     if (!so) return "None";
     const int type = superobject_type(so);
-    const int n_typenames = sizeof fnSuperobjectGetTypenames / sizeof(const char*);
-    if (type > 0 && type < n_typenames) return fnSuperobjectGetTypenames[((int)log2(type))];
+    const int n_typenames = sizeof superObjectTypeNames / sizeof(const char*);
+    if (type > 0 && type < n_typenames) return superObjectTypeNames[((int)log2(type))];
     return "None";
 }
 
