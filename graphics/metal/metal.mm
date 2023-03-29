@@ -397,7 +397,7 @@ static void RenderOctrees(tdstSuperObject* so, tdstVector4D color, id<MTLRenderC
         const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(so);
         if (!ipo) return;
         
-        const tdstCollideObject* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
         if (!zdr) return;
         
         const tdstOctree* octree = (const tdstOctree*)pointer(zdr->octree);
@@ -412,14 +412,14 @@ static void RenderOctrees(tdstSuperObject* so, tdstVector4D color, id<MTLRenderC
 //            memset(selected, 0, sizeof(octree_node*) * OCTREE_MAX_SELECTED_NODES);
 //            float st[OCTREE_MAX_SELECTED_NODES];
 //
-//            const tdstMatrix4D raymat = actor_matrix(actor_rayman);
+//            const tdstMatrix4D raymat = fnActorGetMatrix(actor_rayman);
 //            const tdstVector3D raypos = game_matrix4_position(raymat);
-//            octree_traverse_line_segment(root, superobject_matrix_global(child), raypos, vector3_sub(vector3_new(0.0f, 0.0f, 0.0f), raypos), selected, &n_selected, st);
+//            octree_traverse_line_segment(root, fnSuperobjectGetGlobalMatrix(child), raypos, vector3_sub(vector3_new(0.0f, 0.0f, 0.0f), raypos), selected, &n_selected, st);
 //
 //            for (int i = 0; i < n_selected; i++)
-//                RenderOctreeNode(superobject_matrix_global(child), selected[i], vector4_new(255.0f, 0.0f, 1.0f, 1.0f), render_encoder);
+//                RenderOctreeNode(fnSuperobjectGetGlobalMatrix(child), selected[i], vector4_new(255.0f, 0.0f, 1.0f, 1.0f), render_encoder);
         
-        RenderOctreeNode(superobject_matrix_global(so), root, color, render_encoder);
+        RenderOctreeNode(fnSuperobjectGetGlobalMatrix(so), root, color, render_encoder);
     }
     
     superobject_for_each(so, child)
@@ -433,19 +433,19 @@ static void DrawGeometryRecursive(const tdstSuperObject* root, const tdstMatrix4
     if (!root) return;
     
     /* Calculate the new transformation matrix */
-    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(root), transform);
+    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), transform);
     
     if (superobject_type(root) == superobject_type_ipo)
     {
         const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(root);
         if (ipo)
         {
-            const tdstCollideObject* zdr = ipo_collide_object(ipo);
+            const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
             if (zdr)
             {
                 int mesh_idx = 0;
                 const tdstCollideElementIndexedTriangles* mesh;
-                while ((mesh = collide_object_mesh(zdr, mesh_idx)))
+                while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_idx)))
                 {
                     uint16* indices = (uint16*)pointer(mesh->face_indices);
                     tdstVector3D* vertices = (tdstVector3D*)pointer(zdr->vertices);
@@ -613,7 +613,7 @@ void graphics_loop()
         if (!data) continue;
 
         /* Get transform */
-        const tdstMatrix4D mat = superobject_matrix_global(mesh->superobject);
+        const tdstMatrix4D mat = fnSuperobjectGetGlobalMatrix(mesh->superobject);
         uniform.model = GameToMetalMatrix(mat);
         uniform.normal_matrix = matrix3x3_upper_left(uniform.model);
 

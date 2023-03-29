@@ -21,20 +21,4 @@ struct stOctreeNode {
     readonly pointer face_indices; /* ::uchar8 */
 } typedef tdstOctreeNode;
 
-#if USE_FUNCTIONS
-
-#define OCTREE_MAX_SELECTED_NODES   100
-
-tdstOctreeNode* octree_intersect_box(const tdstOctree* tree, const tdstVector3D min, const tdstVector3D max);
-
-/* octree_traverse_line_segment: traverse an octree with a line segment. AB is a vector from point A.  */
-void octree_traverse_line_segment(const tdstOctreeNode* node,
-                                  const tdstMatrix4D octree_transform,
-                                  const tdstVector3D A,
-                                  const tdstVector3D AB,
-                                  tdstOctreeNode** selected,
-                                  int *n_selected,
-                                  float *st);
-#endif
-
 #endif /* stOctree_h */

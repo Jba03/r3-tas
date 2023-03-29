@@ -48,9 +48,9 @@ static void RecursiveProjectSuperobjectPosition(const tdstSuperObject* object,
 {
     if (!object) return;
     
-    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(object), transform);
+    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(object), transform);
     
-    const char* text = superobject_name(object);
+    const char* text = fnSuperobjectGetName(object);
     if (text)
     {
         const tdstVector3D P = game_matrix4_position(T);
@@ -128,7 +128,7 @@ static void ProjectSuperobjectPositions(const tdstSuperObject* root)
     ImGui::SetWindowPos(ImVec2(x_offset / 2.0f, 0));
     ImGui::SetWindowSize(ImVec2(new_width, display_size.y));
     
-    const tdstVector3D playerposition = game_matrix4_position(actor_matrix(actor_rayman));
+    const tdstVector3D playerposition = game_matrix4_position(fnActorGetMatrix(actor_rayman));
     
     ImVec2 off = ImGui::GetWindowPos();
     ImVec2 sz = ImGui::GetWindowSize();
@@ -183,7 +183,7 @@ static void DrawLevelGeometryRecursive(const tdstSuperObject* root, const tdstMa
     if (!root) return;
     
     /* Calculate the new transformation */
-    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(root), transform);
+    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), transform);
 
     if (root == viewed_sector) color = ImColor(0.0f, 1.0f, 0.25f, 1.0f);
     
@@ -192,12 +192,12 @@ static void DrawLevelGeometryRecursive(const tdstSuperObject* root, const tdstMa
         const tdstInstantiatedPhysicalObject* ipo = (const tdstInstantiatedPhysicalObject*)superobject_data(root);
         if (ipo)
         {
-            const tdstCollideObject* zdr = ipo_collide_object(ipo);
+            const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
             if (zdr)
             {
                 int mesh_idx = 0;
                 const tdstCollideElementIndexedTriangles* mesh;
-                while ((mesh = collide_object_mesh(zdr, mesh_idx)))
+                while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_idx)))
                 {
                     const tdstVector3D* vertices = (const tdstVector3D*)pointer(zdr->vertices);
                     
@@ -365,7 +365,7 @@ static void DrawLevelGeometry(const tdstSuperObject* sector)
     if (level_geometry_use_cliprect)
         drawlist->PushClipRect(ImVec2(x_offset / 2.0f, 0), ImVec2(new_width + x_offset / 2.0f, display_size.y));
         
-    const tdstVector3D playerposition = game_matrix4_position(actor_matrix(actor_rayman));
+    const tdstVector3D playerposition = game_matrix4_position(fnActorGetMatrix(actor_rayman));
 //    const tdstVector3D speed = vector3_add(playerposition, actor_speed(actor_rayman));
 //
 //    ImVec4 r = project_world_coordinate(playerposition);

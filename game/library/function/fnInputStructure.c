@@ -8,7 +8,7 @@
 #include "stInputStructure.h"
 #include "game.h"
 
-tdstInputEntryElement* input_entry_find(const tdstInputStructure* s, const char* action_name)
+tdstInputEntryElement* fnInputEntryFind(const tdstInputStructure* s, const char* action_name)
 {
     tdstInputEntryElement* entry = pointer(s->entries);
     int c = host_byteorder_32(s->n_entries);

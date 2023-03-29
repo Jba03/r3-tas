@@ -10,11 +10,13 @@
 
 #include "fnPrimIntersections.c"
 
-void octree_node_select(tdstOctreeNode* node,
-                            tdstOctreeNode** selected,
-                            int *n_selected,
-                            float *st,
-                            float t)
+#define OCTREE_MAX_SELECTED_NODES   100
+
+static void fnOctreeSelectNode(tdstOctreeNode* node,
+                               tdstOctreeNode** selected,
+                               int *n_selected,
+                               float *st,
+                               float t)
 {
     int index = *n_selected;
     while (0 < index && t < st[index - 1])
@@ -35,14 +37,19 @@ void octree_node_select(tdstOctreeNode* node,
     }
 }
 
+static tdstOctreeNode* fnOctreeIntersectBox(const tdstOctreeNode* tree, const tdstVector3D min, const tdstVector3D max)
+{
+    return NULL;
+}
+
 /* octree_traverse_line_segment: traverse an octree with a line segment. AB is a vector from point A.  */
-void octree_traverse_line_segment(const tdstOctreeNode* node,
-                                  const tdstMatrix4D octree_transform,
-                                  const tdstVector3D A,
-                                  const tdstVector3D AB,
-                                  tdstOctreeNode** selected,
-                                  int *n_selected,
-                                  float *st)
+static void fnOctreeTraverseLineSegment(const tdstOctreeNode* node,
+                                        const tdstMatrix4D octree_transform,
+                                        const tdstVector3D A,
+                                        const tdstVector3D AB,
+                                        tdstOctreeNode** selected,
+                                        int *n_selected,
+                                        float *st)
 {
     if (!node) return;
     
@@ -63,13 +70,13 @@ void octree_traverse_line_segment(const tdstOctreeNode* node,
             for (int i = 0; i < 8; i++)
             {
                 const tdstOctreeNode* node = (const tdstOctreeNode*)pointer(*(childlist + i));
-                octree_traverse_line_segment(node, octree_transform, A, AB, selected, n_selected, st);
+                fnOctreeTraverseLineSegment(node, octree_transform, A, AB, selected, n_selected, st);
             }
         }
         else
         {
             const pointer* face_indices = pointer(node->face_indices);
-            if (face_indices) octree_node_select((tdstOctreeNode*)node, selected, n_selected, st, t);
+            if (face_indices) fnOctreeSelectNode((tdstOctreeNode*)node, selected, n_selected, st, t);
         }
     }
 }

@@ -43,7 +43,7 @@ struct SuperobjectInfoWindow
     {
         if (active && hierarchy)
         {
-            const char* name = superobject_name(selected);
+            const char* name = fnSuperobjectGetName(selected);
             if (!name) name = "Invalid object name";
             
             ImGui::Begin(name);
@@ -65,7 +65,7 @@ struct SuperobjectInfoWindow
                     if (!actor) continue;
                     
                     /* Get actor instance name, or model name if spawnable actor */
-                    const char* name = superobject_name(child);
+                    const char* name = fnSuperobjectGetName(child);
                     if (!name) name = "Invalid object name";
                     
                     ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
@@ -136,8 +136,8 @@ static void superobject_draw_childlist(void* data, void* p)
             if (!actor) return;
             const tdstStandardGameInfo* stdgame = (const tdstStandardGameInfo*)pointer(actor->stdgame);
             if (!stdgame) return;
-            name = actor_name(actor_instance_name, actor, objectType);
-            if (!name) name = actor_name(actor_model_name, actor, objectType);
+            name = fnActorGetName(actor_instance_name, actor, objectType);
+            if (!name) name = fnActorGetName(actor_model_name, actor, objectType);
             color = ImColor(actor_color(actor));
             break;
     }
@@ -256,8 +256,8 @@ void superobject_info(tdstSuperObject* so)
             if (!stdgame) return;
             
             /* Get actor instance name, or model name if spawnable actor */
-            const char* name = actor_name(actor_instance_name, actor, objectType);
-            if (!name) name = actor_name(actor_model_name, actor, objectType);
+            const char* name = fnActorGetName(actor_instance_name, actor, objectType);
+            if (!name) name = fnActorGetName(actor_model_name, actor, objectType);
             if (!name) name = "Invalid object name";
             
             ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
@@ -319,9 +319,9 @@ void superobject_info(tdstSuperObject* so)
                     {
                         ImGui::BeginChild("Families", ImVec2(ImGui::GetContentRegionAvail().x, 25));
                         {
-                            const char* family = actor_name(actor_family_name, actor, objectType);
-                            const char* model = actor_name(actor_model_name, actor, objectType);
-                            const char* instance = actor_name(actor_instance_name, actor, objectType);
+                            const char* family = fnActorGetName(actor_family_name, actor, objectType);
+                            const char* model = fnActorGetName(actor_model_name, actor, objectType);
+                            const char* instance = fnActorGetName(actor_instance_name, actor, objectType);
                             ImColor color1 = actor_color(actor);
                             ImColor color2 = color1;
                             ImColor color3 = color1;

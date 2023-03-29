@@ -104,8 +104,8 @@ static std::string fmt_actor(void* offset)
     const tdstEngineObject* actor = (const tdstEngineObject*)superobject_data(so);
     if (!actor) return "NULL";
     
-    const char* name = actor_name(actor_instance_name, actor, objectType);
-    if (!name) name = actor_name(actor_model_name, actor, objectType);
+    const char* name = fnActorGetName(actor_instance_name, actor, objectType);
+    if (!name) name = fnActorGetName(actor_model_name, actor, objectType);
     
     return std::string(name ? name : "NULL");
 }
@@ -130,7 +130,7 @@ static std::string fmt_superobject(void* offset)
 {
     const tdstSuperObject* so = (const tdstSuperObject*)pointer(*(address*)offset);
     if (!so) return "NULL";
-    const char* name = superobject_name(so);
+    const char* name = fnSuperobjectGetName(so);
     return name ? name : "NULL";
 }
 

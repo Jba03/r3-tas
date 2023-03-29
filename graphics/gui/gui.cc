@@ -171,8 +171,8 @@ static void draw_rayman_info()
             ImGui::Text("Pos = (%.2f, %.2f, %.2f)", P_ray.x, P_ray.y, P_ray.z);
             ImGui::Text("PosNext = (%.2f, %.2f, %.2f)", next_x, next_y, next_z);
             ImGui::Text("MaxJumpHeight = %.2f", max_height);
-            ImGui::Text("Level end trigger (look) = %.3f°", degrees(actor_horizontal_sighting_relative(actor_rayman, actor_changemap)));
-            ImGui::Text("Level end trigger (trajectory) = %.3f°", degrees(actor_trajectory_angle_relative(actor_rayman, actor_changemap)));
+            ImGui::Text("Level end trigger (look) = %.3f°", degrees(fnActorHorizontalSightingRelative(actor_rayman, actor_changemap)));
+            ImGui::Text("Level end trigger (trajectory) = %.3f°", degrees(fnActorTrajectoryAngleRelative(actor_rayman, actor_changemap)));
             
             
             ImDrawList* drawlist = ImGui::GetWindowDrawList();
@@ -198,7 +198,7 @@ static void draw_rayman_info()
 #pragma mark Behavior
             {
                 const char* behavior = NULL;
-                if ((behavior = actor_current_behavior_name(actor_rayman)))
+                if ((behavior = fnActorGetCurrentBehaviorName(actor_rayman)))
                 {
                     if ((behavior = strrchr(behavior, ':')))
                     {
@@ -236,7 +236,7 @@ static void draw_rayman_info()
                 if (current_sector)
                 {
                     const tdstSector* sect = (const tdstSector*)superobject_data(current_sector);
-                    if (sect) ImGui::Text("Current sector: %s", sector_name(sect));
+                    if (sect) ImGui::Text("Current sector: %s", fnSectorGetName(sect));
                 }
             }
         }
@@ -324,7 +324,7 @@ static void draw_menubar()
                     for (int i = 0; i < engine->level_count; i++)
                     {
                         const char* level = engine->level_names[i];
-                        if (ImGui::MenuItem(level)) engine_load_level(engine, level);
+                        if (ImGui::MenuItem(level)) fnEngineLoadLevel(engine, level);
                     }
                     ImGui::EndMenu();
                 }
@@ -464,8 +464,8 @@ static void draw_hierarchy_list(const tdstSuperObject* root)
         if (!stdgame) return;
         
         /* Get actor instance name, or model name if spawnable actor */
-        const char* name = "NO!";//actor_name(actor_instance_name, actor);
-//        if (!name) name = actor_name(actor_model_name, actor);
+        const char* name = "NO!";//fnActorGetName(actor_instance_name, actor);
+//        if (!name) name = fnActorGetName(actor_model_name, actor);
 //        if (!name) name = "Invalid object name";
         
         ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
@@ -560,7 +560,7 @@ extern "C" void gui_render_callback(void* ctx)
     ImVec2 sz = ImGui::GetWindowSize();
     ImDrawList* drawlist = ImGui::GetBackgroundDrawList();
         
-    const tdstVector3D playerposition = game_matrix4_position(actor_matrix(actor_rayman));
+    const tdstVector3D playerposition = game_matrix4_position(fnActorGetMatrix(actor_rayman));
 //    const tdstVector3D speed = vector3_add(playerposition, actor_speed(actor_rayman));
 //
 //    ImVec4 r = project_world_coordinate(playerposition);
@@ -620,7 +620,7 @@ extern "C" void gui_render_callback(void* ctx)
         if (screen_projections_draw) ProjectSuperobjectPositions(dynamic_world);
         if (screen_projections_ipos) ProjectSuperobjectPositions(father_sector);
         
-        const tdstSuperObject* sector = sector_by_location(father_sector, actor_position(actor_rayman));
+        const tdstSuperObject* sector = sector_by_location(father_sector, fnActorGetPosition(actor_rayman));
         if (level_geometry_draw) DrawLevelGeometry(level_geometry_draw_all_sectors ? father_sector : sector);
         
     }
@@ -682,7 +682,7 @@ extern "C" void gui_render_callback(void* ctx)
 //        const tdstInstantiatedPhysicalObject* ipo = ipo_find("IPO:IPO_w_e_clairiere", father_sector, &soo);
 //        ImGui::Text("IPO: %X\n", offset(ipo));
 //        static tdstVector3D pointa = {};
-//        const tdstMatrix4D T = actor_matrix(actor_rayman);
+//        const tdstMatrix4D T = fnActorGetMatrix(actor_rayman);
 //        if (actor_rayman)
 //        {
 //            const struct tdstPhysicalObject* po = (const struct tdstPhysicalObject*)pointer(ipo->tdstPhysicalObject);
@@ -696,7 +696,7 @@ extern "C" void gui_render_callback(void* ctx)
 //            
 //            //n_triangles = collide_object_triangles_combined(zdr, matrix4_identity, &triangles);
 //            
-//            collide_object_closest_vertex_to(zdr, superobject_matrix_global(soo), game_matrix4_position(T), NULL, NULL, &pointa);
+//            collide_object_closest_vertex_to(zdr, fnSuperobjectGetGlobalMatrix(soo), game_matrix4_position(T), NULL, NULL, &pointa);
 //            sphere_pos = pointa;
 //        }
 //    skip:

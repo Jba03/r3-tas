@@ -19,7 +19,7 @@ static inline tdstEngineObject* actor_find(int name_type, const char* name, cons
     tdstEngineObject* actor = (tdstEngineObject*)superobject_data(root);
     if (superobject_type(root) == superobject_type_actor && actor)
     {
-        const char* compare = actor_name(name_type, actor, objectType);
+        const char* compare = fnActorGetName(name_type, actor, objectType);
         if (compare != NULL)
         {
             if (strcmp(name, compare) == 0) return actor;

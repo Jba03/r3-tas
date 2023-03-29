@@ -16,39 +16,50 @@
 #include "stObjectType.h"
 #include "game.h"
 
+#include "fnDsg.c"
+
 #include <stdio.h>
 
-/** actor_matrix: get the transformation matrix of an actor */
-const tdstMatrix4D actor_matrix(const tdstEngineObject* actor)
+tdstDynamics* fnActorGetDynamics(const tdstEngineObject* actor)
+{
+    const tdstDynam* dynam = pointer(actor->dynam);
+    return dynam ? pointer(dynam->dynamics) : NULL;
+}
+
+tdstDynamicsReport* fnActorGetDynamicsReport(const tdstEngineObject* actor)
+{
+    const tdstDynamics* dynamics = fnActorGetDynamics(actor);
+    return dynamics ? pointer(dynamics->base.report) : NULL;
+}
+
+tdstMatrix4D fnActorGetMatrix(const tdstEngineObject* actor)
 {
     if (!actor) return matrix4_identity;
     const tdstSuperObject* so = actor_superobject(actor);
-    return superobject_matrix_global(so);
+    return fnSuperobjectGetGlobalMatrix(so);
 }
 
-/** actor_position: get global position of an actor */
-const tdstVector3D actor_position(const tdstEngineObject* actor)
+tdstVector3D fnActorGetPosition(const tdstEngineObject* actor)
 {
-    const tdstMatrix4D T = actor_matrix(actor);
+    const tdstMatrix4D T = fnActorGetMatrix(actor);
     return game_matrix4_position(T);
 }
 
-/** actor_speed: get current speed of an actor */
-const tdstVector3D actor_speed(const tdstEngineObject* actor)
+tdstVector3D fnActorGetSpeed(const tdstEngineObject* actor)
 {
-    const tdstDynamics* dynamics = actor_dynamics(actor);
-    return dynamics_get_speed(dynamics);
+    const tdstDynamics* dynamics = fnActorGetDynamics(actor);
+    return fnDynamicsGetSpeed(dynamics);
 }
 
 /**
- * actor_horizontal_sighting_relative:
+ * fnActorRelativeHorizontalSighting:
  *  compute the horizontal angle between actor A's line of sight and the position of actor B.
  *  the angle returned is in radians, range -π to π.
  */
-const float actor_horizontal_sighting_relative(const tdstEngineObject* A, const tdstEngineObject* B)
+const float fnActorHorizontalSightingRelative(const tdstEngineObject* A, const tdstEngineObject* B)
 {
-    const tdstMatrix4D mA = actor_matrix(A);
-    const tdstMatrix4D mB = actor_matrix(B);
+    const tdstMatrix4D mA = fnActorGetMatrix(A);
+    const tdstMatrix4D mB = fnActorGetMatrix(B);
 
     const tdstVector3D pA = game_matrix4_position(mA);
     const tdstVector3D pB = game_matrix4_position(mB);
@@ -67,14 +78,14 @@ const float actor_horizontal_sighting_relative(const tdstEngineObject* A, const 
 }
 
 /**
- * actor_vertical_sighting_relative:
+ * fnActorVerticalSightingRelative:
  *  compute the vertical angle between actor A's line of sight and the position of actor B.
  *  the angle returned is in radians, range -π to π.
  */
-const float actor_vertical_sighting_relative(const tdstEngineObject* A, const tdstEngineObject* B)
+const float fnActorVerticalSightingRelative(const tdstEngineObject* A, const tdstEngineObject* B)
 {
-    const tdstMatrix4D mA = actor_matrix(A);
-    const tdstMatrix4D mB = actor_matrix(B);
+    const tdstMatrix4D mA = fnActorGetMatrix(A);
+    const tdstMatrix4D mB = fnActorGetMatrix(B);
 
     const tdstVector3D pA = game_matrix4_position(mA);
     const tdstVector3D pB = game_matrix4_position(mB);
@@ -99,7 +110,7 @@ const float actor_vertical_sighting_relative(const tdstEngineObject* A, const td
  *  compute the angle of actor A's speed relative to the position of actor B.
  *  the angle returned is in radians, range -π to π.
  */
-const float actor_trajectory_angle_relative(const tdstEngineObject* A, const tdstEngineObject* B)
+const float fnActorTrajectoryAngleRelative(const tdstEngineObject* A, const tdstEngineObject* B)
 {
     if (!A || !B) return M_PI;
     
@@ -113,8 +124,8 @@ const float actor_trajectory_angle_relative(const tdstEngineObject* A, const tds
     const tdstVector3D speed = vector3_host_byteorder(dynamics->base.speed_previous);
     const float sA = atan2(speed.y, speed.x);
     
-    const tdstMatrix4D mA = actor_matrix(A);
-    const tdstMatrix4D mB = actor_matrix(B);
+    const tdstMatrix4D mA = fnActorGetMatrix(A);
+    const tdstMatrix4D mB = fnActorGetMatrix(B);
 
     const tdstVector3D pA = game_matrix4_position(mA);
     const tdstVector3D pB = game_matrix4_position(mB);
@@ -130,38 +141,70 @@ const float actor_trajectory_angle_relative(const tdstEngineObject* A, const tds
     return angle;
 }
 
-/** actor_dsgvar: get the offset of an actor's dsgvar. Negative on failure. */
-const int actor_dsgvar(const tdstEngineObject* actor, unsigned var, int* type, void** data)
+
+#pragma mark - Intelligence
+
+tdstBrain* fnActorGetBrain(const tdstEngineObject *object)
 {
-    if (!actor) return -1;
-    if (!data) return -1;
-    
-    const tdstBrain* brain = actor_brain(actor);
-    if (!brain) return -1;
-    
-    const tdstMind* mind = pointer(brain->mind);
-    if (!mind) return -1;
-    
-    const tdstDsgMem* dsgmem = pointer(mind->dsgmemory);
-    if (!dsgmem) return -1;
-    
-    const tdstDsgVar* dsgvars = doublepointer(dsgmem->dsgvars);
-    if (!dsgvars) return -1;
-    
-    if (var >= dsgvars->info_length) return -1;
-    
-    const tdstDsgVarInfo* variable = (tdstDsgVarInfo*)pointer(dsgvars->info) + var;
-    if (type) *type = host_byteorder_32(variable->type);
-    
-    const uint8_t* dataptr = (uint8_t*)pointer(dsgmem->buffer_current);
-    if (!dataptr) return -1;
-    
-    *data = (void*)(dataptr + host_byteorder_32(variable->mem_offset));
-    return 0;
+    return object ? pointer(object->brain) : NULL;
 }
 
+tdstMind* fnActorGetMind(const tdstEngineObject *object)
+{
+    const tdstBrain *brain = fnActorGetBrain(object);
+    return brain ? pointer(brain->mind) : NULL;
+}
+
+tdstIntelligence* fnActorGetIntelligence(const tdstEngineObject *object, bool reflex)
+{
+    const tdstMind *mind = fnActorGetMind(object);
+    return mind ? pointer(reflex ? mind->reflex : mind->intelligence) : NULL;
+}
+
+tdstDsgMem* fnActorGetDsgMem(const tdstEngineObject *object)
+{
+    const tdstMind *mind = fnActorGetMind(object);
+    return mind ? pointer(mind->dsgmemory) : NULL;
+}
+
+void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type)
+{
+    const tdstDsgMem *mem = fnActorGetDsgMem(object);
+    return fnDsgMemGetDsgVar(mem, var, false, type);
+}
+
+///** fnActorGetDSGVar: get the offset of an actor's dsgvar. Negative on failure. */
+//const int fnActorGetDSGVar(const tdstEngineObject* actor, unsigned var, int* type, void** data)
+//{
+//    if (!actor) return -1;
+//    if (!data) return -1;
+//
+//    const tdstBrain* brain = actor_brain(actor);
+//    if (!brain) return -1;
+//
+//    const tdstMind* mind = pointer(brain->mind);
+//    if (!mind) return -1;
+//
+//    const tdstDsgMem* dsgmem = pointer(mind->dsgmemory);
+//    if (!dsgmem) return -1;
+//
+//    const tdstDsgVar* dsgvars = doublepointer(dsgmem->dsgvars);
+//    if (!dsgvars) return -1;
+//
+//    if (var >= dsgvars->info_length) return -1;
+//
+//    const tdstDsgVarInfo* variable = (tdstDsgVarInfo*)pointer(dsgvars->info) + var;
+//    if (type) *type = host_byteorder_32(variable->type);
+//
+//    const uint8_t* dataptr = (uint8_t*)pointer(dsgmem->buffer_current);
+//    if (!dataptr) return -1;
+//
+//    *data = (void*)(dataptr + host_byteorder_32(variable->mem_offset));
+//    return 0;
+//}
+
 /** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
-const char* actor_name(int name, const tdstEngineObject* actor, const tdstObjectType* objectType)
+const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstObjectType* objectType)
 {
     if (!actor) return NULL;
     
@@ -170,28 +213,18 @@ const char* actor_name(int name, const tdstEngineObject* actor, const tdstObject
     
     switch (name)
     {
-        case actor_family_name: return object_type_name(objectType, object_family_name, host_byteorder_32(stdgame->family_type));
-        case actor_model_name: return object_type_name(objectType, object_model_name, host_byteorder_32(stdgame->model_type));
-        case actor_instance_name: return object_type_name(objectType, object_instance_name, host_byteorder_32(stdgame->instance_type));
+        case actor_family_name: return fnObjectTypeGetName(objectType, object_family_name, host_byteorder_32(stdgame->family_type));
+        case actor_model_name: return fnObjectTypeGetName(objectType, object_model_name, host_byteorder_32(stdgame->model_type));
+        case actor_instance_name: return fnObjectTypeGetName(objectType, object_instance_name, host_byteorder_32(stdgame->instance_type));
     }
     
     return NULL;
 }
 
-/** actor_current_behavior_name: return the name of the actor's current behavior */
-const char* actor_current_behavior_name(const tdstEngineObject* actor)
+/** fnActorGetCurrentBehaviorName: return the name of the actor's current behavior */
+const char* fnActorGetCurrentBehaviorName(const tdstEngineObject* actor)
 {
-    if (!actor) return NULL;
-    
-    const tdstBrain* brain = actor_brain(actor);
-    if (!brain) return NULL;
-    
-    const tdstMind* mind = pointer(brain->mind);
-    if (!mind) return NULL;
-    
-    const tdstIntelligence* intelligence = pointer(mind->intelligence);
-    if (!intelligence) return NULL;
-    
+    tdstIntelligence *intelligence = fnActorGetIntelligence(actor, false);
     const tdstBehavior* behavior = pointer(intelligence->current_behavior);
     if (!behavior) return NULL;
     
@@ -199,35 +232,8 @@ const char* actor_current_behavior_name(const tdstEngineObject* actor)
 }
 
 /** actor_in_behavior: return true if an actor is in the specified behavior */
-bool actor_in_behavior(const tdstEngineObject* actor, const char* behavior_name)
+bool fnActorIsInBehavior(const tdstEngineObject* actor, const char* behaviorName)
 {
-    if (!actor) return NULL;
-    
-    const tdstBrain* brain = actor_brain(actor);
-    if (!brain) return NULL;
-    
-    const tdstMind* mind = pointer(brain->mind);
-    if (!mind) return NULL;
-    
-    const tdstIntelligence* intelligence = pointer(mind->intelligence);
-    if (!intelligence) return NULL;
-
-    const tdstBehavior* behavior = pointer(intelligence->current_behavior);
-    if (!behavior) return NULL;
-    
-    return strcmp(behavior->name, behavior_name) == 0;
-}
-
-/** actor_dynamics: get dynamics structure of an actor */
-const tdstDynamics* actor_dynamics(const tdstEngineObject* actor)
-{
-    const tdstDynam* dynam = pointer(actor->dynam);
-    return dynam ? pointer(dynam->dynamics) : NULL;
-}
-
-/** actor_dynamics_report: get dynamics report of an actor */
-const tdstDynamicsReport* actor_dynamics_report(const tdstEngineObject* actor)
-{
-    const tdstDynamics* dynamics = actor_dynamics(actor);
-    return dynamics ? pointer(dynamics->base.report) : NULL;
+    const char* name = fnActorGetCurrentBehaviorName(actor);
+    return name ? strcmp(name, behaviorName) == 0 : false;
 }

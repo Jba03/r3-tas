@@ -10,8 +10,8 @@
 
 #include <stdio.h>
 
-/** object_name_type: get the name of an object type with specified id */
-const char* object_type_name(const tdstObjectType* objectType, int name_type, int id)
+/** fnObjectTypeGetName: get the name of an object type with specified id */
+const char* fnObjectTypeGetName(const tdstObjectType* objectType, int name_type, int id)
 {
     tdstDoublyLinkedList list;
     if (name_type == object_family_name) list = objectType->family;

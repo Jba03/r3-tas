@@ -39,8 +39,8 @@ struct stSector {
 
 #if USE_FUNCTIONS
 
-/** sector_name: get the abbreviated name of a sector */
-const char* sector_name(const tdstSector* sct);
+/** fnSectorGetName: get the abbreviated name of a sector */
+const char* fnSectorGetName(const tdstSector* sct);
 
 #endif
 #endif /* stSector_h */

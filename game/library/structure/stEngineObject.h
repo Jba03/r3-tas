@@ -27,53 +27,52 @@ struct stEngineObject {
 #include "stDynamics.h"
 #include "stObjectType.h"
 
-/** actor_matrix: get the global transformation matrix of an actor */
-const tdstMatrix4D actor_matrix(const tdstEngineObject* actor);
+/** fnActorGetName: return the family, model, or instance name of specified actor. Null on failure. */
+const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstObjectType* objectType);
+
+/** fnActorGetMatrix: get the global transformation matrix of an actor */
+tdstMatrix4D fnActorGetMatrix(const tdstEngineObject* actor);
 
 /** actor_position: get global position of an actor */
-const tdstVector3D actor_position(const tdstEngineObject* actor);
+tdstVector3D fnActorGetPosition(const tdstEngineObject* actor);
 
 /** actor_speed: get current speed of an actor */
-const tdstVector3D actor_speed(const tdstEngineObject* actor);
+tdstVector3D fnActorGetSpeed(const tdstEngineObject* actor);
+
+/** fnActorGetDynamics: get dynamics structure of an actor */
+tdstDynamics* fnActorGetDynamics(const tdstEngineObject* actor);
+
+/** fnActorGetDynamics_report: get dynamics report of an actor */
+tdstDynamicsReport* fnActorGetDynamicsReport(const tdstEngineObject* actor);
 
 /**
  * actor_sighting_relative:
  *  compute the horizontal angle between actor A's line of sight and the position of actor B.
  *  The angle returned is in radians, -π to π.
  */
-const float actor_horizontal_sighting_relative(const tdstEngineObject* A, const tdstEngineObject* B);
+const float fnActorHorizontalSightingRelative(const tdstEngineObject* A, const tdstEngineObject* B);
 
 /**
  * actor_vertical_sighting_relative:
  *  compute the vertical angle between actor A's line of sight and the position of actor B.
  *  The angle returned is in radians, -π to π.
  */
-const float actor_vertical_sighting_relative(const tdstEngineObject* A, const tdstEngineObject* B);
+const float fnActorVerticalSightingRelative(const tdstEngineObject* A, const tdstEngineObject* B);
 
 /**
  * actor_trajectory_angle_relative:
  *  compute the angle of actor A's speed relative to the position of actor B.
  *  the angle returned is in radians, range -π to π.
  */
-const float actor_trajectory_angle_relative(const tdstEngineObject* A, const tdstEngineObject* B);
+const float fnActorTrajectoryAngleRelative(const tdstEngineObject* A, const tdstEngineObject* B);
 
-/** actor_dsgvar: get the offset of an actor's dsgvar. Negative on failure. */
-const int actor_dsgvar(const tdstEngineObject* actor, unsigned var, int* type, void** data);
+void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type);
 
-/** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
-const char* actor_name(int name, const tdstEngineObject* actor, const tdstObjectType* objectType);
-
-/** actor_current_behavior_name: return the name of the actor's current behavior */
-const char* actor_current_behavior_name(const tdstEngineObject* actor);
+/** fnActorGetCurrentBehaviorName: return the name of the actor's current behavior */
+const char* fnActorGetCurrentBehaviorName(const tdstEngineObject* actor);
 
 /** actor_in_behavior: return true if an actor is in the specified behavior */
-bool actor_in_behavior(const tdstEngineObject* actor, const char* behavior_name);
-
-/** actor_dynamics: get dynamics structure of an actor */
-const tdstDynamics* actor_dynamics(const tdstEngineObject* actor);
-
-/** actor_dynamics_report: get dynamics report of an actor */
-const tdstDynamicsReport* actor_dynamics_report(const tdstEngineObject* actor);
+bool fnActorIsInBehavior(const tdstEngineObject* actor, const char* behavior_name);
 
 #endif
 

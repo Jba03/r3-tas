@@ -19,7 +19,7 @@
 
 static const tdstVector3D xray_player_pos()
 {
-    const tdstMatrix4D T = actor_matrix(actor_rayman);
+    const tdstMatrix4D T = fnActorGetMatrix(actor_rayman);
     return game_matrix4_position(T);
 }
 
@@ -30,8 +30,8 @@ static const tdstVector3D xray_get_destination(struct xray* h)
 
 static bool xray_player_grounded()
 {
-    const tdstDynamics* dynamics = actor_dynamics(actor_rayman);
-    return dynamics_collide_with(dynamics, dynamics_obstacle_ground);
+    const tdstDynamics* dynamics = fnActorGetDynamics(actor_rayman);
+    return fnDynamicsCollideWith(dynamics, dynamics_obstacle_ground);
 }
 
 static tdstCollideObject* xray_nearest_platform()
@@ -81,7 +81,7 @@ static void xray_route_recursive_get_octrees(struct xray* h, tdstSuperObject* ro
         if (!ipo) return;
         
         /* Get the reaction zone */
-        const tdstCollideObject* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
         if (zdr)
         {
             const tdstOctree* octree = pointer(zdr->octree);
@@ -149,7 +149,7 @@ static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject
     int mesh_index = 0;
     const tdstCollideElementIndexedTriangles* mesh = NULL;
     
-    const tdstMatrix4D T = matrix4_mul(superobject_matrix_global(root), transform);
+    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), transform);
     
     if (superobject_type(root) == superobject_type_sector)
         current_sector = root;
@@ -159,12 +159,12 @@ static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject
         const tdstInstantiatedPhysicalObject* ipo = superobject_data(root);
         if (!ipo) return;
         
-        printf("IPO: %s\n", ipo_name(ipo));
+        printf("IPO: %s\n", fnIPOGetName(ipo));
         /* Get the reaction zone */
-        const tdstCollideObject* zdr = ipo_collide_object(ipo);
+        const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
         if (zdr)
         {
-            while ((mesh = collide_object_mesh(zdr, mesh_index)))
+            while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_index)))
             {
                 printf("\tmesh %d: %d faces\n", mesh_index, host_byteorder_16(mesh->n_faces));
                 const uint16* indices = (const uint16*)pointer(mesh->face_indices);
@@ -242,7 +242,7 @@ static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* targe
     
     if (!target) return;
     
-    const tdstMatrix4D T = matrix4_mul(superobject_matrix_local(target), transform);
+    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetLocalMatrix(target), transform);
     
     if (superobject_type(target) == superobject_type_ipo)
     {
@@ -250,12 +250,12 @@ static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* targe
         if (ipo)
         {
             /* Get the reaction zone */
-            const tdstCollideObject* zdr = ipo_collide_object(ipo);
+            const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
             if (zdr)
             {
                 struct ray ray;
                 tdstVector3D intersection_point = vector3_new(0.0f, 0.0f, 0.0f);
-                if (collide_object_intersect_segment(zdr, T, a->position, b->position, &ray, &intersection_point))
+                if (fnCollideObjectIntersectSegment(zdr, T, a->position, b->position, &ray, &intersection_point))
                 {
                     *v = false;
                     
@@ -267,7 +267,7 @@ static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* targe
                     /* Check normal-offset nodes? */
 //                    const tdstVector3D na = vector3_add(a->position, vector3_add(a->normal, vector3_new(0.0f, 0.0f, 0.1f)));
 //                    const tdstVector3D nb = vector3_add(b->position, vector3_add(b->normal, vector3_new(0.0f, 0.0f, 0.1f)));
-//                    if (collide_object_intersect_segment(zdr, T, na, nb, NULL))
+//                    if (fnCollideObjectIntersectSegment(zdr, T, na, nb, NULL))
 //                    {
 //                        *v = false;
 //                    }
@@ -304,7 +304,7 @@ bool line_of_sight(struct xray *h, struct xray_node *a, struct xray_node *b)
     {
         /* Only check the sector where the points are. */
         //printf("sector: %X\n", offset(sectorA));
-        line_of_sight_recursive(h, sectorA, superobject_matrix_global(sectorA), a, b, &v);
+        line_of_sight_recursive(h, sectorA, fnSuperobjectGetGlobalMatrix(sectorA), a, b, &v);
     }
     
     return v;
@@ -571,13 +571,13 @@ static void xray_node_find_neighbors(struct xray *h, struct xray_node* node)
 void xray_init(struct xray* h)
 {
     struct xray_node start;
-    start.position = actor_position(actor_find(actor_instance_name, "Rayman", dynamic_world));
+    start.position = fnActorGetPosition(actor_find(actor_instance_name, "Rayman", dynamic_world));
     start.in_open = false;
     start.in_closed = false;
     start.score = 0.0f;
     
     struct xray_node end;
-    end.position = actor_position(actor_find(actor_instance_name, "BEN_cameleon", dynamic_world));
+    end.position = fnActorGetPosition(actor_find(actor_instance_name, "BEN_cameleon", dynamic_world));
     end.in_open = false;
     end.in_closed = false;
     end.score = 0.0f;
@@ -614,8 +614,8 @@ void xray_init(struct xray* h)
 
 static const tdstMatrix4D xrayComputeAbsoluteMatrix(const tdstSuperObject *object, const tdstSuperObject *root, tdstMatrix4D T)
 {
-    tdstMatrix4D result = matrix4_mul(superobject_matrix_global(root), T);
-    if (object == root) return matrix4_mul(superobject_matrix_global(object), result);
+    tdstMatrix4D result = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), T);
+    if (object == root) return matrix4_mul(fnSuperobjectGetGlobalMatrix(object), result);
     superobject_for_each(root, child) xrayComputeAbsoluteMatrix(object, child, T);
     return result;
 }
@@ -777,7 +777,7 @@ static void xraySourceDeriveStaticNodesRecursive2(xray *h, const tdstSuperObject
     int mesh_index = 0;
     float t;
     
-    while ((mesh = collide_object_mesh(collObj, mesh_index)))
+    while ((mesh = fnCollideObjectGetElementIndexedTriangles(collObj, mesh_index)))
     {
         const uint16* indices = (const uint16*)pointer(mesh->face_indices);
         const tdstVector3D* vertices = (const tdstVector3D*)pointer(collObj->vertices);
@@ -868,7 +868,7 @@ static void xraySourceDeriveStaticNodes(xray* h)
         const tdstInstantiatedPhysicalObject* ipo = superobject_data(object);
         if (!ipo) continue;
         
-        const tdstCollideObject* collideObject = ipo_collide_object(ipo);
+        const tdstCollideObject* collideObject = fnIPOGetCollideObject(ipo);
         if (!collideObject) continue;
         
         for (unsigned int i = 0; i < record->numNodes; i++)

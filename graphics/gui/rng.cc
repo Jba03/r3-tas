@@ -50,7 +50,7 @@ void display_rng_table()
     
     for (int i = -RNG_TABLE_DISPLAY / 3; i < RNG_TABLE_DISPLAY; i++)
     {
-        uint32_t value = rnd_table_index(rnd, 0, i);
+        uint32_t value = fnRNDTableIndex(rnd, 0, i);
         
         float a = 1.0f - float(i) / float(RNG_TABLE_DISPLAY) + 0.1f;
         

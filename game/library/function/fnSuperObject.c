@@ -11,18 +11,18 @@
 #include "stSector.h"
 #include "fnPrimIntersections.c"
 
-/** superobject_typename: get the typename of a superobject */
-const char* superobject_typename(const tdstSuperObject* so)
+#include "fnTransform.c"
+
+const char* fnSuperobjectGetTypename(const tdstSuperObject* so)
 {
     if (!so) return "None";
     const int type = superobject_type(so);
-    const int n_typenames = sizeof superobject_typenames / sizeof(const char*);
-    if (type > 0 && type < n_typenames) return superobject_typenames[((int)log2(type))];
+    const int n_typenames = sizeof fnSuperobjectGetTypenames / sizeof(const char*);
+    if (type > 0 && type < n_typenames) return fnSuperobjectGetTypenames[((int)log2(type))];
     return "None";
 }
 
-/** superobject_name: get the (instance) name of a superobject*/
-const char* superobject_name(const tdstSuperObject* so)
+const char* fnSuperobjectGetName(const tdstSuperObject* so)
 {
     if (!so) return NULL;
     const int type = superobject_type(so);
@@ -31,35 +31,32 @@ const char* superobject_name(const tdstSuperObject* so)
     {
         case superobject_type_actor:
         {
-            const char* name = actor_name(actor_instance_name, data, objectType);
-            if (!name) name = actor_name(actor_model_name, data, objectType);
-            if (!name) name = actor_name(actor_family_name, data, objectType);
+            const char* name = fnActorGetName(actor_instance_name, data, objectType);
+            if (!name) name = fnActorGetName(actor_model_name, data, objectType);
+            if (!name) name = fnActorGetName(actor_family_name, data, objectType);
             return name;
         }
             
-        case superobject_type_ipo: return ipo_name(data);
-        case superobject_type_sector: return sector_name(data);
+        case superobject_type_ipo: return fnIPOGetName(data);
+        case superobject_type_sector: return fnSectorGetName(data);
     }
     
     return NULL;
 }
 
-/** superobject_matrix_global: get the global world transform matrix of a superobject */
-const tdstMatrix4D superobject_matrix_global(const tdstSuperObject* so)
+tdstTransform* fnSuperobjectGetTransform(const tdstSuperObject *obj, bool local)
 {
-    if (!so) return matrix4_identity;
-    const tdstTransform* transform = pointer(so->transform_global);
-    if (!transform) return matrix4_identity;
-    return matrix4_host_byteorder(transform->matrix);
+    return obj ? pointer(local ? obj->transform_local : obj->transform_global) : NULL;
 }
 
-/** superobject_matrix_local: get the local world transform matrix of a superobject */
-const tdstMatrix4D superobject_matrix_local(const tdstSuperObject* so)
+tdstMatrix4D fnSuperobjectGetGlobalMatrix(const tdstSuperObject *obj)
 {
-    if (!so) return matrix4_identity;
-    const tdstTransform* transform = pointer(so->transform_local);
-    if (!transform) return matrix4_identity;
-    return matrix4_host_byteorder(transform->matrix);
+    return fnTransformGetMatrix(fnSuperobjectGetTransform(obj, false));
+}
+
+tdstMatrix4D fnSuperobjectGetLocalMatrix(const tdstSuperObject* obj)
+{
+    return fnTransformGetMatrix(fnSuperobjectGetTransform(obj, true));
 }
 
 /** sector_by_location: get the sector in which the specified point is located */

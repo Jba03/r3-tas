@@ -191,11 +191,11 @@ struct stDynam {
 
 #if USE_FUNCTIONS
 
-/** dynamics_get_speed: get the speed of the specified dynamics structure */
-const struct stVector3D dynamics_get_speed(const tdstDynamics* dynamics);
+/** fnDynamicsGetSpeed: get the speed of the specified dynamics structure */
+const struct stVector3D fnDynamicsGetSpeed(const tdstDynamics* dynamics);
 
-/** dynamics_collide_with: get the surface collision state for the specified obstacle type */
-bool dynamics_collide_with(const tdstDynamics* dynamics, unsigned obstacle);
+/** fnDynamicsCollideWith: get the surface collision state for the specified obstacle type */
+bool fnDynamicsCollideWith(const tdstDynamics* dynamics, unsigned obstacle);
 
 #endif
 

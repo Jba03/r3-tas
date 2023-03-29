@@ -32,9 +32,9 @@ static void mesh_create(tdstInstantiatedPhysicalObject* ipo)
 {
     int mesh_index = 0;
     const tdstCollideElementIndexedTriangles* collmesh = NULL;
-    const tdstCollideObject* zdr = ipo_collide_object(ipo);
+    const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
     
-    while ((collmesh = collide_object_mesh(zdr, mesh_index)))
+    while ((collmesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_index)))
     {
         tdstGameMaterial* gamemat = (tdstGameMaterial*)pointer(collmesh->material);
         

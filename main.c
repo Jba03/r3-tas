@@ -114,20 +114,20 @@ static void load()
         unsigned long io = offsetof(tdstInputStructure, entries);
         input_struct = (tdstInputStructure*)(memory.base + GCN_POINTER_INPUT - io);
         
-        input.stick.main.x = input_entry_find(input_struct, "Action_Pad0_AxeX");
-        input.stick.main.y = input_entry_find(input_struct, "Action_Pad0_AxeY");
-        input.stick.c.x    = input_entry_find(input_struct, "Action_Pad0_AxeV");
-        input.stick.c.y    = input_entry_find(input_struct, "Action_Pad0_AxeZ");
+        input.stick.main.x = fnInputEntryFind(input_struct, "Action_Pad0_AxeX");
+        input.stick.main.y = fnInputEntryFind(input_struct, "Action_Pad0_AxeY");
+        input.stick.c.x    = fnInputEntryFind(input_struct, "Action_Pad0_AxeV");
+        input.stick.c.y    = fnInputEntryFind(input_struct, "Action_Pad0_AxeZ");
         
-        input.button.a = input_entry_find(input_struct, "Action_Sauter");
-        input.button.b = input_entry_find(input_struct, "Action_Affiche_Jauge");
-        input.button.x = input_entry_find(input_struct, "Action_Tirer");
-        input.button.y = input_entry_find(input_struct, "Action_Camera_Look");
-        input.button.S = input_entry_find(input_struct, "Button_Start");
-        input.button.R = input_entry_find(input_struct, "Action_Strafe");
-        input.button.L = input_entry_find(input_struct, "Action_Baisser");
+        input.button.a = fnInputEntryFind(input_struct, "Action_Sauter");
+        input.button.b = fnInputEntryFind(input_struct, "Action_Affiche_Jauge");
+        input.button.x = fnInputEntryFind(input_struct, "Action_Tirer");
+        input.button.y = fnInputEntryFind(input_struct, "Action_Camera_Look");
+        input.button.S = fnInputEntryFind(input_struct, "Button_Start");
+        input.button.R = fnInputEntryFind(input_struct, "Action_Strafe");
+        input.button.L = fnInputEntryFind(input_struct, "Action_Baisser");
         
-        input.button.l = input_entry_find(input_struct, "Action_Camera_TourneDroite");
+        input.button.l = fnInputEntryFind(input_struct, "Action_Camera_TourneDroite");
     }
     
     r3_unload();

@@ -24,9 +24,9 @@ static void display_superobject_info()
             if (!stdgame) return;
             
             /* Get actor names */
-            const char* family_name = "a";//actor_name(actor_family_name, actor);
-//            const char* model_name = actor_name(actor_model_name, actor);
-//            const char* instance_name = actor_name(actor_instance_name, actor);
+            const char* family_name = "a";//fnActorGetName(actor_family_name, actor);
+//            const char* model_name = fnActorGetName(actor_model_name, actor);
+//            const char* instance_name = fnActorGetName(actor_instance_name, actor);
             const char* display_name = NULL;//instance_name ? instance_name : model_name;
             if (!display_name) display_name = "Invalid object name";
                 
@@ -56,7 +56,7 @@ static void display_hierarchy(struct stSuperObject *so, const char* first_obj_na
     ImGui::PushID(so);
     
     const uint32_t type = host_byteorder_32(so->type);
-    const char* _typename = superobject_typename(so);
+    const char* _typename = fnSuperobjectGetTypename(so);
     const char* name = first_obj_name ? first_obj_name : _typename;
     ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
     
@@ -81,7 +81,7 @@ static void display_hierarchy(struct stSuperObject *so, const char* first_obj_na
             uint32_t col = actor_color(actor);
             color = ImColor(col);
             
-            name = superobject_name(so);
+            name = fnSuperobjectGetName(so);
             if (!name) name = "Invalid object name";
         }
         else

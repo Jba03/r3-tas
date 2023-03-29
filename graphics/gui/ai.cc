@@ -79,7 +79,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                 {
                     tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
                     if (actor) {
-                        strcpy(tok.string, actor_name(actor_instance_name, actor, objectType));
+                        strcpy(tok.string, fnActorGetName(actor_instance_name, actor, objectType));
                         color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f);
                     }
                 }
@@ -127,9 +127,9 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     ImGui::TextColored(color, "%s", tok.string);
                  
                     uint32 var = host_byteorder_32(tok.node->param);
-                    int type = 0;
-                    void* data = NULL;
-                    if (actor_dsgvar(current_actor, var, &type, &data) == 0)
+                    uint8 type = 0;
+                    void* data = fnActorGetDsgVar(current_actor, var, &type);
+                    if (data)
                     {
                         if (ImGui::IsItemHovered())
                         {

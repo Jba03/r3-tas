@@ -12,8 +12,10 @@
 
 #include <stdio.h>
 
-/** collide_object_mesh: get the collide mesh at specified index */
-const tdstCollideElementIndexedTriangles* collide_object_mesh(const tdstCollideObject* object, int idx)
+#include "fnOctree.c"
+
+/** fnCollideObjectGetElementIndexedTriangles: get the collide mesh at specified index */
+const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedTriangles(const tdstCollideObject* object, int idx)
 {
     if (!object) return NULL;
     
@@ -31,8 +33,8 @@ const tdstCollideElementIndexedTriangles* collide_object_mesh(const tdstCollideO
     return NULL;
 }
 
-/** collide_object_sphere: get collide sphere at specified index */
-const tdstCollideElementIndexedTriangles* collide_object_sphere(const tdstCollideObject* object, int idx)
+/** fnCollideObjectGetElementIndexedSphere: get collide sphere at specified index */
+const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedSphere(const tdstCollideObject* object, int idx)
 {
     if (!object) return NULL;
     
@@ -43,7 +45,7 @@ const tdstCollideElementIndexedTriangles* collide_object_sphere(const tdstCollid
         const int16_t type = host_byteorder_16(*((int16_t*)pointer(object->element_types) + i));
         const void* block = pointer(element);
         
-        if (type == collide_object_spheres)
+        if (type == fnCollideObjectGetElementIndexedSpheres)
             if (counter++ == idx) return block;
     }
     
@@ -54,18 +56,17 @@ float st[OCTREE_MAX_SELECTED_NODES];
 tdstOctreeNode* selected_nodes[OCTREE_MAX_SELECTED_NODES];
 int n_selected_nodes = 0;
 
-const bool collide_object_intersect_segment(const tdstCollideObject* object,
-                                            const tdstMatrix4D T,
-                                            const tdstVector3D sA,
-                                            const tdstVector3D sB,
-                                            struct ray *out_ray,
-                                            tdstVector3D *I)
+const bool fnCollideObjectIntersectSegment(const tdstCollideObject* object,
+                                           const tdstMatrix4D T,
+                                           const tdstVector3D sA,
+                                           const tdstVector3D sB,
+                                           struct ray *out_ray,
+                                           tdstVector3D *I)
 {
     if (!object) return false;
     
     const tdstOctree* octree = pointer(object->octree);
     const tdstOctreeNode* root = pointer(octree->root);
-
     const tdstVector3D sAB = vector3_sub(sB, sA);
     
     int n_selected = 0;
@@ -88,7 +89,7 @@ const bool collide_object_intersect_segment(const tdstCollideObject* object,
     
     int mesh_index = 0;
     const tdstCollideElementIndexedTriangles* mesh = NULL;
-    while ((mesh = collide_object_mesh(object, mesh_index)))
+    while ((mesh = fnCollideObjectGetElementIndexedTriangles(object, mesh_index)))
     {
         const uint16* indices = (const uint16*)pointer(mesh->face_indices);
         const tdstVector3D* vertices = (const tdstVector3D*)pointer(object->vertices);

@@ -31,7 +31,7 @@
 
 /* TODO: Add draw flags */
 
-static const char * const superobject_typenames[] =
+static const char * const fnSuperobjectGetTypenames[] =
 {
     "World", "Actor", "Sector", "PhysicalObject", "PhysicalObject.Mirror",
     "IPO", "IPO.Mirror", "SpecialEffect", "NoAction", "Unknown", "Mirror",
@@ -69,17 +69,17 @@ struct stSuperObject {
 
 #if USE_FUNCTIONS
 
-/** superobject_typename: get the typename of a superobject*/
-const char* superobject_typename(const tdstSuperObject* so);
+/** fnSuperobjectGetTypename: get the typename of a superobject*/
+const char* fnSuperobjectGetTypename(const tdstSuperObject* so);
 
-/** superobject_name: get the (instance) name of a superobject*/
-const char* superobject_name(const tdstSuperObject* so);
+/** fnSuperobjectGetName: get the (instance) name of a superobject*/
+const char* fnSuperobjectGetName(const tdstSuperObject* so);
 
-/** superobject_matrix_global: get the global world transform matrix of a superobject */
-const tdstMatrix4D superobject_matrix_global(const tdstSuperObject* so);
+/** fnSuperobjectGetGlobalMatrix: get the global world transform matrix of a superobject */
+tdstMatrix4D fnSuperobjectGetGlobalMatrix(const tdstSuperObject* so);
 
-/** superobject_matrix_local: get the local world transform matrix of a superobject */
-const tdstMatrix4D superobject_matrix_local(const tdstSuperObject* so);
+/** fnSuperobjectGetLocalMatrix: get the local world transform matrix of a superobject */
+tdstMatrix4D fnSuperobjectGetLocalMatrix(const tdstSuperObject* so);
 
 /** sector_by_location: get the sector in which the specified point is located */
 const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, const tdstVector3D point);

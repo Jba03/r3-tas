@@ -21,14 +21,14 @@ struct stInstantiatedPhysicalObject {
 #include "stSuperobject.h"
 #include "stCollideObject.h"
 
-/** ipo_name: get the name of an IPO */
-const char* ipo_name(const tdstInstantiatedPhysicalObject* ipo);
+/** fnIPOGetName: get the name of an IPO */
+const char* fnIPOGetName(const tdstInstantiatedPhysicalObject* ipo);
 
 /* ipo_world_matrix: compute the world transform of an IPO */
 const tdstMatrix4D ipo_world_matrix(const tdstSuperObject* ipo);
 
-/** ipo_collide_object: get the collide object (ZDR) of an IPO */
-const tdstCollideObject* ipo_collide_object(const tdstInstantiatedPhysicalObject* ipo);
+/** fnIPOGetCollideObject: get the collide object (ZDR) of an IPO */
+const tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObject* ipo);
 
 #endif
 #endif /* stInstantiatedPhysicalObject_h */

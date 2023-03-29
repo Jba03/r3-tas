@@ -181,7 +181,7 @@ static void display_dynamics(const tdstDynamics* dynamics)
             TableColumn("wall.rate", "%.2f", f32(wall.rate));
             TableColumn("wall.normal", "[%.2f, %.2f, %.2f]", wallNormal.x, wallNormal.y, wallNormal.z);
             TableColumn("wall.contact", "[%.2f, %.2f, %.2f]", wallContact.x, wallContact.y, wallContact.z);
-            TableColumn("wall.so", "%s", superobject_name(wall_so));
+            TableColumn("wall.so", "%s", fnSuperobjectGetName(wall_so));
             ImGui::PopStyleColor();
             
             /* Ground */
@@ -189,7 +189,7 @@ static void display_dynamics(const tdstDynamics* dynamics)
             TableColumn("ground.rate", "%.2f", f32(ground.rate));
             TableColumn("ground.normal", "[%.2f, %.2f, %.2f]", groundNormal.x, groundNormal.y, groundNormal.z);
             TableColumn("ground.contact", "[%.2f, %.2f, %.2f]", groundContact.x, groundContact.y, groundContact.z);
-            TableColumn("ground.so", "%s", superobject_name(ground_so));
+            TableColumn("ground.so", "%s", fnSuperobjectGetName(ground_so));
             ImGui::PopStyleColor();
             
             /* Ceiling */
@@ -197,7 +197,7 @@ static void display_dynamics(const tdstDynamics* dynamics)
             TableColumn("ceiling.rate", "%.2f", f32(ceiling.rate));
             TableColumn("ceiling.normal", "[%.2f, %.2f, %.2f]", ceilingNormal.x, ceilingNormal.y, ceilingNormal.z);
             TableColumn("ceiling.contact", "[%.2f, %.2f, %.2f]", ceilingContact.x, ceilingContact.y, ceilingContact.z);
-            TableColumn("ceiling.so", "%s", superobject_name(ceiling_so));
+            TableColumn("ceiling.so", "%s", fnSuperobjectGetName(ceiling_so));
             ImGui::PopStyleColor();
             
             /* Character */
@@ -205,7 +205,7 @@ static void display_dynamics(const tdstDynamics* dynamics)
             TableColumn("character.rate", "%.2f", f32(character.rate));
             TableColumn("character.normal", "[%.2f, %.2f, %.2f]", characterNormal.x, characterNormal.y, characterNormal.z);
             TableColumn("character.contact", "[%.2f, %.2f, %.2f]", characterContact.x, characterContact.y, characterContact.z);
-            TableColumn("character.so", "%s", superobject_name(character_so));
+            TableColumn("character.so", "%s", fnSuperobjectGetName(character_so));
             ImGui::PopStyleColor();
             
             ImGui::EndTable();

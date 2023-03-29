@@ -8,8 +8,8 @@
 #include "stSector.h"
 #include "game.h"
 
-/** sector_name: get the abbreviated name of a sector */
-const char* sector_name(const tdstSector* sct)
+/** fnSectorGetName: get the abbreviated name of a sector */
+const char* fnSectorGetName(const tdstSector* sct)
 {
     if (!sct) return NULL;
     const char* name = memchr(sct->name, ':', 0x104);

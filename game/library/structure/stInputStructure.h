@@ -83,8 +83,8 @@ struct stInputEntryElement {
 
 #if USE_FUNCTIONS
 
-/** input_entry_find: find an input entry by its action name */
-tdstInputEntryElement* input_entry_find(const tdstInputStructure* s, const char* action_name);
+/** fnInputEntryFind: find an input entry by its action name */
+tdstInputEntryElement* fnInputEntryFind(const tdstInputStructure* s, const char* action_name);
 
 #endif
 

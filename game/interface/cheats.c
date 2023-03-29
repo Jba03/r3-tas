@@ -12,9 +12,10 @@
 
 static void begin_carrying_object(const tdstSuperObject* carryable_actor)
 {
-    uint32_t* dsgvar_167; /* DsgVar 167: currently carried actor superobject */
-    if (actor_dsgvar(actor_rayman, 167, NULL, (void**)&dsgvar_167) < 0) return;
-    *dsgvar_167 = game_address(offset(carryable_actor));
+    uint32_t* dsgVar167 = fnActorGetDsgVar(actor_rayman, 167, NULL); /* DsgVar 167: currently carried actor superobject */
+    if (!dsgVar167) return;
+    
+    *dsgVar167 = game_address(offset(carryable_actor));
     
     const tdstBrain *brain = actor_brain(actor_rayman);
     if (!brain) return;

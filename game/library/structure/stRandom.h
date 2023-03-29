@@ -14,11 +14,11 @@ struct stRandom {
 
 #if USE_FUNCTIONS
 
-/** rnd_table_index: index an RNG table. */
-int32 rnd_table_index(const tdstRandom *rnd, unsigned index, int offset);
+/** fnRNDTableIndex: index an RNG table. */
+int32 fnRNDTableIndex(const tdstRandom *rnd, unsigned index, int offset);
 
-/** rnd_call: call the random number device `n_calls` times. */
-int32 rnd_call(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma);
+/** fnRNDCall: call the random number device `n_calls` times. */
+int32 fnRNDCall(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma);
 
 #endif
 #endif /* stRandom_h */

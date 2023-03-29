@@ -75,7 +75,7 @@ static void DisplayRouteWindow()
     
     if (recording_route)
     {
-        const tdstDynamics* dynamics = actor_dynamics(actor_rayman);
+        const tdstDynamics* dynamics = fnActorGetDynamics(actor_rayman);
         tdstDynamicsReport* report = (tdstDynamicsReport*)pointer(dynamics->base.report);
         tdstSuperObject* obstacle = (tdstSuperObject*)pointer(report->ground.superobject);
         

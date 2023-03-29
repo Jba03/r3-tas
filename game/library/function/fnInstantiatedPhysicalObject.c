@@ -10,8 +10,8 @@
 #include "stCollideSet.h"
 #include "stPhysicalObject.h"
 
-/** ipo_name: get the name of an IPO */
-const char* ipo_name(const tdstInstantiatedPhysicalObject* ipo)
+/** fnIPOGetName: get the name of an IPO */
+const char* fnIPOGetName(const tdstInstantiatedPhysicalObject* ipo)
 {
     if (!ipo) return NULL;
     const char* name = memchr(ipo->name, ':', 0x32);
@@ -27,14 +27,14 @@ const tdstMatrix4D ipo_world_matrix(const tdstSuperObject* ipo)
     
     tdstSuperObject *parent = NULL;
     while ((parent = superobject_parent(ipo)))
-        matrixStack[idx++] = superobject_matrix_global(parent);
+        matrixStack[idx++] = fnSuperobjectGetGlobalMatrix(parent);
     
     while (--idx) result = matrix4_mul(matrixStack[idx], result);
-    return matrix4_mul(superobject_matrix_global(ipo), result);
+    return matrix4_mul(fnSuperobjectGetGlobalMatrix(ipo), result);
 }
 
-/** ipo_collide_object: get the collide object (ZDR) of an IPO */
-const tdstCollideObject* ipo_collide_object(const tdstInstantiatedPhysicalObject* ipo)
+/** fnIPOGetCollideObject: get the collide object (ZDR) of an IPO */
+const tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObject* ipo)
 {
     if (!ipo) return NULL;
     

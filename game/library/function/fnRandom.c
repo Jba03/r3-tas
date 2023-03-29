@@ -32,7 +32,7 @@
  * LaunchAGO seems to be the function responsible for the internal RNG update in most cases.
  */
 
-int32 rnd_table_index(const tdstRandom *rnd, unsigned index, int offset)
+int32 fnRNDTableIndex(const tdstRandom *rnd, unsigned index, int offset)
 {
     if (host_byteorder_32(rnd->table) == 0x00) return 0;
     
@@ -45,13 +45,13 @@ int32 rnd_table_index(const tdstRandom *rnd, unsigned index, int offset)
     return value;
 }
 
-int32 rnd_call(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
+int32 fnRNDCall(const tdstRandom *rnd, unsigned n_calls, unsigned index, unsigned mi, unsigned ma)
 {
     int32_t value = 0;
     int32_t tmax = host_byteorder_32(rnd->table_max);
     
     for (unsigned n = 0; n < n_calls; n++)
-        value = (mi + ((ma + 1 - mi) * rnd_table_index(rnd, index, n)) / (tmax + 1));
+        value = (mi + ((ma + 1 - mi) * fnRNDTableIndex(rnd, index, n)) / (tmax + 1));
     
     return value;
 }

@@ -10,7 +10,7 @@
 #define collide_object_tmesh                4
 #define collide_object_points               5
 #define collide_object_lines                6
-#define collide_object_spheres              7
+#define fnCollideObjectGetElementIndexedSpheres              7
 #define collide_object_aabb                 8
 #define collide_object_cones                9
 #define collide_object_deformationsetinfo   13
@@ -36,14 +36,14 @@ struct stCollideObject {
 #include "stVector3D.h"
 #include "ray.h"
 
-/** collide_object_mesh: get collide mesh at specified index */
-const tdstCollideElementIndexedTriangles* collide_object_mesh(const tdstCollideObject* object, int idx);
+/** fnCollideObjectGetElementIndexedTriangles: get collide mesh at specified index */
+const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedTriangles(const tdstCollideObject* object, int idx);
 
-/** collide_object_sphere: get collide sphere at specified index */
-const tdstCollideElementIndexedTriangles* collide_object_sphere(const tdstCollideObject* object, int idx);
+/** fnCollideObjectGetElementIndexedSphere: get collide sphere at specified index */
+const tdstCollideElementIndexedTriangles* fnCollideObjectGetElementIndexedSphere(const tdstCollideObject* object, int idx);
 
-/** collide_object_intersect_segment: intersect a collide object with a line segment */
-const bool collide_object_intersect_segment(const tdstCollideObject* object,
+/** fnCollideObjectIntersectSegment: intersect a collide object with a line segment */
+const bool fnCollideObjectIntersectSegment(const tdstCollideObject* object,
                                             const tdstMatrix4D T,
                                             const tdstVector3D sA,
                                             const tdstVector3D sB,

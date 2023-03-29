@@ -8,10 +8,10 @@
 #include "stEngineStructure.h"
 #include "game.h"
 
-/** engine_load_level: load level with specified name */
-void engine_load_level(tdstEngineStructure* engine, const char* level_name)
+/** fnEngineLoadLevel: load level with specified name */
+void fnEngineLoadLevel(tdstEngineStructure* engine, const char* levelName)
 {
     memset((void*)engine->next_level_name, 0, 30);
-    strcpy((void*)engine->next_level_name, level_name);
+    strcpy((void*)engine->next_level_name, levelName);
     engine->mode = 6; /* Change map */
 }

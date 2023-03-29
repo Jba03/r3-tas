@@ -73,8 +73,8 @@ struct stEngineStructure {
 
 #if USE_FUNCTIONS
 
-/** engine_load_level: load level with specified name */
-void engine_load_level(tdstEngineStructure* engine, const char* level_name);
+/** fnEngineLoadLevel: load level with specified name */
+void fnEngineLoadLevel(tdstEngineStructure* engine, const char* level_name);
 
 #endif
 
