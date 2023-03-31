@@ -100,32 +100,32 @@ static inline unsigned int tree_max_depth(tdstNodeInterpret* tree)
 
 #if USE_FUNCTIONS
 
-struct translation_token
-{
-    #define TOKEN_MAX_LENGTH 256
-    char string[TOKEN_MAX_LENGTH];
-    tdstNodeInterpret* node;
-    struct translation_token* next;
-    int offset; /* Offset in tree */
-};
-
-struct translation
-{
-    tdstNodeInterpret* original_tree;
-    tdstNodeInterpret* tree;
-    tdstNodeInterpret* current;
-    
-    unsigned n_tokens;
-    struct translation_token token[4096];
-    
-    unsigned indent;
-};
-
-/** script_translate: translate a script into readable text */
-struct translation* script_translate(const tdstTreeInterpret* script);
-
-/** script_node_translate: translate a script into readable text */
-struct translation* script_node_translate(const tdstNodeInterpret* tree);
+//struct translation_token
+//{
+//    #define TOKEN_MAX_LENGTH 256
+//    char string[TOKEN_MAX_LENGTH];
+//    tdstNodeInterpret* node;
+//    struct translation_token* next;
+//    int offset; /* Offset in tree */
+//};
+//
+//struct translation
+//{
+//    tdstNodeInterpret* original_tree;
+//    tdstNodeInterpret* tree;
+//    tdstNodeInterpret* current;
+//    
+//    unsigned n_tokens;
+//    struct translation_token token[4096];
+//    
+//    unsigned indent;
+//};
+//
+///** script_translate: translate a script into readable text */
+//struct translation* script_translate(const tdstTreeInterpret* script);
+//
+///** script_node_translate: translate a script into readable text */
+//struct translation* script_node_translate(const tdstNodeInterpret* tree);
 
 /** script_translation_free: destroy script translation */
 void script_translation_free(struct translation* t);

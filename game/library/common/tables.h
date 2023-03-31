@@ -1463,17 +1463,17 @@ static const char * const script_procedure_table[] =
 
 static const char * const script_condition_table[] =
 {
-    "Cond_And", // 0
-    "Cond_Or",
-    "Cond_Not",
-    "Cond_XOR", // 3
+    "&&", // 0
+    "||",
+    "!",
+    "^", // 3
     
-    "Cond_Equal", // 4
-    "Cond_Different",
-    "Cond_Lesser",
-    "Cond_Greater",
-    "Cond_LesserOrEqual",
-    "Cond_GreaterOrEqual", // 9
+    "==", // 4
+    "!=",
+    "<",
+    ">",
+    "<=",
+    ">=", // 9
     
     "CollidePersoZDDNoWithPerso", // 10
     "CollideModuleZDDNoWithPerso",

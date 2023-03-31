@@ -11,6 +11,8 @@ extern "C"
 {
 #include "intfun.h"
 #include "stActionTable.h"
+
+#include "fnTreeTranslation.c"
 }
 
 static int line = 1;
@@ -28,26 +30,42 @@ static tdstNodeInterpret* action_tree = NULL;
 
 static int aimodel_selected_type = 0;
 static void* aimodel_selected_data = NULL;
+static int indentaa = 4;
+static int identationStyle = 1;
 
 static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
-    struct translation* translation = script_node_translate(tree);
-    if (translation)
+    stTreeTranslationContext *c = NULL;
+    
+    ImGui::SliderInt("Indentation", &indentaa, 0, 32);
+    
+    stTreeTranslationOptions opt;
+    opt.indentationStyle = 0;
+    opt.indentationSize = indentaa;
+    opt.skipParentheses = 0;
+    
+    ImGui::SliderInt("Indentation size", &identationStyle, 0, 1);
+    opt.indentationStyle = identationStyle;
+    
+    if (fnTreeTranslate(&c, tree, &opt))
     {
-        
+        //stTreeTranslationToken *tok = c->token;
         
         int pcc = 0;
         int linenn = 0;
-        for (int i = 0; i < translation->n_tokens; i++)
+        ///printf("AAAAA\n");
+        for (int N = 0; N < c->numTokens; N++)
         {
-            struct translation_token tok = translation->token[i];
+            stTreeTranslationToken *tok = &c->token[N];
+            //printf("%s", tok->translatedText);
+            //struct translation_token tok = translation->token[i];
             
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f,0.0f));
             ImVec4 color = ImVec4(0.75,0.75,0.75,1);
             
-            if (tok.node)
+            if (tok->originalNode)
             {
-                switch (tok.node->type)
+                switch (tok->originalNode->type)
                 {
                     case script_node_type_keyword: color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f); break;
                     case script_node_type_condition: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
@@ -66,27 +84,27 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     case script_node_type_subroutine: color = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f); break;
                 }
                 
-                if (tok.offset >= 0 && tok.offset == pc) {
-                    line = linenn;
-                }
+//                if (tok.offset >= 0 && tok.offset == pc) {
+//                    line = linenn;
+//                }
+//
+//                if (line == linenn) {
+//                    color = ImVec4(0,1,0,1);
+//                }
                 
-                if (line == linenn) {
-                    color = ImVec4(0,1,0,1);
-                }
                 
-                
-                if (tok.node->type == script_node_type_actorref)
+                if (tok->originalNode->type == script_node_type_actorref)
                 {
-                    tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
+                    tdstEngineObject* actor = (tdstEngineObject*)pointer(tok->originalNode->param);
                     if (actor) {
-                        strcpy(tok.string, fnActorGetName(actor_instance_name, actor, objectType));
+                        strcpy(tok->translatedText, fnActorGetName(actor_instance_name, actor, objectType));
                         color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f);
                     }
                 }
                 
-                if (tok.node->type == script_node_type_behaviorref)
+                if (tok->originalNode->type == script_node_type_behaviorref)
                 {
-                    const char* name = (const char*)pointer(tok.node->param);
+                    const char* name = (const char*)pointer(tok->originalNode->param);
                     color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f);
                     const char* shortname = strchr(name, ':') + 1;
                     ImGui::TextColored(color, "\"%s\"", shortname);
@@ -96,9 +114,9 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     continue;
                 }
                 
-                if (tok.node->type == script_node_type_modelref || tok.node->type == script_node_type_modelref2)
+                if (tok->originalNode->type == script_node_type_modelref || tok->originalNode->type == script_node_type_modelref2)
                 {
-                    address* name_addr = (address*)doublepointer(tok.node->param);
+                    address* name_addr = (address*)doublepointer(tok->originalNode->param);
                     
                     const char* name;
                     if (name_addr) name = (const char*)pointer(*name_addr);
@@ -122,11 +140,11 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                 }
                 
                 
-                if (tok.node->type == script_node_type_dsgvarref2)
+                if (tok->originalNode->type == script_node_type_dsgvarref2)
                 {
-                    ImGui::TextColored(color, "%s", tok.string);
+                    ImGui::TextColored(color, "%s", tok->translatedText);
                  
-                    uint32 var = host_byteorder_32(tok.node->param);
+                    uint32 var = host_byteorder_32(tok->originalNode->param);
                     uint8 type = 0;
                     void* data = fnActorGetDsgVar(current_actor, var, &type);
                     if (data)
@@ -141,16 +159,16 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                         if (ImGui::IsItemClicked()) memory_viewer.GotoAddrAndHighlight(offset(data), offset(data));
                     }
                         
-                    if (tok.string[0] == '\n') linenn++;
-                    if (tok.string[0] != '\n') ImGui::SameLine();
+                    if (tok->translatedText[0] == '\n') linenn++;
+                    if (tok->translatedText[0] != '\n') ImGui::SameLine();
                     ImGui::PopStyleVar();
 
                     continue;
                 }
                 
-                if (tok.node->type == script_node_type_button)
+                if (tok->originalNode->type == script_node_type_button)
                 {
-                    tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
+                    tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok->originalNode->param);
                     const char* name = (const char*)pointer(entry->actionName);
                     if ((host_byteorder_32(entry->state) & 0xFF000000) == 0)
                         color = ImVec4(100.0f / 255.0f, 255.0f / 255.0f, 255.0f, 1.0f);
@@ -166,9 +184,9 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     continue;
                 }
                 
-                if (tok.node->type == script_node_type_actionref)
+                if (tok->originalNode->type == script_node_type_actionref)
                 {
-                    tdstActionTableEntry* action = (tdstActionTableEntry*)pointer(tok.node->param);
+                    tdstActionTableEntry* action = (tdstActionTableEntry*)pointer(tok->originalNode->param);
                     color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f);
                     ImGui::TextColored(color, "\"%s\"", action->name);
                     if (ImGui::IsItemClicked())
@@ -182,29 +200,29 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
-                    int off = tok.node - translation->tree;
-                    tdstNodeInterpret* orig = translation->original_tree + off;
+                    int off = tok->originalNode - c->tree;
+                    tdstNodeInterpret* orig = c->tree + off;
                     memory_viewer.Open = true;
                     memory_viewer.GotoAddr = offset(orig);
                 }
                 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                 {
-                    int off = tok.node - translation->tree;
-                    tdstNodeInterpret* orig = translation->original_tree + off;
+                    int off = tok->originalNode - c->tree;
+                    tdstNodeInterpret* orig = c->tree + off;
                     orig->type = script_node_type_end_macro;
                 }
                 
-                if (tok.node->type == script_node_type_subroutine)
+                if (tok->originalNode->type == script_node_type_subroutine)
                 {
-                    const char* name = (const char*)pointer(tok.node->param);
+                    const char* name = (const char*)pointer(tok->originalNode->param);
                     const char* shortname = strchr(name, ':') + 1;
                     
                     ImGui::TextColored(color, "%s", shortname);
                     if (ImGui::IsItemClicked(0))
                     {
-                        int off = tok.node - translation->tree;
-                        tdstNodeInterpret* orig = translation->original_tree + off;
+                        int off = tok->originalNode - c->tree;
+                        tdstNodeInterpret* orig = c->tree + off;
                         tdstMacro* macro = (tdstMacro*)pointer(orig->param);
                         if (macro)
                         {
@@ -231,7 +249,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     }
                     else if (ImGui::IsItemClicked(1))
                     {
-//                        int off = tok.node - translation->tree;
+//                        int off = tok->originalNode - translation->tree;
 //                        tdstNodeInterpret* orig = translation->original_tree + off;
 //                        orig->type = 4;
 //                        orig->param = 0;
@@ -250,21 +268,24 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
             }
             
             
-            ImGui::TextColored(color, "%s", tok.string);
+            ImGui::TextColored(color, "%s", tok->translatedText);
             
-            if (ImGui::IsItemHovered() && tok.node)
+            if (ImGui::IsItemHovered() && tok->originalNode)
             {
                 ImGui::BeginTooltip();
-                ImGui::TextColored(color, "%s", tok.string);
+                ImGui::TextColored(color, "%s", tok->translatedText);
                 ImGui::EndTooltip();
             }
             
-            if (tok.string[0] == '\n') linenn++;
-            if (tok.string[0] != '\n') ImGui::SameLine();
+            if (tok->translatedText[0] == '\n') linenn++;
+            if (tok->translatedText[0] != '\n') ImGui::SameLine();
             ImGui::PopStyleVar();
+            
+            //tok = tok->next;
         }
         
-        script_translation_free(translation);
+        
+        //script_translation_free(translation);
     }
 }
 

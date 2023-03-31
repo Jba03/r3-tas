@@ -20,6 +20,8 @@
 
 #include "translate.h"
 
+#include "fnTreeTranslation.c"
+
 extern const char* (*get_config_path)(void);
 
 static void export_behavior(tdstBehavior* behavior)
@@ -39,17 +41,15 @@ static void export_behavior(tdstBehavior* behavior)
         tdstNodeInterpret* tree = pointer(script->tree);
         if (!tree) continue;
         
-        struct translation* translation = script_translate(tree);
-
-        if (translation)
+        stTreeTranslationContext* c = NULL;
+        if (fnTreeTranslate(&c, tree, NULL))
         {
             fprintf(fp, "// Script %d @ %X\n", i, offset(tree));
             
-            for (int t = 0; t < translation->n_tokens; t++)
+            stTreeTranslationToken *tok = c->token;
+            while (tok)
             {
-                struct translation_token tok = translation->token[t];
-                
-                if (tok.node)
+                if (tok->originalNode)
                 {
                     //                    switch (tok.node->type)
                     //                    {
@@ -68,50 +68,52 @@ static void export_behavior(tdstBehavior* behavior)
                     //                        case script_node_type_subroutine: color = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f); break;
                     //                    }
                     
-                    if (tok.node->type == script_node_type_actorref)
+                    if (tok->originalNode->type == script_node_type_actorref)
                     {
                         
                         
-                        tdstEngineObject* actor = (tdstEngineObject*)pointer(tok.node->param);
+                        tdstEngineObject* actor = (tdstEngineObject*)pointer(tok->originalNode->param);
                         if (actor) {
                             fprintf(fp, "\"%s\"", fnActorGetName(actor_instance_name, actor, objectType));
                         }
                         continue;
                     }
                     
-                    if (tok.node->type == script_node_type_behaviorref)
+                    if (tok->originalNode->type == script_node_type_behaviorref)
                     {
-                        const char* name = (const char*)pointer(tok.node->param);
+                        const char* name = (const char*)pointer(tok->originalNode->param);
                         const char* shortname = strchr(name, ':') + 1;
                         fprintf(fp, "\"%s\"", shortname);
                         continue;
                     }
                     
-                    if (tok.node->type == script_node_type_button)
+                    if (tok->originalNode->type == script_node_type_button)
                     {
-                        tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok.node->param);
+                        tdstInputEntryElement* entry = (tdstInputEntryElement*)pointer(tok->originalNode->param);
                         const char* name = (const char*)pointer(entry->actionName);
                         fprintf(fp, "\"%s\"", name);
                         continue;
                     }
                     
-                    if (tok.node->type == script_node_type_actionref)
+                    if (tok->originalNode->type == script_node_type_actionref)
                     {
-                        const char* name = (const char*)pointer(tok.node->param);
+                        const char* name = (const char*)pointer(tok->originalNode->param);
                         fprintf(fp, "\"%s\"", name);
                         continue;
                     }
                     
-                    if (tok.node->type == script_node_type_subroutine)
+                    if (tok->originalNode->type == script_node_type_subroutine)
                     {
-                        const char* name = (const char*)pointer(tok.node->param);
+                        const char* name = (const char*)pointer(tok->originalNode->param);
                         const char* shortname = strchr(name, ':') + 1;
                         fprintf(fp, "%s", shortname);
                         continue;
                     }
                 }
                 //
-                fprintf(fp, "%s", tok.string);
+                fprintf(fp, "%s", tok->translatedText);
+                
+                tok = tok->next;
                 
                 //if (tok.string[0] == '\n') linenn++;
                 //if (tok.string[0] != '\n') ImGui::SameLine();
@@ -120,7 +122,7 @@ static void export_behavior(tdstBehavior* behavior)
             
             fprintf(fp, "\n\n");
             
-            script_translation_free(translation);
+            //script_translation_free(translation);
         }
         
         
