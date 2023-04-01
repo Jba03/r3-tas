@@ -41,7 +41,16 @@ typedef struct stTreeTranslationContext {
     tdstTreeTranslationOptions *opt;
 } tdstTreeTranslationContext;
 
-static const char * const translatedConditions[] = {"&&", "||", "!", "^", "==", "!=", "<", ">", "<=", ">="};
+static const char * const conditions[] =
+{
+    "&&", "||", "!", "^", "==", "!=", "<", ">", "<=", ">="
+};
+
+static const char * const operators[] =
+{
+    "+", "-", "*", "/", "-", "%", "+=", "-=", "*=", "/=", "++", "--", "=", ".",
+    ".X", ".Y", ".Z", "+", "-", "-", "*", "/", ".X = ", ".Y = ", ".Z = ", "."
+};
 
 static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpret *const node);
 
@@ -150,7 +159,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     S("0                       ^^^^^^^^^^^^^^^                       ", e("%s", script_keyword_table[x]))
     S("1   ^                                                         ", c->currentNode = NULL; e("!("); c->currentNode = node)
     S("1 ^^^^^^^^^^                                                  ", c(0))
-    S("1 ^^ ^^^^^^^                                                  ", e(" %s ", translatedConditions[x]))
+    S("1 ^^ ^^^^^^^                                                  ", e(" %s ", conditions[x]))
     S("1 ^^ ^^^^^^^                                                  ", c(1))
     S("1!                                                            ", if (x > 9) e("%s", script_condition_table[x]))
     S("1!                                                            ", if (x > 9) e("%s", "("))
@@ -160,30 +169,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     S("2 ^^^^ ^           ^^ ^^                                      ", e("("))
     S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^^^^                               ", c( 0 ))
     S("2 ^^^^ ^^^^^  ^    ^^ ^^    ^ ^                               ", e(" "))
-    S("2 ^                                                           ", e("+"))
-    S("2  ^                                                          ", e("-"))
-    S("2   ^                                                         ", e("*"))
-    S("2    ^                                                        ", e("/"))
-    S("2      ^                                                      ", e("%"))
-    S("2       ^                                                     ", e("+="))
-    S("2        ^                                                    ", e("-="))
-    S("2         ^                                                   ", e("*="))
-    S("2          ^                                                  ", e("/="))
-    S("2           ^                                                 ", e("++"))
-    S("2            ^                                                ", e("--"))
-    S("2             ^                                               ", e("="))
-    S("2              ^                                              ", e("."))
-    S("2               ^                                             ", e(".X"))
-    S("2                ^                                            ", e(".Y"))
-    S("2                 ^                                           ", e(".Z"))
-    S("2                  ^                                          ", e("+")) /* add vector */
-    S("2                   ^                                         ", e("-")) /* sub vector */
-    S("2                     ^                                       ", e("*")) /* mul vector */
-    S("2                      ^                                      ", e("/")) /* div vector */
-    S("2                       ^                                     ", e(".X = "))
-    S("2                        ^                                    ", e(".Y = "))
-    S("2                         ^                                   ", e(".Z = "))
-    S("2                          ^                                  ", e(".")) /* ultra */
+    S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^                                  ", e("%s", operators[x]))
     S("2                           ^                                 ", e("(%s)", "Model")) /* TODO: model cast */
     S("2                            ^                                ", e("["))
     S("2 ^^^^ ^^^^^  ^    ^^ ^^    ^ ^                               ", e(" "))
