@@ -12,7 +12,7 @@
 #include <stdarg.h>
 
 #define TOKEN_ALLOCATION_MULTIPLIER 256
-#define TOKEN_MAX_STRING_LENGTH 1024
+#define TOKEN_MAX_STRING_LENGTH 256
 
 #define IsEndOfTree(Node) (Node->type == script_node_type_end_macro)
 
