@@ -86,7 +86,7 @@ static void fnIndent(tdstTreeTranslationContext *const c)
     fnEmit(c, "%*s", c->indentation * c->opt->indentationSize, "");
 }
 
-static void fnNodeTranslateBranch(tdstTreeTranslationContext *const c, tdstNodeInterpret *const branch, bool asArguments, bool indent)
+static void fnNodeTranslateBranch(tdstTreeTranslationContext *const c, tdstNodeInterpret *branch, bool asArguments, bool indent)
 {
     tdstNodeInterpret *node = branch;
     tdstNodeInterpret *root = branch - 1;
@@ -168,7 +168,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     S("1!                                                            ", if (x > 9 || x == 2) e(")"))
     S("2     ^              ^                                        ", e("-"))
     S("2 ^^^^ ^           ^^ ^^                                      ", e("("))
-    S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^^^^                               ", c( 0 ))
+    S("2 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                               ", c( 0 ))
     S("2 ^^^^ ^^^^^  ^    ^^ ^^    ^ ^                               ", e(" "))
     S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^                                  ", e("%s", operators[x]))
     S("2                           ^                                 ", e("(%s)", "Model")) /* TODO: model cast */
@@ -229,7 +229,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     #undef S
 }
 
-static int fnTreeTranslate(tdstTreeTranslationContext **const ctx, tdstNodeInterpret *const tree, tdstTreeTranslationOptions *const opt)
+static int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, tdstTreeTranslationOptions *opt)
 {
     tdstTreeTranslationContext *const c = *ctx = (tdstTreeTranslationContext*)malloc(sizeof *c);
     if (!c) return -1;
