@@ -6,6 +6,7 @@
 //
 
 #include "stTreeInterpret.h"
+#include "tables.h"
 
 #include <stdio.h>
 #include <stdlib.h>

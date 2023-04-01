@@ -4,7 +4,6 @@
 #include "stTreeInterpret.h"
 #include "stInputStructure.h"
 
-#include "translate.h"
 #include "interpret.h"
 
 extern "C"
