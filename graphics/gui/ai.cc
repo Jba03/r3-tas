@@ -56,7 +56,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
         ///printf("AAAAA\n");
         for (int N = 0; N < c->numTokens; N++)
         {
-            stTreeTranslationToken *tok = &c->token[N];
+            tdstTreeTranslationToken *tok = &c->token[N];
             //printf("%s", tok->translatedText);
             //struct translation_token tok = translation->token[i];
             
@@ -67,7 +67,10 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
             {
                 switch (tok->originalNode->type)
                 {
-                    case script_node_type_keyword: color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f); break;
+                    case script_node_type_keyword:
+                    case script_node_type_soundeventref:
+                        color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f);
+                        break;
                     case script_node_type_condition: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
                         //case script_node_type_operator: color = ImVec4(170.0f / 255.0f, 13.0f / 255.0f, 145.0f / 255.0f, 1.0f); break;
                     case script_node_type_function: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
@@ -76,10 +79,13 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     case script_node_type_dsgvarref2: color = ImVec4(0.9, 0.4, 0.45, 1.0f); break;
                     case script_node_type_constant:
                     case script_node_type_real: color = ImVec4(210.0f / 255.0f, 148.0f / 255.0f, 93.0f / 255.0f, 1.0f); break;
+                    case script_node_type_superobjectref:
                     case script_node_type_modelref:
                     case script_node_type_modelref2:
                     case script_node_type_constant_vector:
-                    case script_node_type_vector: color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f); break;
+                    case script_node_type_vector:
+                        color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f);
+                        break;
                     case script_node_type_field: color = ImVec4(170.0f / 255.0f, 13.0f / 255.0f, 145.0f / 255.0f, 1.0f); break;
                     case script_node_type_subroutine: color = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f); break;
                 }
@@ -193,6 +199,33 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
                     {
                         memory_viewer.GotoAddrAndHighlight(offset(action), offset(action));
                     }
+                    ImGui::SameLine();
+                    ImGui::PopStyleVar();
+                    continue;
+                }
+                
+                if (tok->originalNode->type == script_node_type_string)
+                {
+                    const char* string = (const char*)pointer(tok->originalNode->param);
+                    color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f);
+                    ImGui::TextColored(color, "\"%s\"", string);
+                    ImGui::SameLine();
+                    ImGui::PopStyleVar();
+                    continue;
+                }
+                
+                if (tok->originalNode->type == script_node_type_superobjectref)
+                {
+                    tdstSuperObject* object = (tdstSuperObject*)pointer(tok->originalNode->param);
+                    ImGui::TextColored(color, "%s", fnSuperobjectGetName(object));
+                    ImGui::SameLine();
+                    ImGui::PopStyleVar();
+                    continue;
+                }
+                
+                if (tok->originalNode->type == script_node_type_soundeventref)
+                {
+                    ImGui::TextColored(color, "SND_BLOCK_%X", host_byteorder_32(tok->originalNode->param));
                     ImGui::SameLine();
                     ImGui::PopStyleVar();
                     continue;

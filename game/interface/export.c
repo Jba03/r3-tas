@@ -41,12 +41,12 @@ static void export_behavior(tdstBehavior* behavior)
         tdstNodeInterpret* tree = pointer(script->tree);
         if (!tree) continue;
         
-        stTreeTranslationContext* c = NULL;
+        tdstTreeTranslationContext* c = NULL;
         if (fnTreeTranslate(&c, tree, NULL))
         {
             fprintf(fp, "// Script %d @ %X\n", i, offset(tree));
             
-            stTreeTranslationToken *tok = c->token;
+            tdstTreeTranslationToken *tok = c->token;
             while (tok)
             {
                 if (tok->originalNode)
