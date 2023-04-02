@@ -18,8 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "translate.h"
-
 #include "fnTreeTranslation.c"
 
 extern const char* (*get_config_path)(void);
