@@ -111,8 +111,6 @@ static void export_behavior(tdstBehavior* behavior)
                 //
                 fprintf(fp, "%s", tok->translatedText);
                 
-                tok = tok->next;
-                
                 //if (tok.string[0] == '\n') linenn++;
                 //if (tok.string[0] != '\n') ImGui::SameLine();
                 //ImGui::PopStyleVar();

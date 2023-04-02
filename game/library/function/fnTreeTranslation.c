@@ -19,9 +19,6 @@
 
 typedef struct stTreeTranslationToken {
     char translatedText[TOKEN_MAX_STRING_LENGTH];
-    struct stTreeTranslationToken *next;
-    struct stTreeTranslationToken *prev;
-    struct stTreeTranslationToken *parent;
     const tdstNodeInterpret *originalNode;
 } tdstTreeTranslationToken;
 
@@ -32,7 +29,6 @@ typedef struct stTreeTranslationOptions {
 } tdstTreeTranslationOptions;
 
 typedef struct stTreeTranslationContext {
-    bool finished;
     tdstNodeInterpret *tree;
     tdstNodeInterpret *currentNode;
     tdstTreeTranslationToken* token;
@@ -243,7 +239,6 @@ static int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret *
     c->indentation = 0;
     c->token = NULL;
     c->currentNode = NULL;
-    c->finished = false;
     c->opt = opt ? opt : &defaultOptions;
     
     fnNodeTranslateBranch(c, tree, false, true);
