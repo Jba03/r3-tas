@@ -23,7 +23,6 @@ typedef struct stTreeTranslationToken {
     struct stTreeTranslationToken *prev;
     struct stTreeTranslationToken *parent;
     const tdstNodeInterpret *originalNode;
-    const tdstNodeInterpret *treeRoot;
 } tdstTreeTranslationToken;
 
 typedef struct stTreeTranslationOptions {
@@ -167,7 +166,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     S("1!                                                            ", if (x > 9) c(0))
     S("1!                                                            ", if (x > 9 || x == 2) e(")"))
     S("2     ^              ^                                        ", e("-"))
-    S("2 ^^^^ ^           ^^ ^^                                      ", e("("))
+    S("2 ^^^^ ^           ^^ ^^                                      ", c->currentNode = NULL; e("("); c->currentNode = node)
     S("2 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                               ", c( 0 ))
     S("2 ^^^^ ^^^^^  ^    ^^ ^^    ^ ^                               ", e(" "))
     S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^                                  ", e("%s", operators[x]))

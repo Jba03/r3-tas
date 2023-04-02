@@ -100,36 +100,6 @@ static inline unsigned int tree_max_depth(tdstNodeInterpret* tree)
 
 #if USE_FUNCTIONS
 
-//struct translation_token
-//{
-//    #define TOKEN_MAX_LENGTH 256
-//    char string[TOKEN_MAX_LENGTH];
-//    tdstNodeInterpret* node;
-//    struct translation_token* next;
-//    int offset; /* Offset in tree */
-//};
-//
-//struct translation
-//{
-//    tdstNodeInterpret* original_tree;
-//    tdstNodeInterpret* tree;
-//    tdstNodeInterpret* current;
-//    
-//    unsigned n_tokens;
-//    struct translation_token token[4096];
-//    
-//    unsigned indent;
-//};
-//
-///** script_translate: translate a script into readable text */
-//struct translation* script_translate(const tdstTreeInterpret* script);
-//
-///** script_node_translate: translate a script into readable text */
-//struct translation* script_node_translate(const tdstNodeInterpret* tree);
-
-/** script_translation_free: destroy script translation */
-void script_translation_free(struct translation* t);
-
 /** ai_function_temporal_real_combination: interpolation function based on engine frame time */
 const float ai_function_temporal_real_combination(const float a, const float coefficient, const float b);
 
@@ -138,7 +108,6 @@ const uint32 ai_function_get_time(void);
 
 /** ai_function_get_time: get time elapsed since `v` */
 const uint32 ai_function_get_elapsed_time(const uint32 v);
-
 
 #endif
 
