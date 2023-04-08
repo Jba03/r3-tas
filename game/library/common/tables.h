@@ -802,6 +802,7 @@ static const char * const script_procedure_table[] =
     "ProposeAbsoluteSpeedXY",
     "ProposeAbsoluteSpeedXYZ",
     "FixePositionPerso",
+    "FixePositionPersoGamecubeExclusive", // 219: Gamecube only
     "FixePositionPersoWithInterpol",
     "AddSpeed",
     "AddSpeedX",
