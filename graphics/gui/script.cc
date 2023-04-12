@@ -51,8 +51,8 @@ std::map<uint8, ImVec4> nodeColoration =
     { script_node_type_gamematerialref,     syntaxColorRed },
     { script_node_type_visualmaterial,      syntaxColorRed },
     { script_node_type_particlegenerator,   syntaxColorRed },
-    { script_node_type_modelref,            syntaxColorRed },
-    { script_node_type_modelref2,           syntaxColorRed },
+    { script_node_type_modelref,            syntaxColorYellow },
+    { script_node_type_modelref2,           syntaxColorYellow },
     { script_node_type_custombits,          syntaxColorRed },
     { script_node_type_caps,                syntaxColorOrange },
     { script_node_type_graph,               syntaxColorRed },
@@ -138,6 +138,8 @@ private:
                     case script_node_type_actionref: printActionRef(&tok); continue;
                     case script_node_type_superobjectref: printSuperObjectRef(&tok); continue;
                     case script_node_type_behaviorref: printBehaviorRef(&tok); continue;
+                    case script_node_type_modelref:
+                    case script_node_type_modelref2: printModelRef(&tok); continue;
                     case script_node_type_subroutine: printSubroutine(&tok); continue;
                 }
             }
@@ -189,6 +191,14 @@ private:
         ImGui::SameLine();
     }
     
+    void printSuperObjectRef(tdstTreeTranslationToken *tok)
+    {
+        const tdstSuperObject *object = (const tdstSuperObject*)pointer(tok->originalNode->param);
+        const char* name = fnSuperobjectGetName(object);
+        ImGui::TextColored(currentColor, "%s", name);
+        ImGui::SameLine();
+    }
+    
     void printBehaviorRef(tdstTreeTranslationToken *tok)
     {
         const tdstComport *behavior = (const tdstComport*)pointer(tok->originalNode->param);
@@ -197,11 +207,19 @@ private:
         ImGui::SameLine();
     }
     
-    void printSuperObjectRef(tdstTreeTranslationToken *tok)
+    void printModelRef(tdstTreeTranslationToken *tok)
     {
-        const tdstSuperObject *object = (const tdstSuperObject*)pointer(tok->originalNode->param);
-        const char* name = fnSuperobjectGetName(object);
-        ImGui::TextColored(currentColor, "%s", name);
+        std::string name = "NULL";
+        const address *nameAddress = (const address*)doublepointer(tok->originalNode->param);
+        if (nameAddress)
+        {
+            name = (const char*)pointer(*nameAddress);
+            std::string::size_type pos = name.find('\\');
+            name = name.substr(0, pos);
+            
+        }
+        ImGui::TextColored(currentColor, "%s", name.c_str());
+            
         ImGui::SameLine();
     }
     
