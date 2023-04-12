@@ -164,9 +164,9 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     S("2     ^              ^                                        ", e("-"))
     S("2 ^^^^ ^           ^^ ^^                                      ", c->currentNode = NULL; e("("); c->currentNode = node)
     S("2 ^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^                               ", c( 0 ))
-    S("2 ^^^^ ^^^^^  ^    ^^ ^^    ^ ^                               ", e(" "))
+    S("2 ^^^^ ^^^^^  ^    ^^ ^^      ^                               ", e(" "))
     S("2 ^^^^ ^^^^^^^^^^^^^^ ^^^^^^                                  ", e("%s", operators[x]))
-    S("2                           ^                                 ", e("(("); c(0); e(")"); e("("); c(1); e("))")) /* TODO: model cast */
+    S("2                           ^                                 ", c->currentNode = NULL; e("(("); c(0); e(")"); e("("); c(1); e("))")) /* TODO: model cast */
     S("2                            ^                                ", e("["))
     S("2 ^^^^ ^^^^^  ^    ^^ ^^      ^                               ", e(" "))
     S("2 ^^^^ ^^^^^  ^^   ^^ ^^^^^^ ^^                               ", c( 1 ))
