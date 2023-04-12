@@ -11,6 +11,7 @@ extern "C"
 #include "intfun.h"
 #include "stActionTable.h"
 #include "fnTreeTranslation.c"
+#include "fnTreeInterpret.c"
 }
 
 #include "script.cc"
@@ -33,6 +34,36 @@ static void* aimodel_selected_data = NULL;
 
 static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
+    if (ImGui::Button("Load"))
+    {
+        std::string path = get_config_path();
+        path += "/tree.bin";
+        
+        FILE* fp = fopen(path.c_str(), "rb");
+        
+        fseek(fp, 0, SEEK_END);
+        long sz = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        //printf("%d\n", ftell(fp));
+        void* buf = malloc(2048);
+        fread(buf, sz, 1, fp);
+        
+        tdstNodeInterpret* node = (tdstNodeInterpret*)buf;
+        
+//        for (int i = 0; i < 100; i++)
+//        {
+//            printf("%s\n", script_nodetype_table[readTree[i].type]);
+//        }
+        
+        unsigned length = tree_length(node);
+        printf("len: %d\n", length);
+        
+        memcpy(tree, node, length * sizeof(*node));
+        
+        //printf("len: %d\n", tree_length(node));
+        fclose(fp);
+    }
+    
     scriptWindow window;
     window.tree = tree;
     window.display();

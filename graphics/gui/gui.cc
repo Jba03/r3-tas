@@ -72,8 +72,9 @@ static float level_geometry_fade_factor = 0.1f;
 static MemoryEditor memory_viewer;
 static struct xray xrayHandle;
 
-#pragma mark - GUI
+extern "C" const char* (*get_config_path)(void);
 
+#pragma mark - GUI
 
 #include "type.cc"
 #include "bits.cc"
