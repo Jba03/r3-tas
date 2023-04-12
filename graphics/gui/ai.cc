@@ -32,6 +32,8 @@ static tdstNodeInterpret* action_tree = NULL;
 static int aimodel_selected_type = 0;
 static void* aimodel_selected_data = NULL;
 
+scriptWindow scriptWindow;
+
 static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
     if (ImGui::Button("Load"))
@@ -64,9 +66,8 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
         fclose(fp);
     }
     
-    scriptWindow window;
-    window.tree = tree;
-    window.display();
+    scriptWindow.tree = tree;
+    scriptWindow.display();
 }
 
 static void display_aimodel(tdstEngineObject* actor,
@@ -366,6 +367,7 @@ static void display_ai(tdstEngineObject* actor)
 //                }
 //                ImGui::EndChild();
                 
+                ImGui::Checkbox("View node tree", &scriptWindow.displayNodeTree);
                 ImGui::BeginChild("Behavior", ImVec2(ImGui::GetContentRegionAvail().x, 0), true);
                 {
                     if (aimodel_selected_data)
