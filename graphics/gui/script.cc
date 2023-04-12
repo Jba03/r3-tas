@@ -1,4 +1,6 @@
 #include "tables.h"
+#include "stMaterialGLI.h"
+#include "stTextureGLI.h"
 
 #include <map>
 
@@ -48,8 +50,8 @@ std::map<uint8, ImVec4> nodeColoration =
     { script_node_type_moduleref2,          syntaxColorRed },
     { script_node_type_soundeventref,       syntaxColorRed },
     { script_node_type_objecttableref,      syntaxColorRed },
-    { script_node_type_gamematerialref,     syntaxColorRed },
-    { script_node_type_visualmaterial,      syntaxColorRed },
+    { script_node_type_gamematerialref,     syntaxColorPink },
+    { script_node_type_visualmaterial,      syntaxColorPink },
     { script_node_type_particlegenerator,   syntaxColorRed },
     { script_node_type_modelref,            syntaxColorYellow },
     { script_node_type_modelref2,           syntaxColorYellow },
@@ -138,6 +140,7 @@ private:
                     case script_node_type_actionref: printActionRef(&tok); continue;
                     case script_node_type_superobjectref: printSuperObjectRef(&tok); continue;
                     case script_node_type_behaviorref: printBehaviorRef(&tok); continue;
+                    case script_node_type_visualmaterial: printVisualMaterial(&tok); continue;
                     case script_node_type_modelref:
                     case script_node_type_modelref2: printModelRef(&tok); continue;
                     case script_node_type_subroutine: printSubroutine(&tok); continue;
@@ -204,6 +207,29 @@ private:
         const tdstComport *behavior = (const tdstComport*)pointer(tok->originalNode->param);
         const char* shortName = strrchr(behavior->name, ':') + 1;
         ImGui::TextColored(currentColor, "\"%s\"", shortName);
+        ImGui::SameLine();
+    }
+    
+    void printVisualMaterial(tdstTreeTranslationToken *tok)
+    {
+        const tdstMaterialGLI *material = (const tdstMaterialGLI*)pointer(tok->originalNode->param);
+        
+        std::string name = tok->translatedText;
+#if PLATFORM == PS2
+        const tdstAnimatedTextureNodeGLI *animated = (const tdstAnimatedTextureNodeGLI*)pointer(material->firstTextureNodeAnimated);
+#elif PLATFORM == GCN
+        const tdstTextureGLI *animated = (const tdstTextureGLI*)pointer(material->firstTextureNodeAnimated);
+        if (animated) name = animated->filename;
+#endif
+        
+        //if (texture) name = texture->filename;
+        ImGui::TextColored(currentColor, "VMT");
+        ImGui::SameLine();
+        ImGui::TextColored(syntaxColorDefault, "(");
+        ImGui::SameLine();
+        ImGui::TextColored(syntaxColorLightGreen, "\"%s\"", name.c_str());
+        ImGui::SameLine();
+        ImGui::TextColored(syntaxColorDefault, ")");
         ImGui::SameLine();
     }
     

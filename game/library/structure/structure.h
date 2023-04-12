@@ -7,7 +7,8 @@
 #include "endianness.h"
 
 #define GCN 0
-#define PC  1
+#define PS2 1
+#define PC  2
 #define platform GCN
 
 #define USE_FUNCTIONS   1
