@@ -11,6 +11,29 @@
 
 #include "stTreeInterpret.h"
 
+static const unsigned int fnTreeGetLength(const tdstNodeInterpret *tree)
+{
+    if (!tree) return 0;
+    const tdstNodeInterpret *first = tree;
+    const tdstNodeInterpret *advance = tree;
+    
+    do advance++;
+    while (advance->type != script_node_type_end_macro && advance->depth >= 1);
+    
+    return (unsigned int)(advance - first) + 1;
+}
+
+static const unsigned int fnTreeGetMaxDepth(const tdstNodeInterpret *tree)
+{
+    if (!tree) return 0;
+    const tdstNodeInterpret *first = tree;
+    
+    unsigned current = 0;
+    do if (first->depth > current) current = first->depth;
+    while (first->type != script_node_type_end_macro && first->depth >= 1);
+    return current;
+}
+
 typedef struct stTreeInterpreterOptions {
     bool mirrorTree;
     bool writeDSG;

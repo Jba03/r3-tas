@@ -63,8 +63,8 @@ static void WriteDSG()
     
 }
 
-void register_dsg_functions(struct intcpa* intr)
-{
-    intr->dsg.Read = ReadDSG;
-    intr->dsg.Write = WriteDSG;
-}
+//void register_dsg_functions(struct intcpa* intr)
+//{
+//    intr->dsg.Read = ReadDSG;
+//    intr->dsg.Write = WriteDSG;
+//}

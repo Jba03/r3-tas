@@ -77,27 +77,6 @@ struct stMacroList {
     padding(3)
 } typedef tdstMacroList;
 
-static inline unsigned int tree_length(tdstNodeInterpret* tree)
-{
-    tdstNodeInterpret *first, *advance;
-    if (!(advance = first = tree)) return 0;
-    
-    do advance++; while (advance->type != script_node_type_end_macro && advance->depth >= 1);
-    return (unsigned int)(advance - first) + 1;
-}
-
-static inline unsigned int tree_max_depth(tdstNodeInterpret* tree)
-{
-    tdstNodeInterpret *first;
-    if (!(first = tree)) return 0;
-    
-    unsigned current = 0;
-    do if (first->depth > current) current = first->depth;
-    while (first->type != script_node_type_end_macro && first->depth >= 1);
-    
-    return current;
-}
-
 #if USE_FUNCTIONS
 
 /** ai_function_temporal_real_combination: interpolation function based on engine frame time */

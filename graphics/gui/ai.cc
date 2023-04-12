@@ -4,8 +4,6 @@
 #include "stTreeInterpret.h"
 #include "stInputStructure.h"
 
-#include "interpret.h"
-
 extern "C"
 {
 #include "intfun.h"
@@ -57,7 +55,7 @@ static void display_translated_script(tdstNodeInterpret* tree, bool nodes = fals
 //            printf("%s\n", script_nodetype_table[readTree[i].type]);
 //        }
         
-        unsigned length = tree_length(node);
+        unsigned length = fnTreeGetLength(node);
         printf("len: %d\n", length);
         
         memcpy(tree, node, length * sizeof(*node));
@@ -230,9 +228,6 @@ static void display_aimodel(tdstEngineObject* actor,
     if (out_type) *out_type = selected_type;
 }
 
-static intcpa* interpreter = NULL;
-static bool animating = false;
-
 static void display_ai(tdstEngineObject* actor)
 {
     tdstBrain* brain;
@@ -390,14 +385,13 @@ static void display_ai(tdstEngineObject* actor)
                                         tdstNodeInterpret* tree = (tdstNodeInterpret*)pointer((script + i)->tree);
                                         if (tree)
                                         {
-                                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(tree), tree_length(tree));
+                                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4), "// Script %d @ %X (%d)", i, offset(tree), fnTreeGetLength(tree));
                                             //printf("script° tree: %X\n", offset(tree));
                                             if (action_tree)
                                             {
                                                 //printf("actoin tree: %X\n", offset(action_tree));
                                                 display_translated_script(action_tree);
                                             }
-                                            else if (interpreter) display_translated_script(interpreter->original_tree, false, pc);
                                             else display_translated_script(tree);
                                             ImGui::NewLine();
                                             ImGui::NewLine();

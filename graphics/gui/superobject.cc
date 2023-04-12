@@ -18,7 +18,6 @@
 #include "stAIModel.h"
 
 extern "C" {
-    #include "interpret.h"
     #include "stInputStructure.h"
     #include "intfun.h"
 }
