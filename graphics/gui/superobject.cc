@@ -171,57 +171,6 @@ static unsigned pc = 0;
 
 bool vv = false;
 
-static std::vector<std::string> superobject_flag_description =
-{
-    "Not pickable",
-    "Hidden",
-    "No transformation matrix",
-    "Zoom instead of scale",
-    "Type of bounding volume",
-    "Superimposed",
-    "Ignore raycasts",
-    "No shadow",
-    "Semilookat",
-    "CheckChildren",
-    "Render on near plane",
-};
-
-static std::vector<std::string> ai_custom_bits_description =
-{
-    "Unseen Frozen Anim Player",
-    "Need Module Matrices",
-    "Movable",
-    "Projectile",
-    "RayTrace Hit",
-    "Targetable",
-    "Cannot crush Principal Actor",
-    "Pickable",
-    "ActorHasAShadow",
-    "ShadowOnMe (10)",
-    "Prunable (11)",
-    "Out Of visibility [internal use]",
-    "Unseen Frozen",
-    "No Anim Player",
-    "Fightable",
-    "No Meca",
-    "No AI",
-    "Destroy when Anim ended",
-    "No Anim Player When Too Far",
-    "No AI Player When Too Far",
-    "Unfreezable",
-    "Uses Transparency Zone",
-    "No Meca When Too Far",
-    "Sound When Invisible",
-    "CustomBit_25",
-    "Camera Hit",
-    "CanPushPrincipalActor",
-    "Designer bit 1",
-    "Designer bit 2",
-    "Designer bit 3",
-    "Designer bit 4",
-    "PrincipalActor",
-};
-
 static tdstSuperObject* selected_superobject = NULL;
 
 void superobject_info(tdstSuperObject* so)
@@ -353,10 +302,10 @@ void superobject_info(tdstSuperObject* so)
                                 ImGui::SameLine();
                                 
                                 ImGui::BeginChild("FlagBits", ImVec2(ImGui::GetContentRegionAvail().x, 50));
-                                DisplayBits(&selected_superobject->flags, false, superobject_flag_description);
+                                DisplayBits(&selected_superobject->flags, false, TABLE_LENGTH(R3SuperObjectFlagsTable), R3SuperObjectFlagsTable);
                                 DisplayBits(&selected_superobject->drawFlags, false);
                                 DisplayBits(&stdgame->customBits, true);
-                                DisplayBits(&stdgame->aiCustomBits, true, ai_custom_bits_description);
+                                DisplayBits(&stdgame->aiCustomBits, true, TABLE_LENGTH(R3AICustomBitsTable), R3AICustomBitsTable);
                                 ImGui::EndChild();
                                 
                                 ImGui::PopStyleVar();

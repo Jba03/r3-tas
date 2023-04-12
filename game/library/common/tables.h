@@ -3,6 +3,57 @@
 
 #define TABLE_LENGTH(T) (sizeof T / sizeof *T)
 
+static const char * const R3SuperObjectFlagsTable[] =
+{
+    "Not pickable",
+    "Hidden",
+    "No transformation matrix",
+    "Zoom instead of scale",
+    "Type of bounding volume",
+    "Superimposed",
+    "Ignore raycasts",
+    "No shadow",
+    "Semilookat",
+    "CheckChildren",
+    "Render on near plane",
+};
+
+static const char * const R3AICustomBitsTable[] =
+{
+    "Unseen Frozen Anim Player",
+    "Need Module Matrices",
+    "Movable",
+    "Projectile",
+    "RayTrace Hit",
+    "Targetable",
+    "Cannot crush Principal Actor",
+    "Pickable",
+    "ActorHasAShadow",
+    "ShadowOnMe (10)",
+    "Prunable (11)",
+    "Out Of visibility [internal use]",
+    "Unseen Frozen",
+    "No Anim Player",
+    "Fightable",
+    "No Meca",
+    "No AI",
+    "Destroy when Anim ended",
+    "No Anim Player When Too Far",
+    "No AI Player When Too Far",
+    "Unfreezable",
+    "Uses Transparency Zone",
+    "No Meca When Too Far",
+    "Sound When Invisible",
+    "CustomBit_25",
+    "Camera Hit",
+    "CanPushPrincipalActor",
+    "Designer bit 1",
+    "Designer bit 2",
+    "Designer bit 3",
+    "Designer bit 4",
+    "PrincipalActor",
+};
+
 static const char * const R3NodeTypeTable[] =
 {
     "KeyWord",

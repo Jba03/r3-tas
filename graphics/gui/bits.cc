@@ -33,7 +33,7 @@ static void DisplayBit(T* data, bool on, int idx, std::string description = "")
 }
 
 template <typename T>
-static void DisplayBits(T* data, bool all = true, std::vector<std::string> description = {})
+static void DisplayBits(T* data, bool all = true, long descriptionLength = 0, const char * const * description = nullptr)
 {
     std::bitset bits = std::bitset<sizeof(T)*8>((uint32_t)host_byteorder_32((*(T*)data)));
     
@@ -54,8 +54,8 @@ static void DisplayBits(T* data, bool all = true, std::vector<std::string> descr
     while (total--)
     {
         ImGui::SameLine();
-        if (total < description.size())
-            DisplayBit(data, bits[total], total, description.at(total));
+        if (total < descriptionLength)
+            DisplayBit(data, bits[total], total, description[total]);
         else
             DisplayBit(data, bits[total], total);
     }
