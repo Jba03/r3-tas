@@ -97,7 +97,8 @@ private:
                 ImGui::SameLine();
             }
             
-            ImGui::Text("%s", script_nodetype_table[node->type]);
+            uint32 param = host_byteorder_32(node->param);
+            ImGui::Text("%s: %d", script_nodetype_table[node->type], param);
             node++;
         }
     }
