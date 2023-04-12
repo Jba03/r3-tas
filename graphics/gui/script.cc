@@ -1,6 +1,4 @@
 #include "tables.h"
-#include "stMaterialGLI.h"
-#include "stTextureGLI.h"
 
 #include <map>
 

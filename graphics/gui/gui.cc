@@ -30,6 +30,8 @@ extern "C"
     #include "geometry.h"
     #include "stDynamics.h"
     #include "stCameraGLI.h"
+    #include "stMaterialGLI.h"
+    #include "stTextureGLI.h"
     #include "xray.h"
 }
 
