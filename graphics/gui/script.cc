@@ -98,7 +98,7 @@ private:
             }
             
             uint32 param = host_byteorder_32(node->param);
-            ImGui::Text("%s: %d", script_nodetype_table[node->type], param);
+            ImGui::Text("%s: %d", R3NodeTypeTable[node->type], param);
             node++;
         }
     }

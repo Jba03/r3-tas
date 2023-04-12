@@ -1,104 +1,99 @@
 #ifndef tables_h
 #define tables_h
 
-static const char * const script_nodetype_table[] =
+#define TABLE_LENGTH(T) (sizeof T / sizeof *T)
+
+static const char * const R3NodeTypeTable[] =
 {
-    "KeyWord", // 0
+    "KeyWord",
     "Condition",
     "Operator",
     "Function",
     "Procedure",
-    "MetaAction", // 5
+    "MetaAction",
     "BeginMacro",
     "BeginMacro",
     "EndMacro",
     "Field",
-    "DsgVarRef", // 10
+    "DsgVarRef",
     "DsgVarRef2",
     "Constant",
     "Real",
     "Button",
-    "ConstantVector", // 15
+    "ConstantVector",
     "Vector",
     "Mask",
     "ModuleRef",
     "DsgVarId",
-    "String", // 20
+    "String",
     "LipsSynchroRef",
     "FamilyRef",
     "PersoRef",
-    "ActionRef",
-    "SuperObjectRef", // 25
+    "ActorRef",
+    "SuperObjectRef",
     "Unknown",
     "WayPointRef",
     "TextRef",
     "ComportRef",
-    "ModuleRef", // 30
+    "ModuleRef",
     "SoundEventRef",
     "ObjectTableRef",
     "GameMaterialRef",
     "VisualMaterial",
-    "ParticleGenerator", // 35
+    "ParticleGenerator",
     "ModelRef",
     "ModelRef",
     "CustomBits",
     "Caps",
-    "Unknown", // 40
+    "Unknown",
     "SubRoutine",
     "Null",
     "Null",
     "GraphRef",
 };
 
-static const char * const script_keyword_table[] =
+static const char * const R3KeywordTable[] =
 {
-    "If",
+    "If", // 0
     "IfNot",
-    
     "If2",
     "If4",
     "If8",
-    "If16",
+    "If16", // 5
     "If32",
     "If64",
-    
     "IfNot2",
     "IfNot4",
-    "IfNot8",
+    "IfNot8", // 10
     "IfNot16",
     "IfNot32",
     "IfNot64",
-    
     "IfDebug",
-    "IfNotU64",
-    
+    "IfNotU64", // 15
     "Then",
     "Else",
     "EngineGoto",
-    
     "Me",
-    "MainActor",
+    "MainActor", // 20
     "nobody",
-    
     "noInput",
     "noSoundEvent",
     "noSoundEvent",
-    "noSuperObject",
+    "noSuperObject", // 25
     "nowhere",
     "noSOLinksWord",
     "emptyText",
     "capsNull",
-    "noGraph",
+    "noGraph", // 30
     "noAction",
     "noGMT",
     "noVMT",
-    
     "While",
-    "BeginWhile",
+    "BeginWhile", // 35
     "EndWhile",
 };
 
-static const char * const script_operator_table[] =
+static const char * const R3OperatorTable[] =
 {
     "Operator_Plus", // 0
     "Operator_Minus",
@@ -106,32 +101,32 @@ static const char * const script_operator_table[] =
     "Operator_Div",
     "Operator_UnaryMinus",
     "Operator_Mod", // 5
-    "Operator_PlusAffect", // 6
+    "Operator_PlusAffect",
     "Operator_MinusAffect",
     "Operator_MulAffect",
     "Operator_DivAffect",
-    "Operator_PlusPlusAffect"
+    "Operator_PlusPlusAffect" // 10
     "Operator_MinusMinusAffect",
     "Operator_Affect",
-    "Operator_Dot", // 13
-    ".X", // 14
-    ".Y",
-    ".Z", // 16
-    "Operator_VectorPlusVector", // 17
+    "Operator_Dot",
+    ".X",
+    ".Y", // 15
+    ".Z",
+    "Operator_VectorPlusVector",
     "Operator_VectorMinusVector",
     "Operator_VectorUnaryMinus",
-    "Operator_VectorMulScalar",
-    "Operator_VectorDivScalar", // 21
-    ".X:=", // 22
+    "Operator_VectorMulScalar", // 20
+    "Operator_VectorDivScalar",
+    ".X:=",
     ".Y:=",
-    ".Z:=", // 24
+    ".Z:=",
     "Operator_Ultra", // 25
     "Operator_ModelCast",
     "Operator_Array",
-    "Operator_AffectArray" // 28
+    "Operator_AffectArray"
 };
 
-static const char * const script_function_table[] =
+static const char * const R3FunctionTable[] =
 {
     "GetPersoAbsolutePosition",
     "GetMyAbsolutePosition",
@@ -578,10 +573,10 @@ static const char * const script_function_table[] =
     "SFX_IsWaterCirclesPossible",
     "AGO_GetHandle",
     "IsMcValid",
-    "FormatMc"
+    "FormatMc",
 };
 
-static const char * const script_procedure_table[] =
+static const char * const R3ProcedureTable[] =
 {
     "SetHitPoints",
     "SetHitPointsInit",
@@ -1462,27 +1457,24 @@ static const char * const script_procedure_table[] =
     "AllowNormalsRecomputing",
 };
 
-static const char * const script_condition_table[] =
+static const char * const R3ConditionTable[] =
 {
-    "&&", // 0
-    "||",
-    "!",
-    "^", // 3
-    
-    "==", // 4
-    "!=",
-    "<",
-    ">",
-    "<=",
-    ">=", // 9
-    
-    "CollidePersoZDDNoWithPerso", // 10
+    "Cond_And",
+    "Cond_Or",
+    "Cond_Not",
+    "Cond_XOR",
+    "Cond_Equal",
+    "Cond_Different",
+    "Cond_Lesser",
+    "Cond_Greater",
+    "Cond_LesserOrEqual",
+    "Cond_GreaterOrEqual",
+    "CollidePersoZDDNoWithPerso",
     "CollideModuleZDDNoWithPerso",
     "CollidePersoAllZDDWithPerso",
     "CollidePersoZDDWithAnyPerso",
-    "CollideModuleZDDWithAnyPerso", // 14
-    
-    "CollidePersoZDENoWithPersoZDENo", // 15
+    "CollideModuleZDDWithAnyPerso",
+    "CollidePersoZDENoWithPersoZDENo",
     "CollideModuleZDENoWithPersoZDENo",
     "CollidePersoZDENoWithModuleZDENo",
     "CollideModuleZDENoWithModuleZDENo",
@@ -1493,130 +1485,198 @@ static const char * const script_condition_table[] =
     "CollidePersoTypeZDEWithPersoAllZDE",
     "CollidePersoAllZDEWithPersoTypeZDE",
     "CollidePersoZDENoWithTypeZDE",
-    "CollideModuleZDENoWithTypeZDE", // 26
-    
-    "CollideWithGround", // 27
+    "CollideModuleZDENoWithTypeZDE",
+    "CollideWithGround",
     "CollideWithWall",
     "CollideWithNothing",
     "CollideWithCeiling",
     "CollideWithPerso",
     "CollideWithWater",
-    "CollideWithThisPerso", // 33
-    
-    "ZDMCollideWithGround", // 34
+    "CollideWithThisPerso",
+    "ZDMCollideWithGround",
     "ZDMCollideWithWall",
     "ZDMCollideWithNothing",
-    "ZDMCollideWithCeiling", // 37
-    
-    "IsPersoInList", // 38
+    "ZDMCollideWithCeiling",
+    "IsPersoInList",
     "IsModelInList",
     "IsFamilyInList",
-    "ListEmptyTest", // 41
-    
-    "UserEvent_IsSet", // 42
+    "ListEmptyTest",
+    "UserEvent_IsSet",
     "UserEvent_IsSet2",
-    "UserEvent_IsSet3", // 44
-    
-    "PressedBut", // 45
+    "UserEvent_IsSet3",
+    "PressedBut",
     "JustPressedBut",
     "ReleasedBut",
-    "JustReleasedBut", // 48
-    
-    "IsTimeElapsed", // 49
-    
-    "IsValidObject", // 50
+    "JustReleasedBut",
+    "IsTimeElapsed",
+    "IsValidObject",
     "IsValidWayPoint",
     "IsValidGMT",
     "IsValidVMT",
     "IsValidAction",
     "IsValidText",
     "IsValidSPO",
-    "IsValidGraph", // 57
-    
-    "SeePerso", // 58
-    "IsActivable", // 59
-    "IsAlreadyHandled", // 60
-    "Alw_IsMine", // 61
-    
-    "IsPersoLightOn", // 62
+    "IsValidGraph",
+    "SeePerso",
+    "IsActivable",
+    "IsAlreadyHandled",
+    "Alw_IsMine",
+    "IsPersoLightOn",
     "IsPersoLightPulseOn",
-    "IsPersoLightGyroPhareOn", // 64
-    
-    "IsRLITransitionInProgress", // 65
-    "IsInAlwaysActiveList", // 66
-    "IsAlwaysActive", // 67
-    "IsAnActivePad", // 68
-    "IsMultitap", // 69
-    "SAV2_IsValid", // 70
-    "IsWidescreen", // 71
-    "EngineIsInPAL", // 72
-    
-    "IsZDMCollideWithObstacle", // 73
+    "IsPersoLightGyroPhareOn",
+    "IsRLITransitionInProgress",
+    "IsInAlwaysActiveList",
+    "IsAlwaysActive",
+    "IsAnActivePad",
+    "IsMultitap",
+    "SAV2_IsValid",
+    "IsWidescreen",
+    "EngineIsInPAL",
+    "IsZDMCollideWithObstacle",
     "IsZDMCollideWithWall",
     "IsZDMCollideWithGround",
-    "IsZDMCollideWithCeiling", // 76
-    
-    "CmtIdentifierContainsMask", // 77
-    "HitByCollider", // 78
+    "IsZDMCollideWithCeiling",
+    "CmtIdentifierContainsMask",
+    "HitByCollider",
     "IsTypeOfGMTCollide",
     "IsInComport",
     "IsInReflexComport",
     "IsInAction",
-    "ChangeActionEnable", // 83
-    
-    "EngineReinitRequested", // 84
-    "IsThereMechEvent", // 85
-    "CollisionWP", // 86
-    "IsCustomBitSet", "IsPersoActive",
-    "CheckActionEnd", "IsCurrentStateCustomBitSet", "IsGiBlock", "IsMechanicBlock", "IsMechanicAnimation",
-    "IsMechanicCollide", "IsMechanicGravity", "IsMechanicTilt", "IsMechanicGi", "IsMechanicClimb", "IsMechanicOnGround",
-    "IsMechanicSpider", "IsMechanicShoot", "IsMechanicSwim", "IsMechanicNeverFall", "IsMechanicCollisionControl",
-    "IsMechanicKeepSpeedZ", "IsMechanicSpeedLimit", "IsMechanicInertia", "IsMechanicStream", "IsMechanicStickOnPlatform",
-    "IsMechanicPatformCrash", "IsMechanicScale", "IsMechanicExec", "CanFall", "IsMechanicCrash", "IsNullVector",
-    "HierIsSonOfActor", "IsMorphing", "CheckAnimEnd", "CheckAnimSmooth", "HasTheCapability", "HasOneOfTheCapabilities",
-    "HasTheCapabilityNumber", "PersoHasTheCapability", "PersoHasOneOfTheCapabilities", "PersoHasTheCapabilityNumber",
-    "MagnetIsActivated", "NEstPasEnCollisionAvecMap", "NEstPasEnCollisionAvecProjectile", "NEstPasEnCollisionAvecSecondCharact",
-    "NEstPasEnCollisionAvecMainCharact", "NEstPasEnCollisionAvecAutresSecteurs", "IsInFamily", "IsInModel", "AJoypadIsConnected",
-    "AKeyJustPressed", "AButtonPadJustPressed", "IsInDemoMode", "IsShapnessMax", "IsTooFar", "IsSubAnimPlaying", "TestCBSubAnim",
-    "IsInSubAnim", "IsSubAnimNearEnd", "IsSameSPO", "PressedPadBut", "JustPressedPadBut", "ReleasedPadBut", "JustReleasedPadBut",
-    "IsCinePlaying", "LoadInProgress", "SAV2LastError", "CheckMCStatus", "Cam_IsActive", "Cam_IsViewportOwner",
-    "Cam_IsFlagNoDynamicTarget", "Cam_IsFlagNoAverageMoveTgtPerso", "Cam_IsFlagNoParseCutAngle", "Cam_IsFlagNoVisibility",
-    "Cam_IsFlagNoVisibilityWithDynHie", "Cam_IsFlagNoDynChangeTheta", "Cam_IsFlagNoShiftUntilPosReached", "Cam_IsFlagNoDynSpeed",
-    "Cam_IsFlagNoLinearParsing", "Cam_IsFlagNoLinearInertia", "Cam_IsFlagNoAngularParsing", "Cam_IsFlagNoAngularInertia",
-    "Cam_IsFlagNoTargetParsing", "Cam_IsFlagNoTargetInertia", "Cam_IsFlagNoObstacle", "Cam_IsFlagFixedOrientation",
-    "Cam_IsFlagForcedPosition", "Cam_IsFlagForcedTarget", "Cam_IsFlagForcedAxis", "SND_IsInStereoMode",
-    "SND_IsMusicPlaying", "SND_IsVoicePlaying", "SND_IsEventValid"
+    "ChangeActionEnable",
+    "EngineReinitRequested",
+    "IsThereMechEvent",
+    "CollisionWP",
+    "IsCustomBitSet",
+    "IsPersoActive",
+    "CheckActionEnd",
+    "IsCurrentStateCustomBitSet",
+    "IsGiBlock",
+    "IsMechanicBlock",
+    "IsMechanicAnimation",
+    "IsMechanicCollide",
+    "IsMechanicGravity",
+    "IsMechanicTilt",
+    "IsMechanicGi",
+    "IsMechanicClimb",
+    "IsMechanicOnGround",
+    "IsMechanicSpider",
+    "IsMechanicShoot",
+    "IsMechanicSwim",
+    "IsMechanicNeverFall",
+    "IsMechanicCollisionControl",
+    "IsMechanicKeepSpeedZ",
+    "IsMechanicSpeedLimit",
+    "IsMechanicInertia",
+    "IsMechanicStream",
+    "IsMechanicStickOnPlatform",
+    "IsMechanicPatformCrash",
+    "IsMechanicScale",
+    "IsMechanicExec",
+    "CanFall",
+    "IsMechanicCrash",
+    "IsNullVector",
+    "HierIsSonOfActor",
+    "IsMorphing",
+    "CheckAnimEnd",
+    "CheckAnimSmooth",
+    "HasTheCapability",
+    "HasOneOfTheCapabilities",
+    "HasTheCapabilityNumber",
+    "PersoHasTheCapability",
+    "PersoHasOneOfTheCapabilities",
+    "PersoHasTheCapabilityNumber",
+    "MagnetIsActivated",
+    "NEstPasEnCollisionAvecMap",
+    "NEstPasEnCollisionAvecProjectile",
+    "NEstPasEnCollisionAvecSecondCharact",
+    "NEstPasEnCollisionAvecMainCharact",
+    "NEstPasEnCollisionAvecAutresSecteurs",
+    "IsInFamily",
+    "IsInModel",
+    "AJoypadIsConnected",
+    "AKeyJustPressed",
+    "AButtonPadJustPressed",
+    "IsInDemoMode",
+    "IsShapnessMax",
+    "IsTooFar",
+    "IsSubAnimPlaying",
+    "TestCBSubAnim",
+    "IsInSubAnim",
+    "IsSubAnimNearEnd",
+    "IsSameSPO",
+    "PressedPadBut",
+    "JustPressedPadBut",
+    "ReleasedPadBut",
+    "JustReleasedPadBut",
+    "IsCinePlaying",
+    "LoadInProgress",
+    "SAV2LastError",
+    "CheckMCStatus",
+    "Cam_IsActive",
+    "Cam_IsViewportOwner",
+    "Cam_IsFlagNoDynamicTarget",
+    "Cam_IsFlagNoAverageMoveTgtPerso",
+    "Cam_IsFlagNoParseCutAngle",
+    "Cam_IsFlagNoVisibility",
+    "Cam_IsFlagNoVisibilityWithDynHie",
+    "Cam_IsFlagNoDynChangeTheta",
+    "Cam_IsFlagNoShiftUntilPosReached",
+    "Cam_IsFlagNoDynSpeed",
+    "Cam_IsFlagNoLinearParsing",
+    "Cam_IsFlagNoLinearInertia",
+    "Cam_IsFlagNoAngularParsing",
+    "Cam_IsFlagNoAngularInertia",
+    "Cam_IsFlagNoTargetParsing",
+    "Cam_IsFlagNoTargetInertia",
+    "Cam_IsFlagNoObstacle",
+    "Cam_IsFlagFixedOrientation",
+    "Cam_IsFlagForcedPosition",
+    "Cam_IsFlagForcedTarget",
+    "Cam_IsFlagForcedAxis",
+    "SND_IsInStereoMode",
+    "SND_IsMusicPlaying",
+    "SND_IsVoicePlaying",
+    "SND_IsEventValid"
 };
 
-static const char * const script_field_table[] =
+static const char * const R3FieldTable[] =
 {
-    "Position", "Orientation", "Speed", "NormSpeed",
-    "AbsoluteAxisX", "AbsoluteAxisY", "AbsoluteAxisZ",
-    "PrevComportIntell", "PrevComportReflex", "ShadowScaleX",
-    "ShadowScaleY", "PadGlobalVector", "PadHorizontalAxis",
-    "PadVerticalAxis", "PadAnalogForce", "PadTrueAnalogForce",
-    "PadRotationAngle", "PadSector", "SystemDate", "SystemTime",
+    "Position",
+    "Orientation",
+    "Speed",
+    "NormSpeed",
+    "AbsoluteAxisX",
+    "AbsoluteAxisY",
+    "AbsoluteAxisZ",
+    "PrevComportIntell",
+    "PrevComportReflex",
+    "ShadowScaleX",
+    "ShadowScaleY",
+    "PadGlobalVector",
+    "PadHorizontalAxis",
+    "PadVerticalAxis",
+    "PadAnalogForce",
+    "PadTrueAnalogForce",
+    "PadRotationAngle",
+    "PadSector",
+    "SystemDate",
+    "SystemTime"
 };
 
-static const char * const script_meta_action_table[] =
+static const char * const R3MetaActionTable[] =
 {
-    "TIME_FrozenWait", "ACTION_ExecuteAction",
-    "ACTION_WaitEndOfAction", "ACTION_WaitEndOfAnim",
-    "CAM_CineMoveAToBTgtC", "CAM_CineMoveAToBTgtAC",
-    "CAM_CinePosATgtB", "CAM_CinePosAMoveTgtBToC",
-    "CAM_CinePosATgtBTurnPosH", "CAM_CinePosATgtBTurnTgtH",
-    "CAM_CinePosATgtBTurnPosV", "CAM_CinePosATgtBTurnTgtV",
+    "TIME_FrozenWait",
+    "ACTION_ExecuteAction",
+    "ACTION_WaitEndOfAction",
+    "ACTION_WaitEndOfAnim",
+    "CAM_CineMoveAToBTgtC",
+    "CAM_CineMoveAToBTgtAC",
+    "CAM_CinePosATgtB",
+    "CAM_CinePosAMoveTgtBToC",
+    "CAM_CinePosATgtBTurnPosH",
+    "CAM_CinePosATgtBTurnTgtH",
+    "CAM_CinePosATgtBTurnPosV",
+    "CAM_CinePosATgtBTurnTgtV"
 };
-
-#define L(T) static const uint64_t T##_length = sizeof T / sizeof *T;
-L(script_nodetype_table)
-L(script_keyword_table)
-L(script_operator_table)
-L(script_function_table)
-L(script_procedure_table)
-L(script_condition_table)
-L(script_field_table)
-L(script_meta_action_table)
-#undef L
 
 #endif /* tables_h */

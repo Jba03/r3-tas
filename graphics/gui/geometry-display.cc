@@ -1,33 +1,28 @@
-/* Should sum up to 1, I guess */
-/* NOTE: These projection parameters vary per level */
-static const float projX = 0.377f;
-static const float projY = 0.708f;
+#define ASPECT (528.0f / 640.0f)
+/* These ratios vary per level. */
+#define PROJECTION_RATIO_X  0.377f
+#define PROJECTION_RATIO_Y  0.708f
 
-static ImVec4 project_world_coordinate(const tdstVector3D P)
+static const ImVec4 project_world_coordinate(const tdstVector3D P)
 {
     tdstCameraGLI* camera = (tdstCameraGLI*)pointer(engine->viewportCamera[0]);
+    if (!camera) return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
     
     tdstMatrix4D view = matrix4_host_byteorder(camera->transform.matrix);
     /* Change sign of the two middle columns (flipping the rotation) */
-    view.m01 = -view.m01;
-    view.m11 = -view.m11;
-    view.m21 = -view.m21;
-    view.m31 = -view.m31;
-    view.m02 = -view.m02;
-    view.m12 = -view.m12;
-    view.m22 = -view.m22;
-    view.m32 = -view.m32;
-    /* const tdstMatrix4D view = matrix4_lookat(campos, vector3_host_byteorder(*(tdstVector3D*)(memory.base + 0x00c53910)) (dsgvar_150), vector3_new(0, 0, -1)); */
+    view.m01 = -view.m01; view.m11 = -view.m11;
+    view.m21 = -view.m21; view.m22 = -view.m22;
+    view.m31 = -view.m31; view.m32 = -view.m32;
+    view.m02 = -view.m02; view.m12 = -view.m12;
     
     const float fov = host_byteorder_f32(*(float32*)&camera->xAlpha);
-    
-    const tdstMatrix4D projection = matrix4_perspective(fov, 528.0f / 640.0f, 0.1f, 1000.0f);
+    const tdstMatrix4D projection = matrix4_perspective(fov, ASPECT, 0.1f, 1000.0f);
     const tdstMatrix4D viewprojection = matrix4_mul(projection, view);
     const tdstVector4D P2 = vector4_new(P.x, P.y, P.z, 1.0f);
     const tdstVector4D R = vector4_mul_matrix4(P2, viewprojection);
     
-    float xp = (R.x / R.w) * projX + 0.5f;
-    float yp = (R.y / R.w) * projY + 0.5f;
+    float xp = (R.x / R.w) * PROJECTION_RATIO_X + 0.5f;
+    float yp = (R.y / R.w) * PROJECTION_RATIO_Y + 0.5f;
     
     return ImVec4(xp, yp, R.z, R.w);
 }
