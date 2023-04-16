@@ -16,24 +16,24 @@ struct stEngineStructure
     readonly char8 firstLevelName[30];
     readonly uint8 inputMode;
     readonly uint8 displayFixMode;
-    padding(3)
+    readonly padding(3)
     readonly uint32 displayMode;
     readonly tdstEngineTimer timer;
     readonly uint8 multimodePlayerCount;
     readonly uint8 multimodeColumnCount;
     readonly uint8 multimodeMiniScreenRatio;
-    padding(1)
+    readonly padding(1)
     readonly pointer currentMainPlayers[4]; /* ::superobject */
     readonly int16 gldDevice;
     readonly int16 gldViewport[5];
-    padding(5 * 28 * 4) /* viewport attributes */
+    readonly padding(5 * 28 * 4) /* viewport attributes */
     readonly pointer viewportCamera[5];
     readonly int16 gldFixViewport[5];
-    padding(2)
-    padding(5 * 28 * 4) /* fix viewport attributes */
-    padding(5 * 2 * 4) /* fix 3d attributes */
+    readonly padding(2)
+    readonly padding(5 * 28 * 4) /* fix viewport attributes */
+    readonly padding(5 * 2 * 4) /* fix 3d attributes */
     readonly pointer fixCamera[5];
-    padding(5 * 2 * 4) /* game 3d attributes */
+    readonly padding(5 * 2 * 4) /* game 3d attributes */
     readonly pointer viewportArray;
     readonly tdstDoublyLinkedList cameraList;
     readonly pointer drawSem;

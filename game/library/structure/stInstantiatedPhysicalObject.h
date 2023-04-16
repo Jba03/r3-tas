@@ -14,7 +14,7 @@ struct stInstantiatedPhysicalObject
     readonly uint32 lastTransitionID;
     readonly float32 lastRatioUsed;
 #if platform == GCN || platform == PC
-    padding(4) /* Unknown? */
+    readonly padding(4) /* Unknown? */
     readonly char8 name[0x32];
 #endif
 };

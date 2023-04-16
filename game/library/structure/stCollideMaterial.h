@@ -40,7 +40,7 @@ struct stCollideMaterial
     readonly float32 zDirection;
     readonly float32 coefficient;
     readonly uint16 aiType;
-    padding(2)
+    readonly padding(2)
 };
 
 #endif /* stCollideMaterial_h */

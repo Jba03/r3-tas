@@ -20,7 +20,7 @@ struct stGeometricObject
     readonly int16 numEdges;
     readonly int16 numAABB;
     readonly float32 boundingSphereRadius;
-    padding(4)
+    readonly padding(4)
     tdstVector4D boundingSphereCenter;
     readonly pointer edgeList_di;
     readonly int16 numEdges_di;
@@ -31,7 +31,7 @@ struct stGeometricObject
     readonly uint32 isStatic;
     readonly uint32 displayList;
     readonly uint8 sinus;
-    padding(3)
+    readonly padding(3)
 };
 
 #endif /* stGeometricObject_h */

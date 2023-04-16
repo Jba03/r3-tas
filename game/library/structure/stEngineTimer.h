@@ -9,7 +9,7 @@ struct stEngineTimer
 {
     readonly uint32 frame;
     readonly int16 timerHandle;
-    padding(2)
+    readonly padding(2)
     readonly uint32 currentCount;
     readonly uint32 deltaCount;
     readonly uint32 counter[16];

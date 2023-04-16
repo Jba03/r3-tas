@@ -112,7 +112,7 @@ struct stDynamicsBaseBlock
     readonly tdstTransform currentTransform;
     readonly tdstMatrix3D imposedRotation;
     readonly uint8 nFrame;
-    padding(3)
+    readonly padding(3)
     readonly pointer report;
 };
 
@@ -136,7 +136,7 @@ struct stDynamicsAdvancedBlock
     readonly tdstVector3D groundNormal;
     readonly tdstVector3D wallNormal;
     readonly int8 collideCount;
-    padding(3)
+    readonly padding(3)
 };
 
 struct stDynamicsComplexBlock
@@ -150,7 +150,7 @@ struct stDynamicsComplexBlock
     readonly tdstVector3D fallTranslation;
     readonly struct macdpid macdpid;
     readonly pointer platformSuperObject;
-    padding(4)
+    readonly padding(4)
     readonly tdstTransform previousMatrixAbsolute;
     readonly tdstTransform previousMatrixPrevious;
 };
@@ -186,7 +186,7 @@ struct stDynamicsReport
     readonly tdstDynamicsMovevement previousAbsolutePosition;
     readonly tdstDynamicsMovevement currentAbsolutePosition;
     readonly char8 bitField;
-    padding(3)
+    readonly padding(3)
 };
 
 struct stDynamics

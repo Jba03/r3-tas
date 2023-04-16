@@ -11,7 +11,7 @@ struct stBrain
     readonly pointer lastNoCollideMaterial;
     readonly uint8 warnMechanics;
     readonly uint8 activeDuringTransition;
-    padding(2)
+    readonly padding(2)
 };
 
 #endif /* stBrain_h */

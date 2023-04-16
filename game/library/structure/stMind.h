@@ -12,7 +12,7 @@ struct stMind
     readonly pointer reflex;
     readonly pointer dsgMem;
     readonly uint8 runIntelligence;
-    padding(3)
+    readonly padding(3)
 };
 
 #endif /* stMind_h */

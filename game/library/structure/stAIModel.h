@@ -12,7 +12,7 @@ struct stAIModel
     readonly pointer dsgVar;
     readonly pointer macroList;
     readonly uint8 secondPass;
-    padding(3)
+    readonly padding(3)
 };
 
 #endif /* stAIModel_h */

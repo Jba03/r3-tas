@@ -59,11 +59,11 @@ struct stNodeInterpret
 {
 #if platform == GCN
     readonly uint32 param;
-    padding(3)
+    readonly padding(3)
     readonly uint8 type;
-    padding(2)
+    readonly padding(2)
     readonly uint8 depth;
-    padding(1)
+    readonly padding(1)
 #endif
 };
 
@@ -83,7 +83,7 @@ struct stMacroList
 {
     readonly pointer macros;
     readonly uint8 n_macros;
-    padding(3)
+    readonly padding(3)
 };
 
 #if USE_FUNCTIONS

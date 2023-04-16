@@ -47,7 +47,7 @@ struct stCollideSet
     readonly uint8 computeFrequency;
     readonly uint8 characterPriority;
     readonly uint8 collisionFlag;
-    padding(1)
+    readonly padding(1)
     readonly tdstColliderInfo colliderInfo;
 };
 
@@ -55,7 +55,7 @@ struct stZdxList
 {
     readonly tdstDoublyLinkedList list;
     readonly uint16 numZdx;
-    padding(2)
+    readonly padding(2)
 };
 
 #endif /* stCollideSet_h */

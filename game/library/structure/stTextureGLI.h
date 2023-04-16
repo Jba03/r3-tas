@@ -31,7 +31,7 @@ struct stTextureGLI
     readonly uchar8 bilinearInterpolation;
     readonly uchar8 cyclingMode;
     readonly char8 filename[128];
-    padding(2)
+    readonly padding(2)
 };
 
 struct stAnimatedTextureNodeGLI

@@ -12,7 +12,7 @@ struct stElementIndexedTrianglesVisual
     readonly int16 numFaces;
     readonly int16 numUVs;
     readonly int16 numUVStages;
-    padding(2)
+    readonly padding(2)
     readonly pointer faceIndices;
     readonly pointer faceUVIndices;
     readonly pointer faceNormals;
@@ -25,7 +25,7 @@ struct stElementIndexedTrianglesVisual
     readonly uint32 displayList;
     readonly pointer unknown;
     readonly uint8 portalVisibility;
-    padding(3)
+    readonly padding(3)
     readonly uint32 vao[4];
 };
 
@@ -41,7 +41,7 @@ struct stCollideElementIndexedTriangles
     readonly pointer edgeNormals;
     readonly pointer edgeCoefficients;
     readonly int16 numEdges;
-    padding(2)
+    readonly padding(2)
 };
 
 #endif /* stCollideElementIndexedTriangles_h */

@@ -9,7 +9,7 @@ struct stIndexedSphere
     readonly float32 radius;
     readonly pointer material;
     readonly int16 center;
-    padding(2)
+    readonly padding(2)
 };
 
 struct stCollideElementSpheres

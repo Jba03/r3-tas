@@ -12,7 +12,7 @@ struct stOctree
 {
     readonly pointer root;
     readonly int16 numFaces;
-    padding(2)
+    readonly padding(2)
     readonly pointer elementBases;
     readonly tdstVector3D min;
     readonly tdstVector3D max;

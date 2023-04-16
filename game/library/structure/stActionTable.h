@@ -10,8 +10,8 @@ struct stActionTableEntry
 {
     readonly char8 name[0x50];
     readonly uint32 param[8];
-    padding(4) /* ? */
-    padding(4) /* ? */
+    readonly padding(4) /* ? */
+    readonly padding(4) /* ? */
     readonly pointer namePointer; /* ? */
     readonly pointer tree;
     readonly uint8 used;
@@ -26,7 +26,7 @@ struct stActionTable
     readonly uint8 numEntries;
     readonly uint8 numEntriesUsed;
     readonly uint8 currentEntry;
-    padding(1)
+    readonly padding(1)
 };
 
 #endif /* stActionTable_h */

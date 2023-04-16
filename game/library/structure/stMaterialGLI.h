@@ -35,7 +35,7 @@ struct stMaterialGLI
     readonly int32 numDisplayModes;
     readonly float32 actualDisplayTime;
     readonly uchar8 locked;
-    padding(3)
+    readonly padding(3)
     readonly uint32 flags;
     readonly uint32 multiTextureType;
     readonly uint32 numTextureStages;

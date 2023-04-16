@@ -18,7 +18,7 @@ struct stObjectTypeElement
     readonly pointer name;
     readonly uint8 priority;
     readonly uint8 identifier;
-    padding(2)
+    readonly padding(2)
 };
 
 struct stObjectType

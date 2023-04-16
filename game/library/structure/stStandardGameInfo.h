@@ -14,7 +14,7 @@ struct stStandardGameInfo
     readonly uint8 initialFlag;
     readonly uint8 flag1;
     readonly uint8 flag2;
-    padding(2)
+    readonly padding(2)
     readonly uint32 lastFrame;
     readonly uint32 capabilities;
     readonly uint8 tractionFactor;
@@ -36,7 +36,7 @@ struct stStandardGameInfo
     readonly uint8 importance;
     readonly uint8 optional;
     
-    padding(2)
+    readonly padding(2)
     
     /* :: custom values :: */
 };

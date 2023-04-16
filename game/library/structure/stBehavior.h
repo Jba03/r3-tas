@@ -12,7 +12,7 @@ struct stBehavior
     readonly pointer scripts;
     readonly pointer firstScript;
     readonly uint8 numScripts;
-    padding(3)
+    readonly padding(3)
 };
 
 struct stScriptAI
@@ -21,7 +21,7 @@ struct stScriptAI
     readonly uint32 numBehaviors;
     readonly uint32 noInitialization;
     readonly uint8 numActionTableEntries;
-    padding(3)
+    readonly padding(3)
 };
 
 #endif /* stBehavior_h */

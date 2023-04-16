@@ -22,7 +22,7 @@ struct stCollideObject
     readonly int16 numVertices;
     readonly int16 numElements;
     readonly int16 numBoundingBoxes;
-    padding(2)
+    readonly padding(2)
     readonly pointer vertices;
     readonly pointer elementTypes;
     readonly doublepointer elements;

@@ -65,7 +65,7 @@ struct stDsgVarInfo
     readonly uint32 memOffset;
     readonly uint32 type;
     readonly int16 saveType;
-    padding(2)
+    readonly padding(2)
     readonly uint32 objectTreeInitialType;
 };
 
@@ -75,7 +75,7 @@ struct stDsgVar
     readonly pointer info;
     readonly uint32 memorySize;
     readonly uint8 infoLength;
-    padding(3)
+    readonly padding(3)
 };
 
 struct stDsgMem

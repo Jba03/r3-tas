@@ -67,7 +67,7 @@ struct stSuperObject
     readonly uint8 superimpose;
     readonly uint8 isSuperObject;
     readonly uint8 transition;
-    padding(1)
+    readonly padding(1)
 };
 
 #if USE_FUNCTIONS
