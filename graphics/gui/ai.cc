@@ -8,11 +8,7 @@ extern "C"
 {
 #include "intfun.h"
 #include "stActionTable.h"
-#include "fnTreeTranslation.c"
-#include "fnTreeInterpret.c"
 }
-
-#include "script.cc"
 
 static int line = 1;
 
@@ -30,10 +26,16 @@ static tdstNodeInterpret* action_tree = NULL;
 static int aimodel_selected_type = 0;
 static void* aimodel_selected_data = NULL;
 
-scriptWindow scriptWindow;
+ScriptWindow scriptWindow;
 
 static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
+    if (ImGui::Button("Load interpreter..."))
+    {
+        debuggerWindow.load(tree);
+        debuggerWindow.setOwner(current_actor);
+    }
+    
     if (ImGui::Button("Load"))
     {
         std::string path = get_config_path();

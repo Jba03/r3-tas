@@ -33,6 +33,9 @@ extern "C"
     #include "stMaterialGLI.h"
     #include "stTextureGLI.h"
     #include "xray.h"
+    #include "stBehavior.h"
+    #include "stActionTable.h"
+    #include "fnTreeInterpret.c"
 }
 
 /* ImGui */
@@ -81,6 +84,7 @@ extern "C" const char* (*get_config_path)(void);
 #include "type.cc"
 #include "bits.cc"
 #include "dsg.cc"
+#include "script.cc"
 #include "ai.cc"
 
 #include "dynamics.cc"
@@ -742,6 +746,8 @@ extern "C" void gui_render_callback(void* ctx)
     display_recording_tool(&view_recording_tool);
     display_input_structure(&view_input_structure);
     display_object_types(&view_object_types);
+    
+    debuggerWindow.display();
     
     /* Draw memory viewer */
     memory_viewer.ReadOnly = !configuration.cheats.enabled;

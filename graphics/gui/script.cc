@@ -2,6 +2,8 @@
 
 #include <map>
 
+#include "fnTreeTranslation.c"
+
 const ImVec4 syntaxColorDefault = ImVec4(0.75,0.75,0.75,1);
 const ImVec4 syntaxColorRed     = ImVec4(0.9, 0.4, 0.45, 1.0f);
 const ImVec4 syntaxColorGreen   = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f);
@@ -62,13 +64,14 @@ std::map<uint8, ImVec4> nodeColoration =
     { script_node_type_graphref,            syntaxColorRed },
 };
 
-struct scriptWindow
+struct ScriptWindow
 {
-    tdstNodeInterpret* tree;
+    tdstNodeInterpret* tree = nullptr;
     bool displayNodeTree = false;
     bool displayLineNumbers = true;
     uint8 indentationSize = 4;
     uint8 indentationStyle = 0;
+    unsigned pc = 0;
     
     ImVec4 nodeColor(const tdstNodeInterpret *node)
     {
@@ -77,8 +80,11 @@ struct scriptWindow
     
     void display()
     {
-        currentLine = 0;
-        displayNodeTree ? displayOriginalTree() : displayTranslatedTree();
+        if (tree)
+        {
+            currentLine = 0;
+            displayNodeTree ? displayOriginalTree() : displayTranslatedTree();
+        }
     }
     
 private:
@@ -88,18 +94,40 @@ private:
     
     void displayOriginalTree()
     {
+        unsigned c = 0;
         tdstNodeInterpret *node = tree;
-        while (!IsEndOfTree(node))
+        while (1)
         {
-            for (int i = 0; i < (node->depth - 1) * 4; i++)
+            for (int i = 0; i < node->depth * 4; i++)
             {
                 ImGui::Spacing();
                 ImGui::SameLine();
             }
             
-            uint32 param = host_byteorder_32(node->param);
-            ImGui::Text("%s: %d", R3NodeTypeTable[node->type], param);
+            ImVec4 color = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+            if (c == pc)
+            {
+                color = ImColor(0.0f, 1.0f, 0.0f, 1.0f);
+                
+                ImDrawList *drawlist = ImGui::GetWindowDrawList();
+                ImVec2 windowPos = ImGui::GetWindowPos();
+                ImVec2 windowSize = ImGui::GetWindowSize();
+                
+                float height = ImGui::GetTextLineHeightWithSpacing();
+                ImVec2 min = ImVec2(windowPos.x, windowPos.y + (pc + 3) * height - height/4);
+                ImVec2 max = ImVec2(min.x + windowSize.x, min.y + height);
+                
+                ImColor col = color;
+                col.Value.w = 0.25f;
+                drawlist->AddRectFilled(min, max, col);
+            }
+            
+            uint32 param = (node->param);
+            ImGui::TextColored(color, "%s: %d", R3NodeTypeTable[node->type], param);
+            //if (c == pc) ImGui::ScrollToItem();
+            if IsEndOfTree(node) break;
             node++;
+            c++;
         }
     }
     
@@ -262,3 +290,88 @@ private:
         ImGui::TextColored(currentColor, "%s", tok->translatedText);
     }
 };
+
+#pragma mark - Debugger
+
+static int animat = 0;
+
+struct Debugger
+{
+    void load(const tdstNodeInterpret *tree)
+    {
+        tdstTreeInterpretOptions options;
+        fnTreeInterpreterInit(&interpreter, tree, &options);
+    }
+    
+    void setOwner(const tdstEngineObject *actor)
+    {
+        if (interpreter) interpreter->owner = (tdstEngineObject*)actor;
+    }
+    
+    void step()
+    {
+        if (interpreter) fnTreeInterpreterStep(interpreter);
+    }
+    
+    long getPC()
+    {
+        return interpreter ? fnTreeInterpreterGetPC(interpreter) : 0;
+    }
+    
+    tdstNodeInterpret *currentTree()
+    {
+        if (!interpreter) return nullptr;
+        return (tdstNodeInterpret*)interpreter->frame->duplicateTree;
+    }
+    
+    stTreeInterpretContext* interpreter = nullptr;
+};
+
+struct DebuggerWindow
+{
+    void load(const tdstNodeInterpret *tree)
+    {
+        debugger.load(tree);
+        scriptWindow.displayNodeTree = true;
+    }
+    
+    void setOwner(const tdstEngineObject *actor)
+    {
+        debugger.setOwner(actor);
+    }
+    
+    void display()
+    {
+//        if (((animat += 1) % 1) == 0)
+//        {
+//            /*for (int i =0;i<5;i++)*/debugger.step();
+//        }
+        
+        ImGui::Begin("Debugger");
+        //ImGui::SetWindowSize(ImVec2(350, 600));
+        if (ImGui::Button("Step")) debugger.step();
+        ImGui::SameLine();
+        if (debugger.interpreter) ImGui::Text("%s", debugger.interpreter->frame->name);
+        
+        scriptWindow.pc = debugger.getPC();
+        scriptWindow.tree = debugger.currentTree();
+        scriptWindow.display();
+        ImGui::End();
+        
+        ImGui::Begin("Stack frames");
+        if (debugger.interpreter)
+        {
+            //printf("%d\n", debugger.interpreter->currentFrameIndex);
+            for (int i = 0; i <= debugger.interpreter->currentFrameIndex; i++)
+            {
+                ImGui::Text("%s", debugger.interpreter->frameStack[i]->name);
+            }
+        }
+        ImGui::End();
+    }
+    
+    ScriptWindow scriptWindow;
+    Debugger debugger;
+};
+
+DebuggerWindow debuggerWindow;
