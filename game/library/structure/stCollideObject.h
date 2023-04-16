@@ -15,7 +15,10 @@
 #define collide_object_cones                9
 #define collide_object_deformationsetinfo   13
 
-struct stCollideObject {
+typedef struct stCollideObject tdstCollideObject;
+
+struct stCollideObject
+{
     readonly int16 numVertices;
     readonly int16 numElements;
     readonly int16 numBoundingBoxes;
@@ -27,7 +30,7 @@ struct stCollideObject {
     readonly pointer boundingBoxes;
     readonly float32 boundingSphereRadius;
     readonly tdstVector4D boundingSpherePosition;
-} typedef tdstCollideObject;
+};
 
 #if USE_FUNCTIONS
 

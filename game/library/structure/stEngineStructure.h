@@ -6,7 +6,10 @@
 #include "stTransform.h"
 #include "stLinkedList.h"
 
-struct stEngineStructure {
+typedef struct stEngineStructure tdstEngineStructure;
+
+struct stEngineStructure
+{
     readonly uint8 mode;
     readonly char8 currentLevelName[30];
     readonly char8 nextLevelName[30];
@@ -69,7 +72,7 @@ struct stEngineStructure {
     readonly doublepointer SOLinks;
     readonly pointer graphChainedList;
     readonly pointer cineManager;
-} typedef tdstEngineStructure;
+};
 
 #if USE_FUNCTIONS
 

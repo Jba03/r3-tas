@@ -3,10 +3,13 @@
 
 #include "structure.h"
 
-struct stGraph {
+typedef struct stGraph tdstGraph;
+
+struct stGraph
+{
     readonly pointer firstNode;
     readonly pointer lastNode;
     readonly int32 numNodes;
-} typedef tdstGraph;
+};
 
 #endif /* stGraph_h */

@@ -4,7 +4,15 @@
 #include "structure.h"
 #include "stVector3D.h"
 
-struct stPadReadingOutput {
+typedef struct stPadReadingOutput tdstPadReadingOutput;
+typedef struct stInputDevice tdstInputDevice;
+typedef struct stInputStructure tdstInputStructure;
+typedef struct stInputEntryElement tdstInputEntryElement;
+typedef struct stInputStructure tdstInputStructure;
+typedef struct stInputEntryElement tdstInputEntryElement;
+
+struct stPadReadingOutput
+{
     readonly tdstVector3D vector;
     readonly int16 horizontalAxis;
     readonly int16 verticalAxis;
@@ -12,9 +20,10 @@ struct stPadReadingOutput {
     readonly float32 trueAnalogForce;
     readonly float32 angle;
     readonly int32 sector;
-} typedef tdstPadReadingOutput;
+};
 
-struct stInputDevice {
+struct stInputDevice
+{
     readonly uint8 valid;
     padding(3)
     readonly pointer handle;
@@ -40,9 +49,10 @@ struct stInputDevice {
     readonly pointer joyButton[16];
     readonly pointer keyButton[16];
     readonly tdstPadReadingOutput pad;
-} typedef tdstInputDevice;
+};
 
-struct stInputStructure {
+struct stInputStructure
+{
     readonly uint8 onePadActivate;
     padding(3)
     readonly tdstInputDevice device[18];
@@ -67,9 +77,10 @@ struct stInputStructure {
     readonly pointer searchedCommand;
     readonly pointer commandModeEntrySwap;
     readonly pointer commandModeEntryClear;
-} typedef tdstInputStructure;
+};
 
-struct stInputEntryElement {
+struct stInputEntryElement
+{
     padding(6 * 4) /* ? */
     readonly uint32 numKeywords;
     readonly pointer keywordArray;
@@ -79,7 +90,7 @@ struct stInputEntryElement {
     readonly float32 analogValue;
     readonly int8 active;
     padding(3)
-} typedef tdstInputEntryElement;
+};
 
 #if USE_FUNCTIONS
 

@@ -3,7 +3,11 @@
 
 #include "structure.h"
 
-struct stVisualSet {
+typedef struct stVisualSet tdstVisualSet;
+typedef union uVisualObject tduVisualObject, tduVSObject;
+
+struct stVisualSet
+{
     readonly float32 lastDistance;
     readonly int16 numLod;
     readonly int16 type;
@@ -11,11 +15,12 @@ struct stVisualSet {
     readonly pointer lodDefinitions;
     readonly doublepointer RLI;
     readonly int32 numRLI;
-} typedef tdstVisualSet;
+};
 
-union stVisualObject {
+union uVisualObject
+{
     readonly pointer geometricObject;
     readonly pointer morphObject;
-} typedef tdstVisualObject;
+};
 
 #endif /* stVisualSet_h */

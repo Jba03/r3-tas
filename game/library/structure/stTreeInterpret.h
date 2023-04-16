@@ -50,7 +50,13 @@
 #define script_node_type_cineref            43 /* ? */
 #define script_node_type_graphref           44
 
-struct stNodeInterpret {
+typedef struct stNodeInterpret tdstNodeInterpret;
+typedef struct stTreeInterpret tdstTreeInterpret;
+typedef struct stMacroList tdstMacroList;
+typedef struct stMacro tdstMacro;
+
+struct stNodeInterpret
+{
 #if platform == GCN
     readonly uint32 param;
     padding(3)
@@ -59,23 +65,26 @@ struct stNodeInterpret {
     readonly uint8 depth;
     padding(1)
 #endif
-} typedef tdstNodeInterpret;
+};
 
-struct stTreeInterpret {
+struct stTreeInterpret
+{
     readonly pointer tree;
-} typedef tdstTreeInterpret;
+};
 
-struct stMacro {
+struct stMacro
+{
     readonly char8 name[0x100];
     readonly pointer script_initial;
     readonly pointer script_current;
-} typedef tdstMacro;
+};
 
-struct stMacroList {
+struct stMacroList
+{
     readonly pointer macros;
     readonly uint8 n_macros;
     padding(3)
-} typedef tdstMacroList;
+};
 
 #if USE_FUNCTIONS
 

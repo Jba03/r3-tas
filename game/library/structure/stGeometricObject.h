@@ -3,7 +3,10 @@
 
 #include "structure.h"
 
-struct stGeometricObject {
+typedef struct stGeometricObject tdstGeometricObject;
+
+struct stGeometricObject
+{
     readonly pointer points;
     readonly pointer normals;
     readonly doublepointer transparency;
@@ -29,6 +32,6 @@ struct stGeometricObject {
     readonly uint32 displayList;
     readonly uint8 sinus;
     padding(3)
-} typedef tdstGeometricObject;
+};
 
 #endif /* stGeometricObject_h */

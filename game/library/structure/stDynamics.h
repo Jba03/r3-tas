@@ -55,6 +55,15 @@
 #define dynamics_obstacle_water     (1 << 6)
 #define dynamics_obstacle_error     (1 << 31)
 
+typedef struct stDynamicsBaseBlock tdstDynamicsBaseBlock;
+typedef struct stDynamicsAdvancedBlock tdstDynamicsAdvancedBlock;
+typedef struct stDynamicsComplexBlock tdstDynamicsComplexBlock;
+typedef struct stDynamicsObstacle tdstDynamicsObstacle;
+typedef struct stDynamicsMovevement tdstDynamicsMovevement;
+typedef struct stDynamicsReport tdstDynamicsReport;
+typedef struct stDynamics tdstDynamics;
+typedef struct stDynam tdstDynam;
+
 struct rotation
 {
     readonly float32 angle;
@@ -81,7 +90,8 @@ struct macdpid
     readonly uint8 data15;
 };
 
-struct stDynamicsBaseBlock {
+struct stDynamicsBaseBlock
+{
     readonly int32 objectType;
     readonly pointer idcard;
     readonly uint32 flags;
@@ -104,9 +114,10 @@ struct stDynamicsBaseBlock {
     readonly uint8 nFrame;
     padding(3)
     readonly pointer report;
-} typedef tdstDynamicsBaseBlock;
+};
 
-struct stDynamicsAdvancedBlock {
+struct stDynamicsAdvancedBlock
+{
     readonly float32 xInertia;
     readonly float32 yInertia;
     readonly float32 zInertia;
@@ -126,9 +137,10 @@ struct stDynamicsAdvancedBlock {
     readonly tdstVector3D wallNormal;
     readonly int8 collideCount;
     padding(3)
-} typedef tdstDynamicsAdvancedBlock;
+};
 
-struct stDynamicsComplexBlock {
+struct stDynamicsComplexBlock
+{
     readonly float32 tiltStrength;
     readonly float32 tiltInertia;
     readonly float32 tiltOrigin;
@@ -141,23 +153,26 @@ struct stDynamicsComplexBlock {
     padding(4)
     readonly tdstTransform previousMatrixAbsolute;
     readonly tdstTransform previousMatrixPrevious;
-} typedef tdstDynamicsComplexBlock;
+};
 
-struct stDynamicsObstacle {
+struct stDynamicsObstacle
+{
     readonly float32 rate;
     readonly tdstVector3D normal;
     readonly tdstVector3D contact;
     readonly pointer material;
     readonly pointer collideMaterial;
     readonly pointer superObject;
-} typedef tdstDynamicsObstacle;
+};
 
-struct stDynamicsMovevement {
+struct stDynamicsMovevement
+{
     readonly tdstVector3D linear;
     readonly struct rotation angular;
-} typedef tdstDynamicsMovevement;
+};
 
-struct stDynamicsReport {
+struct stDynamicsReport
+{
     readonly uint32 previousSurfaceState;
     readonly uint32 currentSurfaceState;
     readonly tdstDynamicsObstacle obstacle;
@@ -172,19 +187,21 @@ struct stDynamicsReport {
     readonly tdstDynamicsMovevement currentAbsolutePosition;
     readonly char8 bitField;
     padding(3)
-} typedef tdstDynamicsReport;
+};
 
-struct stDynamics {
+struct stDynamics
+{
     readonly tdstDynamicsBaseBlock base;
     readonly tdstDynamicsAdvancedBlock advanced;
     readonly tdstDynamicsComplexBlock complex;
-} typedef tdstDynamics;
+};
 
-struct stDynam {
+struct stDynam
+{
     readonly pointer dynamics;
     readonly pointer parsData;
     readonly uint32 usedMechanics;
-} typedef tdstDynam;
+};
 
 #define dynamics_size(dynam) (host_byteorder_32((dynam).base.endflags) & 0x3)
 

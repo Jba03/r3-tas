@@ -3,7 +3,10 @@
 
 #include "structure.h"
 
-struct stEngineTimer {
+typedef struct stEngineTimer tdstEngineTimer;
+
+struct stEngineTimer
+{
     readonly uint32 frame;
     readonly int16 timerHandle;
     padding(2)
@@ -16,6 +19,6 @@ struct stEngineTimer {
     readonly struct { readonly uint32_t low, high; } totalRealTime;
     readonly struct { readonly uint32_t low, high; } totalPauseTime;
     readonly uint32 ticksPerMs;
-} typedef tdstEngineTimer;
+};
 
 #endif /* stEngineTimer_h */

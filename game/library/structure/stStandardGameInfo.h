@@ -3,7 +3,10 @@
 
 #include "structure.h"
 
-struct stStandardGameInfo {
+typedef struct stStandardGameInfo tdstStandardGameInfo;
+
+struct stStandardGameInfo
+{
     readonly int32 familyType;
     readonly int32 modelType;
     readonly int32 instanceType;
@@ -36,7 +39,7 @@ struct stStandardGameInfo {
     padding(2)
     
     /* :: custom values :: */
-} typedef tdstStandardGameInfo;
+};
 
 /**
  * stdgame_get_superobject:

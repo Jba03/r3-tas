@@ -3,23 +3,31 @@
 
 #include "stLinkedList.h"
 
-struct stPhysicalCollideSet {
+typedef struct stPhysicalCollideSet tdstPhysicalCollideSet;
+typedef struct stColliderInfo tdstColliderInfo;
+typedef struct stCollideSet tdstCollideSet;
+typedef struct stZdxList tdstZdxList;
+
+struct stPhysicalCollideSet
+{
     readonly pointer zdm;
     readonly pointer zdd;
     readonly pointer zde;
     readonly pointer zdr;
-} typedef tdstPhysicalCollideSet;
+};
 
-struct stColliderInfo {
+struct stColliderInfo
+{
     readonly pointer colliderActors[2]; /* ::so */
     readonly tdstVector3D colliderVectors[2];
     readonly float32 colliderReal[2];
     readonly uint8 colliderType;
     readonly uint8 colliderPriority;
     readonly uint8 unused[2];
-} typedef tdstColliderInfo;
+};
 
-struct stCollideSet {
+struct stCollideSet
+{
     readonly pointer zddList;
     readonly pointer zdeList;
     readonly pointer zdmList;
@@ -41,12 +49,13 @@ struct stCollideSet {
     readonly uint8 collisionFlag;
     padding(1)
     readonly tdstColliderInfo colliderInfo;
-} typedef tdstCollideSet;
+};
 
-struct stZdxList {
+struct stZdxList
+{
     readonly tdstDoublyLinkedList list;
     readonly uint16 numZdx;
     padding(2)
-} typedef tdstZdxList;
+};
 
 #endif /* stCollideSet_h */

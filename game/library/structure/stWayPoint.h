@@ -3,10 +3,13 @@
 
 #include "structure.h"
 
-struct stWayPoint {
+typedef struct stWayPoint tdstWayPoint;
+
+struct stWayPoint
+{
     readonly tdstVector3D position;
     readonly float32 radius;
     readonly pointer superObject;
-} typedef tdstWayPoint;
+};
 
 #endif /* stWayPoint_h */

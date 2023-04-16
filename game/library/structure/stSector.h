@@ -9,7 +9,10 @@
 #define sector_priority_normal  64
 #define sector_priority_max     127
 
-struct stSector {
+typedef struct stSector tdstSector;
+
+struct stSector
+{
     readonly tdstDoublyLinkedList characterList;
     readonly tdstDoublyLinkedList staticLightList;
     readonly tdstDoublyLinkedList dynamicLightList;
@@ -30,7 +33,7 @@ struct stSector {
 #if platform == GCN
     readonly char8 name[0x104];
 #endif
-} typedef tdstSector;
+};
 
 #define sector_is_virtual(sector) sector->isVirtual
 #define sector_camera_type(sector) sector->cameraType

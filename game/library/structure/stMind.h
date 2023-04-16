@@ -3,13 +3,16 @@
 
 #include "structure.h"
 
-struct stMind {
+typedef struct stMind tdstMind;
+
+struct stMind
+{
     readonly pointer aiModel;
     readonly pointer intelligence;
     readonly pointer reflex;
     readonly pointer dsgMem;
     readonly uint8 runIntelligence;
     padding(3)
-} typedef tdstMind;
+};
 
 #endif /* stMind_h */

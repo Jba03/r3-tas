@@ -3,14 +3,17 @@
 
 #include "structure.h"
 
-struct stRandom {
+typedef struct stRandom tdstRandom;
+
+struct stRandom
+{
     readonly uint32 tableSize;
     readonly uint32 tableIndices[50];
     readonly uint32 lastIndex;
     readonly uint32 tableMax;
     readonly float32 tableMaxInverse;
     readonly pointer table;
-} typedef tdstRandom;
+};
 
 #if USE_FUNCTIONS
 

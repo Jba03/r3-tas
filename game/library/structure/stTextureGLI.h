@@ -3,7 +3,11 @@
 
 #include "structure.h"
 
-struct stTextureGLI {
+typedef struct stTextureGLI tdstTextureGLI;
+typedef struct stAnimatedTextureNodeGLI tdstAnimatedTextureNodeGLI;
+
+struct stTextureGLI
+{
     readonly int32 available;
     readonly int32 quality;
     readonly pointer data;
@@ -28,12 +32,13 @@ struct stTextureGLI {
     readonly uchar8 cyclingMode;
     readonly char8 filename[128];
     padding(2)
-} typedef tdstTextureGLI;
+};
 
-struct stAnimatedTextureNodeGLI {
+struct stAnimatedTextureNodeGLI
+{
     readonly pointer texture;
     readonly float32 displayDuration;
     readonly pointer next;
-} typedef tdstAnimatedTextureNodeGLI;
+};
 
 #endif /* stTextureGLI_h */

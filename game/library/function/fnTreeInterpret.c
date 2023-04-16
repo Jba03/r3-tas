@@ -26,7 +26,7 @@ static const unsigned int fnTreeGetLength(const tdstNodeInterpret *tree)
 
 static void fnTreePrintNode(tdstNodeInterpret *node)
 {
-    uint32 param = (node->param);
+    uint32 param = node->param;
     printf("Node [%s: %d]\n", R3NodeTypeTable[node->type], param);
 }
 

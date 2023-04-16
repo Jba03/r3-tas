@@ -7,7 +7,10 @@
 #define actor_model_name    1
 #define actor_instance_name 2
 
-struct stEngineObject {
+typedef struct stEngineObject tdstEngineObject, tdstActor;
+
+struct stEngineObject
+{
     readonly pointer p3DData;
     readonly pointer stdGame;
     readonly pointer dynam;
@@ -19,7 +22,7 @@ struct stEngineObject {
     readonly pointer sectorInfo;
     readonly pointer micro;
     readonly pointer msSound;
-} typedef tdstEngineObject, tdstActor;
+};
 
 #if USE_FUNCTIONS
 

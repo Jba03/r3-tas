@@ -3,7 +3,11 @@
 
 #include "structure.h"
 
-struct stElementIndexedTrianglesVisual {
+typedef struct stElementIndexedTrianglesVisual tdstElementIndexedTrianglesVisual;
+typedef struct stCollideElementIndexedTriangles tdstCollideElementIndexedTriangles;
+
+struct stElementIndexedTrianglesVisual
+{
     readonly pointer visualMaterial;
     readonly int16 numFaces;
     readonly int16 numUVs;
@@ -23,9 +27,10 @@ struct stElementIndexedTrianglesVisual {
     readonly uint8 portalVisibility;
     padding(3)
     readonly uint32 vao[4];
-} typedef tdstElementIndexedTrianglesVisual;
+};
 
-struct stCollideElementIndexedTriangles {
+struct stCollideElementIndexedTriangles
+{
     readonly pointer material;
     readonly pointer faceIndices;
     readonly pointer normals;
@@ -37,6 +42,6 @@ struct stCollideElementIndexedTriangles {
     readonly pointer edgeCoefficients;
     readonly int16 numEdges;
     padding(2)
-} typedef tdstCollideElementIndexedTriangles;
+};
 
 #endif /* stCollideElementIndexedTriangles_h */

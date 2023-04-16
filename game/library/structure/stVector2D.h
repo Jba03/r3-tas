@@ -5,10 +5,13 @@
 
 #define VECTOR2
 
-struct stVector2D {
+typedef struct stVector2D tdstVector2D;
+
+struct stVector2D
+{
     float x;
     float y;
-} typedef tdstVector2D;
+};
 
 VECTOR2 static inline tdstVector2D vector2_host_byteorder(const tdstVector2D v)
 {

@@ -3,14 +3,19 @@
 
 #include "structure.h"
 
-struct stColorGEO {
+typedef struct stColorGEO tdstColorGEO;
+typedef struct stMaterialGLI tdstMaterialGLI;
+
+struct stColorGEO
+{
     readonly float32 r;
     readonly float32 g;
     readonly float32 b;
     readonly float32 a;
-} typedef tdstColorGEO;
+};
 
-struct stMaterialGLI {
+struct stMaterialGLI
+{
     readonly uint32 type;
     readonly tdstColorGEO ambient;
     readonly tdstColorGEO diffuse;
@@ -35,6 +40,6 @@ struct stMaterialGLI {
     readonly uint32 multiTextureType;
     readonly uint32 numTextureStages;
     /* ::multimaterial  */
-} typedef tdstMaterialGLI;
+};
 
 #endif /* stMaterialGLI_h */

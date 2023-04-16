@@ -4,13 +4,18 @@
 #include "structure.h"
 #include "stTransform.h"
 
-struct stVertex2DGLI {
+typedef struct stVertex2DGLI tdstVertex2DGLI;
+typedef struct stCameraGLI tdstCameraGLI;
+
+struct stVertex2DGLI
+{
     readonly float32 x;
     readonly float32 y;
     readonly float32 dz;
-} typedef tdstVertex2DGLI;
+};
 
-struct stCameraGLI {
+struct stCameraGLI
+{
     readonly int32 cameraMode;
     readonly tdstTransform transform;
     readonly float32 xAlpha;
@@ -34,6 +39,6 @@ struct stCameraGLI {
     readonly uint8 transparency;
     readonly float32 transpDist;
     readonly uint8 mirrored;
-} typedef tdstCameraGLI;
+};
 
 #endif /* stCameraGLI_h */

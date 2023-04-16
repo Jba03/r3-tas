@@ -15,11 +15,14 @@
 #define transform_type_rotation_scale_complex   8
 #define transform_type_undefined                9
 
-struct stTransform {
+typedef struct stTransform tdstTransform;
+
+struct stTransform
+{
     readonly uint32_t type;
     readonly tdstMatrix4D matrix;
     readonly tdstVector4D scale;
-} typedef tdstTransform;
+};
 
 static inline const tdstTransform transform_identity()
 {

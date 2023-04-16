@@ -3,7 +3,10 @@
 
 #include "structure.h"
 
-struct stInstantiatedPhysicalObject {
+typedef struct stInstantiatedPhysicalObject tdstInstantiatedPhysicalObject, tdstIPO;
+
+struct stInstantiatedPhysicalObject
+{
     readonly pointer tdstPhysicalObject;
     readonly pointer currentRadiosity;
     readonly doublepointer radiosity;
@@ -14,7 +17,7 @@ struct stInstantiatedPhysicalObject {
     padding(4) /* Unknown? */
     readonly char8 name[0x32];
 #endif
-} typedef tdstInstantiatedPhysicalObject, tdstIPO;
+};
 
 #if USE_FUNCTIONS
 

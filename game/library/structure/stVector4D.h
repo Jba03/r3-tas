@@ -5,12 +5,15 @@
 
 #define VECTOR4
 
-struct stVector4D {
+typedef struct stVector4D tdstVector4D;
+
+struct stVector4D
+{
     float x;
     float y;
     float z;
     float w;
-} typedef tdstVector4D;
+};
 
 VECTOR4 static inline tdstVector4D vector4_host_byteorder(const tdstVector4D v)
 {

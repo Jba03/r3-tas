@@ -8,11 +8,14 @@
 
 #define VECTOR3
 
-struct stVector3D {
+typedef struct stVector3D tdstVector3D;
+
+struct stVector3D
+{
     float x;
     float y;
     float z;
-} typedef tdstVector3D;
+};
 
 VECTOR3 static inline tdstVector3D vector3_host_byteorder(const tdstVector3D v)
 {

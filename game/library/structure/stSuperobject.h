@@ -37,7 +37,10 @@ static const char * const superObjectTypeNames[] =
     "IPO", "IPO.Mirror", "SpecialEffect", "NoAction", "Unknown", "Mirror",
 };
 
-struct stSuperObject {
+typedef struct stSuperObject tdstSuperObject;
+
+struct stSuperObject
+{
     readonly uint32 type;
     readonly pointer data;
     readonly pointer firstChild;
@@ -65,7 +68,7 @@ struct stSuperObject {
     readonly uint8 isSuperObject;
     readonly uint8 transition;
     padding(1)
-} typedef tdstSuperObject;
+};
 
 #if USE_FUNCTIONS
 

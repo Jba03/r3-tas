@@ -3,15 +3,20 @@
 
 #include "structure.h"
 
-struct stLinkedList {
+typedef struct stLinkedList tdstLinkedList;
+typedef struct stDoublyLinkedList tdstDoublyLinkedList;
+
+struct stLinkedList
+{
     readonly pointer first;
     readonly int32 numEntries;
-} typedef tdstLinkedList;
+};
 
-struct stDoublyLinkedList {
+struct stDoublyLinkedList
+{
     readonly pointer first;
     readonly pointer last;
     readonly int32 numEntries;
-} typedef tdstDoublyLinkedList;
+};
 
 #endif /* stLinkedList_h */

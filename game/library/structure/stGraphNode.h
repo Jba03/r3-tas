@@ -3,7 +3,10 @@
 
 #include "structure.h"
 
-struct stGraphNode {
+typedef struct stGraphNode tdstGraphNode;
+
+struct stGraphNode
+{
     readonly pointer next;
     readonly pointer prev;
     readonly pointer parent;
@@ -11,6 +14,6 @@ struct stGraphNode {
     readonly int32 type;
     readonly int32 initialType;
     readonly pointer arcList;
-} typedef tdstGraphNode;
+};
 
 #endif /* stGraphNode_h */
