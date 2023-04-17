@@ -6,7 +6,7 @@
 //
 
 #include "stOctree.h"
-#include "game.h"
+#include "memory.h"
 
 #include "fnPrimIntersections.c"
 

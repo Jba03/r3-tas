@@ -2,6 +2,7 @@
 #define stEngineObject_h
 
 #include "structure.h"
+#include "stSuperobject.h"
 
 #define actor_family_name   0
 #define actor_model_name    1
@@ -24,7 +25,8 @@ struct stEngineObject
     readonly pointer msSound;
 };
 
-#if USE_FUNCTIONS
+
+#ifdef USE_FUNCTIONS
 
 #include "stMatrix4D.h"
 #include "stDynamics.h"
@@ -76,6 +78,8 @@ const char* fnActorGetCurrentBehaviorName(const tdstEngineObject* actor);
 
 /** actor_in_behavior: return true if an actor is in the specified behavior */
 bool fnActorIsInBehavior(const tdstEngineObject* actor, const char* behavior_name);
+
+tdstEngineObject *fnFindActor(int nameType, const char* name, tdstSuperObject* root);
 
 #endif
 

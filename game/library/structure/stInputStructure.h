@@ -92,7 +92,7 @@ struct stInputEntryElement
     readonly padding(3)
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnInputEntryFind: find an input entry by its action name */
 tdstInputEntryElement* fnInputEntryFind(const tdstInputStructure* s, const char* action_name);

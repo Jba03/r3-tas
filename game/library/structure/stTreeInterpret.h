@@ -86,7 +86,113 @@ struct stMacroList
     readonly padding(3)
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
+
+#pragma mark - Translation
+
+typedef struct stTreeTranslationToken {
+#define TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER 256
+#define TRANSLATION_TOKEN_MAX_STRING_LENGTH 256
+    char translatedText[TRANSLATION_TOKEN_MAX_STRING_LENGTH];
+    const tdstNodeInterpret *originalNode;
+} tdstTreeTranslationToken;
+
+typedef struct stTreeTranslationOptions {
+    uint8 indentationSize;
+    uint8 indentationStyle; // 0 = Allman, 1 = K&R
+    uint8 skipParentheses;
+} tdstTreeTranslationOptions;
+
+typedef struct stTreeTranslationContext {
+    tdstNodeInterpret *tree;
+    tdstNodeInterpret *currentNode;
+    tdstTreeTranslationToken* token;
+    unsigned int numTokens, numBlocksAllocated;
+    unsigned int indentation;
+    tdstTreeTranslationOptions *opt;
+} tdstTreeTranslationContext;
+
+int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, tdstTreeTranslationOptions *opt);
+
+#pragma mark - Interpreter
+
+#define INTERPRETER_FRAME_COUNT  64
+#define INTERPRETER_TAG_SKIP 0x534B4950
+
+#define INTERPRETER_DSG_READ    (1 << 0)
+#define INTERPRETER_DSG_WRITE   (1 << 1)
+
+typedef struct stTreeInterpretOptions {
+} tdstTreeInterpretOptions;
+
+/* context frame for subroutine calls */
+typedef struct stTreeInterpretFrame {
+    const char* name;
+    /* original tree (r) */
+    const tdstNodeInterpret* originalTree;
+    /* duplicate tree (rw) */
+    tdstNodeInterpret *duplicateTree;
+    /* current tree node */
+    tdstNodeInterpret *current;
+} tdstTreeInterpretFrame;
+    
+typedef struct stTreeInterpretGlobals {
+    uint32 randomizer;
+    uint32 rngCallCount;
+} tdstTreeInterpretGlobals;
+
+typedef struct stTreeInterpretContext {
+    /* List of frames */
+    tdstTreeInterpretFrame *frameStack[INTERPRETER_FRAME_COUNT];
+    int currentFrameIndex;
+    tdstTreeInterpretFrame *frame;
+    
+    tdstTreeInterpretOptions opt;
+    /* global input/output variables */
+    tdstTreeInterpretGlobals* globals;
+    
+    /* the owner (actor) of this script */
+    tdstEngineObject* owner;
+    /* dsg access mode: read/write */
+    uint32 dsgAccessMode;
+    /* assignment operation? */
+    bool isAssignment;
+    /* actor superobject in reference */
+    tdstEngineObject* actorReference;
+    
+    bool finished;
+    
+    void (*getMainActor)(struct stTreeInterpretContext *c);
+    void (*condition)(struct stTreeInterpretContext *c);
+    void (*function) (struct stTreeInterpretContext *c);
+    void (*procedure)(struct stTreeInterpretContext *c);
+} tdstTreeInterpretContext;
+
+int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpret *tree, const tdstTreeInterpretOptions *opt);
+
+void fnTreeInterpreterStep(tdstTreeInterpretContext *c);
+
+long fnTreeInterpreterGetPC(tdstTreeInterpretContext *c);
+
+#pragma mark - Utility functions
+
+void fnTreePrintNode(tdstNodeInterpret *node);
+
+int fnTreeGetLength(const tdstNodeInterpret *tree);
+
+bool fnIsEndOfTree(tdstNodeInterpret *tree);
+
+tdstNodeInterpret *fnTreeDuplicate(const tdstNodeInterpret *tree);
+
+void fnTreeSwapByteOrder(tdstNodeInterpret *tree);
+
+tdstNodeInterpret *fnMacroGetCurrentTree(tdstMacro *macro);
+
+const char* fnMacroGetName(const tdstMacro *macro);
+
+#define IsEndOfTree(tree) (fnIsEndOfTree(tree))
+
+#pragma mark - AI Functions
 
 /** ai_function_temporal_real_combination: interpolation function based on engine frame time */
 const float ai_function_temporal_real_combination(const float a, const float coefficient, const float b);

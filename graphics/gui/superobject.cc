@@ -12,7 +12,6 @@
 #include "stMind.h"
 #include "stIntelligence.h"
 #include "stBehavior.h"
-#include "stTreeInterpret.h"
 #include "stDsg.h"
 #include "stTransform.h"
 #include "stAIModel.h"

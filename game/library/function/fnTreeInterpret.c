@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "tables.h"
+#include "memory.h"
 #include "stTreeInterpret.h"
 
 #include "stDsg.h"
@@ -12,113 +13,8 @@
 
 #define fetch() (++c->frame->current)
 
-static const unsigned int fnTreeGetLength(const tdstNodeInterpret *tree)
-{
-    if (!tree) return 0;
-    const tdstNodeInterpret *first = tree;
-    const tdstNodeInterpret *advance = tree;
-    
-    do advance++;
-    while (advance->type != script_node_type_end_macro && advance->depth >= 1);
-    
-    return (unsigned int)(advance - first) + 1;
-}
-
-static void fnTreePrintNode(tdstNodeInterpret *node)
-{
-    uint32 param = node->param;
-    printf("Node [%s: %d]\n", R3NodeTypeTable[node->type], param);
-}
-
-/* Duplicate a node tree */
-static tdstNodeInterpret *fnTreeDuplicate(const tdstNodeInterpret *tree)
-{
-    unsigned length = fnTreeGetLength(tree) * sizeof(tdstNodeInterpret);
-    tdstNodeInterpret *copy = (tdstNodeInterpret*)malloc(length);
-    memcpy(copy, tree, length);
-    
-    return copy;
-}
-
-static void fnTreeSwapByteOrder(tdstNodeInterpret *tree)
-{
-    while (!IsEndOfTree(tree))
-    {
-        tree->param = host_byteorder_32(tree->param);
-        tree++;
-    }
-}
-
-static tdstNodeInterpret *fnMacroGetCurrentTree(tdstMacro *macro)
-{
-    if (!macro) return NULL;
-    tdstTreeInterpret *tree = (tdstTreeInterpret*)pointer(macro->script_current);
-    tdstNodeInterpret *node = (tdstNodeInterpret*)pointer(tree->tree);
-    return node;
-}
-
-const char* fnMacroGetName(const tdstMacro *macro)
-{
-    if (!macro) return NULL;
-    const char* name = (const char*)memchr(macro->name, ':', 0x100);
-    return name ? name + 1 : NULL;
-}
-
 
 #pragma mark - Interpreter
-
-#define INTERPRETER_FRAME_COUNT  64
-#define INTERPRETER_TAG_SKIP 0x534B4950
-
-#define INTERPRETER_DSG_READ    (1 << 0)
-#define INTERPRETER_DSG_WRITE   (1 << 1)
-
-typedef struct stTreeInterpretOptions {
-} tdstTreeInterpretOptions;
-
-/* context frame for subroutine calls */
-typedef struct stTreeInterpretFrame {
-    const char* name;
-    /* original tree (r) */
-    const tdstNodeInterpret* originalTree;
-    /* duplicate tree (rw) */
-    tdstNodeInterpret *duplicateTree;
-    /* current tree node */
-    tdstNodeInterpret *current;
-} tdstTreeInterpretFrame;
-    
-typedef struct stTreeInterpretGlobals {
-    uint32 randomizer;
-    uint32 rngCallCount;
-} tdstTreeInterpretGlobals;
-
-typedef struct stTreeInterpretContext {
-    /* List of frames */
-    tdstTreeInterpretFrame *frameStack[INTERPRETER_FRAME_COUNT];
-    int currentFrameIndex;
-    tdstTreeInterpretFrame *frame;
-    
-    tdstTreeInterpretOptions opt;
-    /* global input/output variables */
-    tdstTreeInterpretGlobals* globals;
-    
-    /* the owner (actor) of this script */
-    tdstEngineObject* owner;
-    /* dsg access mode: read/write */
-    uint32 dsgAccessMode;
-    /* assignment operation? */
-    bool isAssignment;
-    /* actor superobject in reference */
-    tdstEngineObject* actorReference;
-    
-    bool finished;
-    
-    
-    void (*getMainActor)(struct stTreeInterpretContext *c);
-    void (*condition)(struct stTreeInterpretContext *c);
-    void (*function) (struct stTreeInterpretContext *c);
-    void (*procedure)(struct stTreeInterpretContext *c);
-} tdstTreeInterpretContext;
 
 static tdstTreeInterpretFrame *fnInterpretMakeFrame(const tdstNodeInterpret *tree)
 {
@@ -185,7 +81,6 @@ static void fnTreeSeekDepth(tdstTreeInterpretContext *c, unsigned depth)
 #define rval(nd)    *((float*)&nd->param)
 
 static tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c);
-static long fnTreeInterpreterGetPC(tdstTreeInterpretContext *c);
 
 static tdstNodeInterpret *fnTreeInterpretException(tdstTreeInterpretContext *c, tdstNodeInterpret *node, const char* fmt, ...)
 {
@@ -579,14 +474,9 @@ static tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
     return current;
 }
 
-static int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpret *tree, const tdstTreeInterpretOptions *opt)
+int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpret *tree, const tdstTreeInterpretOptions *opt)
 {
     tdstTreeInterpretContext *c = *ctx = (tdstTreeInterpretContext*)malloc(sizeof(*c));
-    
-//    if (opt)
-//        c->opt = *opt;
-//    else
-//        fnTreeInterpreterDefaultOptions(&c->opt);
     
     c->frame = NULL;
     c->currentFrameIndex = -1;
@@ -603,12 +493,12 @@ static int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeI
     return 1;
 }
 
-static void fnTreeInterpreterStep(tdstTreeInterpretContext *c)
+void fnTreeInterpreterStep(tdstTreeInterpretContext *c)
 {
     fnTreeInterpret(c);
 }
 
-static long fnTreeInterpreterGetPC(tdstTreeInterpretContext *c)
+long fnTreeInterpreterGetPC(tdstTreeInterpretContext *c)
 {
     tdstTreeInterpretFrame *frame = c->frame;
     return frame->current - frame->duplicateTree + 1;

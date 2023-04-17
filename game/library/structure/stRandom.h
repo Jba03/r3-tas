@@ -15,7 +15,7 @@ struct stRandom
     readonly pointer table;
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnRNDTableIndex: index an RNG table. */
 int32 fnRNDTableIndex(const tdstRandom *rnd, unsigned index, int offset);

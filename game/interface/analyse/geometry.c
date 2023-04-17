@@ -6,7 +6,7 @@
 //
 
 #include "geometry.h"
-#include "stCollideElementIndexedTriangles.h"
+#include "memory.h"
 
 int collide_object_triangles_combined(const tdstCollideObject* object, const tdstMatrix4D T, struct triangle** triangles)
 {

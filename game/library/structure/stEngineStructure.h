@@ -74,7 +74,7 @@ struct stEngineStructure
     readonly pointer cineManager;
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnEngineLoadLevel: load level with specified name */
 void fnEngineLoadLevel(tdstEngineStructure* engine, const char* level_name);

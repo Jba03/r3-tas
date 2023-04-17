@@ -40,7 +40,7 @@ struct stSector
 #define sector_get_counter(sector) sector->counter
 #define sector_priority(sector) sector->priority
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnSectorGetName: get the abbreviated name of a sector */
 const char* fnSectorGetName(const tdstSector* sct);

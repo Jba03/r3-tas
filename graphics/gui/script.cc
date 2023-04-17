@@ -1,8 +1,11 @@
 #include "tables.h"
 
-#include <map>
+extern "C"
+{
+#include "stTreeInterpret.h"
+}
 
-#include "fnTreeTranslation.c"
+#include <map>
 
 const ImVec4 syntaxColorDefault = ImVec4(0.75,0.75,0.75,1);
 const ImVec4 syntaxColorRed     = ImVec4(0.9, 0.4, 0.45, 1.0f);

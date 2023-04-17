@@ -10,10 +10,11 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "mathc.h"
-#include "log.h"
 #include "game.h"
-#include "structure.h"
+#include "log.h"
+#include "mathc.h"
+#include "memory.h"
+
 #include "stEngineStructure.h"
 #include "stSuperObject.h"
 #include "stEngineObject.h"
@@ -66,11 +67,11 @@ static void r3_load()
     info(BOLD COLOR_GREEN "HIE @ [0x%X : %p]\n\n", hierarchy_entry, hierarchy);
     
     /* Find some actors */
-    actor_rayman = actor_find(actor_instance_name, "Rayman", hierarchy);
-    actor_camera = actor_find(actor_instance_name, "StdCamer", hierarchy);
-    actor_global = actor_find(actor_instance_name, "global", hierarchy);
-    actor_world  = actor_find(actor_instance_name, "World", hierarchy);
-    actor_changemap = actor_find(actor_model_name, "NIN_m_ChangeMap", hierarchy);
+    actor_rayman = fnFindActor(actor_instance_name, "Rayman", hierarchy);
+    actor_camera = fnFindActor(actor_instance_name, "StdCamer", hierarchy);
+    actor_global = fnFindActor(actor_instance_name, "global", hierarchy);
+    actor_world  = fnFindActor(actor_instance_name, "World", hierarchy);
+    actor_changemap = fnFindActor(actor_model_name, "NIN_m_ChangeMap", hierarchy);
     
     info(COLOR_BLUE "Rayman @ %X\n", offset(actor_rayman));
     info(COLOR_BLUE "StdCamer @ %X\n", offset(actor_camera));
@@ -112,7 +113,7 @@ static void load()
     #pragma mark Input structure
     {
         unsigned long io = offsetof(tdstInputStructure, entries);
-        input_struct = (tdstInputStructure*)(memory.base + GCN_POINTER_INPUT - io);
+        input_struct = (tdstInputStructure*)(memoryBase + GCN_POINTER_INPUT - io);
         
         input.stick.main.x = fnInputEntryFind(input_struct, "Action_Pad0_AxeX");
         input.stick.main.y = fnInputEntryFind(input_struct, "Action_Pad0_AxeY");
@@ -140,7 +141,7 @@ static void load()
 
 static void update(const char* controller)
 {
-    if (!mRAM) memory.base = mRAM = get_mRAM();
+    if (!mRAM) memoryBase = mRAM = get_mRAM();
     
     /* Read global structures */
     engine = (tdstEngineStructure*)(mRAM + GCN_POINTER_ENGINE);

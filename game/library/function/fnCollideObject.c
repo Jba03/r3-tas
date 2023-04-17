@@ -6,6 +6,7 @@
 //
 
 #include "stCollideObject.h"
+#include "stCollideElementIndexedTriangles.h"
 #include "game.h"
 #include "stOctree.h"
 #include "ray.h"

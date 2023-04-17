@@ -1,13 +1,13 @@
 #include "stIntelligence.h"
 #include "stAIModel.h"
 #include "stBehavior.h"
-#include "stTreeInterpret.h"
 #include "stInputStructure.h"
 
 extern "C"
 {
 #include "intfun.h"
 #include "stActionTable.h"
+#include "stTreeInterpret.h"
 }
 
 static int line = 1;

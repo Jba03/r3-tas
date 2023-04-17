@@ -6,7 +6,9 @@
 //
 
 #include "game.h"
+#include "memory.h"
 #include "stSuperObject.h"
+#include "stInstantiatedPhysicalObject.h"
 #include "stTransform.h"
 #include "stSector.h"
 #include "fnPrimIntersections.c"

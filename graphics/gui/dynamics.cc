@@ -1,3 +1,4 @@
+#include "stSuperobject.h"
 #include "stEngineObject.h"
 #include "stDynamics.h"
 

@@ -5,8 +5,10 @@
 //  Created by Jba03 on 2023-02-28.
 //
 
+#include <string.h>
+
 #include "stInstantiatedPhysicalObject.h"
-#include "game.h"
+#include "memory.h"
 #include "stCollideSet.h"
 #include "stPhysicalObject.h"
 
@@ -47,4 +49,30 @@ const tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObj
     /* Collision geometry is part of reaction zone. */
     const tdstCollideObject* zdr = pointer(collset->zdr);
     return zdr;
+}
+
+#pragma mark - Find
+
+tdstInstantiatedPhysicalObject* fnFindIPO(const char* name, tdstSuperObject *root, tdstSuperObject** so)
+{
+    if (!root) return NULL;
+    tdstInstantiatedPhysicalObject* ipo = (tdstInstantiatedPhysicalObject*)superobject_data(root);
+    if ((superobject_type(root) == superobject_type_ipo || superobject_type(root) == superobject_type_ipo_mirror) && ipo)
+    {
+        if (strcmp(name, ipo->name) == 0)
+        {
+            *so = root;
+            return ipo;
+        }
+    }
+    
+    ipo = NULL;
+    tdstSuperObject* search = superobject_first_child(root);
+    while (search && !ipo)
+    {
+        ipo = fnFindIPO(name, search, so);
+        search = superobject_next(search);
+    }
+    
+    return ipo;
 }

@@ -6,7 +6,7 @@
 //
 
 #include "stObjectType.h"
-#include "game.h"
+#include "memory.h"
 
 #include <stdio.h>
 

@@ -70,7 +70,7 @@ struct stSuperObject
     readonly padding(1)
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnSuperobjectGetTypename: get the typename of a superobject*/
 const char* fnSuperobjectGetTypename(const tdstSuperObject* so);

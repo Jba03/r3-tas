@@ -28,7 +28,7 @@ struct stObjectType
     readonly tdstDoublyLinkedList instance;
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** object_name_type: get the name of an object type with specified id */
 const char* fnObjectTypeGetName(const tdstObjectType* objectType, int name_type, int id);

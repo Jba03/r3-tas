@@ -5,7 +5,11 @@
 //  Created by Jba03 on 2023-01-08.
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "export.h"
+#include "memory.h"
 
 #include "stEngineObject.h"
 #include "stBrain.h"
@@ -14,11 +18,6 @@
 #include "stBehavior.h"
 #include "stTreeInterpret.h"
 #include "stInputStructure.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "fnTreeTranslation.c"
 
 extern const char* (*get_config_path)(void);
 

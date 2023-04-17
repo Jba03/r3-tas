@@ -115,7 +115,7 @@ static void RecursiveProjectSuperobjectPosition(const tdstSuperObject* object,
 
 static void ProjectSuperobjectPositions(const tdstSuperObject* root)
 {
-    float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
+    float fov = host_byteorder_f32(*(float32*)(memoryBase + 0x00C751B4));
     fov = fov == 0.0f ? 1.3 : fov;
     
     const float new_width = display_size.y * (640.0f / 528.0f) * 1.075f;

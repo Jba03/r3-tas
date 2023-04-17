@@ -5,11 +5,6 @@
 //  Created by Jba03 on 2022-12-08.
 //
 
-#include "stDsg.h"
-#include "stMind.h"
-#include "stBrain.h"
-#include "stPhysicalObject.h"
-
 #include <sstream>
 #include <iomanip>
 

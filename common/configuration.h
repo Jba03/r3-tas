@@ -11,8 +11,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "stVector3D.h"
-
 struct configuration
 {
     struct
@@ -33,7 +31,7 @@ struct configuration
          *  Force main actor position.
          */
         bool force_position;
-        tdstVector3D forced_position;
+        //tdstVector3D forced_position;
         
         /**
          * camera_unlocked:
@@ -43,7 +41,5 @@ struct configuration
         
     } cheats;
 };
-
-extern struct configuration configuration;
 
 #endif /* configuration_h */

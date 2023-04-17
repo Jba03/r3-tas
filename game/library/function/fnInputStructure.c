@@ -5,6 +5,7 @@
 //  Created by Jba03 on 2023-02-20.
 //
 
+#include "memory.h"
 #include "stInputStructure.h"
 #include "game.h"
 

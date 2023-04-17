@@ -10,8 +10,9 @@
 #include <stdbool.h>
 
 #include "mesh.h"
+#include "memory.h"
 
-//#include "vector3.h"
+#include "stVector3D.h"
 #include "game.h"
 #include "structure.h"
 #include "stSuperObject.h"

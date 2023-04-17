@@ -6,7 +6,8 @@
 //
 
 #include "stRandom.h"
-#include "game.h"
+#include "memory.h"
+#include "mathc.h"
 
 /**
  * RNG calls per actor type

@@ -5,37 +5,16 @@
 //  Created by Jba03 on 2023-03-29.
 //
 
-#include "stTreeInterpret.h"
-#include "tables.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
-#define TOKEN_ALLOCATION_MULTIPLIER 256
-#define TOKEN_MAX_STRING_LENGTH 256
+#include "memory.h"
+#include "tables.h"
+
+#include "stTreeInterpret.h"
 
 #define IsEndOfTree(Node) (Node->type == script_node_type_end_macro)
-
-typedef struct stTreeTranslationToken {
-    char translatedText[TOKEN_MAX_STRING_LENGTH];
-    const tdstNodeInterpret *originalNode;
-} tdstTreeTranslationToken;
-
-typedef struct stTreeTranslationOptions {
-    uint8 indentationSize;
-    uint8 indentationStyle; // 0 = Allman, 1 = K&R
-    uint8 skipParentheses;
-} tdstTreeTranslationOptions;
-
-typedef struct stTreeTranslationContext {
-    tdstNodeInterpret *tree;
-    tdstNodeInterpret *currentNode;
-    tdstTreeTranslationToken* token;
-    unsigned int numTokens, numBlocksAllocated;
-    unsigned int indentation;
-    tdstTreeTranslationOptions *opt;
-} tdstTreeTranslationContext;
 
 static const char * const conditions[] =
 {
@@ -52,10 +31,10 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
 
 static void fnTranslationContextAppendToken(tdstTreeTranslationContext *const c, tdstTreeTranslationToken *tok)
 {
-    if (c->numTokens + 1 > c->numBlocksAllocated * TOKEN_ALLOCATION_MULTIPLIER)
+    if (c->numTokens + 1 > c->numBlocksAllocated * TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER)
     {
         c->numBlocksAllocated++;
-        c->token = (tdstTreeTranslationToken*)realloc(c->token, sizeof(tdstTreeTranslationToken) * TOKEN_ALLOCATION_MULTIPLIER * c->numBlocksAllocated);
+        c->token = (tdstTreeTranslationToken*)realloc(c->token, sizeof(tdstTreeTranslationToken) * TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER * c->numBlocksAllocated);
     }
     c->token[c->numTokens] = *tok;
     c->numTokens++;
@@ -64,12 +43,12 @@ static void fnTranslationContextAppendToken(tdstTreeTranslationContext *const c,
 static void fnEmit(tdstTreeTranslationContext *const c, const char* fmt, ...)
 {
     tdstTreeTranslationToken token;
-    memset(token.translatedText, 0, TOKEN_MAX_STRING_LENGTH);
+    memset(token.translatedText, 0, TRANSLATION_TOKEN_MAX_STRING_LENGTH);
     token.originalNode = c->currentNode;
     
     va_list args;
     va_start(args, fmt);
-    vsnprintf(token.translatedText, TOKEN_MAX_STRING_LENGTH, fmt, args);
+    vsnprintf(token.translatedText, TRANSLATION_TOKEN_MAX_STRING_LENGTH, fmt, args);
     va_end(args);
     
     c->currentNode = NULL;
@@ -224,7 +203,7 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     #undef S
 }
 
-static int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, tdstTreeTranslationOptions *opt)
+int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, tdstTreeTranslationOptions *opt)
 {
     tdstTreeTranslationContext *const c = *ctx = (tdstTreeTranslationContext*)malloc(sizeof *c);
     if (!c) return -1;

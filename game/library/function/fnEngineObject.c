@@ -5,6 +5,12 @@
 //  Created by Jba03 on 2023-02-19.
 //
 
+#include <stdio.h>
+
+#include "game.h"
+#include "memory.h"
+
+#include "stSuperobject.h"
 #include "stEngineObject.h"
 #include "stBrain.h"
 #include "stMind.h"
@@ -14,11 +20,8 @@
 #include "stDynamics.h"
 #include "stDsg.h"
 #include "stObjectType.h"
-#include "game.h"
 
 #include "fnDsg.c"
-
-#include <stdio.h>
 
 tdstDynamics* fnActorGetDynamics(const tdstEngineObject* actor)
 {
@@ -206,4 +209,30 @@ bool fnActorIsInBehavior(const tdstEngineObject* actor, const char* behaviorName
 {
     const char* name = fnActorGetCurrentBehaviorName(actor);
     return name ? strcmp(name, behaviorName) == 0 : false;
+}
+
+#pragma mark - Find
+
+tdstEngineObject *fnFindActor(int nameType, const char* name, tdstSuperObject* root)
+{
+    if (!root) return NULL;
+    tdstEngineObject* actor = (tdstEngineObject*)superobject_data(root);
+    if (superobject_type(root) == superobject_type_actor && actor)
+    {
+        const char* compare = fnActorGetName(nameType, actor, objectType);
+        if (compare != NULL)
+        {
+            if (strcmp(name, compare) == 0) return actor;
+        }
+    }
+    
+    actor = NULL;
+    tdstSuperObject* search = superobject_first_child(root);
+    while (search && !actor)
+    {
+        actor = fnFindActor(nameType, name, search);
+        search = superobject_next(search);
+    }
+    
+    return actor;
 }

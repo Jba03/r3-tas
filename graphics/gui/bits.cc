@@ -9,6 +9,7 @@
 #include <bitset>
 
 #include "log.h"
+#include "configuration.h"
 
 static ImVec4 bit_on_color = ImColor(0.5f, 0.5f, 0.5f);
 static ImVec4 bit_off_color = ImColor(0.3f, 0.3f, 0.3f);

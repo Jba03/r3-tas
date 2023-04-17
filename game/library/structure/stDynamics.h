@@ -205,7 +205,7 @@ struct stDynam
 
 #define dynamics_size(dynam) (host_byteorder_32((dynam).base.endflags) & 0x3)
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 /** fnDynamicsGetSpeed: get the speed of the specified dynamics structure */
 const struct stVector3D fnDynamicsGetSpeed(const tdstDynamics* dynamics);

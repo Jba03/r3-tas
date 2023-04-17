@@ -6,6 +6,7 @@
 //
 
 #include "game.h"
+#include "memory.h"
 #include "stDsg.h"
 
 static tdstDsgVar* fnDsgMemGetDsgVars(const tdstDsgMem *mem)

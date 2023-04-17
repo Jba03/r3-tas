@@ -5,8 +5,14 @@
 //  Created by Jba03 on 2022-12-19.
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "game.h"
 #include "log.h"
+#include "memory.h"
+
 #include "stStandardGameInfo.h"
 #include "stRandom.h"
 #include "stEngineStructure.h"
@@ -16,11 +22,7 @@
 #include "stIntelligence.h"
 #include "stDsg.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-struct memory memory;
+const uint8_t * memoryBase;
 
 #pragma mark - Globals
 
@@ -131,8 +133,8 @@ static const uint32 color_table[] =
 
 void level_read()
 {
-    const uint8* fixptr = memory.base + (host_byteorder_32(*(uint32_t*)(memory.base + GCN_POINTER_FIX)) & 0xFFFFFFF);
-    const uint8* lvlptr = memory.base + (host_byteorder_32(*(uint32_t*)(memory.base + GCN_POINTER_LVL)) & 0xFFFFFFF);
+    const uint8* fixptr = memoryBase + (host_byteorder_32(*(uint32_t*)(memoryBase + GCN_POINTER_FIX)) & 0xFFFFFFF);
+    const uint8* lvlptr = memoryBase + (host_byteorder_32(*(uint32_t*)(memoryBase + GCN_POINTER_LVL)) & 0xFFFFFFF);
     
     #pragma mark FIX
     {
@@ -203,6 +205,6 @@ void game_memory_dump()
     char path[4096];
     sprintf(path, "%s/memory.bin", LIBR3TAS_DIR);
     FILE* fp = fopen(path, "wb");
-    fwrite(memory.base, sizeof(uint8), 24 * 1000 * 1000, fp);
+    fwrite(memoryBase, sizeof(uint8), 24 * 1000 * 1000, fp);
     fclose(fp);
 }

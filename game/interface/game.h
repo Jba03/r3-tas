@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 
-struct memory { const uint8_t* base, *tmp; } extern memory;
-
 #include "stEngineStructure.h"
 #include "stSuperobject.h"
 #include "stEngineObject.h"
@@ -92,8 +90,5 @@ uint32 color_table_index(unsigned idx);
 uint32 actor_color(const tdstEngineObject* actor);
 
 void game_memory_dump(void);
-
-/* Structure functions */
-#include "find.h"
 
 #endif /* game_h */

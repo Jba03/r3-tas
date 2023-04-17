@@ -5,10 +5,11 @@
 //  Created by Jba03 on 2023-02-22.
 //
 
-#include "game.h"
-#include "stEngineStructure.h"
-
 #include <stdio.h>
+
+#include "game.h"
+#include "memory.h"
+#include "stEngineStructure.h"
 
 /** ai_function_temporal_real_combination: interpolation function based on engine frame time */
 const float ai_function_temporal_real_combination(const float a, const float coefficient, const float b)

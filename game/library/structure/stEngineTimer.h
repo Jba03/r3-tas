@@ -16,8 +16,10 @@ struct stEngineTimer
     readonly uint32 usefulDeltaTime;
     readonly uint32 pauseTime;
     readonly float32 frameLength;
-    readonly struct { readonly uint32_t low, high; } totalRealTime;
-    readonly struct { readonly uint32_t low, high; } totalPauseTime;
+    readonly uint32 totalRealTimeLow;
+    readonly uint32 totalRealTimeHigh;
+    readonly uint32 totalPauseTimeLow;
+    readonly uint32 totalPauseTimeHigh;
     readonly uint32 ticksPerMs;
 };
 

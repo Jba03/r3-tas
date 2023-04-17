@@ -6,6 +6,7 @@
 //
 
 #include "cheats.h"
+#include "memory.h"
 #include "stBrain.h"
 #include "stMind.h"
 #include "stIntelligence.h"

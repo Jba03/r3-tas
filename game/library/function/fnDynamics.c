@@ -6,7 +6,7 @@
 //
 
 #include "stDynamics.h"
-#include "game.h"
+#include "memory.h"
 
 /** fnDynamicsGetSpeed: get the speed of the specified dynamics structure */
 const struct stVector3D fnDynamicsGetSpeed(const tdstDynamics* dynamics)

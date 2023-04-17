@@ -6,11 +6,13 @@
 //
 
 #include "xray.h"
+#include "stEngineObject.h"
 #include "stDynamics.h"
 #include "stCollideObject.h"
 #include "stOctree.h"
 #include "stInstantiatedPhysicalObject.h"
 #include "game.h"
+#include "memory.h"
 #include "ray.h"
 
 #include "../../library/function/fnPrimIntersections.c"
@@ -571,13 +573,13 @@ static void xray_node_find_neighbors(struct xray *h, struct xray_node* node)
 void xray_init(struct xray* h)
 {
     struct xray_node start;
-    start.position = fnActorGetPosition(actor_find(actor_instance_name, "Rayman", dynamic_world));
+    start.position = fnActorGetPosition(fnFindActor(actor_instance_name, "Rayman", dynamic_world));
     start.in_open = false;
     start.in_closed = false;
     start.score = 0.0f;
     
     struct xray_node end;
-    end.position = fnActorGetPosition(actor_find(actor_instance_name, "BEN_cameleon", dynamic_world));
+    end.position = fnActorGetPosition(fnFindActor(actor_instance_name, "BEN_cameleon", dynamic_world));
     end.in_open = false;
     end.in_closed = false;
     end.score = 0.0f;

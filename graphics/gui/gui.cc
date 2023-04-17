@@ -12,30 +12,16 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_memory_editor.h"
+#include "configuration.h"
 
 extern "C"
 {
     #include "game.h"
-    #include "stEngineStructure.h"
-    #include "stEngineTimer.h"
-    #include "stRandom.h"
-    #include "configuration.h"
+    #include "library.h"
     #include "stVector3D.h"
-    #include "stStandardGameInfo.h"
-    #include "stSector.h"
-    #include "graphics.h"
-    #include "export.h"
-    #include "stTreeInterpret.h"
-    #include "stCollideSet.h"
-    #include "geometry.h"
-    #include "stDynamics.h"
-    #include "stCameraGLI.h"
-    #include "stMaterialGLI.h"
-    #include "stTextureGLI.h"
     #include "xray.h"
     #include "stBehavior.h"
     #include "stActionTable.h"
-    #include "fnTreeInterpret.c"
 }
 
 /* ImGui */
@@ -76,6 +62,7 @@ static float level_geometry_fade_factor = 0.1f;
 
 static MemoryEditor memory_viewer;
 static struct xray xrayHandle;
+struct configuration configuration;
 
 extern "C" const char* (*get_config_path)(void);
 
@@ -420,7 +407,7 @@ static void gui_render_collision()
     
     //printf("texure: %p\n", graphics_get_texture());
     
-    ImGui::Image(graphics_get_texture(), size);
+    //ImGui::Image(graphics_get_texture(), size);
     ImGui::SetWindowSize(ImVec2(size.y * (648.0f / 520.0f), size.y));
     ImGui::End();
     ImGui::PopStyleVar();
@@ -729,7 +716,7 @@ extern "C" void gui_render_callback(void* ctx)
 //        a.sector = (tdstSuperObject*)sector_by_location(father_sector, a.position);
 //
 //        struct xray_node b;
-//        b.position = actor_position(actor_find(actor_instance_name, "BEN_Box2", dynamic_world));
+//        b.position = actor_position(fnFindActor(actor_instance_name, "BEN_Box2", dynamic_world));
 //        b.sector = (tdstSuperObject*)sector_by_location(father_sector, b.position);
 //
 //        ImGui::Text("Line of sight: %s", line_of_sight(&xray, &a, &b) ? "true" : "false");
@@ -752,5 +739,5 @@ extern "C" void gui_render_callback(void* ctx)
     /* Draw memory viewer */
     memory_viewer.ReadOnly = !configuration.cheats.enabled;
     std::string fmt = "Memory (" + std::string(memory_viewer.ReadOnly ? "readonly" : "writeable") + ")";
-    if (memory_viewer.Open) memory_viewer.DrawWindow(fmt.c_str(), (void*)memory.base, 24 * 1000 * 1000);
+    if (memory_viewer.Open) memory_viewer.DrawWindow(fmt.c_str(), (void*)memoryBase, 24 * 1000 * 1000);
 }

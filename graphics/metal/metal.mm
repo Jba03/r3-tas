@@ -20,6 +20,7 @@ extern "C"
 #include "SDL.h"
 #include "stDynamics.h"
 #include "game.h"
+#include "memory.h"
 #include "stOctree.h"
 #include "stSector.h"
 }
@@ -568,9 +569,9 @@ void graphics_loop()
     [renderEncoder setDepthStencilState: depth_state];
     [renderEncoder setViewport: (MTLViewport){0, 0, static_cast<double>(width), static_cast<double>(height), 0.0f, 1.0f /* 1.0f: important! */}];
     
-    tdstVector3D campos = *(tdstVector3D*)(memory.base + 0x00c531bc);
-    tdstVector3D lookato = *(tdstVector3D*)(memory.base + 0x00c53910);
-    float fov = host_byteorder_f32(*(float32*)(memory.base + 0x00C751B4));
+    tdstVector3D campos = *(tdstVector3D*)(memoryBase + 0x00c531bc);
+    tdstVector3D lookato = *(tdstVector3D*)(memoryBase + 0x00c53910);
+    float fov = host_byteorder_f32(*(float32*)(memoryBase + 0x00C751B4));
     fov = fov == 0.0f ? 1.3 : fov;
     
     simd_float3 position;

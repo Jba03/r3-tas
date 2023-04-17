@@ -289,7 +289,7 @@ void graphics_draw_sphere(tdstVector3D center, const float r, tdstVector4D color
 static void graphics_main_loop()
 {
     /* GCN default fov: 1.3rad */
-    const float fov = *(float*)(memory.base + 0x00C751B4);
+    const float fov = *(float*)(memoryBase + 0x00C751B4);
     camera->zoom = fov == 0.0f ? degrees(1.30f) : degrees(fov);
     
     tdstMatrix4D view = camera_view_matrix(camera);
@@ -297,10 +297,10 @@ static void graphics_main_loop()
     /* Camera parameters */
     if (!configuration.camera_unlocked)
     {
-        camera->position = *(vector3*)(memory.base + 0x00c531bc);
+        camera->position = *(vector3*)(memoryBase + 0x00c531bc);
         tdstVector3D eye = camera->position;
         tdstVector3D up = tdstVector3D_new(-0.0f, 0.0f, 1.0f);
-        tdstVector3D look_at = *(vector3*)(memory.base + 0x00c53910);
+        tdstVector3D look_at = *(vector3*)(memoryBase + 0x00c53910);
         view = matrix4_lookat(camera->position, look_at, up);
     }
     
@@ -340,7 +340,7 @@ static void graphics_main_loop()
     /* Default framebuffer */
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-    //tdstVector3D rayman_position = *(vector3*)(memory.base + 0x00BF0D98);
+    //tdstVector3D rayman_position = *(vector3*)(memoryBase + 0x00BF0D98);
 }
 
 int graphics_shader_id()

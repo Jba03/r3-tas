@@ -32,7 +32,7 @@ struct stCollideObject
     readonly tdstVector4D boundingSpherePosition;
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 #include "stCollideElementIndexedTriangles.h"
 #include "stMatrix4D.h"

@@ -19,7 +19,7 @@ struct stInstantiatedPhysicalObject
 #endif
 };
 
-#if USE_FUNCTIONS
+#ifdef USE_FUNCTIONS
 
 #include "stSuperobject.h"
 #include "stCollideObject.h"
@@ -32,6 +32,8 @@ const tdstMatrix4D ipo_world_matrix(const tdstSuperObject* ipo);
 
 /** fnIPOGetCollideObject: get the collide object (ZDR) of an IPO */
 const tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObject* ipo);
+
+tdstInstantiatedPhysicalObject* fnFindIPO(const char* name, tdstSuperObject *root, tdstSuperObject** so);
 
 #endif
 #endif /* stInstantiatedPhysicalObject_h */
