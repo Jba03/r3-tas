@@ -5,11 +5,9 @@
 
 #include "tables.h"
 #include "memory.h"
+
 #include "stTreeInterpret.h"
-
 #include "stDsg.h"
-
-#define IsEndOfTree(Node) (Node->type == script_node_type_end_macro)
 
 #define fetch() (++c->frame->current)
 
@@ -57,10 +55,6 @@ static tdstTreeInterpretFrame *fnInterpretPopFrame(tdstTreeInterpretContext *c)
     return c->frame = c->frameStack[--c->currentFrameIndex];
 }
 
-static void fnTreeInterpreterDefaultOptions(tdstTreeInterpretOptions *opt)
-{
-}
-
 static tdstNodeInterpret *fnTreeFindNextOfDepth(tdstTreeInterpretContext *c, unsigned depth)
 {
     tdstNodeInterpret *next = c->frame->current + 1;
@@ -79,8 +73,6 @@ static void fnTreeSeekDepth(tdstTreeInterpretContext *c, unsigned depth)
 #define lval(nd)    *((int32*)&nd->param)
 #define ulval(nd)   *((uint32*)&nd->param)
 #define rval(nd)    *((float*)&nd->param)
-
-static tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c);
 
 static tdstNodeInterpret *fnTreeInterpretException(tdstTreeInterpretContext *c, tdstNodeInterpret *node, const char* fmt, ...)
 {
@@ -341,14 +333,14 @@ static void fnTreeInterpretConvertDsgVar(tdstNodeInterpret *dsgVarRef, tdstEngin
 static tdstNodeInterpret *fnTreeInterpretDsgVarRef(tdstTreeInterpretContext *c)
 {
     tdstNodeInterpret *dsgVarRef = c->frame->current;
-    if (!c->isAssignment && (c->dsgAccessMode & INTERPRETER_DSG_READ))
+    if (!c->isAssignment && (c->dsgAccessMode & INTERPRETER_READ))
     {
         if (!c->actorReference && c->owner)
             fnTreeInterpretConvertDsgVar(dsgVarRef, c->owner);
         else if (c->actorReference)
             fnTreeInterpretConvertDsgVar(dsgVarRef, c->actorReference);
     }
-    else if (c->isAssignment && (c->dsgAccessMode & INTERPRETER_DSG_WRITE))
+    else if (c->isAssignment && (c->dsgAccessMode & INTERPRETER_WRITE))
     {
         
     }
@@ -382,7 +374,7 @@ static tdstNodeInterpret *fnTreeInterpretSubroutine(tdstTreeInterpretContext *c)
     return subroutine;
 }
     
-static tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
+tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
 {
     if (c->finished) return c->frame->current - 1;
     
@@ -485,7 +477,7 @@ int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpre
     c->actorReference = NULL;
     c->owner = NULL;
     
-    c->dsgAccessMode = INTERPRETER_DSG_READ;
+    c->dsgAccessMode = INTERPRETER_READ;
     
     tdstTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
     fnInterpretPushFrame(c, frame);

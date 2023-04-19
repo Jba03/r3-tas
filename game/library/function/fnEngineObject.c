@@ -144,6 +144,12 @@ const float fnActorTrajectoryAngleRelative(const tdstEngineObject* A, const tdst
     return angle;
 }
 
+#pragma mark - StdGame
+
+tdstStandardGameInfo *fnActorGetStdGame(const tdstEngineObject *object)
+{
+    return object ? pointer(object->stdGame) : NULL;
+}
 
 #pragma mark - Intelligence
 
@@ -176,7 +182,7 @@ void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type)
     return fnDsgMemGetDsgVar(mem, var, false, type);
 }
 
-/** actor_name: return the family, model, or instance name of specified actor. Null on failure. */
+/** fnActorGetName: return the family, model, or instance name of specified actor. Null on failure. */
 const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstObjectType* objectType)
 {
     if (!actor) return NULL;

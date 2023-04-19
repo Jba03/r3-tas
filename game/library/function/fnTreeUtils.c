@@ -42,6 +42,20 @@ tdstNodeInterpret *fnTreeDuplicate(const tdstNodeInterpret *tree)
     return copy;
 }
 
+void fnTreeInsertNode(tdstNodeInterpret **root, tdstNodeInterpret *parent, tdstNodeInterpret *insert)
+{
+    unsigned newLength = fnTreeGetLength(*root) + 1;
+    *root = realloc(*root, sizeof(tdstNodeInterpret) * newLength);
+    
+    tdstNodeInterpret *iterator = *root;
+    /* Seek to the end of the tree */
+    while (!fnIsEndOfTree(iterator)) iterator++;
+    /* Shift all nodes prior to the parent backwards */
+    while (iterator != parent) *(iterator + 1) = *iterator;
+    
+    *iterator = *insert;
+}
+
 void fnTreeSwapByteOrder(tdstNodeInterpret *tree)
 {
     while (!fnIsEndOfTree(tree))

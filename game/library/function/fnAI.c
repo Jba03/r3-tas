@@ -11,6 +11,8 @@
 #include "memory.h"
 #include "stEngineStructure.h"
 
+
+
 /** ai_function_temporal_real_combination: interpolation function based on engine frame time */
 const float ai_function_temporal_real_combination(const float a, const float coefficient, const float b)
 {

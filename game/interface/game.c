@@ -52,7 +52,7 @@ struct lvl lvl;
 #pragma mark - FIX
 
 struct fix_header {
-    padding(32)
+    readonly padding(32)
     readonly pointer identity_matrix;
     readonly pointer localization_structure;
     readonly uint32 level_name_count;
@@ -61,7 +61,7 @@ struct fix_header {
 
 struct fix_trailer {
     readonly char8 first_level[30];
-    padding(2)
+    readonly padding(2)
     readonly uint32 language_count;
     readonly uint32 language_offset;
     readonly uint32 texture_count;
@@ -75,9 +75,9 @@ struct fix {
 #pragma mark - LVL
 
 struct lvl_header {
-    padding(4 * 4) /* ? */
+    readonly padding(4 * 4) /* ? */
     readonly char8 text[24];
-    padding(4 * 60) /* ? */
+    readonly padding(4 * 60) /* ? */
     readonly uint32 texture_count;
 };
 

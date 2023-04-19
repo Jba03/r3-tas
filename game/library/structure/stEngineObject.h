@@ -31,6 +31,7 @@ struct stEngineObject
 #include "stMatrix4D.h"
 #include "stDynamics.h"
 #include "stObjectType.h"
+#include "stStandardGameInfo.h"
 
 /** fnActorGetName: return the family, model, or instance name of specified actor. Null on failure. */
 const char* fnActorGetName(int name, const tdstEngineObject* actor, const tdstObjectType* objectType);
@@ -70,6 +71,8 @@ const float fnActorVerticalSightingRelative(const tdstEngineObject* A, const tds
  *  the angle returned is in radians, range -π to π.
  */
 const float fnActorTrajectoryAngleRelative(const tdstEngineObject* A, const tdstEngineObject* B);
+
+tdstStandardGameInfo *fnActorGetStdGame(const tdstEngineObject *object);
 
 void* fnActorGetDsgVar(const tdstEngineObject *object, uint8 var, uint8 *type);
 

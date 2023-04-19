@@ -18,6 +18,7 @@ typedef uint32_t    float32;
 typedef uint32_t    address;
 typedef uint32_t    pointer;
 typedef uint32_t    doublepointer;
+typedef uint64_t    uint64;
 
 #define readonly // const
 

@@ -119,8 +119,8 @@ int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, 
 #define INTERPRETER_FRAME_COUNT  64
 #define INTERPRETER_TAG_SKIP 0x534B4950
 
-#define INTERPRETER_DSG_READ    (1 << 0)
-#define INTERPRETER_DSG_WRITE   (1 << 1)
+#define INTERPRETER_READ    (1 << 0)
+#define INTERPRETER_WRITE   (1 << 1)
 
 typedef struct stTreeInterpretOptions {
 } tdstTreeInterpretOptions;
@@ -150,15 +150,21 @@ typedef struct stTreeInterpretContext {
     tdstTreeInterpretOptions opt;
     /* global input/output variables */
     tdstTreeInterpretGlobals* globals;
+    /* memory global access mode  */
+    uint32 memoryAccessMode;
+    /* dsg access mode: read/write */
+    uint32 dsgAccessMode;
     
     /* the owner (actor) of this script */
     tdstEngineObject* owner;
-    /* dsg access mode: read/write */
-    uint32 dsgAccessMode;
     /* assignment operation? */
     bool isAssignment;
+    /* dot / ultra operation? */
+    bool isUltra;
     /* actor superobject in reference */
     tdstEngineObject* actorReference;
+    
+    uint8 *extendedTypeMemory;
     
     bool finished;
     
@@ -169,6 +175,8 @@ typedef struct stTreeInterpretContext {
 } tdstTreeInterpretContext;
 
 int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpret *tree, const tdstTreeInterpretOptions *opt);
+
+tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c);
 
 void fnTreeInterpreterStep(tdstTreeInterpretContext *c);
 

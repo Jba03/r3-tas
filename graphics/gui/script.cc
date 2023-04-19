@@ -352,7 +352,19 @@ struct DebuggerWindow
         
         ImGui::Begin("Debugger");
         //ImGui::SetWindowSize(ImVec2(350, 600));
-        if (ImGui::Button("Step")) debugger.step();
+        if (ImGui::Button("Step"))
+        {
+            debugger.step();
+            
+//            for (int i = 0; i < host_byteorder_32(rnd->tableSize); i++)
+//            {
+//                int32 v = host_byteorder_32(*(int32*)((uint8*)pointer(rnd->table) + i * 4));
+//                printf("0x%X, ", v);
+//                if ((i % 20) == 0) printf("\n");
+//            }
+            //printf("size: %d\n", host_byteorder_32(rnd->tableSize));
+            printf("inverse max: %f\n", host_byteorder_f32(rnd->tableMaxInverse));
+        }
         ImGui::SameLine();
         if (debugger.interpreter) ImGui::Text("%s", debugger.interpreter->frame->name);
         
