@@ -332,6 +332,8 @@ struct Debugger
 
 struct DebuggerWindow
 {
+    bool show = false;
+    
     void load(const tdstNodeInterpret *tree)
     {
         debugger.load(tree);
@@ -345,44 +347,31 @@ struct DebuggerWindow
     
     void display()
     {
-//        if (((animat += 1) % 1) == 0)
-//        {
-//            /*for (int i =0;i<5;i++)*/debugger.step();
-//        }
-        
-        ImGui::Begin("Debugger");
-        //ImGui::SetWindowSize(ImVec2(350, 600));
-        if (ImGui::Button("Step"))
+        if (show)
         {
-            debugger.step();
-            
-//            for (int i = 0; i < host_byteorder_32(rnd->tableSize); i++)
-//            {
-//                int32 v = host_byteorder_32(*(int32*)((uint8*)pointer(rnd->table) + i * 4));
-//                printf("0x%X, ", v);
-//                if ((i % 20) == 0) printf("\n");
-//            }
-            //printf("size: %d\n", host_byteorder_32(rnd->tableSize));
-            printf("inverse max: %f\n", host_byteorder_f32(rnd->tableMaxInverse));
-        }
-        ImGui::SameLine();
-        if (debugger.interpreter) ImGui::Text("%s", debugger.interpreter->frame->name);
-        
-        scriptWindow.pc = debugger.getPC();
-        scriptWindow.tree = debugger.currentTree();
-        scriptWindow.display();
-        ImGui::End();
-        
-        ImGui::Begin("Stack frames");
-        if (debugger.interpreter)
-        {
-            //printf("%d\n", debugger.interpreter->currentFrameIndex);
-            for (int i = 0; i <= debugger.interpreter->currentFrameIndex; i++)
+            ImGui::Begin("Debugger", &show);
+            if (ImGui::Button("Step"))
             {
-                ImGui::Text("%s", debugger.interpreter->frameStack[i]->name);
+                debugger.step();
             }
+            ImGui::SameLine();
+            if (debugger.interpreter) ImGui::Text("%s", debugger.interpreter->frame->name);
+            
+            scriptWindow.pc = debugger.getPC();
+            scriptWindow.tree = debugger.currentTree();
+            scriptWindow.display();
+            ImGui::End();
+            
+            ImGui::Begin("Stack frames");
+            if (debugger.interpreter)
+            {
+                for (int i = 0; i <= debugger.interpreter->currentFrameIndex; i++)
+                {
+                    ImGui::Text("%s", debugger.interpreter->frameStack[i]->name);
+                }
+            }
+            ImGui::End();
         }
-        ImGui::End();
     }
     
     ScriptWindow scriptWindow;

@@ -30,40 +30,37 @@ ScriptWindow scriptWindow;
 
 static void display_translated_script(tdstNodeInterpret* tree, bool nodes = false, int pc = -1)
 {
-    if (ImGui::Button("Load interpreter..."))
+    if (ImGui::Button("Load into interpreter"))
     {
         debuggerWindow.load(tree);
         debuggerWindow.setOwner(current_actor);
+        debuggerWindow.show = true;
     }
     
-    if (ImGui::Button("Load"))
+    ImGui::SameLine();
+    if (ImGui::Button("Replace with binary"))
     {
         std::string path = get_config_path();
+        printf("path: %s\n", path.c_str());
         path += "/tree.bin";
         
         FILE* fp = fopen(path.c_str(), "rb");
-        
-        fseek(fp, 0, SEEK_END);
-        long sz = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        //printf("%d\n", ftell(fp));
-        void* buf = malloc(2048);
-        fread(buf, sz, 1, fp);
-        
-        tdstNodeInterpret* node = (tdstNodeInterpret*)buf;
-        
-//        for (int i = 0; i < 100; i++)
-//        {
-//            printf("%s\n", script_nodetype_table[readTree[i].type]);
-//        }
-        
-        unsigned length = fnTreeGetLength(node);
-        printf("len: %d\n", length);
-        
-        memcpy(tree, node, length * sizeof(*node));
-        
-        //printf("len: %d\n", tree_length(node));
-        fclose(fp);
+        if (fp)
+        {
+            fseek(fp, 0, SEEK_END);
+            long sz = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+            
+            void* buf = malloc(sz);
+            fread(buf, sz, 1, fp);
+            
+            tdstNodeInterpret* node = (tdstNodeInterpret*)buf;
+            unsigned length = fnTreeGetLength(node);
+            printf("len: %d\n", length);
+            memcpy(tree, node, length * sizeof(*node));
+            
+            fclose(fp);
+        }
     }
     
     scriptWindow.tree = tree;
