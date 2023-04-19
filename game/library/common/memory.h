@@ -4,6 +4,8 @@
 #include "configuration.h"
 #include "endianness.h"
 
+#include <stdint.h>
+
 const extern uint8_t * memoryBase;
 
 #define swap16(data) \

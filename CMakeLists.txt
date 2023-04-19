@@ -19,6 +19,8 @@ include_directories(graphics/gui/imgui)
 include_directories(game/interface)
 include_directories(game/interface/analyse)
 include_directories(game/interface/xray)
+
+include_directories(game/library)
 include_directories(game/library/common)
 include_directories(game/library/function)
 include_directories(game/library/function/hierarchy)
