@@ -5,7 +5,6 @@
 
 extern "C"
 {
-#include "intfun.h"
 #include "stActionTable.h"
 #include "stTreeInterpret.h"
 }

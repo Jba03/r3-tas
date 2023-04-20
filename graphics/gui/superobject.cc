@@ -18,7 +18,6 @@
 
 extern "C" {
     #include "stInputStructure.h"
-    #include "intfun.h"
 }
 
 static int window_counter = 0;

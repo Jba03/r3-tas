@@ -30,6 +30,4 @@ typedef uint64_t    uint64;
 /** padding: insert padding bytes. */
 #define padding(S) readonly uint8_t unique_name(padding) [S];
 
-#define USE_FUNCTIONS
-
 #endif /* structure_h */
