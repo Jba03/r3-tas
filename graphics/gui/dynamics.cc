@@ -150,65 +150,29 @@ static void display_dynamics(const tdstDynamics* dynamics)
         const tdstDynamicsObstacle water = report->water;
         const tdstDynamicsObstacle ceiling = report->ceiling;
         
-        const tdstVector3D groundNormal = vector3_host_byteorder(ground.normal);
-        const tdstVector3D wallNormal = vector3_host_byteorder(wall.normal);
-        const tdstVector3D characterNormal = vector3_host_byteorder(character.normal);
-        const tdstVector3D waterNormal = vector3_host_byteorder(water.normal);
-        const tdstVector3D ceilingNormal = vector3_host_byteorder(ceiling.normal);
-        
-        const tdstVector3D groundContact = vector3_host_byteorder(ground.contact);
-        const tdstVector3D wallContact = vector3_host_byteorder(wall.contact);
-        const tdstVector3D characterContact = vector3_host_byteorder(character.contact);
-        const tdstVector3D waterContact = vector3_host_byteorder(water.contact);
-        const tdstVector3D ceilingContact = vector3_host_byteorder(ceiling.contact);
-        
-        const tdstVector3D currentPosition = vector3_host_byteorder(report->currentAbsolutePosition.linear);
-        const tdstVector3D previousPosition = vector3_host_byteorder(report->previousAbsolutePosition.linear);
-        const tdstVector3D currentSpeed = vector3_host_byteorder(report->currentAbsoluteSpeed.linear);
-        const tdstVector3D previousSpeed = vector3_host_byteorder(report->previousAbsoluteSpeed.linear);
-        
-        const tdstSuperObject* ground_so = (const tdstSuperObject*)pointer(ground.superObject);
-        const tdstSuperObject* wall_so = (const tdstSuperObject*)pointer(wall.superObject);
-        const tdstSuperObject* ceiling_so = (const tdstSuperObject*)pointer(ceiling.superObject);
-        const tdstSuperObject* character_so = (const tdstSuperObject*)pointer(character.superObject);
         
         if (ImGui::BeginTable("Dynamics report", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg))
         {
             TableColumn("Current surface state", "%X", host_byteorder_32(report->currentSurfaceState));
             TableColumn("Previous surface state", "%X", host_byteorder_32(report->previousSurfaceState));
+            TableColumn("Bitfield", "%X", report->bitField);
             
-            /* Wall */
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 1.0f, 1.0f));
-            TableColumn("wall.rate", "%.2f", f32(wall.rate));
-            TableColumn("wall.normal", "[%.2f, %.2f, %.2f]", wallNormal.x, wallNormal.y, wallNormal.z);
-            TableColumn("wall.contact", "[%.2f, %.2f, %.2f]", wallContact.x, wallContact.y, wallContact.z);
-            TableColumn("wall.so", "%s", fnSuperobjectGetName(wall_so));
-            ImGui::PopStyleColor();
+            #define Obstacle(what, color) \
+                const tdstVector3D what##Normal = vector3_host_byteorder(what.normal); \
+                const tdstVector3D what##Contact = vector3_host_byteorder(what.normal); \
+                ImGui::PushStyleColor(ImGuiCol_Text, color); \
+                TableColumn(#what ".rate", "%.2f", f32(what.rate)); \
+                TableColumn(#what ".normal", "[%.2f, %.2f, %.2f]", what##Normal.x, what##Normal.y, what##Normal.z); \
+                TableColumn(#what ".contact", "[%.2f, %.2f, %.2f]", what##Contact.x, what##Contact.y, what##Contact.z); \
+                TableColumn(#what ".so", "%s", fnSuperobjectGetName((const tdstSuperObject*)pointer(ground.superObject))); \
+                ImGui::PopStyleColor();
             
-            /* Ground */
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 0.4f, 1.0f));
-            TableColumn("ground.rate", "%.2f", f32(ground.rate));
-            TableColumn("ground.normal", "[%.2f, %.2f, %.2f]", groundNormal.x, groundNormal.y, groundNormal.z);
-            TableColumn("ground.contact", "[%.2f, %.2f, %.2f]", groundContact.x, groundContact.y, groundContact.z);
-            TableColumn("ground.so", "%s", fnSuperobjectGetName(ground_so));
-            ImGui::PopStyleColor();
-            
-            /* Ceiling */
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.3f, 1.0f));
-            TableColumn("ceiling.rate", "%.2f", f32(ceiling.rate));
-            TableColumn("ceiling.normal", "[%.2f, %.2f, %.2f]", ceilingNormal.x, ceilingNormal.y, ceilingNormal.z);
-            TableColumn("ceiling.contact", "[%.2f, %.2f, %.2f]", ceilingContact.x, ceilingContact.y, ceilingContact.z);
-            TableColumn("ceiling.so", "%s", fnSuperobjectGetName(ceiling_so));
-            ImGui::PopStyleColor();
-            
-            /* Character */
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
-            TableColumn("character.rate", "%.2f", f32(character.rate));
-            TableColumn("character.normal", "[%.2f, %.2f, %.2f]", characterNormal.x, characterNormal.y, characterNormal.z);
-            TableColumn("character.contact", "[%.2f, %.2f, %.2f]", characterContact.x, characterContact.y, characterContact.z);
-            TableColumn("character.so", "%s", fnSuperobjectGetName(character_so));
-            ImGui::PopStyleColor();
-            
+            Obstacle(obstacle, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
+            Obstacle(wall, ImVec4(0.4f, 0.4f, 1.0f, 1.0f));
+            Obstacle(ground, ImVec4(0.4f, 0.8f, 0.4f, 1.0f));
+            Obstacle(ceiling, ImVec4(1.0f, 0.8f, 0.3f, 1.0f));
+            Obstacle(character, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+            Obstacle(water, ImVec4(0.0f, 0.5f, 0.75f, 1.0f));
             ImGui::EndTable();
         }
         
