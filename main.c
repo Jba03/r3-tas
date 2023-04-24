@@ -73,12 +73,6 @@ static void r3_load()
     actor_world  = fnFindActor(actor_instance_name, "World", hierarchy);
     actor_changemap = fnFindActor(actor_model_name, "NIN_m_ChangeMap", hierarchy);
     
-    info(COLOR_BLUE "Rayman @ %X\n", offset(actor_rayman));
-    info(COLOR_BLUE "StdCamer @ %X\n", offset(actor_camera));
-    info(COLOR_BLUE "global @ %X\n", offset(actor_global));
-    info(COLOR_BLUE "World @ %X\n", offset(actor_world));
-    info(COLOR_BLUE "NIN_m_ChangeMap @ %X\n", offset(actor_changemap));
-    
     /* Derive the three worlds from the hierarchy */
     if (hierarchy) dynamic_world = (tdstSuperObject*)pointer(hierarchy->firstChild);
     if (dynamic_world) inactive_dynamic_world = (tdstSuperObject*)pointer(dynamic_world->next);
@@ -97,16 +91,18 @@ static void r3_unload()
     father_sector = NULL;
 }
 
-//static void loadstate_handler(int slot)
-//{
-//    info(BOLD COLOR_GREEN "Slot %d loaded\n", slot);
-//    r3_load();
-//}
-//
-//static void savestate_handler(int slot)
-//{
-//    info(BOLD COLOR_GREEN "Slot %d saved\n", slot);
-//}
+static void loadstate_handler(int slot)
+{
+    //r3_unload();
+    info(BOLD COLOR_GREEN "Slot %d loaded\n", slot);
+    bool level_changed = strcmp(previous_level_name, engine->currentLevelName) != 0;
+    if (level_changed) r3_load();
+}
+
+static void savestate_handler(int slot)
+{
+    info(BOLD COLOR_GREEN "Slot %d saved\n", slot);
+}
 
 static void load()
 {
@@ -161,14 +157,6 @@ static void update(const char* controller)
     {
         r3_unload();
         load();
-    }
-    else if (previous_level_name[0] != '\0' && engine->mode == 9)
-    {
-        if (strcmp(previous_level_name, engine->currentLevelName))
-        {
-            r3_unload();
-            load();
-        }
     }
     
     if just_entered_mode(5)
@@ -276,6 +264,8 @@ LIBR3TAS_EXPORT void on_message(struct message message)
 {
     if (message.type == EXTERN_MESSAGE_ON_UPDATE) update("");
     if (message.type == EXTERN_MESSAGE_ON_VIDEO) video(message.data);
+    if (message.type == EXTERN_MESSAGE_ON_LOADSTATE) loadstate_handler(*(int*)message.data);
+    if (message.type == EXTERN_MESSAGE_ON_SAVESTATE) savestate_handler(*(int*)message.data);
     if (message.type == EXTERN_MESSAGE_MRAM_POINTER) get_mRAM = message.data;
     if (message.type == EXTERN_MESSAGE_CONFIG_POINTER) get_config_path = message.data;
 }
