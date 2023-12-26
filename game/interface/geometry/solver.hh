@@ -2,43 +2,43 @@
 #define solver_h
 
 #include "stVector3D.hh"
-#include "stSuperobject.hh"
+#include "stSuperObject.hh"
 #include "stCollideObject.hh"
 #include "stDynamics.hh"
 
 struct Sphere
 {
-    tdstVector3D center;
+    stVector3D center;
     float radius;
 };
 
 struct Triangle
 {
-    tdstVector3D A;
-    tdstVector3D B;
-    tdstVector3D C;
-    tdstVector3D N;
+    stVector3D A;
+    stVector3D B;
+    stVector3D C;
+    stVector3D N;
 };
 
 struct GeometrySolver
 {
-    tdstVector3D points[10000];
+    stVector3D points[10000];
     unsigned int numPoints;
     
     struct Triangle triangles[10000];
     unsigned int numTriangles;
     
-    tdstVector3D start;
-    tdstVector3D end;
+    stVector3D start;
+    stVector3D end;
 };
 
-void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver);
+void solveGeometry(stSuperObject *g, struct GeometrySolver *solver);
 
 struct CollisionResult
 {
-    tdstVector3D spherePos;
-    tdstVector3D segmentStart;
-    tdstVector3D segmentEnd;
+    stVector3D spherePos;
+    stVector3D segmentStart;
+    stVector3D segmentEnd;
     struct Triangle triangles[1000];
     int n_triangles;
 };
@@ -50,11 +50,11 @@ struct CollisionResult
 
 struct Collision
 {
-    tdstVector3D normal;
-    tdstVector3D contact;
-    tdstVector3D translation;
-    tdstVector3D movement;
-    tdstVector3D endpos;
+    stVector3D normal;
+    stVector3D contact;
+    stVector3D translation;
+    stVector3D movement;
+    stVector3D endpos;
     unsigned int dynamicType; /* sphere */
     unsigned int staticType; /* triangle, edge */
     float rate;
@@ -72,12 +72,12 @@ struct CollisionRecord
 
 bool
 CollideSphereWithGeometry(const float dynamicSphereRadius,
-                          const tdstMatrix4D dynamicSphereStart,
-                          const tdstMatrix4D dynamicSphereEnd,
-                          const tdstCollideObject *staticObject,
-                          const tdstMatrix4D staticObjectMatrix,
+                          const stMatrix4D dynamicSphereStart,
+                          const stMatrix4D dynamicSphereEnd,
+                          const stCollideObject *staticObject,
+                          const stMatrix4D staticObjectMatrix,
                           struct CollisionRecord *record);
 
-void TransformAndCollide(tdstDynamics *d, float dt);
+void TransformAndCollide(stDynamics *d, float dt);
 
 #endif /* solver_h */

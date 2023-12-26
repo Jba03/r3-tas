@@ -11,9 +11,9 @@
 #include <stdio.h>
 
 /** fnObjectTypeGetName: get the name of an object type with specified id */
-const char* fnObjectTypeGetName(const tdstObjectType* objectType, int name_type, int id)
+const char* fnObjectTypeGetName(const stObjectType* objectType, int name_type, int id)
 {
-    tdstDoublyLinkedList list;
+    stDoublyLinkedList list;
     if (name_type == object_family_name) list = objectType->family;
     if (name_type == object_model_name) list = objectType->model;
     if (name_type == object_instance_name) list = objectType->instance;
@@ -24,7 +24,7 @@ const char* fnObjectTypeGetName(const tdstObjectType* objectType, int name_type,
     if (id >= 0 && id < (int32)host_byteorder_32(list.numEntries))
     {
         int n = 0;
-        tdstObjectTypeElement* t = pointer(list.first);
+        stObjectTypeElement* t = pointer(list.first);
         while (n++ < id) if(!(t = pointer(t->next))) break;
         if (!t) return NULL;
         return pointer(t->name);

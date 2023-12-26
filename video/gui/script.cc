@@ -248,9 +248,9 @@ private:
         const stMaterialGLI *material = (const stMaterialGLI*)pointer(tok->originalNode->param);
         
         std::string name = tok->translatedText;
-#if PLATFORM == PS2
+#if platform == platformPS2
         const stAnimatedTextureNodeGLI *animated = (const stAnimatedTextureNodeGLI*)pointer(material->firstTextureNodeAnimated);
-#elif PLATFORM == GCN
+#elif platform == platformGCN
         const stTextureGLI *animated = (const stTextureGLI*)pointer(material->firstTextureNodeAnimated);
         if (animated) name = animated->filename;
 #endif

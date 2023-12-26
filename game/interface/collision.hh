@@ -1,13 +1,8 @@
-//
-//  collision.hpp
-//  r3-tas
-//
-//  Created by Jba03 on 2023-07-29.
-//
+#ifndef collision_hh
+#define collision_hh
 
-#ifndef collision_hpp
-#define collision_hpp
+namespace collision {
+  auto initialize() -> void;
+};
 
-#include <stdio.h>
-
-#endif /* collision_hpp */
+#endif /* collision_hh */

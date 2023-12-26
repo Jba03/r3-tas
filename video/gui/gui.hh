@@ -5,17 +5,41 @@
 //  Created by Jba03 on 2022-11-20.
 //
 
-#ifndef gui_hpp
-#define gui_hpp
+#ifndef gui_hh
+#define gui_hh
 
-
-namespace gui
-{
-    void initialize();
-    void draw(void *c, void *texture, bool *windowed);
-}
-    
 #include "imgui.h"
+#include "game.hh"
+
+#include "imgui_memory_editor.h"
+
+struct superObjectWindow {
+  bool open = true;
+  pointer<stSuperObject> target;
+  superObjectWindow(stSuperObject *spo) : target(spo) {}
+  auto draw() -> void;
+};
+
+namespace gui {
+  
+  void initialize();
+  void draw(void *c, void *texture, bool *windowed);
+  
+  extern MemoryEditor memoryEditor;
+  auto memoryEditorHighlight(const ImU8 *address, size_t offset) -> bool;
+  
+  extern std::vector<superObjectWindow> spoWindows;
+  
+  /// Popup
+  auto drawPopup() -> void;
+  extern pointer<> popupTarget;
+  
+  struct video_payload {
+    void* texture;
+    void* context;
+    bool windowed;
+  };
+}
 
 struct Window
 {

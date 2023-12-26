@@ -15,35 +15,35 @@
 #include "memory.hh"
 #include "ray.hh"
 
-#include "../../library/function/fnPrimIntersections.c"
+#include "../../library/function/fnPrimIntersections.cc"
 
 #include <stdio.h>
 
-static const tdstVector3D xray_player_pos()
+static const stVector3D xray_player_pos()
 {
-    const tdstMatrix4D T = fnActorGetMatrix(actor_rayman);
+    const stMatrix4D T = fnActorGetMatrix(actor_rayman);
     return game_matrix4_position(T);
 }
 
-static const tdstVector3D xray_get_destination(struct xray* h)
+static const stVector3D xray_get_destination(struct xray* h)
 {
     return vector3_new(0.0f, 0.0f, 0.0f);
 }
 
 static bool xray_player_grounded()
 {
-    const tdstDynamics* dynamics = fnActorGetDynamics(actor_rayman);
+    const stDynamics* dynamics = fnActorGetDynamics(actor_rayman);
     return fnDynamicsCollideWith(dynamics, dynamics_obstacle_ground);
 }
 
-static tdstCollideObject* xray_nearest_platform()
+static stCollideObject* xray_nearest_platform()
 {
     
     
     return NULL;
 }
 
-static tdstOctreeNode* xray_current_octree_node(struct xray* h)
+static stOctreeNode* xray_current_octree_node(struct xray* h)
 {
     
     
@@ -73,23 +73,23 @@ static struct xray_route* xray_route_alloc(struct xray* h)
 #pragma mark - Route octree
 
 /* xray_recursive_find_octrees: find appropriate octree nodes */
-static void xray_route_recursive_get_octrees(struct xray* h, tdstSuperObject* root)
+static void xray_route_recursive_get_octrees(struct xray* h, stSuperObject* root)
 {
     struct xray_route* route = h->current_route;
     
     if (superobject_type(root) == superobject_type_ipo)
     {
-        const tdstInstantiatedPhysicalObject* ipo = superobject_data(root);
+        const stInstantiatedPhysicalObject* ipo = superobject_data(root);
         if (!ipo) return;
         
         /* Get the reaction zone */
-        const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
+        const stCollideObject* zdr = fnIPOGetCollideObject(ipo);
         if (zdr)
         {
-            const tdstOctree* octree = pointer(zdr->octree);
+            const stOctree* octree = pointer(zdr->octree);
             if (octree)
             {
-                const tdstOctreeNode* node = pointer(octree->root);
+                const stOctreeNode* node = pointer(octree->root);
                 if (node)
                 {
                     route->octree[route->n_octree_nodes] = node;
@@ -111,8 +111,8 @@ static void xray_route_get_octrees(struct xray* h)
     struct xray_route* route = h->current_route;
     
     route->n_octree_nodes = 0;
-    memset(route->octree, 0, sizeof(tdstOctreeNode*) * XRAY_MAX_OCTREE_NODES);
-    memset(route->octree_ipo, 0, sizeof(tdstSuperObject*) * XRAY_MAX_OCTREE_NODES);
+    memset(route->octree, 0, sizeof(stOctreeNode*) * XRAY_MAX_OCTREE_NODES);
+    memset(route->octree_ipo, 0, sizeof(stSuperObject*) * XRAY_MAX_OCTREE_NODES);
     
     xray_route_recursive_get_octrees(h, father_sector);
 }
@@ -124,12 +124,12 @@ static const float xray_node_distance(struct xray_node* a, struct xray_node* b)
 
 #pragma mark - Route pointset
 
-static const tdstSuperObject* current_sector = NULL;
+static const stSuperObject* current_sector = NULL;
 
-static void xray_line_generate_points(struct xray *h, const tdstVector3D a, const tdstVector3D b)
+static void xray_line_generate_points(struct xray *h, const stVector3D a, const stVector3D b)
 {
-    const tdstVector3D AB = vector3_sub(b, a);
-    const tdstVector3D ABn = vector3_normalize(AB);
+    const stVector3D AB = vector3_sub(b, a);
+    const stVector3D ABn = vector3_normalize(AB);
     const float l = vector3_length(AB);
     
     #define S 20.0f
@@ -146,32 +146,32 @@ static void xray_line_generate_points(struct xray *h, const tdstVector3D a, cons
     #undef S
 }
 
-static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject* root, const tdstMatrix4D transform, struct xray_node* start, struct xray_node* end, const float z)
+static void xray_recursive_derive_pointset(struct xray* h, const stSuperObject* root, const stMatrix4D transform, struct xray_node* start, struct xray_node* end, const float z)
 {
     int mesh_index = 0;
-    const tdstCollideElementIndexedTriangles* mesh = NULL;
+    const stCollideElementIndexedTriangles* mesh = NULL;
     
-    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), transform);
+    const stMatrix4D T = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), transform);
     
     if (superobject_type(root) == superobject_type_sector)
         current_sector = root;
     
     if (superobject_type(root) == superobject_type_ipo)
     {
-        const tdstInstantiatedPhysicalObject* ipo = superobject_data(root);
+        const stInstantiatedPhysicalObject* ipo = superobject_data(root);
         if (!ipo) return;
         
         printf("IPO: %s\n", fnIPOGetName(ipo));
         /* Get the reaction zone */
-        const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
+        const stCollideObject* zdr = fnIPOGetCollideObject(ipo);
         if (zdr)
         {
             while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_index)))
             {
                 printf("\tmesh %d: %d faces\n", mesh_index, host_byteorder_16(mesh->numFaces));
                 const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
-                const tdstVector3D* vertices = (const tdstVector3D*)pointer(zdr->vertices);
-                const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
+                const stVector3D* vertices = (const stVector3D*)pointer(zdr->vertices);
+                const stVector3D* normals = (const stVector3D*)pointer(mesh->normals);
                 
                 for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
                 {
@@ -179,20 +179,20 @@ static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject
                     uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
                     uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
                     
-                    tdstVector3D A = vector3_host_byteorder(*(vertices + index * 3 + 0));
-                    tdstVector3D B = vector3_host_byteorder(*(vertices + index * 3 + 1));
-                    tdstVector3D C = vector3_host_byteorder(*(vertices + index * 3 + 2));
+                    stVector3D A = vector3_host_byteorder(*(vertices + index * 3 + 0));
+                    stVector3D B = vector3_host_byteorder(*(vertices + index * 3 + 1));
+                    stVector3D C = vector3_host_byteorder(*(vertices + index * 3 + 2));
                     
-                    const tdstVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
-                    const tdstVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
-                    const tdstVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
+                    const stVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
+                    const stVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
+                    const stVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
                     
                     A = vector3_new(TA.x, TA.y, TA.z);
                     B = vector3_new(TB.x, TB.y, TB.z);
                     C = vector3_new(TC.x, TC.y, TC.z);
                     
-                    const tdstVector3D center = vector3_new((A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f, (A.z + B.z + C.z) / 3.0f);
-                    tdstVector3D N = vector3_host_byteorder(*(normals + index));
+                    const stVector3D center = vector3_new((A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f, (A.z + B.z + C.z) / 3.0f);
+                    stVector3D N = vector3_host_byteorder(*(normals + index));
                     
                     
                     //printf("normal: %.2f %.2f %.2f\n", N.x, N.y, N.z);
@@ -235,28 +235,28 @@ static void xray_recursive_derive_pointset(struct xray* h, const tdstSuperObject
 
 struct ray rays[1024];
 int n_rays = 0;
-tdstVector3D inters[1024];
+stVector3D inters[1024];
 
 /** Can node `a` be reached directly, by a straight line to node `b`? */
-static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* target, const tdstMatrix4D transform, struct xray_node *a, struct xray_node *b, bool *v)
+static void line_of_sight_recursive(struct xray *h, const stSuperObject* target, const stMatrix4D transform, struct xray_node *a, struct xray_node *b, bool *v)
 {
     //printf("object: %X\n", offset(target));
     
     if (!target) return;
     
-    const tdstMatrix4D T = matrix4_mul(fnSuperobjectGetLocalMatrix(target), transform);
+    const stMatrix4D T = matrix4_mul(fnSuperobjectGetLocalMatrix(target), transform);
     
     if (superobject_type(target) == superobject_type_ipo)
     {
-        const tdstInstantiatedPhysicalObject* ipo = superobject_data(target);
+        const stInstantiatedPhysicalObject* ipo = superobject_data(target);
         if (ipo)
         {
             /* Get the reaction zone */
-            const tdstCollideObject* zdr = fnIPOGetCollideObject(ipo);
+            const stCollideObject* zdr = fnIPOGetCollideObject(ipo);
             if (zdr)
             {
                 struct ray ray;
-                tdstVector3D intersection_point = vector3_new(0.0f, 0.0f, 0.0f);
+                stVector3D intersection_point = vector3_new(0.0f, 0.0f, 0.0f);
                 if (fnCollideObjectIntersectSegment(zdr, T, a->position, b->position, &ray, &intersection_point))
                 {
                     *v = false;
@@ -267,8 +267,8 @@ static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* targe
                     //                    n_rays++;
                     
                     /* Check normal-offset nodes? */
-//                    const tdstVector3D na = vector3_add(a->position, vector3_add(a->normal, vector3_new(0.0f, 0.0f, 0.1f)));
-//                    const tdstVector3D nb = vector3_add(b->position, vector3_add(b->normal, vector3_new(0.0f, 0.0f, 0.1f)));
+//                    const stVector3D na = vector3_add(a->position, vector3_add(a->normal, vector3_new(0.0f, 0.0f, 0.1f)));
+//                    const stVector3D nb = vector3_add(b->position, vector3_add(b->normal, vector3_new(0.0f, 0.0f, 0.1f)));
 //                    if (fnCollideObjectIntersectSegment(zdr, T, na, nb, NULL))
 //                    {
 //                        *v = false;
@@ -288,12 +288,12 @@ static void line_of_sight_recursive(struct xray *h, const tdstSuperObject* targe
 bool line_of_sight(struct xray *h, struct xray_node *a, struct xray_node *b)
 {
     memset(rays, 0, 1024 * sizeof(struct ray));
-    memset(inters, 0, sizeof(tdstVector3D) * 1024);
+    memset(inters, 0, sizeof(stVector3D) * 1024);
     n_rays = 0;
     
     /* Get the sectors to which the nodes belong. */
-    const tdstSuperObject* sectorA = a->sector;
-    const tdstSuperObject* sectorB = b->sector;
+    const stSuperObject* sectorA = a->sector;
+    const stSuperObject* sectorB = b->sector;
     
     bool v = true;
     if (sectorA != sectorB)
@@ -510,9 +510,9 @@ static void xray_gen_route_swim(struct xray* h)
 #pragma mark - xray
 
 /** xray_analyse: analyse the scene and generate an optimal route to the specified destination. */
-void xray_analyse(struct xray* h, const tdstVector3D destination)
+void xray_analyse(struct xray* h, const stVector3D destination)
 {
-    const tdstVector3D pos = xray_player_pos();
+    const stVector3D pos = xray_player_pos();
     
 }
 
@@ -586,8 +586,8 @@ void xray_init(struct xray* h)
     
     h->nodes[h->n_nodes++] = start;
     
-    const tdstSuperObject* sectorStart = sector_by_location(father_sector, start.position);
-    const tdstSuperObject* sectorEnd = sector_by_location(father_sector, end.position);
+    const stSuperObject* sectorStart = sector_by_location(father_sector, start.position);
+    const stSuperObject* sectorEnd = sector_by_location(father_sector, end.position);
     
     xray_recursive_derive_pointset(h, sectorStart, matrix4_identity, &start, &end, 0.75f);
     //if (sectorStart != sectorEnd) xray_derive_pointset(h, sectorEnd, 0.75f);
@@ -614,9 +614,9 @@ void xray_init(struct xray* h)
     printf("length :%d\n", length);
 }
 
-static const tdstMatrix4D xrayComputeAbsoluteMatrix(const tdstSuperObject *object, const tdstSuperObject *root, tdstMatrix4D T)
+static const stMatrix4D xrayComputeAbsoluteMatrix(const stSuperObject *object, const stSuperObject *root, stMatrix4D T)
 {
-    tdstMatrix4D result = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), T);
+    stMatrix4D result = matrix4_mul(fnSuperobjectGetGlobalMatrix(root), T);
     if (object == root) return matrix4_mul(fnSuperobjectGetGlobalMatrix(object), result);
     superobject_for_each(root, child) xrayComputeAbsoluteMatrix(object, child, T);
     return result;
@@ -630,7 +630,7 @@ static void xrayDerivePointset(xray* h)
 #define MAX_INDEX       0x0080
 #define OVERFLOW_INDEX  0x8000
 
-static void xrayOctreeNodeDerivePointset(xray* h, const tdstSuperObject *object, const tdstMatrix4D T, const tdstCollideObject* colObj, const tdstOctreeNode *octreeNode, const tdstOctree* octreeBase)
+static void xrayOctreeNodeDerivePointset(xray* h, const stSuperObject *object, const stMatrix4D T, const stCollideObject* colObj, const stOctreeNode *octreeNode, const stOctree* octreeBase)
 {
     /* The list begins with the number of elements, */
     uint16 numElements = host_byteorder_16(*(uint16*)pointer(octreeNode->faceIndices));
@@ -676,7 +676,7 @@ static void xrayOctreeNodeDerivePointset(xray* h, const tdstSuperObject *object,
         if (elementType == collide_object_indexed_triangles)
         {
             const pointer element = *((pointer*)pointer(colObj->elements) + staticElementIndex);
-            tdstCollideElementIndexedTriangles* mesh = (tdstCollideElementIndexedTriangles*)pointer(element);
+            stCollideElementIndexedTriangles* mesh = (stCollideElementIndexedTriangles*)pointer(element);
             
             //xrayCollideObjectDerivePointset(h, T, colObj, mesh, dataElementIndex);
             
@@ -686,17 +686,17 @@ static void xrayOctreeNodeDerivePointset(xray* h, const tdstSuperObject *object,
     }
 }
 
-static void xraySourceDeriveStaticNodesRecursive(xray* h, const tdstSuperObject *object, const tdstMatrix4D T, const tdstCollideObject* colObj, const tdstOctreeNode *octreeNode, const tdstOctree* octreeBase, tdstVector3D point)
+static void xraySourceDeriveStaticNodesRecursive(xray* h, const stSuperObject *object, const stMatrix4D T, const stCollideObject* colObj, const stOctreeNode *octreeNode, const stOctree* octreeBase, stVector3D point)
 {
     if (!object) return;
     if (!octreeNode) return;
     
     const pointer* children = pointer(octreeNode->children);
     
-    tdstVector3D bMin = vector3_host_byteorder(octreeNode->min);
-    tdstVector3D bMax = vector3_host_byteorder(octreeNode->max);
-    tdstVector4D bMinT = vector4_mul_matrix4(vector4_new(bMin.x, bMin.y, bMin.z, 1.0f), T);
-    tdstVector4D bMaxT = vector4_mul_matrix4(vector4_new(bMax.x, bMax.y, bMax.z, 1.0f), T);
+    stVector3D bMin = vector3_host_byteorder(octreeNode->min);
+    stVector3D bMax = vector3_host_byteorder(octreeNode->max);
+    stVector4D bMinT = vector4_mul_matrix4(vector4_new(bMin.x, bMin.y, bMin.z, 1.0f), T);
+    stVector4D bMaxT = vector4_mul_matrix4(vector4_new(bMax.x, bMax.y, bMax.z, 1.0f), T);
         
     bMin = vector3_new(bMinT.x, bMinT.y, bMinT.z);
     bMax = vector3_new(bMaxT.x, bMaxT.y, bMaxT.z);
@@ -708,7 +708,7 @@ static void xraySourceDeriveStaticNodesRecursive(xray* h, const tdstSuperObject 
         {
             for (unsigned int n = 0; n < 8; n++)
             {
-                const tdstOctreeNode* child = pointer(*(children + n));
+                const stOctreeNode* child = pointer(*(children + n));
                 xraySourceDeriveStaticNodesRecursive(h, object, T, colObj, child, octreeBase, point);
             }
         }
@@ -724,7 +724,7 @@ static void xraySourceDeriveStaticNodesRecursive(xray* h, const tdstSuperObject 
 //            h->nodes[h->n_nodes++] = node;
             
 //            int n_selected = 0;
-//            tdstOctreeNode* selected[256];
+//            stOctreeNode* selected[256];
 //            float st[1000];
 //            octree_node_select(root, selected, &n_selected, st, 5.0f);
 //            for (int i = 0; i < n_selected; i++)
@@ -745,20 +745,20 @@ static xrayNode* xrayIsSourceNodeWithinRange(xray *h, xrayNode *base, unsigned s
     return NULL;
 }
 
-static void xrayTriangleDerivePointset(xray *h, tdstVector3D A, tdstVector3D B, tdstVector3D C)
+static void xrayTriangleDerivePointset(xray *h, stVector3D A, stVector3D B, stVector3D C)
 {
-    const tdstVector3D AC = vector3_sub(C, A);
-    const tdstVector3D BC = vector3_sub(C, B);
-    const tdstVector3D ACn = vector3_normalize(AC);
-    const tdstVector3D BCn = vector3_normalize(BC);
+    const stVector3D AC = vector3_sub(C, A);
+    const stVector3D BC = vector3_sub(C, B);
+    const stVector3D ACn = vector3_normalize(AC);
+    const stVector3D BCn = vector3_normalize(BC);
     const float lAC = vector3_length(AC);
     const float lBC = vector3_length(BC);
 
     #define S 10.0f
     for (float dAC = 0.0f, dBC = 0.0f; dAC < lAC && dBC < lBC; dAC += lAC / S, dBC += lBC / S)
     {
-        tdstVector3D iAC = vector3_add(A, vector3_mulf(ACn, dAC));
-        tdstVector3D iBC = vector3_add(B, vector3_mulf(BCn, dBC));
+        stVector3D iAC = vector3_add(A, vector3_mulf(ACn, dAC));
+        stVector3D iBC = vector3_add(B, vector3_mulf(BCn, dBC));
 
         xray_line_generate_points(h, iAC, iBC);
     }
@@ -773,17 +773,17 @@ static void xrayTriangleDerivePointset(xray *h, tdstVector3D A, tdstVector3D B, 
 //    xray_line_generate_points(h, C, A);
 }
 
-static void xraySourceDeriveStaticNodesRecursive2(xray *h, const tdstSuperObject *object, const tdstMatrix4D T, const tdstCollideObject *collObj, xrayNode *sourceNode)
+static void xraySourceDeriveStaticNodesRecursive2(xray *h, const stSuperObject *object, const stMatrix4D T, const stCollideObject *collObj, xrayNode *sourceNode)
 {
-    const tdstCollideElementIndexedTriangles* mesh = NULL;
+    const stCollideElementIndexedTriangles* mesh = NULL;
     int mesh_index = 0;
     float t;
     
     while ((mesh = fnCollideObjectGetElementIndexedTriangles(collObj, mesh_index)))
     {
         const uint16* indices = (const uint16*)pointer(mesh->faceIndices);
-        const tdstVector3D* vertices = (const tdstVector3D*)pointer(collObj->vertices);
-        const tdstVector3D* normals = (const tdstVector3D*)pointer(mesh->normals);
+        const stVector3D* vertices = (const stVector3D*)pointer(collObj->vertices);
+        const stVector3D* normals = (const stVector3D*)pointer(mesh->normals);
         
         for (int16 index = 0; index < host_byteorder_16(mesh->numFaces); index++)
         {
@@ -794,13 +794,13 @@ static void xraySourceDeriveStaticNodesRecursive2(xray *h, const tdstSuperObject
             uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
             uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
             
-            tdstVector3D A = vector3_host_byteorder(*(vertices + idx0));
-            tdstVector3D B = vector3_host_byteorder(*(vertices + idx1));
-            tdstVector3D C = vector3_host_byteorder(*(vertices + idx2));
+            stVector3D A = vector3_host_byteorder(*(vertices + idx0));
+            stVector3D B = vector3_host_byteorder(*(vertices + idx1));
+            stVector3D C = vector3_host_byteorder(*(vertices + idx2));
             /* Transform the points so that they are relative to the object. */
-            const tdstVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
-            const tdstVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
-            const tdstVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
+            const stVector4D TA = vector4_mul_matrix4(vector4_new(A.x, A.y, A.z, 1.0f), T);
+            const stVector4D TB = vector4_mul_matrix4(vector4_new(B.x, B.y, B.z, 1.0f), T);
+            const stVector4D TC = vector4_mul_matrix4(vector4_new(C.x, C.y, C.z, 1.0f), T);
             /* Construct the triangle. */
             A = vector3_new(TA.x, TA.y, TA.z);
             B = vector3_new(TB.x, TB.y, TB.z);
@@ -812,8 +812,8 @@ static void xraySourceDeriveStaticNodesRecursive2(xray *h, const tdstSuperObject
                 {
                     //sourceNode->normal = vector3_new(0.0f, 0.0f, 1.0f);
                     /* On this frame, the player is walking. Test intersection with the triangle below using a line segment. */
-                    tdstVector3D origin = vector3_add(sourceNode->position, sourceNode->normal);
-                    tdstVector3D direction = vector3_normalize(vector3_negate(sourceNode->normal));
+                    stVector3D origin = vector3_add(sourceNode->position, sourceNode->normal);
+                    stVector3D direction = vector3_normalize(vector3_negate(sourceNode->normal));
                     const struct ray ray = { origin, direction };
                     
                     if (rayTriangleIntersection(ray, A, B, C, &t))
@@ -860,22 +860,22 @@ static void xraySourceDeriveStaticNodes(xray* h)
     printf("derive nodes\n");
     for (unsigned int n = 0; n < record->numObjects; n++)
     {
-        const tdstSuperObject* object = record->objects[n];
+        const stSuperObject* object = record->objects[n];
         if (!object) continue;
         
         /* Ignore any actors that may possibly end up in this list, since */
         /* they are dynamic, and we are yet only looking at static geometry. */
         if (superobject_type(object) != superobject_type_ipo) continue;
         
-        const tdstInstantiatedPhysicalObject* ipo = superobject_data(object);
+        const stInstantiatedPhysicalObject* ipo = superobject_data(object);
         if (!ipo) continue;
         
-        const tdstCollideObject* collideObject = fnIPOGetCollideObject(ipo);
+        const stCollideObject* collideObject = fnIPOGetCollideObject(ipo);
         if (!collideObject) continue;
         
         for (unsigned int i = 0; i < record->numNodes; i++)
         {
-            const tdstMatrix4D T = xrayComputeAbsoluteMatrix(object, father_sector, matrix4_identity);
+            const stMatrix4D T = xrayComputeAbsoluteMatrix(object, father_sector, matrix4_identity);
             xraySourceDeriveStaticNodesRecursive2(h, object, matrix4_identity, collideObject, record->nodes + i);
         }
     }
@@ -889,7 +889,7 @@ static void xraySourceDeriveStaticNodes(xray* h)
 static void xraySourceRecordInit(xraySourceRecord *src)
 {
     src->nodes = malloc(sizeof(xrayNode) * XRAY_SOURCE_RECORD_INITIAL_COUNT);
-    src->objects = malloc(sizeof(tdstSuperObject*) * XRAY_SOURCE_RECORD_INITIAL_COUNT);
+    src->objects = malloc(sizeof(stSuperObject*) * XRAY_SOURCE_RECORD_INITIAL_COUNT);
     src->numNodes = 0;
     src->numObjects = 0;
     src->numNodesAllocated = XRAY_SOURCE_RECORD_INITIAL_COUNT;
@@ -907,7 +907,7 @@ static void xraySourceRecordAppendNode(xraySourceRecord *src, xrayNode node)
     src->nodes[src->numNodes] = node;
 }
 
-static void xraySourceRecordAppendObject(xraySourceRecord *src, tdstSuperObject* object)
+static void xraySourceRecordAppendObject(xraySourceRecord *src, stSuperObject* object)
 {
     for (unsigned int i = 0; i < src->numObjects; i++)
         /* Avoid inserting the same object */
@@ -916,7 +916,7 @@ static void xraySourceRecordAppendObject(xraySourceRecord *src, tdstSuperObject*
     if (++src->numObjects >= src->numObjectsAllocated)
     {
         src->numObjectsAllocated *= 2;
-        src->objects = realloc(src->objects, sizeof(tdstSuperObject*) * src->numObjectsAllocated);
+        src->objects = realloc(src->objects, sizeof(stSuperObject*) * src->numObjectsAllocated);
     }
     
     src->objects[src->numObjects] = object;

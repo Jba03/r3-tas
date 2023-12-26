@@ -41,7 +41,7 @@
 #define IPT_E_Entry_Action_TexteSuivant 37
 #define IPT_E_Entry_Action_AppelerMurphy 38
 #define IPT_E_Entry_Action_TransePolochus 39
-#define IPT_E_Entry_Action_Affiche_Jauge 40
+#define IPT_E_Entry_Action_Affiche2_Jauge 40
 #define IPT_E_Entry_Action_BebeGlobox_1 41
 #define IPT_E_Entry_Action_BebeGlobox_2 42
 #define IPT_E_Entry_Action_StartCourseBonux 43

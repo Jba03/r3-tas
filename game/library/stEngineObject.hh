@@ -16,15 +16,13 @@
 #define actor_model_name    1
 #define actor_instance_name 2
 
-typedef struct stEngineObject stEngineObject, stActor;
-
 struct stEngineObject {
     readonly pointer<> p3DData;
     readonly pointer<stStandardGameInfo> stdGame;
-    readonly pointer<stDynam> dynam;
+    readonly pointer<> dynam;
     readonly pointer<stBrain> brain;
     readonly pointer<uint32_t> cineInfo;
-    readonly pointer<stPhysicalCollideSet> collSet;
+    readonly pointer<stCollideSet> collSet;
     readonly pointer<> msWay;
     readonly pointer<> msLight;
     readonly pointer<> sectorInfo;

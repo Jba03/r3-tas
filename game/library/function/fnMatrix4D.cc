@@ -8,9 +8,9 @@
 #include "stMatrix4D.hh"
 #include "memory.hh"
 
-MATRIX4 tdstMatrix4D matrix4_host_byteorder(tdstMatrix4D m)
+MATRIX4 stMatrix4D matrix4_host_byteorder(stMatrix4D m)
 {
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     for (int i = 0; i < 16; i++)
         result.m[i] = host_byteorder_f32(*((uint32_t*)&m.m + i));
     
@@ -21,9 +21,9 @@ MATRIX4 tdstMatrix4D matrix4_host_byteorder(tdstMatrix4D m)
  * matrix4_new:
  * Constructs a matrix with four rows
  */
-MATRIX4 tdstMatrix4D matrix4_new(const tdstVector4D row0, const tdstVector4D row1, const tdstVector4D row2, const tdstVector4D row3)
+MATRIX4 stMatrix4D matrix4_new(const stVector4D row0, const stVector4D row1, const stVector4D row2, const stVector4D row3)
 {
-    tdstMatrix4D m;
+    stMatrix4D m;
     m.row0 = row0;
     m.row1 = row1;
     m.row2 = row2;
@@ -36,9 +36,9 @@ MATRIX4 tdstMatrix4D matrix4_new(const tdstVector4D row0, const tdstVector4D row
  * matrix4_mul:
  * Multiplies two matrices
  */
-MATRIX4 tdstMatrix4D matrix4_mul(const tdstMatrix4D a, const tdstMatrix4D b)
+MATRIX4 stMatrix4D matrix4_mul(const stMatrix4D a, const stMatrix4D b)
 {
-    tdstMatrix4D m;
+    stMatrix4D m;
     
     m.m[0]  = a.m[0] * b.m[0]  + a.m[4] * b.m[1]  + a.m[8] * b.m[2]   + a.m[12] * b.m[3];
     m.m[4]  = a.m[0] * b.m[4]  + a.m[4] * b.m[5]  + a.m[8] * b.m[6]   + a.m[12] * b.m[7];
@@ -67,9 +67,9 @@ MATRIX4 tdstMatrix4D matrix4_mul(const tdstMatrix4D a, const tdstMatrix4D b)
  * matrix4_inverse:
  * Returns the inverse of matrix `m`
  */
-MATRIX4 tdstMatrix4D matrix4_inverse(const tdstMatrix4D m)
+MATRIX4 stMatrix4D matrix4_inverse(const stMatrix4D m)
 {
-    tdstMatrix4D result;
+    stMatrix4D result;
     
     float s0 = m.m00 * m.m11 - m.m10 * m.m01;
     float s1 = m.m00 * m.m12 - m.m10 * m.m02;
@@ -126,9 +126,9 @@ MATRIX4 tdstMatrix4D matrix4_inverse(const tdstMatrix4D m)
  * | m30  m31  m32  m33 |     | m03  m13  m23  m33 |
  * '————————————————————'     '————————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_transpose(const tdstMatrix4D m)
+MATRIX4 stMatrix4D matrix4_transpose(const stMatrix4D m)
 {
-    tdstMatrix4D result;
+    stMatrix4D result;
     
     result.m[0] = m.m[0];
     result.m[1] = m.m[4];
@@ -166,9 +166,9 @@ MATRIX4 tdstMatrix4D matrix4_transpose(const tdstMatrix4D m)
  * |  0   0   0   1  |
  * '—————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_translation(const float x, const float y, const float z)
+MATRIX4 stMatrix4D matrix4_make_translation(const float x, const float y, const float z)
 {
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m03 = x;
     result.m13 = y;
     result.m23 = z;
@@ -188,12 +188,12 @@ MATRIX4 tdstMatrix4D matrix4_make_translation(const float x, const float y, cons
  * |  0   0      0      1  |
  * '———————————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_rotation_x(const float radians)
+MATRIX4 stMatrix4D matrix4_make_rotation_x(const float radians)
 {
     float sine = sin(radians);
     float cosine = cos(radians);
     
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m11 = cosine;
     result.m12 = sine;
     result.m21 = -sine;
@@ -213,12 +213,12 @@ MATRIX4 tdstMatrix4D matrix4_make_rotation_x(const float radians)
  * |  0      0   0      1  |
  * '———————————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_rotation_y(const float radians)
+MATRIX4 stMatrix4D matrix4_make_rotation_y(const float radians)
 {
     const float sine = sin(radians);
     const float cosine = cos(radians);
     
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m00 = cosine;
     result.m02 = -sine;
     result.m20 = sine;
@@ -239,12 +239,12 @@ MATRIX4 tdstMatrix4D matrix4_make_rotation_y(const float radians)
  * |  0      0      0  1  |
  * '——————————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_rotation_z(const float radians)
+MATRIX4 stMatrix4D matrix4_make_rotation_z(const float radians)
 {
     const float sine = sin(radians);
     const float cosine = cos(radians);
     
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m00 = cosine;
     result.m01 = sine;
     result.m10 = -sine;
@@ -264,9 +264,9 @@ MATRIX4 tdstMatrix4D matrix4_make_rotation_z(const float radians)
  * |  0   0   0   1  |
  * '—————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_scale(const float x, const float y, const float z)
+MATRIX4 stMatrix4D matrix4_make_scale(const float x, const float y, const float z)
 {
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m00 = x;
     result.m11 = y;
     result.m22 = z;
@@ -276,7 +276,7 @@ MATRIX4 tdstMatrix4D matrix4_make_scale(const float x, const float y, const floa
 
 /**
  * matrix4_make_scale_vector3:
- * Construct a 4x4 linear scale matrix from tdstVector3D values
+ * Construct a 4x4 linear scale matrix from stVector3D values
  *
  * .____________________.
  * |  v.x  0    0    0  |
@@ -285,9 +285,9 @@ MATRIX4 tdstMatrix4D matrix4_make_scale(const float x, const float y, const floa
  * |  0    0    0    1  |
  * '————————————————————'
  */
-MATRIX4 tdstMatrix4D matrix4_make_scale_vector3(const tdstVector3D v)
+MATRIX4 stMatrix4D matrix4_make_scale_vector3(const stVector3D v)
 {
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     result.m00 = v.x;
     result.m11 = v.y;
     result.m22 = v.z;
@@ -299,9 +299,9 @@ MATRIX4 tdstMatrix4D matrix4_make_scale_vector3(const tdstVector3D v)
  * matrix4_perspective:
  * Creates a camera perspective projection matrix from field of view, aspect ratio, and near + far planes.
  */
-MATRIX4 tdstMatrix4D matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z)
+MATRIX4 stMatrix4D matrix4_perspective(const float fov_y, const float aspect, const float near_z, const float far_z)
 {
-    tdstMatrix4D result = matrix4_identity;
+    stMatrix4D result = matrix4_identity;
     
     const float ct = 1.0f / tanf(fov_y / 2.0f);
     
@@ -319,7 +319,7 @@ MATRIX4 tdstMatrix4D matrix4_perspective(const float fov_y, const float aspect, 
  * matrix4_ortho:
  * Creates a camera orthogonal projection matrix from field of view, aspect ratio, and near + far planes.
  */
-MATRIX4 tdstMatrix4D matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far)
+MATRIX4 stMatrix4D matrix4_ortho(const float left, const float right, const float bottom, const float top, const float near, const float far)
 {
     float ral = right + left;
     float rsl = right - left;
@@ -328,7 +328,7 @@ MATRIX4 tdstMatrix4D matrix4_ortho(const float left, const float right, const fl
     float fan = far + near;
     float fsn = far - near;
     
-    tdstMatrix4D result =
+    stMatrix4D result =
     {
         2.0f / rsl, 0.0f, 0.0f, 0.0f,
         0.0f, 2.0f / tsb, 0.0f, 0.0f,
@@ -343,13 +343,13 @@ MATRIX4 tdstMatrix4D matrix4_ortho(const float left, const float right, const fl
  * matrix4_lookat:
  * Constructs a camera view matrix
  */
-MATRIX4 tdstMatrix4D matrix4_lookat(const tdstVector3D eye, const tdstVector3D center, const tdstVector3D up)
+MATRIX4 stMatrix4D matrix4_lookat(const stVector3D eye, const stVector3D center, const stVector3D up)
 {
-    tdstVector3D n = vector3_normalize(vector3_add(eye, vector3_negate(center)));
-    tdstVector3D u = vector3_normalize(vector3_cross(up, n));
-    tdstVector3D v = vector3_cross(n, u);
+    stVector3D n = vector3_normalize(vector3_add(eye, vector3_negate(center)));
+    stVector3D u = vector3_normalize(vector3_cross(up, n));
+    stVector3D v = vector3_cross(n, u);
     
-    tdstMatrix4D result =
+    stMatrix4D result =
     {
         u.x, v.x, n.x, 0.0f,
         u.y, v.y, n.y, 0.0f,
@@ -368,9 +368,9 @@ MATRIX4 tdstMatrix4D matrix4_lookat(const tdstVector3D eye, const tdstVector3D c
  * Multiply a four-component vector with a 4x4 matrix
  */
 
-VECTOR4 tdstVector4D vector4_mul_matrix4(const tdstVector4D v, const tdstMatrix4D m)
+VECTOR4 stVector4D vector4_mul_matrix4(const stVector4D v, const stMatrix4D m)
 {
-    tdstVector4D result;
+    stVector4D result;
     result.x = m.m[0] * v.x + m.m[4] * v.y + m.m[8]  * v.z + m.m[12] * v.w;
     result.y = m.m[1] * v.x + m.m[5] * v.y + m.m[9]  * v.z + m.m[13] * v.w;
     result.z = m.m[2] * v.x + m.m[6] * v.y + m.m[10] * v.z + m.m[14] * v.w;

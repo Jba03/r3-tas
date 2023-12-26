@@ -5,215 +5,259 @@
 //  Created by Jba03 on 2022-12-19.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <map>
+#include <string>
 
 #include "game.hh"
 #include "log.hh"
-#include "memory.hh"
 
-#include "stStandardGameInfo.hh"
-#include "stRandom.hh"
-#include "stEngineStructure.hh"
-#include "stAlways.hh"
-#include "stBrain.hh"
-#include "stMind.hh"
-#include "stIntelligence.hh"
-#include "stDsg.hh"
+const uint8_t * memoryBase = NULL;
 
-const uint8_t * memoryBase;
+namespace library::memory {
+  const uint8_t *baseAddress = nullptr;
+}
 
-#pragma mark - Globals
+namespace library::external {
+  std::function<std::string(int, int)> nameLookup = nullptr;
+};
 
-/* Engine structure */
-struct stEngineStructure* engine = NULL;
-/* Superobject hierarchy */
-struct stSuperObject* hierarchy = NULL;
-/* Dynamic world: the world in which active game objects reside */
-struct stSuperObject* dynamic_world = NULL;
-/* Inactive dynamic world: the world in which non-loaded objects reside */
-struct stSuperObject* inactive_dynamic_world = NULL;
-/* Father sector: sector in which all collision geometry is stored */
-struct stSuperObject* father_sector = NULL;
-/* Input structure: global input data table */
-struct stInputStructure* IPT_g_hInputStructure = NULL;
-/* Always structure: always-active objects */
-struct stAlways* alwaysStructure = NULL;
-/* Object types: object types structure */
-struct stObjectType* objectType = NULL;
-/* RND: random number device */
-struct stRandom* rnd = NULL;
-/* FIX: fixed memory */
-struct fix fix;
-/* LVL: level memory */
-struct lvl lvl;
+static const std::vector<uint32_t> color_table = {
+  0xc020ff20,
+  0xc0ff5050,
+  0xc020a0ff,
+  0xc0ff20ff,
+  0xc010af10,
+  0xc020f0ff,
+  0xc0ff00a0,
+  0xc04020b0,
+  0xc0d0ff20,
+};
 
+namespace game
+{
+    /* Globals */
+    stAlways *g_stAlways = nullptr;
+    stEngineStructure *g_stEngineStructure = nullptr;
+    stObjectType *g_stObjectTypes = nullptr;
+    stInputStructure *g_stInputStructure = nullptr;
+    stRandom *g_stRandomStructure = nullptr;
+    
+    /* Global variables */
+    uint8 *g_bGhostMode = nullptr;
+    
+    /* World */
+    stSuperObject *p_stActualWorld = nullptr;
+    stSuperObject *p_stDynamicWorld = nullptr;
+    stSuperObject *p_stInactiveDynamicWorld = nullptr;
+    stSuperObject *p_stFatherSector = nullptr;
+    
+    std::map<std::string, stSuperObject*> objectLookupCache;
+  
+  struct namecache {
+    std::vector<std::string> familyNames;
+    std::vector<std::string> modelNames;
+    std::vector<std::string> instanceNames;
+  };
+  
+  std::map<std::string, namecache> objectNameCache;
+    
 #pragma mark - FIX
-
-struct fix_header {
-    readonly padding(32)
-    readonly pointer identity_matrix;
-    readonly pointer localization_structure;
-    readonly uint32 level_name_count;
-    readonly uint32 demo_name_count;
-};
-
-struct fix_trailer {
-    readonly char8 first_level[30];
-    readonly padding(2)
-    readonly uint32 language_count;
-    readonly uint32 language_offset;
-    readonly uint32 texture_count;
-};
-
-struct fix {
-    readonly struct fix_header* header;
-    readonly struct fix_trailer* trailer;
-};
-
+    
+    struct fix_header {
+      padding(32)
+      pointer<> identity_matrix;
+      pointer<> localization_structure;
+      uint32 level_name_count;
+      uint32 demo_name_count;
+    };
+    
+    struct fix_trailer {
+      char8 first_level[30];
+      padding(2)
+      uint32 language_count;
+      uint32 language_offset;
+      uint32 texture_count;
+    };
+    
+    struct fix {
+      struct fix_header* header;
+      struct fix_trailer* trailer;
+    };
+    
 #pragma mark - LVL
-
-struct lvl_header {
-    readonly padding(4 * 4) /* ? */
-    readonly char8 text[24];
-    readonly padding(4 * 60) /* ? */
-    readonly uint32 texture_count;
-};
-
-struct lvl_section_a {
-    readonly pointer actual_world;
-    readonly pointer dynamic_world;
-    readonly pointer inactive_dynamic_world;
-    readonly pointer father_sector;
-    readonly pointer first_submap_position;
-    readonly tdstAlways always_structure;
-    readonly tdstObjectType object_type;
-};
-
-struct lvl {
-    readonly struct lvl_header* header;
-    readonly struct lvl_section_a* section_a;
-};
-
-#pragma mark - Important actors
-
-tdstEngineObject* actor_rayman = NULL;
-tdstEngineObject* actor_camera = NULL;
-tdstEngineObject* actor_global = NULL;
-tdstEngineObject* actor_world = NULL;
-tdstEngineObject* actor_changemap = NULL;
-
+    
+    struct lvl_header {
+      padding(4 * 4) /* ? */
+      char8 text[24];
+      padding(4 * 60) /* ? */
+      uint32 texture_count;
+    };
+    
+    struct lvl_section_a {
+      pointer<> actual_world;
+      pointer<> dynamic_world;
+      pointer<> inactive_dynamic_world;
+      pointer<> father_sector;
+      pointer<> first_submap_position;
+      stAlways always_structure;
+      stObjectType object_type;
+    };
+    
+    struct lvl {
+      struct lvl_header* header;
+      struct lvl_section_a* section_a;
+    };
+    
+    /* FIX: fixed memory */
+    struct fix fix;
+    /* LVL: level memory */
+    struct lvl lvl;
+    
 #pragma mark - Engine
-
-/* */
-uint8_t previous_engine_mode = 0;
-char previous_level_name[30];
-unsigned transition_frame = 0;
-
-/* TAS */
-struct inputstructure input;
-
-struct route routes[16];
-unsigned int current_route = 0;
-unsigned int n_routes = 0;
-
-static const uint32 color_table[] =
-{
-    0xc020ff20,
-    0xc0ff5050,
-    0xc020a0ff,
-    0xc0ff20ff,
-    0xc010af10,
-    0xc020f0ff,
-    0xc0ff00a0,
-    0xc04020b0,
-    0xc0d0ff20,
-};
-
-void level_read()
-{
-    const uint8* fixptr = memoryBase + (host_byteorder_32(*(uint32_t*)(memoryBase + GCN_POINTER_FIX)) & 0xFFFFFFF);
-    const uint8* lvlptr = memoryBase + (host_byteorder_32(*(uint32_t*)(memoryBase + GCN_POINTER_LVL)) & 0xFFFFFFF);
     
-    #pragma mark FIX
-    {
-        info(BOLD COLOR_GREEN "FIX @ [0x%X : %p]\n", offset(fixptr), fixptr);
-        
-        fix.header = (struct fix_header*)fixptr;
-        
-        uint8* offset = (uint8*)(fix.header + 1);
-        /* Skip demo save names */
-        offset += 12 * host_byteorder_32(fix.header->demo_name_count);
-        /* Skip demo level names */
-        offset += 12 * host_byteorder_32(fix.header->demo_name_count);
-        /* Skip level names (these are derived from the engine struct) */
-        offset += 30 * host_byteorder_32(fix.header->level_name_count);
-        /* Trailer */
-        fix.trailer = (struct fix_trailer*)offset;
-    }
+    /* */
+    uint8_t previous_engine_mode = 0;
+    char previous_level_name[30];
+    unsigned transition_frame = 0;
     
-    #pragma mark LVL
-    {
-        info(BOLD COLOR_GREEN "LVL @ [0x%X : %p]\n", offset(lvlptr), lvlptr);
+    void readLevel() {
+      doublepointer<> fixptr(GCN_POINTER_FIX);
+      doublepointer<> lvlptr(GCN_POINTER_LVL);
+      
+      if (!fixptr || !lvlptr) return;
+      
+      #pragma mark FIX
+      {
+            //info(BOLD COLOR_GREEN "FIX @ [0x%X : %p]\n", fixptr.offset(), fixptr.realAddress());
+            
+            fix.header = fixptr;
+            
+            const unsigned char* offset = (const unsigned char*)(fix.header + 1);
+            /* Skip demo save names */
+            offset += 12 * fix.header->demo_name_count;
+            /* Skip demo level names */
+            offset += 12 * fix.header->demo_name_count;
+            /* Skip level names (these are derived from the engine struct) */
+            offset += 30 * fix.header->level_name_count;
+            /* Trailer */
+            fix.trailer = (fix_trailer*)offset;
+        }
         
-        lvl.header = (struct lvl_header*)lvlptr;
-        
-        uint8* offset = (uint8*)(lvl.header + 1);
-        /* Calculate total texture count: this is the number of textures in the level aside (duplicates?) in fixed memory */
-        uint32 n_textures = host_byteorder_32(lvl.header->texture_count) - host_byteorder_32(fix.trailer->texture_count);
-        /* Skip textures */
-        offset += n_textures * 4 * 2;
-        /* Read dynamically aligned section 1 */
-        lvl.section_a = (struct lvl_section_a*)offset;
-        
-        objectType = &lvl.section_a->object_type;
-        alwaysStructure = &lvl.section_a->always_structure;
+#pragma mark LVL
+        {
+            //info(BOLD COLOR_GREEN "LVL @ [0x%X : %p]\n", lvlptr->physicalAddress(), lvlptr->hostAddress());
+            
+            lvl.header = (struct lvl_header*)lvlptr;
+            
+            const unsigned char* offset = (const unsigned char*)(lvl.header + 1);
+            /* Calculate total texture count: this is the number of textures in the level aside (duplicates?) in fixed memory */
+            const uint32_t n_textures = lvl.header->texture_count - fix.trailer->texture_count;
+            /* Skip textures */
+            offset += n_textures * 4 * 2;
+            /* Read dynamically aligned section 1 */
+            lvl.section_a = (lvl_section_a*)offset;
+          
+            g_stObjectTypes = (stObjectType*)&lvl.section_a->object_type;
+            g_stAlways = (stAlways*)&lvl.section_a->always_structure;
+        }
     }
-}
+  
+  static auto cache() -> void {
+    if (objectNameCache.find(g_stEngineStructure->currentLevelName) == objectNameCache.end()) {
+      namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
+      
+      g_stObjectTypes->family.forEach([&](stObjectTypeElement* e, void*) { cache.familyNames.push_back(std::string(e->name)); });
+      g_stObjectTypes->model.forEach([&](stObjectTypeElement* e, void*) { cache.modelNames.push_back(std::string(e->name)); });
+      g_stObjectTypes->instance.forEach([&](stObjectTypeElement* e, void*) { cache.instanceNames.push_back(std::string(e->name)); });
+    }
+  }
+  
+  static auto nameLookup(int type, int idx) -> std::string {
+    if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
+      namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
+      try {
+        if (type == objectFamilyName) return cache.familyNames.at(idx);
+        if (type == objectModelName) return cache.modelNames.at(idx);
+        if (type == objectInstanceName) return cache.instanceNames.at(idx);
+      } catch (std::out_of_range& e) {
+        //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
+      }
+    }
+    return "Invalid name";
+  }
+    
+  void update() {
+    g_stEngineStructure = pointer<stSuperObject>    (GCN_POINTER_ENGINE_STRUCTURE);
+    g_stInputStructure  = pointer<stInputStructure> (GCN_POINTER_INPUT_STRUCTURE);
+    g_stRandomStructure = pointer<stRandom>         (GCN_POINTER_RND);
 
-uint32 color_table_index(unsigned idx)
-{
+    p_stActualWorld          = doublepointer<stSuperObject>(GCN_POINTER_ACTUAL_WORLD);
+    p_stDynamicWorld         = doublepointer<stSuperObject>(GCN_POINTER_DYNAMIC_WORLD);
+    p_stInactiveDynamicWorld = doublepointer<stSuperObject>(GCN_POINTER_INACTIVE_DYNAMIC_WORLD);
+    p_stFatherSector         = doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
+        
+    g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
+      
+    if (isValidGameState()) {
+      readLevel();
+      cache();
+    }
+  }
+  
+  void initialize() {
+    library::external::nameLookup = nameLookup;
+  }
+    
+  uint32_t color_table_index(unsigned idx) {
     return color_table[idx % 9];
-}
-
-uint32 actor_color(const tdstEngineObject* actor)
-{
-    if (!actor) return 0x80808080;
+  }
     
-    const tdstStandardGameInfo* stdgame = pointer(actor->stdGame);
-    if (!stdgame) return 0x80808080;
+  uint32_t objectColor(stSuperObject *object) {
+    if (!object) return 0xAA808080;
+    if (object->type == superobjectTypeIPO) return 0xFF00AAFF;
+    if (object->type == superobjectTypeIPOMirror) return 0xFF00DDFF;
+    if (object->type != superobjectTypeActor) return 0xAA808080;
+    stEngineObject *actor = object->data;
+    if (!actor->stdGame) return 0x80808080;
+    return color_table_index(2 * actor->stdGame->familyType + 1);
+    return 0;
+  }
     
-    unsigned n = host_byteorder_32(stdgame->familyType);
-    return color_table_index(2 * n + 1);
-}
-
-void game_unload(void)
-{
+  void game_unload() {
     fix.header = NULL;
     fix.trailer = NULL;
-    
     lvl.header = NULL;
     lvl.section_a = NULL;
-    
-    alwaysStructure = NULL;
-    objectType = NULL;
-}
-
-void game_memory_dump()
-{
+    g_stAlways = NULL;
+    g_stObjectTypes = NULL;
+  }
+  
+  void game_memory_dump() {
     char path[4096];
     sprintf(path, "%s/memory.bin", LIBR3TAS_DIR);
     FILE* fp = fopen(path, "wb");
     fwrite(memoryBase, sizeof(uint8), 24 * 1000 * 1000, fp);
     fclose(fp);
-}
-
-void game_triangle_data_dump()
-{
-//    char path[4096];
-//    sprintf(path, "%s/memory.bin", LIBR3TAS_DIR);
-//    FILE* fp = fopen(path, "wb");
-//    fwrite(memoryBase, sizeof(uint8), 24 * 1000 * 1000, fp);
-//    fclose(fp);
+  }
+    
+//    stSuperObject *findActor(std::string instanceName) {
+//        if (actorLookupCache.contains(instanceName))
+//            if (actorLookupCache.at(instanceName))
+//                actorLookupCache.at(instanceName);
+//        
+//        return p_stActualWorld->find(instanceName, g_stObjectTypes);
+//    }
+    
+  bool isValidGameState() {
+    if (!g_stEngineStructure) return false;
+    return !g_stEngineStructure->engineFrozen
+    && g_stEngineStructure->mode != 5
+    && g_stEngineStructure->mode != 6
+    && p_stActualWorld
+    && p_stDynamicWorld
+    && p_stInactiveDynamicWorld
+    && p_stFatherSector;
+  }
+    
 }

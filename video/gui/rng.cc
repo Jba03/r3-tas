@@ -10,6 +10,8 @@
 #include "gui.hh"
 #include "game.hh"
 
+#include <cmath>
+
 static bool rng_display_as_decimal = false;
 
 static bool calc_rng = false;
@@ -56,10 +58,10 @@ static const char * const MarkerSymbol = "->";
 
 static float TimeScale = 1.0f;
 
-static void RazoffHelper() {
-    if (game::g_stEngineStructure->currentLevelName == "Swamp_51" && p_stFatherSector) {
-        
-    }
+static auto RazoffHelper() -> void {
+  if (game::g_stEngineStructure->currentLevelName == "Swamp_51" && p_stFatherSector) {
+      
+  }
 }
 
 static void DrawTable()
@@ -89,8 +91,8 @@ static void DrawTable()
         ImGui::SetWindowSize(ImVec2(150, 0));
         ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), 140));
         
-        uint32 TableSize = RND_g_stRandomStructure->tableSize;
-        uint32 BaseIndex = *RND_g_stRandomStructure->tableIndices;
+        uint32 TableSize = g_stRandomStructure->tableSize;
+        uint32 BaseIndex = *g_stRandomStructure->tableIndices;
         
         if (PreviousFrameIndex != BaseIndex)
             PreviousRealIndex = PreviousFrameIndex;
@@ -98,16 +100,16 @@ static void DrawTable()
         std::string fmt = DecimalDisplay ? "%d: %d" : "0x%04X: 0x%04X";
         for (int i = -NumRows/2+2; i < NumRows/2; i++)
         {
-            uint32 value = RND_g_stRandomStructure->indexRelative(0, i);
+            uint32 value = g_stRandomStructure->indexRelative(0, i);
             float a = 1.0f - float(i) / float(NumRows) + 0.1f;
             
             bool b = (BaseIndex + i == PreviousRealIndex) || (i == 0) || (i == 2);
             ImVec4 color = i < 0 ? PastColor : FutureColor;
             
-            float c = powf(((float)NumRows / 2.0f - std::abs(i)) / ((float)NumRows / 2.0f), 0.5f);
+            float c = std::powf(((float)NumRows / 2.0f - std::abs(i)) / ((float)NumRows / 2.0f), 0.5f);
             color.w = c; //sin(((float)NumRows/2.0f + i)*0.1f);
             color.x /= c;
-            color.y *= pow(cos(c),0.5);
+            color.y *= std::pow(cos(c),0.5);
             
             if (b) color.w *= 0.5f;
             if (i == 0) color = ImVec4(1.0f, 0.55f, 0.1f, 1.0f);

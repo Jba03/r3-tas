@@ -7,7 +7,7 @@
 
 #include "stTransform.hh"
 
-static tdstMatrix4D fnTransformGetMatrix(const tdstTransform *transform)
+static stMatrix4D fnTransformGetMatrix(const stTransform *transform)
 {
     return transform ? matrix4_host_byteorder(transform->matrix) : matrix4_identity;
 }

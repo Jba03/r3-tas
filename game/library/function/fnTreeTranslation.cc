@@ -27,22 +27,22 @@ static const char * const operators[] =
     ".X", ".Y", ".Z", "+", "-", "-", "*", "/", ".X = ", ".Y = ", ".Z = ", "."
 };
 
-static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpret *const node);
+static void fnNodeTranslate(stTreeTranslationContext *const c, stNodeInterpret *const node);
 
-static void fnTranslationContextAppendToken(tdstTreeTranslationContext *const c, tdstTreeTranslationToken *tok)
+static void fnTranslationContextAppendToken(stTreeTranslationContext *const c, stTreeTranslationToken *tok)
 {
     if (c->numTokens + 1 > c->numBlocksAllocated * TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER)
     {
         c->numBlocksAllocated++;
-        c->token = (tdstTreeTranslationToken*)realloc(c->token, sizeof(tdstTreeTranslationToken) * TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER * c->numBlocksAllocated);
+        c->token = (stTreeTranslationToken*)realloc(c->token, sizeof(stTreeTranslationToken) * TRANSLATION_TOKEN_ALLOCATION_MULTIPLIER * c->numBlocksAllocated);
     }
     c->token[c->numTokens] = *tok;
     c->numTokens++;
 }
 
-static void fnEmit(tdstTreeTranslationContext *const c, const char* fmt, ...)
+static void fnEmit(stTreeTranslationContext *const c, const char* fmt, ...)
 {
-    tdstTreeTranslationToken token;
+    stTreeTranslationToken token;
     memset(token.translatedText, 0, TRANSLATION_TOKEN_MAX_STRING_LENGTH);
     token.originalNode = c->currentNode;
     
@@ -55,16 +55,16 @@ static void fnEmit(tdstTreeTranslationContext *const c, const char* fmt, ...)
     fnTranslationContextAppendToken(c, &token);
 }
 
-static void fnIndent(tdstTreeTranslationContext *const c)
+static void fnIndent(stTreeTranslationContext *const c)
 {
     fnEmit(c, "%*s", c->indentation * c->opt->indentationSize, "");
 }
 
-static void fnNodeTranslateBranch(tdstTreeTranslationContext *const c, tdstNodeInterpret *branch, bool asArguments, bool indent)
+static void fnNodeTranslateBranch(stTreeTranslationContext *const c, stNodeInterpret *branch, bool asArguments, bool indent)
 {
-    tdstNodeInterpret *node = branch;
-    tdstNodeInterpret *root = branch - 1;
-    tdstNodeInterpret *last = NULL;
+    stNodeInterpret *node = branch;
+    stNodeInterpret *root = branch - 1;
+    stNodeInterpret *last = NULL;
     
     /* Only translate branches whose depth is greater than that of the root node. */
     if (asArguments && !indent && root->depth >= branch->depth) return;
@@ -88,7 +88,7 @@ static void fnNodeTranslateBranch(tdstTreeTranslationContext *const c, tdstNodeI
     if (asArguments && last) --c->numTokens;
 }
 
-static void fnNodeTranslateChild(tdstTreeTranslationContext *const c, tdstNodeInterpret *node, uint8 n)
+static void fnNodeTranslateChild(stTreeTranslationContext *const c, stNodeInterpret *node, uint8 n)
 {
     uint8 minimumDepth = (node++)->depth, occurrence = 0;
     while (!IsEndOfTree(node) && node->depth > minimumDepth)
@@ -101,9 +101,9 @@ static void fnNodeTranslateChild(tdstTreeTranslationContext *const c, tdstNodeIn
     }
 }
 
-static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpret *const node)
+static void fnNodeTranslate(stTreeTranslationContext *const c, stNodeInterpret *const node)
 {
-    const tdstTreeTranslationOptions opt = *c->opt;
+    const stTreeTranslationOptions opt = *c->opt;
     const uint8 style = opt.indentationStyle;
     const uint8 paren = opt.skipParentheses;
     
@@ -203,12 +203,12 @@ static void fnNodeTranslate(tdstTreeTranslationContext *const c, tdstNodeInterpr
     #undef S
 }
 
-int fnTreeTranslate(tdstTreeTranslationContext **ctx, tdstNodeInterpret * tree, tdstTreeTranslationOptions *opt)
+int fnTreeTranslate(stTreeTranslationContext **ctx, stNodeInterpret * tree, stTreeTranslationOptions *opt)
 {
-    tdstTreeTranslationContext *const c = *ctx = (tdstTreeTranslationContext*)malloc(sizeof *c);
+    stTreeTranslationContext *const c = *ctx = (stTreeTranslationContext*)malloc(sizeof *c);
     if (!c) return -1;
     
-    tdstTreeTranslationOptions defaultOptions;
+    stTreeTranslationOptions defaultOptions;
     defaultOptions.indentationStyle = 0;
     defaultOptions.indentationSize = 2;
     defaultOptions.skipParentheses = 1;

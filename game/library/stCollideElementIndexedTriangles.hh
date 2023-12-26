@@ -33,7 +33,7 @@ struct stCollideElementIndexedTriangles
 {
     readonly pointer<> material;
     readonly pointer<> faceIndices;
-    readonly pointer<> normals;
+    readonly pointer<stVector3D> normals;
     readonly int16 numFaces;
     readonly int16 aabbIndex;
     readonly pointer<> geometryVisualization; /* above struct */

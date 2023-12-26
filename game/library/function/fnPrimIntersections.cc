@@ -20,7 +20,7 @@
 
 #define square(v) ((v) * (v))
 
-static const float vectorindex(const tdstVector3D v, unsigned i)
+static const float vectorindex(const stVector3D v, unsigned i)
 {
     if (i == 0) return v.x;
     if (i == 1) return v.y;
@@ -28,7 +28,7 @@ static const float vectorindex(const tdstVector3D v, unsigned i)
     return 0.0f;
 }
 
-static const uint8 planecrossing(const tdstVector3D A, const tdstVector3D AB, const tdstVector3D bmin, const tdstVector3D bmax, float t, int8 face)
+static const uint8 planecrossing(const stVector3D A, const stVector3D AB, const stVector3D bmin, const stVector3D bmax, float t, int8 face)
 {
     unsigned i1 = 0;
     unsigned i2 = 0;
@@ -85,13 +85,13 @@ static const uint8 planecrossing(const tdstVector3D A, const tdstVector3D AB, co
 }
 
 /** fnBoxPointIntersection: test if point lies in box */
-static bool fnBoxPointIntersection(tdstVector3D bMin, tdstVector3D bMax, tdstVector3D p)
+static bool fnBoxPointIntersection(stVector3D bMin, stVector3D bMax, stVector3D p)
 {
     return (p.x >= bMin.x && p.x <= bMax.x) && (p.y >= bMin.y && p.y <= bMax.y) && (p.z >= bMin.z && p.z <= bMax.z);
 }
 
 /** fnPointBoxFaceTest: check on which box face the point lies outside of */
-static unsigned fnPointBoxFaceTest(tdstVector3D bmin, tdstVector3D bmax, tdstVector3D point)
+static unsigned fnPointBoxFaceTest(stVector3D bmin, stVector3D bmax, stVector3D point)
 {
     unsigned mask = box_face_none;
     point.x < bmin.x ? (mask |= box_face_x_min) : (point.x > bmax.x ? (mask |= box_face_x_max) : 0);
@@ -101,12 +101,12 @@ static unsigned fnPointBoxFaceTest(tdstVector3D bmin, tdstVector3D bmax, tdstVec
 }
 
 /** fnLineSegmentBoxIntersection: intersect box with line segment. AB is the offset from A. */
-static bool fnLineSegmentBoxIntersection(tdstVector3D bmin, tdstVector3D bmax, tdstVector3D A, tdstVector3D AB, float *t)
+static bool fnLineSegmentBoxIntersection(stVector3D bmin, stVector3D bmax, stVector3D A, stVector3D AB, float *t)
 {
     unsigned mA;
     unsigned mB;
     unsigned mXYZ;
-    tdstVector3D B = vector3_add(A, AB);
+    stVector3D B = vector3_add(A, AB);
     
     /* Test if any of the points are inside the box.  */
     mA = fnPointBoxFaceTest(bmin, bmax, A);
@@ -146,7 +146,7 @@ static bool fnLineSegmentBoxIntersection(tdstVector3D bmin, tdstVector3D bmax, t
 }
 
 /** fnBoxBoxIntersection: box and box intersection test */
-static bool fnBoxBoxIntersection(tdstVector3D aMin, tdstVector3D aMax, tdstVector3D bMin, tdstVector3D bMax)
+static bool fnBoxBoxIntersection(stVector3D aMin, stVector3D aMax, stVector3D bMin, stVector3D bMax)
 {
     return max(aMin.x, bMin.x) <= min(aMax.x, bMax.x) &&
            max(aMin.y, bMin.y) <= min(aMax.y, bMax.y) &&
@@ -154,7 +154,7 @@ static bool fnBoxBoxIntersection(tdstVector3D aMin, tdstVector3D aMax, tdstVecto
 }
 
 /** fnSphereBoxIntersection: sphere and box intersection test */
-static bool fnSphereBoxIntersection(tdstVector3D sphCenter, float sphRadius, tdstVector3D bMin, tdstVector3D bMax)
+static bool fnSphereBoxIntersection(stVector3D sphCenter, float sphRadius, stVector3D bMin, stVector3D bMax)
 {
     float d = 0.0f;
     
@@ -169,22 +169,22 @@ static bool fnSphereBoxIntersection(tdstVector3D sphCenter, float sphRadius, tds
 }
 
 /** fnSphereSphereIntersection: sphere and sphere intersection test */
-static bool fnSphereSphereIntersection(tdstVector3D aCenter, float aRadius, tdstVector3D bCenter, float bRadius)
+static bool fnSphereSphereIntersection(stVector3D aCenter, float aRadius, stVector3D bCenter, float bRadius)
 {
     return square(vector3_length(vector3_sub(aCenter, bCenter))) <= square(aRadius + bRadius);
 }
 
-static bool fnPointInSphere(const tdstVector3D P, const tdstVector3D C, const float r)
+static bool fnPointInSphere(const stVector3D P, const stVector3D C, const float r)
 {
     return vector3_length(vector3_sub(P, C)) < r;
 }
 
 /** fnPointInTriangle: test if point lies in triangle **/
-static bool fnPointInTriangle(const tdstVector3D P, const tdstVector3D A, const tdstVector3D B, const tdstVector3D C, const tdstVector3D N)
+static bool fnPointInTriangle(const stVector3D P, const stVector3D A, const stVector3D B, const stVector3D C, const stVector3D N)
 {
-    const tdstVector3D p0 = vector3_sub(A, P);
-    const tdstVector3D p1 = vector3_sub(B, P);
-    const tdstVector3D p2 = vector3_sub(C, P);
+    const stVector3D p0 = vector3_sub(A, P);
+    const stVector3D p1 = vector3_sub(B, P);
+    const stVector3D p2 = vector3_sub(C, P);
     
     #define M_INV_SQRT_3 5.773502691896259E-1
     #define SameSign(a,b) ((a >= 0.0f) == (b >= 0.0f))
@@ -239,12 +239,12 @@ static bool fnPointInTriangle(const tdstVector3D P, const tdstVector3D A, const 
     }
 }
 
-static bool fnSegmentTriangleIntersection(const tdstVector3D start,
-                                        const tdstVector3D extent,
-                                        const tdstVector3D A,
-                                        const tdstVector3D B,
-                                        const tdstVector3D C,
-                                        const tdstVector3D N,
+static bool fnSegmentTriangleIntersection(const stVector3D start,
+                                        const stVector3D extent,
+                                        const stVector3D A,
+                                        const stVector3D B,
+                                        const stVector3D C,
+                                        const stVector3D N,
                                         const float d)
 {
     const float dot = vector3_dot(N, extent);
@@ -255,7 +255,7 @@ static bool fnSegmentTriangleIntersection(const tdstVector3D start,
         float t = -(dividend / dot);
         if (t >= 0.0f && t <= 1.0f)
         {
-            const tdstVector3D P = vector3_add(vector3_mulf(extent, t), start);
+            const stVector3D P = vector3_add(vector3_mulf(extent, t), start);
             return fnPointInTriangle(P, A, B, C, N);
         }
         else

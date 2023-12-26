@@ -3,17 +3,18 @@
 
 #include "stVector4D.hh"
 #include "library.hh"
+#include "stCollideElementIndexedTriangles.hh"
 
-#define collide_object_indexed_triangles    1
-#define collide_object_facemap              2
-#define collide_object_sprite               3
-#define collide_object_tmesh                4
-#define collide_object_points               5
-#define collide_object_lines                6
-#define collide_object_indexed_spheres      7
-#define collide_object_aabb                 8
-#define collide_object_cones                9
-#define collide_object_deformationsetinfo   13
+#define collideObjectIndexedTriangles   1
+#define collideObjectFacemap            2
+#define collideObjectSprite             3
+#define collideObjectTMesh              4
+#define collideObjectPoints             5
+#define collideObjectLines              6
+#define collideObjectIndexedSpheres     7
+#define collideObjectAABB               8
+#define collideObjectCones              9
+#define collideObjectDeformationSetInfo 13
 
 typedef struct stCollideObject stCollideObject;
 
@@ -23,13 +24,50 @@ struct stCollideObject
     readonly int16 numElements;
     readonly int16 numBoundingBoxes;
     readonly padding(2)
-    readonly pointer<> vertices;
-    readonly pointer<> elementTypes;
-    readonly doublepointer<> elements;
+    readonly pointer<stVector3D> vertices;
+    readonly pointer<int16> elementTypes;
+    readonly pointer<> elements;
     readonly pointer<> octree;
     readonly pointer<> boundingBoxes;
     readonly float32 boundingSphereRadius;
     readonly stVector4D boundingSpherePosition;
+ 
+    enum elementType
+    {
+        INDEXED_TRIANGLES  = 1,
+        FACEMAP            = 2,
+        SPRITE             = 3,
+        TMESH              = 4,
+        POINTS             = 5,
+        LINES              = 6,
+        INDEXED_SPHERES    = 7,
+        AABB               = 8,
+        CONES              = 9,
+        DEFORMATIONSETINFO = 13,
+    };
+    
+  int countOfElements(int selected) {
+    int total = 0;
+    for (int16_t i = 0; i < numElements; i++) {
+      int16 type = elementTypes[i];
+      if (type == selected) total++;
+    }
+    return total;
+  }
+  
+    template <typename F>
+    void forEachElement(const F& f)
+    {
+        for (int16_t i = 0; i < numElements; i++)
+        {
+            pointer<> dptr = elements[i];
+            //void *element = pointer { dptr.address() };
+            int16 type = elementTypes[i];
+            
+            //printf("%X\n", ((uint8_t*)elementTypes - memoryBase));
+            f(type, dptr);
+        }
+    }
 };
 
 #ifdef USE_FUNCTIONS

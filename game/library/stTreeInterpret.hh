@@ -57,7 +57,7 @@ typedef struct stMacro stMacro;
 
 struct stNodeInterpret
 {
-#if platform == GCN
+#if platform == platformGCN
     readonly uint32 param;
     readonly padding(3)
     readonly uint8 type;

@@ -5,14 +5,15 @@
 
 #define VECTOR4
 
-typedef struct stVector4D stVector4D;
-
 struct stVector4D
 {
     float32 x;
     float32 y;
     float32 z;
     float32 w;
+    
+    stVector4D() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+    stVector4D(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {};
 };
 
 VECTOR4 stVector4D vector4_host_byteorder(const stVector4D v);

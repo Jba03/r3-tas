@@ -72,7 +72,7 @@ struct stDsgVar {
 };
 
 struct stDsgMem {
-    readonly doublepointer<> dsgVars;
+    readonly doublepointer<stDsgVar> dsgVars;
     readonly pointer<> initialBuffer;
     readonly pointer<> currentBuffer;
 };

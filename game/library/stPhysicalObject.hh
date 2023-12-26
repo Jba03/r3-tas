@@ -2,13 +2,12 @@
 #define stPhysicalObject_h
 
 #include "library.hh"
-
-typedef struct stPhysicalObject stPhysicalObject, stPO;
+#include "stCollideSet.hh"
 
 struct stPhysicalObject
 {
     readonly pointer<> visualSet;
-    readonly pointer<> physicalCollideset;
+    readonly pointer<stPhysicalCollideSet> physicalCollideset;
     readonly pointer<> visualBoundingVolume;
     readonly pointer<> collideBoundingVolume;
 };

@@ -8,17 +8,80 @@
 
 #define VECTOR3
 
-typedef struct stVector3D stVector3D;
 
-struct stVector3D {
+struct stVector3D
+{
     float x;
     float y;
     float z;
     
+    stVector3D() : x(0.0f), y(0.0f), z(0.0f) {}
+    stVector3D(float x, float y, float z) : x(x), y(y), z(z) {};
+    
+    stVector3D host()
+    {
+        stVector3D result;
+        result.x = host_byteorder_f32(*(uint32_t*)&x);
+        result.y = host_byteorder_f32(*(uint32_t*)&y);
+        result.z = host_byteorder_f32(*(uint32_t*)&z);
+        return result;
+    }
+    
+    stVector3D game()
+    {
+      stVector3D result;
+      *(uint32_t*)&result.x = game_byteorder_f32(x);
+      *(uint32_t*)&result.y = game_byteorder_f32(y);
+      *(uint32_t*)&result.z = game_byteorder_f32(z);
+      return result;
+    }
+  
+  stVector3D operator +(stVector3D v) {
+    stVector3D result = *this;
+    result.x += v.x;
+    result.y += v.y;
+    result.z += v.z;
+    return result;
+  }
+  
+  stVector3D operator -(stVector3D v) {
+    stVector3D result = *this;
+    result.x -= v.x;
+    result.y -= v.y;
+    result.z -= v.z;
+    return result;
+  }
+  
+  stVector3D operator *(stVector3D v) {
+    stVector3D result = *this;
+    result.x *= v.x;
+    result.y *= v.y;
+    result.z *= v.z;
+    return result;
+  }
+  
+  stVector3D operator *(float s) {
+    stVector3D result = *this;
+    result.x *= s;
+    result.y *= s;
+    result.z *= s;
+    return result;
+  }
+  
+  float length() {
+    return sqrtf(x * x + y * y + z * z);
+  }
+  
+  float dot(stVector3D v) {
+    return (x * v.x) + (y * v.y) + (z * v.z);
+  }
+  
+  
+  
+  //static const struct stVector3D zero;
+    
     //operator *(stVector3D other) { };
 };
-
-VECTOR3 stVector3D vector3_host_byteorder(const stVector3D v);
 
 /**
  * stVector3D_new:

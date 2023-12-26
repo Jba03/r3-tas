@@ -9,43 +9,43 @@
 #include "memory.hh"
 #include "stDsg.hh"
 
-static tdstDsgVar* fnDsgMemGetDsgVars(const tdstDsgMem *mem)
+static stDsgVar* fnDsgMemGetDsgVars(const stDsgMem *mem)
 {
     if (!mem) return NULL;
     return doublepointer(mem->dsgVars);
 }
 
-static void* fnDsgMemGetInitialBuffer(const tdstDsgMem *mem)
+static void* fnDsgMemGetInitialBuffer(const stDsgMem *mem)
 {
     if (!mem) return NULL;
     return pointer(mem->initialBuffer);
 }
 
-static void* fnDsgMemGetCurrentBuffer(const tdstDsgMem *mem)
+static void* fnDsgMemGetCurrentBuffer(const stDsgMem *mem)
 {
     if (!mem) return NULL;
     return pointer(mem->currentBuffer);
 }
 
-static tdstDsgVarInfo* fnDsgMemGetDsgVarInfo(const tdstDsgMem *mem, uint8 var)
+static stDsgVarInfo* fnDsgMemGetDsgVarInfo(const stDsgMem *mem, uint8 var)
 {
-    const tdstDsgVar* variables = fnDsgMemGetDsgVars(mem);
+    const stDsgVar* variables = fnDsgMemGetDsgVars(mem);
     if (!variables)
         return NULL;
     
     if (var >= variables->infoLength)
         return NULL;
     
-    tdstDsgVarInfo *info = (tdstDsgVarInfo*)pointer(variables->info);
+    stDsgVarInfo *info = (stDsgVarInfo*)pointer(variables->info);
     if (!info)
         return NULL;
     
     return info + var;
 }
 
-static void *fnDsgMemGetDsgVar(const tdstDsgMem *mem, uint8 var, bool initialMemory, uint8 *type)
+static void *fnDsgMemGetDsgVar(const stDsgMem *mem, uint8 var, bool initialMemory, uint8 *type)
 {
-    const tdstDsgVarInfo *info = fnDsgMemGetDsgVarInfo(mem, var);
+    const stDsgVarInfo *info = fnDsgMemGetDsgVarInfo(mem, var);
     if (!info)
         return NULL;
     

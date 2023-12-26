@@ -9,9 +9,9 @@
 #include "stInputStructure.hh"
 #include "game.hh"
 
-tdstInputEntryElement* fnInputEntryFind(const tdstInputStructure* s, const char* action_name)
+stInputEntryElement* fnInputEntryFind(const stInputStructure* s, const char* action_name)
 {
-    tdstInputEntryElement* entry = pointer(s->entries);
+    stInputEntryElement* entry = pointer(s->entries);
     int c = host_byteorder_32(s->numEntries);
     while (--c && entry)
     {

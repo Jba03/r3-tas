@@ -4,9 +4,6 @@
 #include "library.hh"
 #include "stTransform.hh"
 
-typedef struct stVertex2DGLI stVertex2DGLI;
-typedef struct stCameraGLI stCameraGLI;
-
 struct stVertex2DGLI
 {
     readonly float32 x;

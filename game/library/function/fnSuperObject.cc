@@ -15,7 +15,7 @@
 
 #include "fnTransform.c"
 
-const char* fnSuperobjectGetTypename(const tdstSuperObject* so)
+const char* fnSuperobjectGetTypename(const stSuperObject* so)
 {
     if (!so) return "None";
     const int type = superobject_type(so);
@@ -24,7 +24,7 @@ const char* fnSuperobjectGetTypename(const tdstSuperObject* so)
     return "None";
 }
 
-const char* fnSuperobjectGetName(const tdstSuperObject* so)
+const char* fnSuperobjectGetName(const stSuperObject* so)
 {
     if (!so) return NULL;
     const int type = superobject_type(so);
@@ -46,28 +46,28 @@ const char* fnSuperobjectGetName(const tdstSuperObject* so)
     return NULL;
 }
 
-void *fnSuperobjectGetData(const tdstSuperObject *so)
+void *fnSuperobjectGetData(const stSuperObject *so)
 {
     return so ? pointer(so->data) : NULL;
 }
 
-tdstTransform* fnSuperobjectGetTransform(const tdstSuperObject *obj, bool local)
+stTransform* fnSuperobjectGetTransform(const stSuperObject *obj, bool local)
 {
     return obj ? pointer(local ? obj->localTransform : obj->globalTransform) : NULL;
 }
 
-tdstMatrix4D fnSuperobjectGetGlobalMatrix(const tdstSuperObject *obj)
+stMatrix4D fnSuperobjectGetGlobalMatrix(const stSuperObject *obj)
 {
     return fnTransformGetMatrix(fnSuperobjectGetTransform(obj, false));
 }
 
-tdstMatrix4D fnSuperobjectGetLocalMatrix(const tdstSuperObject* obj)
+stMatrix4D fnSuperobjectGetLocalMatrix(const stSuperObject* obj)
 {
     return fnTransformGetMatrix(fnSuperobjectGetTransform(obj, true));
 }
 
 /** sector_by_location: get the sector in which the specified point is located */
-const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, const tdstVector3D point)
+const stSuperObject* sector_by_location(const stSuperObject* father_sector, const stVector3D point)
 {
     if (!father_sector) return NULL;
     
@@ -77,20 +77,20 @@ const tdstSuperObject* sector_by_location(const tdstSuperObject* father_sector, 
     int8 p = sector_priority_min;
     int8 v = sector_priority_min;
  
-    tdstSuperObject* target_sector = NULL;
-    tdstSuperObject* target_sector_virtual = NULL;
+    stSuperObject* target_sector = NULL;
+    stSuperObject* target_sector_virtual = NULL;
     
     superobject_for_each(father_sector, so)
     {
-        const tdstSector* subsector = superobject_data(so);
+        const stSector* subsector = superobject_data(so);
         if (!subsector) continue;
         
-        const tdstVector3D min = vector3_host_byteorder(subsector->min);
-        const tdstVector3D max = vector3_host_byteorder(subsector->max);
+        const stVector3D min = vector3_host_byteorder(subsector->min);
+        const stVector3D max = vector3_host_byteorder(subsector->max);
         
         if (fnBoxPointIntersection(min, max, point))
         {
-            tdstVector3D distance;
+            stVector3D distance;
             distance = vector3_add(min, max);
             distance = vector3_mulf(distance, 1.0f / 2.0f);
             distance = vector3_sub(distance, point);

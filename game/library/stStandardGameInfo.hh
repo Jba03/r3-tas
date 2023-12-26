@@ -2,8 +2,7 @@
 #define stStandardGameInfo_h
 
 #include "library.hh"
-
-typedef struct stStandardGameInfo stStandardGameInfo;
+#include "stSuperObject.hh"
 
 struct stStandardGameInfo
 {

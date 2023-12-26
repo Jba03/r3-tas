@@ -241,9 +241,9 @@ private:
         const stMaterialGLI *material = (const stMaterialGLI*)pointer(tok->originalNode->param);
         
         std::string name = tok->translatedText;
-#if PLATFORM == PS2
+#if PLATFORM == platformPS2
         const stAnimatedTextureNodeGLI *animated = (const stAnimatedTextureNodeGLI*)pointer(material->firstTextureNodeAnimated);
-#elif PLATFORM == GCN
+#elif PLATFORM == platformGCN
         const stTextureGLI *animated = (const stTextureGLI*)pointer(material->firstTextureNodeAnimated);
         if (animated) name = animated->filename;
 #endif
@@ -271,7 +271,7 @@ private:
             
         }
         ImGui::TextColored(currentColor, "%s", name.c_str());
-            
+        
         ImGui::SameLine();
     }
     

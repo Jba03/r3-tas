@@ -7,23 +7,23 @@
 #include "stCollideElementIndexedTriangles.hh"
 #include "stDynamics.hh"
 
-#include "fnPrimIntersections.c"
+#include "fnPrimIntersections.cc"
 
 #define MAX_NUM_TRIANGLES   256
 /* Constants derived from dynamics */
 #define MAX_SLOPE 0.707  //M_SQRT1_2
 #define MIN_SLOPE -0.707 //-M_SQRT1_2
 
-static const tdstVector3D WORLD_UP = { 0.0f, 0.0f, 1.0f };
+static const stVector3D WORLD_UP = { 0.0f, 0.0f, 1.0f };
 
 bool sphereTriangleIntersection(struct Sphere *sphere, struct Triangle *tri)
 {
-    const tdstVector3D A = vector3_sub(tri->A, sphere->center);
-    const tdstVector3D B = vector3_sub(tri->B, sphere->center);
-    const tdstVector3D C = vector3_sub(tri->C, sphere->center);
+    const stVector3D A = vector3_sub(tri->A, sphere->center);
+    const stVector3D B = vector3_sub(tri->B, sphere->center);
+    const stVector3D C = vector3_sub(tri->C, sphere->center);
     const float rr = sphere->radius * sphere->radius;
     
-    const tdstVector3D V = vector3_cross(vector3_sub(B, A), vector3_sub(C, A));
+    const stVector3D V = vector3_cross(vector3_sub(B, A), vector3_sub(C, A));
     const float d = vector3_dot(A, V);
     const float e = vector3_dot(V, V);
     const bool sep1 = d * d > rr * e;
@@ -39,9 +39,9 @@ bool sphereTriangleIntersection(struct Sphere *sphere, struct Triangle *tri)
     const bool sep3 = (bb > rr) & (ab > bb) && (bc > bb);
     const bool sep4 = (cc > rr) & (ac > cc) && (bc > cc);
     
-    const tdstVector3D AB = vector3_sub(B, A);
-    const tdstVector3D BC = vector3_sub(C, B);
-    const tdstVector3D CA = vector3_sub(A, C);
+    const stVector3D AB = vector3_sub(B, A);
+    const stVector3D BC = vector3_sub(C, B);
+    const stVector3D CA = vector3_sub(A, C);
     
     const float d1 = ab - aa;
     const float d2 = bc - bb;
@@ -51,13 +51,13 @@ bool sphereTriangleIntersection(struct Sphere *sphere, struct Triangle *tri)
     const float e2 = vector3_dot(BC, BC);
     const float e3 = vector3_dot(CA, CA);
     
-    const tdstVector3D Q1 = vector3_sub(vector3_mulf(A, e1), vector3_mulf(AB, d1));
-    const tdstVector3D Q2 = vector3_sub(vector3_mulf(B, e2), vector3_mulf(BC, d2));
-    const tdstVector3D Q3 = vector3_sub(vector3_mulf(C, e3), vector3_mulf(CA, d3));
+    const stVector3D Q1 = vector3_sub(vector3_mulf(A, e1), vector3_mulf(AB, d1));
+    const stVector3D Q2 = vector3_sub(vector3_mulf(B, e2), vector3_mulf(BC, d2));
+    const stVector3D Q3 = vector3_sub(vector3_mulf(C, e3), vector3_mulf(CA, d3));
     
-    const tdstVector3D QC = vector3_sub(vector3_mulf(C, e1), Q1);
-    const tdstVector3D QA = vector3_sub(vector3_mulf(A, e2), Q2);
-    const tdstVector3D QB = vector3_sub(vector3_mulf(B, e3), Q3);
+    const stVector3D QC = vector3_sub(vector3_mulf(C, e1), Q1);
+    const stVector3D QA = vector3_sub(vector3_mulf(A, e2), Q2);
+    const stVector3D QB = vector3_sub(vector3_mulf(B, e3), Q3);
     
     const bool sep5 = (vector3_dot(Q1, Q1) > rr * e1 * e1) && (vector3_dot(Q1, QC) > 0);
     const bool sep6 = (vector3_dot(Q2, Q2) > rr * e2 * e2) && (vector3_dot(Q2, QA) > 0);
@@ -66,23 +66,23 @@ bool sphereTriangleIntersection(struct Sphere *sphere, struct Triangle *tri)
     return !(sep1 | sep2 | sep3 | sep4 | sep5 | sep6 | sep7);
 }
 
-static bool isGround(const tdstVector3D normal)
+static bool isGround(const stVector3D normal)
 {
     const float dot = vector3_dot(normal, WORLD_UP);
     return (dot >= MAX_SLOPE);
 }
 
-static bool isWall(const tdstVector3D normal)
+static bool isWall(const stVector3D normal)
 {
     const float dot = vector3_dot(normal, WORLD_UP);
     return (dot > MIN_SLOPE) && (dot < MAX_SLOPE);
 }
 
 static void
-collideElementSphereIntersection(const tdstCollideObject *obj, const tdstMatrix4D T, const tdstCollideElementIndexedTriangles *m, struct Sphere *sph, unsigned *numTrisOut, struct Triangle *out)
+collideElementSphereIntersection(const stCollideObject *obj, const stMatrix4D T, const stCollideElementIndexedTriangles *m, struct Sphere *sph, unsigned *numTrisOut, struct Triangle *out)
 {
-    const tdstVector3D* vertices = (const tdstVector3D*)pointer(obj->vertices);
-    const tdstVector3D* normals = (const tdstVector3D*)pointer(m->normals);
+    const stVector3D* vertices = (const stVector3D*)pointer(obj->vertices);
+    const stVector3D* normals = (const stVector3D*)pointer(m->normals);
     const uint16* indices = (const uint16*)pointer(m->faceIndices);
         
     for (int16 index = 0; index < host_byteorder_16(m->numFaces); index++)
@@ -91,19 +91,19 @@ collideElementSphereIntersection(const tdstCollideObject *obj, const tdstMatrix4
         uint16 idx1 = host_byteorder_16(*(indices + index * 3 + 1));
         uint16 idx2 = host_byteorder_16(*(indices + index * 3 + 2));
             
-        const tdstVector3D Pa = vector3_host_byteorder(*(vertices + idx0));
-        const tdstVector3D Pb = vector3_host_byteorder(*(vertices + idx1));
-        const tdstVector3D Pc = vector3_host_byteorder(*(vertices + idx2));
-        const tdstVector3D Na = vector3_host_byteorder(*(normals + index / 3));
+        const stVector3D Pa = vector3_host_byteorder(*(vertices + idx0));
+        const stVector3D Pb = vector3_host_byteorder(*(vertices + idx1));
+        const stVector3D Pc = vector3_host_byteorder(*(vertices + idx2));
+        const stVector3D Na = vector3_host_byteorder(*(normals + index / 3));
             
-        const tdstVector4D TpA = vector4_mul_matrix4(vector4_new(Pa.x, Pa.y, Pa.z, 1.0f), T);
-        const tdstVector4D TpB = vector4_mul_matrix4(vector4_new(Pb.x, Pb.y, Pb.z, 1.0f), T);
-        const tdstVector4D TpC = vector4_mul_matrix4(vector4_new(Pc.x, Pc.y, Pc.z, 1.0f), T);
+        const stVector4D TpA = vector4_mul_matrix4(vector4_new(Pa.x, Pa.y, Pa.z, 1.0f), T);
+        const stVector4D TpB = vector4_mul_matrix4(vector4_new(Pb.x, Pb.y, Pb.z, 1.0f), T);
+        const stVector4D TpC = vector4_mul_matrix4(vector4_new(Pc.x, Pc.y, Pc.z, 1.0f), T);
         
         struct Triangle t;
-        t.A = *(tdstVector3D*)&TpA;
-        t.B = *(tdstVector3D*)&TpB;
-        t.C = *(tdstVector3D*)&TpC;
+        t.A = *(stVector3D*)&TpA;
+        t.B = *(stVector3D*)&TpB;
+        t.C = *(stVector3D*)&TpC;
         t.N = Na;
         
         if (sphereTriangleIntersection(sph, &t))
@@ -115,10 +115,10 @@ collideElementSphereIntersection(const tdstCollideObject *obj, const tdstMatrix4
 
 
 
-void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
+void solveGeometry(stSuperObject *g, struct GeometrySolver *solver)
 {
-    tdstVector3D start = solver->start;
-    tdstVector3D end = solver->end;
+    stVector3D start = solver->start;
+    stVector3D end = solver->end;
     //solver->numPoints = 0;
     //solver->numTriangles = 0;
     
@@ -128,18 +128,18 @@ void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
     /* Only check IPOs, which have collision. */
     if (superobject_type(g) == superobject_type_ipo)
     {
-        tdstInstantiatedPhysicalObject *ipo = fnSuperobjectGetData(g);
-        tdstCollideObject *collideObject = fnIPOGetCollideObject(ipo);
+        stInstantiatedPhysicalObject *ipo = NULL;///fnSuperobjectGetData(g);
+        stCollideObject *collideObject = fnIPOGetCollideObject(ipo);
         
         if (collideObject)
         {
             const float bsphR = host_byteorder_f32(collideObject->boundingSphereRadius);
-            const tdstVector3D bsphC = vector3_host_byteorder(*(tdstVector3D*)&collideObject->boundingSpherePosition);
+            const stVector3D bsphC = vector3_host_byteorder(*(stVector3D*)&collideObject->boundingSpherePosition);
             /* Check if any of the start or end points lie within the bounding sphere. */
             if (fnPointInSphere(start, bsphC, bsphR) || fnPointInSphere(end, bsphC, bsphR))
             {
                 int index = 0;
-                const tdstCollideElementIndexedTriangles *m = NULL;
+                const stCollideElementIndexedTriangles *m = NULL;
                 /* For each collideable mesh */
                 while ((m = fnCollideObjectGetElementIndexedTriangles(collideObject, index)))
                 {
@@ -147,7 +147,7 @@ void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
                     sphere.center = start;
                     sphere.radius = 0.9f;
                     
-                    tdstVector3D savedPosition = sphere.center;
+                    stVector3D savedPosition = sphere.center;
                     for (unsigned int i = 0; i < 30; i++)
                     {
                         /* Initial distance */
@@ -166,14 +166,14 @@ void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
                             collideElementSphereIntersection(collideObject, fnSuperobjectGetGlobalMatrix(g), m, &sphere, &numTris, triangles);
                             
                             /* Calculate the resulting normal of all triangles collided with */
-                            tdstVector3D resultingNormal = vector3_new(0.0f, 0.0f, 0.0f);
-                            tdstVector3D centerPoint = vector3_new(0.0f, 0.0f, 0.0f);
+                            stVector3D resultingNormal = vector3_new(0.0f, 0.0f, 0.0f);
+                            stVector3D centerPoint = vector3_new(0.0f, 0.0f, 0.0f);
                             for (unsigned int n = 0; n < numTris; n++)
                             {
                                 struct Triangle t = triangles[n];
                                 resultingNormal = vector3_add(resultingNormal, t.N);
                                 
-                                //tdstVector3D orientation = vector3_sub
+                                //stVector3D orientation = vector3_sub
                                 //centerPoint = vector3_add(centerPoint, vector3_new((t.A.x + t.B.x + t.C.x) / 3.0f, (t.A.y + t.B.y + t.C.y) / 3.0f, (t.A.z + t.B.z + t.C.z) / 3.0f));
                             }
                             //centerPoint = vector3_mulf(centerPoint, 1.0f / (float)numTris);
@@ -192,7 +192,7 @@ void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
                             /* Calculate the new position */
                             const float x = cos(π + angle);
                             const float y = sin(π + angle);
-                            tdstVector3D newPosition = sphere.center = vector3_sub(savedPosition, vector3_new(x, y, 0.0f));
+                            stVector3D newPosition = sphere.center = vector3_sub(savedPosition, vector3_new(x, y, 0.0f));
                             
                             
                             float dd = vector3_length(vector3_sub(sphere.center, end));
@@ -246,7 +246,7 @@ void solveGeometry(tdstSuperObject *g, struct GeometrySolver *solver)
             //            {
             //                const float x = cos(π + angle);
             //                const float y = sin(π + angle);
-            //                tdstVector3D v = vector3_new(start.x - x, start.y - y, 1.3f);
+            //                stVector3D v = vector3_new(start.x - x, start.y - y, 1.3f);
             //
             //                solver->points[solver->numPoints++] = v;
             //            }

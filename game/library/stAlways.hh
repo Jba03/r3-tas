@@ -7,7 +7,7 @@
 
 struct stAlways {
     readonly uint32 numAlways;
-    readonly stDoublyLinkedList alwaysModels;
+    readonly stDoublyLinkedList<> alwaysModels;
     readonly pointer<stSuperObject> alwaysSuperobject; /* ::superobject[n_always] */
     readonly pointer<stEngineObject> alwaysActors; /* ::actor[n_always] */
     readonly pointer<stSuperObject> alwaysGeneratorSuperobjects; /* superobject[n_always] */

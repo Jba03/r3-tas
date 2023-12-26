@@ -2,6 +2,7 @@
 #define stIntelligence_h
 
 #include "library.hh"
+#include "stBehavior.hh"
 
 typedef struct stIntelligence stIntelligence;
 
@@ -9,8 +10,8 @@ struct stIntelligence
 {
     readonly doublepointer<> scriptAI;
     readonly pointer<> currentTree;
-    readonly pointer<> currentBehavior;
-    readonly pointer<> previousBehavior;
+    readonly pointer<stBehavior> currentBehavior;
+    readonly pointer<stBehavior> previousBehavior;
     readonly pointer<> actionTable;
     readonly uint32 initializeBehavior;
 };

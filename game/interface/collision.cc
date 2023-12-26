@@ -1,8 +1,16 @@
-//
-//  collision.cpp
-//  r3-tas
-//
-//  Created by Jba03 on 2023-07-29.
-//
+//#include "collision.hh"
+//#include "library.hh"
+//#include "hook.hh"
 
-#include "collision.hpp"
+namespace collision
+{
+    static void registerCollisionInfo()
+    {
+        
+    }
+    
+    void initialize()
+    {
+        //hook<address::actualWorld>(displayFunction);
+    }
+};

@@ -14,9 +14,9 @@
 
 #pragma mark - Interpreter
 
-static tdstTreeInterpretFrame *fnInterpretMakeFrame(const tdstNodeInterpret *tree)
+static stTreeInterpretFrame *fnInterpretMakeFrame(const stNodeInterpret *tree)
 {
-    tdstTreeInterpretFrame *frame = (tdstTreeInterpretFrame*)malloc(sizeof *frame);
+    stTreeInterpretFrame *frame = (stTreeInterpretFrame*)malloc(sizeof *frame);
     frame->duplicateTree = fnTreeDuplicate(tree);
     frame->originalTree = tree;
     frame->current = frame->duplicateTree - 1;
@@ -28,7 +28,7 @@ static tdstTreeInterpretFrame *fnInterpretMakeFrame(const tdstNodeInterpret *tre
     return frame;
 }
 
-static void fnInterpretPushFrame(tdstTreeInterpretContext *c, tdstTreeInterpretFrame *frame)
+static void fnInterpretPushFrame(stTreeInterpretContext *c, stTreeInterpretFrame *frame)
 {
     if (c->currentFrameIndex + 1 > INTERPRETER_FRAME_COUNT)
     {
@@ -41,7 +41,7 @@ static void fnInterpretPushFrame(tdstTreeInterpretContext *c, tdstTreeInterpretF
     printf("PUSH [%s] (%d)\n", frame->name, c->currentFrameIndex);
 }
 
-static tdstTreeInterpretFrame *fnInterpretPopFrame(tdstTreeInterpretContext *c)
+static stTreeInterpretFrame *fnInterpretPopFrame(stTreeInterpretContext *c)
 {
     printf("POP [%s] (%d)\n", c->frame->name, c->currentFrameIndex-1);
     
@@ -55,14 +55,14 @@ static tdstTreeInterpretFrame *fnInterpretPopFrame(tdstTreeInterpretContext *c)
     return c->frame = c->frameStack[--c->currentFrameIndex];
 }
 
-static tdstNodeInterpret *fnTreeFindNextOfDepth(tdstTreeInterpretContext *c, unsigned depth)
+static stNodeInterpret *fnTreeFindNextOfDepth(stTreeInterpretContext *c, unsigned depth)
 {
-    tdstNodeInterpret *next = c->frame->current + 1;
+    stNodeInterpret *next = c->frame->current + 1;
     while (!IsEndOfTree(next) && next->depth > depth) ++next;
     return next;
 }
 
-static void fnTreeSeekDepth(tdstTreeInterpretContext *c, unsigned depth)
+static void fnTreeSeekDepth(stTreeInterpretContext *c, unsigned depth)
 {
     c->frame->current = fnTreeFindNextOfDepth(c, depth) - 1;
 }
@@ -74,7 +74,7 @@ static void fnTreeSeekDepth(tdstTreeInterpretContext *c, unsigned depth)
 #define ulval(nd)   *((uint32*)&nd->param)
 #define rval(nd)    *((float*)&nd->param)
 
-static tdstNodeInterpret *fnTreeInterpretException(tdstTreeInterpretContext *c, tdstNodeInterpret *node, const char* fmt, ...)
+static stNodeInterpret *fnTreeInterpretException(stTreeInterpretContext *c, stNodeInterpret *node, const char* fmt, ...)
 {
     long pc = node - c->frame->duplicateTree + 1;
     
@@ -88,20 +88,20 @@ static tdstNodeInterpret *fnTreeInterpretException(tdstTreeInterpretContext *c, 
     return c->frame->current;
 }
 
-static const uint32 fnTreeInterpretGetGlobalRandomizer(tdstTreeInterpretContext *c)
+static const uint32 fnTreeInterpretGetGlobalRandomizer(stTreeInterpretContext *c)
 {
     return c->globals ? c->globals->randomizer : 0;
 }
 
-static tdstNodeInterpret *fnTreeInterpretKeyword(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretKeyword(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *keyword = c->frame->current;
+    stNodeInterpret *keyword = c->frame->current;
     
     if (ulval(keyword) >= 0 && ulval(keyword) <= 13) // If, IfNot, IfX, IfNotX
     {
         bool x = true;
         // Fetch condition (which is not always a condition!)
-        tdstNodeInterpret *condition = op();
+        stNodeInterpret *condition = op();
         // For framerule-dependent conditional keywords
         unsigned p = fnTreeInterpretGetGlobalRandomizer(c) % (1 << (ulval(keyword) - 1));
         
@@ -116,7 +116,7 @@ static tdstNodeInterpret *fnTreeInterpretKeyword(tdstTreeInterpretContext *c)
         
         // Find `Then`
         c->frame->current = keyword;
-        tdstNodeInterpret *Then = fnTreeFindNextOfDepth(c, keyword->depth);
+        stNodeInterpret *Then = fnTreeFindNextOfDepth(c, keyword->depth);
         if (Then->type != 0 || Then->param != 16)
             return fnTreeInterpretException(c, Then, "expected 'then' node");
         c->frame->current = Then - 1;
@@ -125,7 +125,7 @@ static tdstNodeInterpret *fnTreeInterpretKeyword(tdstTreeInterpretContext *c)
         {
             fetch();
             // Find else statement, if it exists.
-            tdstNodeInterpret *Else = fnTreeFindNextOfDepth(c, Then->depth);
+            stNodeInterpret *Else = fnTreeFindNextOfDepth(c, Then->depth);
             if (Else->type == 0 && Else->param == 17)
             {
                 Else->param = INTERPRETER_TAG_SKIP;
@@ -147,15 +147,15 @@ static tdstNodeInterpret *fnTreeInterpretKeyword(tdstTreeInterpretContext *c)
     return keyword;
 }
 
-static tdstNodeInterpret *fnTreeInterpretCondition(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretCondition(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *condition = c->frame->current;
+    stNodeInterpret *condition = c->frame->current;
     
     #pragma mark Boolean condition
     if (ulval(condition) >= 0 && ulval(condition) <= 3)
     {
-        tdstNodeInterpret *A = op();
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *A = op();
+        stNodeInterpret *B = op();
         
 //        if ((ulval(A) != 12 || ulval(B) != 12) && (ulval(A) != 1 || ulval(B) != 1))
 //            return fnTreeInterpretException(c, condition, "boolean condition on non-integer value");
@@ -169,8 +169,8 @@ static tdstNodeInterpret *fnTreeInterpretCondition(tdstTreeInterpretContext *c)
     #pragma mark Comparison condition
     if (ulval(condition) >= 4 && ulval(condition) <= 9)
     {
-        tdstNodeInterpret *A = op();
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *A = op();
+        stNodeInterpret *B = op();
         
 //        if (ulval(A) != 12 || ulval(A) != 13 || ulval(B) != 12 || ulval(B) != 13)
 //            return fnTreeInterpretException(c, condition, "cannot perform comparison on non-numeric operand");
@@ -210,15 +210,15 @@ static tdstNodeInterpret *fnTreeInterpretCondition(tdstTreeInterpretContext *c)
     return condition;
 }
 
-static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretOperator(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *op = c->frame->current;
+    stNodeInterpret *op = c->frame->current;
     
     #pragma mark Add, subtract, multiply, divide
     if (ulval(op) <= 3)
     {
-        tdstNodeInterpret *A = op();
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *A = op();
+        stNodeInterpret *B = op();
         
 //        #define arithmeticOP(t,a) \
 //        if (ulval(op) == t && A->type == 12 && B->type == 12) op->param = lval(A) a lval(B); \
@@ -235,7 +235,7 @@ static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
     #pragma mark Negate
     if (op->param == 4)
     {
-        tdstNodeInterpret *A = op();
+        stNodeInterpret *A = op();
         if (A->type == 12) lval(op) = -lval(A);
         if (A->type == 13) *((float*)&op->param) = -rval(A);
     }
@@ -243,22 +243,22 @@ static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
     #pragma mark Modulo
     if (op->param == 5)
     {
-        tdstNodeInterpret *A = op();
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *A = op();
+        stNodeInterpret *B = op();
         if (A->type == 12 && B->type == 12) lval(op) = lval(A) % lval(B);
     }
     
     #pragma mark Affect and assign
     if (op->param >= 6 && op->param <= 9)
     {
-        tdstNodeInterpret *A = op();
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *A = op();
+        stNodeInterpret *B = op();
     }
     
     #pragma mark Increment and decrement
     if (op->param >= 10 && op->param <= 11)
     {
-        tdstNodeInterpret *A = op();
+        stNodeInterpret *A = op();
     }
     
     #pragma mark Assign
@@ -273,7 +273,7 @@ static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
         if (op()->type != script_node_type_actorref)
             return fnTreeInterpretException(c, op, "attempt to access data of invalid operand (not an actor reference)");
         
-        tdstNodeInterpret *B = op();
+        stNodeInterpret *B = op();
         lval(op) = lval(B);
         
         c->actorReference = NULL;
@@ -282,7 +282,7 @@ static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
     // Vector negation operator
     if (op->param == 19)
     {
-        tdstNodeInterpret *A = op();
+        stNodeInterpret *A = op();
         
         if (A->type != script_node_type_vector && A->type != script_node_type_constant_vector && A->type != script_node_type_function)
             return fnTreeInterpretException(c, op, "attempt to perform vector negation on non-vector operand");
@@ -291,9 +291,9 @@ static tdstNodeInterpret *fnTreeInterpretOperator(tdstTreeInterpretContext *c)
     return op;
 }
 
-static tdstNodeInterpret *fnTreeInterpretFunction(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretFunction(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *function = c->frame->current;
+    stNodeInterpret *function = c->frame->current;
     if (function->type == 3 && c->function) c->function(c);
     if (function->type == 4 && c->procedure) c->procedure(c);
     
@@ -304,7 +304,7 @@ static tdstNodeInterpret *fnTreeInterpretFunction(tdstTreeInterpretContext *c)
     return function;
 }
 
-static void fnTreeInterpretConvertDsgVar(tdstNodeInterpret *dsgVarRef, tdstEngineObject *actor)
+static void fnTreeInterpretConvertDsgVar(stNodeInterpret *dsgVarRef, stEngineObject *actor)
 {
     uint8 type = 0;
     void* data = fnActorGetDsgVar(actor, ulval(dsgVarRef), &type);
@@ -330,9 +330,9 @@ static void fnTreeInterpretConvertDsgVar(tdstNodeInterpret *dsgVarRef, tdstEngin
     ulval(dsgVarRef) = host_byteorder_32(ulval(dsgVarRef));
 }
 
-static tdstNodeInterpret *fnTreeInterpretDsgVarRef(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretDsgVarRef(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *dsgVarRef = c->frame->current;
+    stNodeInterpret *dsgVarRef = c->frame->current;
     if (!c->isAssignment && (c->dsgAccessMode & INTERPRETER_READ))
     {
         if (!c->actorReference && c->owner)
@@ -348,12 +348,12 @@ static tdstNodeInterpret *fnTreeInterpretDsgVarRef(tdstTreeInterpretContext *c)
     return dsgVarRef;
 }
 
-static tdstNodeInterpret *fnTreeInterpretActorRef(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretActorRef(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *actorReference = c->frame->current;
+    stNodeInterpret *actorReference = c->frame->current;
     uint32 offset = game_byteorder_32(actorReference->param);
     
-    tdstEngineObject *actor = (tdstEngineObject*)pointer(offset);
+    stEngineObject *actor = (stEngineObject*)pointer(offset);
     // Null check necessary?
     c->actorReference = actor;
     
@@ -361,24 +361,24 @@ static tdstNodeInterpret *fnTreeInterpretActorRef(tdstTreeInterpretContext *c)
     return actorReference;
 }
 
-static tdstNodeInterpret *fnTreeInterpretSubroutine(tdstTreeInterpretContext *c)
+static stNodeInterpret *fnTreeInterpretSubroutine(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *subroutine = c->frame->current;
+    stNodeInterpret *subroutine = c->frame->current;
 
-    tdstMacro *macro = (tdstMacro*)pointer(swap32(subroutine->param));
-    tdstNodeInterpret *tree = fnMacroGetCurrentTree(macro);
-    tdstTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
+    stMacro *macro = (stMacro*)pointer(swap32(subroutine->param));
+    stNodeInterpret *tree = fnMacroGetCurrentTree(macro);
+    stTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
     frame->name = fnMacroGetName(macro);
     fnInterpretPushFrame(c, frame);
     
     return subroutine;
 }
     
-tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
+stNodeInterpret *fnTreeInterpret(stTreeInterpretContext *c)
 {
     if (c->finished) return c->frame->current - 1;
     
-    tdstNodeInterpret *current = fetch();
+    stNodeInterpret *current = fetch();
     //fnTreePrintNode(current);
     switch (current->type)
     {
@@ -453,9 +453,9 @@ tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
 //    /* SUBROUTINE */
 //    if (type == 41)
 //    {
-//        tdstMacro *macro = (tdstMacro*)pointer(current->param);
-//        tdstNodeInterpret *tree = fnMacroGetCurrentTree(macro);
-//        tdstTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
+//        stMacro *macro = (stMacro*)pointer(current->param);
+//        stNodeInterpret *tree = fnMacroGetCurrentTree(macro);
+//        stTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
 //        frame->name = fnMacroGetName(macro);
 //
 //        fnInterpretPushFrame(c, frame);
@@ -466,9 +466,9 @@ tdstNodeInterpret *fnTreeInterpret(tdstTreeInterpretContext *c)
     return current;
 }
 
-int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpret *tree, const tdstTreeInterpretOptions *opt)
+int fnTreeInterpreterInit(stTreeInterpretContext **ctx, const stNodeInterpret *tree, const stTreeInterpretOptions *opt)
 {
-    tdstTreeInterpretContext *c = *ctx = (tdstTreeInterpretContext*)malloc(sizeof(*c));
+    stTreeInterpretContext *c = *ctx = (stTreeInterpretContext*)malloc(sizeof(*c));
     
     c->frame = NULL;
     c->currentFrameIndex = -1;
@@ -479,19 +479,19 @@ int fnTreeInterpreterInit(tdstTreeInterpretContext **ctx, const tdstNodeInterpre
     
     c->dsgAccessMode = INTERPRETER_READ;
     
-    tdstTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
+    stTreeInterpretFrame *frame = fnInterpretMakeFrame(tree);
     fnInterpretPushFrame(c, frame);
     
     return 1;
 }
 
-void fnTreeInterpreterStep(tdstTreeInterpretContext *c)
+void fnTreeInterpreterStep(stTreeInterpretContext *c)
 {
     fnTreeInterpret(c);
 }
 
-long fnTreeInterpreterGetPC(tdstTreeInterpretContext *c)
+long fnTreeInterpreterGetPC(stTreeInterpretContext *c)
 {
-    tdstTreeInterpretFrame *frame = c->frame;
+    stTreeInterpretFrame *frame = c->frame;
     return frame->current - frame->duplicateTree + 1;
 }

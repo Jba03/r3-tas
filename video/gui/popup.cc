@@ -1,30 +1,31 @@
 #include "gui.hh"
 #include "game.hh"
 
-#include <type_traits>
+namespace gui {
+  pointer<> popupTarget = nullptr;
+  
+  auto superObjectPopup() -> void {
+    if (ImGui::BeginPopup("SPO")) {
+      if (ImGui::Button("View object")) {
+        superObjectWindow window(popupTarget);
+        gui::spoWindows.push_back(window);
+      }
 
-static auto superObjectMenu(stSuperObject *spo) -> void {
-  ImGui::Begin("Context menu", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
- 
-  if (ImGui::Button("View object")) {
-    superObjectWindow window(spo);
-    gui::spoWindows.push_back(window);
-    gui::contextMenu = nullptr;
+      if (ImGui::Button("View in memory editor")) {
+        memoryEditor.GotoAddr = popupTarget.pointeeAddress().effectiveAddress();
+      }
+      
+      ImGui::EndPopup();
+    }
   }
   
-  if (ImGui::Button("View in memory editor")) {
-    gui::memoryEditor.GotoAddr = pointer<stSuperObject>(spo).pointeeAddress().effectiveAddress();
-    gui::contextMenu = nullptr;
+  auto drawPopup() -> void {
+    //ImGui::OpenPopup(name);
+    
+    ImGuiStyle style = ImGui::GetStyle();
+    
+    superObjectPopup();
+    
+    ImGui::GetStyle() = style;
   }
-  
-  ImGui::End();
-}
-
-auto contextMenu::draw() -> void {
-  ImGui::SetNextWindowPos(position);
-  if (first) ImGui::SetNextWindowFocus();
-  switch (type) {
-    case superObject: superObjectMenu(target);
-  }
-  first = false;
 }

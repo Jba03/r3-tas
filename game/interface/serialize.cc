@@ -3,7 +3,7 @@
  ************************************************************/
 
 #include "serialize.hh"
-#include "stSuperobject.hh"
+//#include "stSuperObject.hh"
 
 //#define T(t, name) { t, 0, name }
 
@@ -17,6 +17,6 @@
 
 void serializer_serialize(const char * )
 {
-    //Template(tdstSuperObject, NATIVE);
+    //Template(stSuperObject, NATIVE);
     //T()
 }

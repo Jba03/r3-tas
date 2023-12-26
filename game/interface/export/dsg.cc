@@ -5,16 +5,16 @@
 
 extern const char* (*get_config_path)(void);
 
-static void export(tdstSuperObject* so, void* param)
+static void export(stSuperObject* so, void* param)
 {
     if (!so) return;
-    tdstEngineObject* actor = so->data;
+    stEngineObject* actor = so->data;
     if (!actor->brain) return;
-    tdstBrain* brain = actor->brain;
+    stBrain* brain = actor->brain;
     if (!brain->mind) return;
-    tdstMind* mind = brain->mind;
+    stMind* mind = brain->mind;
     if (!mind->dsg) return;
-    tdstDsgMemory* mem = mind->dsg;
+    stDsgMemory* mem = mind->dsg;
     
     char path[1024];
     memset(path, 0, 1024);
@@ -24,7 +24,7 @@ static void export(tdstSuperObject* so, void* param)
     
     for (int i = 0; i < mem->n_variables; i++)
     {
-        tdstDsgVariableInfo var = mem->current[i];
+        stDsgVariableInfo var = mem->current[i];
         fwrite(&var.offset, sizeof(uint32_t), 1, fp);
         fwrite(&var.type_id, sizeof(uint32_t), 1, fp);
         //fwrite(&var.data_offset, sizeof(uint32_t), 1, fp);
@@ -82,7 +82,7 @@ static void export(tdstSuperObject* so, void* param)
                 
             case DSGVAR_TYPE_VECTOR:
             {
-                tdstVector3D value = tdstVector3D_read(var.data_offset);
+                stVector3D value = stVector3D_read(var.data_offset);
                 fwrite(&value.x, 1, sizeof(float), fp);
                 fwrite(&value.y, 1, sizeof(float), fp);
                 fwrite(&value.z, 1, sizeof(float), fp);

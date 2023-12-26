@@ -9,7 +9,7 @@
 #include "game.hh"
 
 /** fnEngineLoadLevel: load level with specified name */
-void fnEngineLoadLevel(tdstEngineStructure* engine, const char* levelName)
+void fnEngineLoadLevel(stEngineStructure* engine, const char* levelName)
 {
     memset((void*)engine->nextLevelName, 0, 30);
     strcpy((void*)engine->nextLevelName, levelName);

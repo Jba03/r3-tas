@@ -8,7 +8,7 @@
 #ifndef xray_h
 #define xray_h
 
-#include "structure.hh"
+#include "library.hh"
 #include "stSuperObject.hh"
 #include "stEngineObject.hh"
 #include "stSector.hh"
@@ -34,13 +34,13 @@ struct xray_node {
     
     unsigned type;
     /* node's position */
-    tdstVector3D position;
+    stVector3D position;
     /* normal of the node */
-    tdstVector3D normal;
+    stVector3D normal;
     /* for transformation of the node */
-    tdstSuperObject* superobject;
+    stSuperObject* superobject;
     /* the sector this node belongs to */
-    tdstSuperObject* sector;
+    stSuperObject* sector;
     
     /* node parent */
     struct xray_node* parent;
@@ -67,7 +67,7 @@ struct xraySourceRecord {
     /* List of recorded nodes */
     xrayNode* nodes;
     /* List of objects collided with */
-    const tdstSuperObject** objects;
+    const stSuperObject** objects;
     /* List of tagged faces */
     int16 taggedFaces[XRAY_MAX_TAGGED_FACES];
     
@@ -85,7 +85,7 @@ struct xray {
     
     int n_points;
     int n_lines;
-    tdstVector3D pointset[65536 * 4];
+    stVector3D pointset[65536 * 4];
     
     int n_nodes;
     struct xray_node nodes[200000];
@@ -104,21 +104,21 @@ struct xray {
 struct xray_route
 {
     /* source point */
-    tdstVector3D source;
+    stVector3D source;
     /* destination point */
-    tdstVector3D destination;
+    stVector3D destination;
     
     /* number of octree nodes */
     int n_octree_nodes;
     /* list of route octree nodes */
-    const tdstOctreeNode* octree[XRAY_MAX_OCTREE_NODES];
+    const stOctreeNode* octree[XRAY_MAX_OCTREE_NODES];
     /* list of ipos that contain above octrees at the same indices */
-    const tdstSuperObject* octree_ipo[XRAY_MAX_OCTREE_NODES];
+    const stSuperObject* octree_ipo[XRAY_MAX_OCTREE_NODES];
     
 
     
     /* current target, null if none */
-    //tdstSuperObject* target;
+    //stSuperObject* target;
 };
 
 struct xray_output

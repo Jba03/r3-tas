@@ -9,16 +9,16 @@
 #include "tables.hh"
 #include "stTreeInterpret.hh"
 
-bool fnIsEndOfTree(tdstNodeInterpret *tree)
+bool fnIsEndOfTree(stNodeInterpret *tree)
 {
     return (tree->type == 8 || tree->depth <= 0);
 }
 
-int fnTreeGetLength(const tdstNodeInterpret *tree)
+int fnTreeGetLength(const stNodeInterpret *tree)
 {
     if (!tree) return -1;
-    const tdstNodeInterpret *first = tree;
-    const tdstNodeInterpret *advance = tree;
+    const stNodeInterpret *first = tree;
+    const stNodeInterpret *advance = tree;
     
     do advance++;
     while (advance->type != script_node_type_end_macro && advance->depth >= 1);
@@ -26,28 +26,28 @@ int fnTreeGetLength(const tdstNodeInterpret *tree)
     return (unsigned int)(advance - first) + 1;
 }
 
-void fnTreePrintNode(tdstNodeInterpret *node)
+void fnTreePrintNode(stNodeInterpret *node)
 {
     uint32 param = node->param;
     printf("Node [%s: %d]\n", R3NodeTypeTable[node->type], param);
 }
 
 /* Duplicate a node tree */
-tdstNodeInterpret *fnTreeDuplicate(const tdstNodeInterpret *tree)
+stNodeInterpret *fnTreeDuplicate(const stNodeInterpret *tree)
 {
-    unsigned length = fnTreeGetLength(tree) * sizeof(tdstNodeInterpret);
-    tdstNodeInterpret *copy = (tdstNodeInterpret*)malloc(length);
+    unsigned length = fnTreeGetLength(tree) * sizeof(stNodeInterpret);
+    stNodeInterpret *copy = (stNodeInterpret*)malloc(length);
     memcpy(copy, tree, length);
     
     return copy;
 }
 
-void fnTreeInsertNode(tdstNodeInterpret **root, tdstNodeInterpret *parent, tdstNodeInterpret *insert)
+void fnTreeInsertNode(stNodeInterpret **root, stNodeInterpret *parent, stNodeInterpret *insert)
 {
     unsigned newLength = fnTreeGetLength(*root) + 1;
-    *root = realloc(*root, sizeof(tdstNodeInterpret) * newLength);
+    *root = realloc(*root, sizeof(stNodeInterpret) * newLength);
     
-    tdstNodeInterpret *iterator = *root;
+    stNodeInterpret *iterator = *root;
     /* Seek to the end of the tree */
     while (!fnIsEndOfTree(iterator)) iterator++;
     /* Shift all nodes prior to the parent backwards */
@@ -56,7 +56,7 @@ void fnTreeInsertNode(tdstNodeInterpret **root, tdstNodeInterpret *parent, tdstN
     *iterator = *insert;
 }
 
-void fnTreeSwapByteOrder(tdstNodeInterpret *tree)
+void fnTreeSwapByteOrder(stNodeInterpret *tree)
 {
     while (!fnIsEndOfTree(tree))
     {
@@ -65,15 +65,15 @@ void fnTreeSwapByteOrder(tdstNodeInterpret *tree)
     }
 }
 
-tdstNodeInterpret *fnMacroGetCurrentTree(tdstMacro *macro)
+stNodeInterpret *fnMacroGetCurrentTree(stMacro *macro)
 {
     if (!macro) return NULL;
-    tdstTreeInterpret *tree = (tdstTreeInterpret*)pointer(macro->script_current);
-    tdstNodeInterpret *node = (tdstNodeInterpret*)pointer(tree->tree);
+    stTreeInterpret *tree = (stTreeInterpret*)pointer(macro->script_current);
+    stNodeInterpret *node = (stNodeInterpret*)pointer(tree->tree);
     return node;
 }
 
-const char* fnMacroGetName(const tdstMacro *macro)
+const char* fnMacroGetName(const stMacro *macro)
 {
     if (!macro) return NULL;
     const char* name = (const char*)memchr(macro->name, ':', 0x100);

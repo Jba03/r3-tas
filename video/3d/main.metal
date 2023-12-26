@@ -41,6 +41,8 @@ struct Uniform
     float4 color;
     bool use_texture;
     bool useGameIndexing;
+  bool faceNormals;
+  bool enableShading;
     int slopeMode;
 };
 
@@ -93,13 +95,13 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     
     if (uniform.useGameIndexing)
     {
-        uint16_t index = swap16(indices[vertexID]);
-        position = float4(swap_float3(vertices[index]), 1.0f);
-        normal = swap_float3(normals[vertexID/3]);
+      uint16_t index = swap16(indices[vertexID]);
+      position = float4(swap_float3(vertices[index]), 1.0f);
+      normal = swap_float3(uniform.faceNormals ? normals[vertexID/3] : normals[index]);
     }
     else
     {
-        position = float4(vertices[vertexID], 1.0f);
+        position = float4(swap_float3(vertices[vertexID]), 1.0f);
         normal = normals[vertexID];
     }
     
@@ -110,7 +112,7 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
     
-    out.point_size = 12.5f;
+    out.point_size = 5.0f;
     
     float4 div = position / 20.0f;
     float n = max(max(normal.x, normal.y), normal.z);
@@ -139,26 +141,26 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
                                       texture2d<float> texture [[ texture(0) ]],
                                       constant Uniform &uniform [[ buffer(0) ]])
 {
-    FragmentOutput out;
+  FragmentOutput out;
     
-    float tex = uniform.use_texture ? texture.sample(nearestSampler, in.texcoord, 0).r : 0.0f;
+  float tex = uniform.use_texture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1.0f;
     
-    float3 normal = normalize(in.normal);
-    float3 position = in.position.xyz;
-    float3 ambientTerm = float3(tex * 0.55f);
+  float3 normal = normalize(in.normal);
+  float3 position = in.position.xyz;
+  float3 ambientTerm = float3(tex * 0.25f); //float3(tex * 0.25f);
     
-    float3 lightDir = float3(0,0,1);
-    float diffuseIntensity = saturate(dot(normal, lightDir));
-    float3 diffuseTerm = diffuseIntensity * 0.25f;
+  float3 lightDir = float3(0.0f, 0.0f, 1.0f);
+  float diffuseIntensity = saturate(dot(normal, lightDir));
+  float3 diffuseTerm = diffuseIntensity * 0.25f;
 
-    float3 specularTerm(0);
-    if (diffuseIntensity > 0)
-    {
-        float3 eyeDirection = normalize(in.eye);
-        float3 halfway = normalize(lightDir + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
-        specularTerm = specularFactor * 0.55f;
-    }
+  float3 specularTerm(0);
+  if (diffuseIntensity > 0)
+  {
+    float3 eyeDirection = normalize(in.eye);
+    float3 halfway = normalize(lightDir + eyeDirection);
+    float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
+    specularTerm = specularFactor * 0.55f;
+  }
     
     /* Determine slope visibility */
     
@@ -176,9 +178,16 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
 //    }
     
     //cool color:
-    //out.color = float4(ambientTerm + diffuseTerm + in.normal , 1) * uniform.color;
+    //out.color = float4(ambientTerm + diffuseTerm + in.normal, 1) * uniform.color;
+    //out.color.w = ;
     
-    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniformColor;
+  //out.color = float4(uniform.color); //float4(in.normal, 1.0f);
+  
+  if (uniform.enableShading) {
+    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
+  } else {
+    out.color = uniform.color;
+  }
     
     return out;
 }

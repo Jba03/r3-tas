@@ -13,7 +13,7 @@
 #include "stPhysicalObject.hh"
 
 /** fnIPOGetName: get the name of an IPO */
-const char* fnIPOGetName(const tdstInstantiatedPhysicalObject* ipo)
+const char* fnIPOGetName(const stInstantiatedPhysicalObject* ipo)
 {
     if (!ipo) return NULL;
     const char* name = memchr(ipo->name, ':', 0x32);
@@ -21,13 +21,13 @@ const char* fnIPOGetName(const tdstInstantiatedPhysicalObject* ipo)
 }
 
 /* ipo_world_matrix: compute the world transform of an IPO */
-const tdstMatrix4D ipo_world_matrix(const tdstSuperObject* ipo)
+const stMatrix4D ipo_world_matrix(const stSuperObject* ipo)
 {
-    tdstMatrix4D result = matrix4_identity;
-    tdstMatrix4D matrixStack[256];
+    stMatrix4D result = matrix4_identity;
+    stMatrix4D matrixStack[256];
     unsigned idx = 0;
     
-    tdstSuperObject *parent = NULL;
+    stSuperObject *parent = NULL;
     while ((parent = superobject_parent(ipo)))
         matrixStack[idx++] = fnSuperobjectGetGlobalMatrix(parent);
     
@@ -36,27 +36,27 @@ const tdstMatrix4D ipo_world_matrix(const tdstSuperObject* ipo)
 }
 
 /** fnIPOGetCollideObject: get the collide object (ZDR) of an IPO */
-tdstCollideObject* fnIPOGetCollideObject(const tdstInstantiatedPhysicalObject* ipo)
+stCollideObject* fnIPOGetCollideObject(const stInstantiatedPhysicalObject* ipo)
 {
     if (!ipo) return NULL;
     
-    const tdstPhysicalObject* po = pointer(ipo->tdstPhysicalObject);
+    const stPhysicalObject* po = pointer(ipo->stPhysicalObject);
     if (!po) return NULL;
     
-    const tdstPhysicalCollideSet* collset = pointer(po->physicalCollideset);
+    const stPhysicalCollideSet* collset = pointer(po->physicalCollideset);
     if (!collset) return NULL;
     
     /* Collision geometry is part of reaction zone. */
-    const tdstCollideObject* zdr = pointer(collset->zdr);
+    const stCollideObject* zdr = pointer(collset->zdr);
     return zdr;
 }
 
 #pragma mark - Find
 
-tdstInstantiatedPhysicalObject* fnFindIPO(const char* name, tdstSuperObject *root, tdstSuperObject** so)
+stInstantiatedPhysicalObject* fnFindIPO(const char* name, stSuperObject *root, stSuperObject** so)
 {
     if (!root) return NULL;
-    tdstInstantiatedPhysicalObject* ipo = (tdstInstantiatedPhysicalObject*)superobject_data(root);
+    stInstantiatedPhysicalObject* ipo = (stInstantiatedPhysicalObject*)superobject_data(root);
     if ((superobject_type(root) == superobject_type_ipo || superobject_type(root) == superobject_type_ipo_mirror) && ipo)
     {
         if (strcmp(name, ipo->name) == 0)
@@ -67,7 +67,7 @@ tdstInstantiatedPhysicalObject* fnFindIPO(const char* name, tdstSuperObject *roo
     }
     
     ipo = NULL;
-    tdstSuperObject* search = superobject_first_child(root);
+    stSuperObject* search = superobject_first_child(root);
     while (search && !ipo)
     {
         ipo = fnFindIPO(name, search, so);

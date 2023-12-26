@@ -9,7 +9,7 @@
 #include "game.hh"
 
 /** fnSectorGetName: get the abbreviated name of a sector */
-const char* fnSectorGetName(const tdstSector* sct)
+const char* fnSectorGetName(const stSector* sct)
 {
     if (!sct) return NULL;
     const char* name = memchr(sct->name, ':', 0x104);

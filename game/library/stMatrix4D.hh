@@ -18,10 +18,10 @@ union stMatrix4D
 {
     struct
     {
-        float32 m00, m01, m02, m03;
-        float32 m10, m11, m12, m13;
-        float32 m20, m21, m22, m23;
-        float32 m30, m31, m32, m33;
+        float m00, m01, m02, m03;
+        float m10, m11, m12, m13;
+        float m20, m21, m22, m23;
+        float m30, m31, m32, m33;
     };
     
     struct
@@ -34,8 +34,78 @@ union stMatrix4D
     
     struct
     {
-        float32 m[16];
+        float m[16];
     };
+    
+    static stMatrix4D identity()
+    {
+        return stMatrix4D(1.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 1.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 1.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    
+    stMatrix4D() { *this = identity(); }
+    stMatrix4D(float m00, float m01, float m02, float m03,
+               float m10, float m11, float m12, float m13,
+               float m20, float m21, float m22, float m23,
+               float m30, float m31, float m32, float m33):
+    m00(m00), m01(m01), m02(m02), m03(m03), m10(m10), m11(m11), m12(m12), m13(m13),
+    m20(m20), m21(m21), m22(m22), m23(m23), m30(m30), m31(m31), m32(m32), m33(m33) { }
+    
+    stMatrix4D hostByteOrder()
+    {
+        stMatrix4D result = identity();
+        for (int i = 0; i < 16; i++)
+            result.m[i] = host_byteorder_f32(*((uint32_t*)&m + i));
+        
+        return result;
+    }
+    
+    
+    static stMatrix4D perspective(const float fov_y, const float aspect, const float near_z, const float far_z)
+    {
+        stMatrix4D result = identity();
+        
+        const float ct = 1.0f / tanf(fov_y / 2.0f);
+        
+        result.m00 = ct / aspect;
+        result.m11 = ct;
+        result.m22 = (far_z + near_z) / (near_z - far_z);
+        result.m23 = -1.0f;
+        result.m32 = (2.0f * far_z * near_z) / (near_z - far_z);
+        result.m33 = 0.0f;
+        
+        return result;
+    }
+    
+    stMatrix4D operator *(stMatrix4D mm)
+    {
+        stMatrix4D r;
+        
+        r.m[0]  = m[0] * mm.m[0]  + m[4] * mm.m[1]  + m[8] * mm.m[2]   + m[12] * mm.m[3];
+        r.m[4]  = m[0] * mm.m[4]  + m[4] * mm.m[5]  + m[8] * mm.m[6]   + m[12] * mm.m[7];
+        r.m[8]  = m[0] * mm.m[8]  + m[4] * mm.m[9]  + m[8] * mm.m[10]  + m[12] * mm.m[11];
+        r.m[12] = m[0] * mm.m[12] + m[4] * mm.m[13] + m[8] * mm.m[14]  + m[12] * mm.m[15];
+        
+        r.m[1]  = m[1] * mm.m[0]  + m[5] * mm.m[1]  + m[9] * mm.m[2]   + m[13] * mm.m[3];
+        r.m[5]  = m[1] * mm.m[4]  + m[5] * mm.m[5]  + m[9] * mm.m[6]   + m[13] * mm.m[7];
+        r.m[9]  = m[1] * mm.m[8]  + m[5] * mm.m[9]  + m[9] * mm.m[10]  + m[13] * mm.m[11];
+        r.m[13] = m[1] * mm.m[12] + m[5] * mm.m[13] + m[9] * mm.m[14]  + m[13] * mm.m[15];
+        
+        r.m[2]  = m[2] * mm.m[0]  + m[6] * mm.m[1]  + m[10] * mm.m[2]  + m[14] * mm.m[3];
+        r.m[6]  = m[2] * mm.m[4]  + m[6] * mm.m[5]  + m[10] * mm.m[6]  + m[14] * mm.m[7];
+        r.m[10] = m[2] * mm.m[8]  + m[6] * mm.m[9]  + m[10] * mm.m[10] + m[14] * mm.m[11];
+        r.m[14] = m[2] * mm.m[12] + m[6] * mm.m[13] + m[10] * mm.m[14] + m[14] * mm.m[15];
+        
+        r.m[3]  = m[3] * mm.m[0]  + m[7] * mm.m[1]  + m[11] * mm.m[2]  + m[15] * mm.m[3];
+        r.m[7]  = m[3] * mm.m[4]  + m[7] * mm.m[5]  + m[11] * mm.m[6]  + m[15] * mm.m[7];
+        r.m[11] = m[3] * mm.m[8]  + m[7] * mm.m[9]  + m[11] * mm.m[10] + m[15] * mm.m[11];
+        r.m[15] = m[3] * mm.m[12] + m[7] * mm.m[13] + m[11] * mm.m[14] + m[15] * mm.m[15];
+        
+        return r;
+    }
+    
 };
 
 /**

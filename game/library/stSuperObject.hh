@@ -119,33 +119,33 @@ struct stSuperObject {
         }
     }
     
-    template <typename F>
-    void recurse(const F& f) {
-        _recurse(this, f);
+    template <typename F, typename UserData>
+    void recurse(const F& f, UserData userdata) {
+        _recurse(this, userdata, f);
     }
     
     template <typename F>
-    void forEachChild(const F& f) {
+    void forEachChild(const F& f, void *userdata = nullptr) {
         for (stSuperObject *ii = firstChild; ii; ii = ii->next) {
-            f(ii);
+            f(ii, userdata);
         }
     }
     
     stSuperObject *find(std::string instanceName, stObjectType *objectTypes) {
         stSuperObject *found = nullptr;
-        recurse([&](stSuperObject *T) {
+        recurse([&](stSuperObject *T, void*) {
             //printf("aa: %s\n", T->getName(objectTypes).c_str());
             if (T->getName(objectTypes) == instanceName) found = T;
-        });
+        }, nullptr);
         return found;
     }
     
 private:
-    template <typename F>
-    void _recurse(stSuperObject *root, const F& f) {
+    template <typename F, typename UserData>
+    void _recurse(stSuperObject *root, UserData userdata, const F& f) {
         for (stSuperObject *ii = root->firstChild; ii; ii = ii->next) {
-            f(ii);
-            _recurse(ii, f);
+            f(ii, userdata);
+            _recurse(ii, userdata, f);
         }
     }
 };

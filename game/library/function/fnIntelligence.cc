@@ -23,13 +23,13 @@
 
 #pragma mark - Functions
 
-tdstNodeInterpret *fn_AIFunction_GetPersoAbsolutePosition(tdstTreeInterpretContext *c)
+stNodeInterpret *fn_AIFunction_GetPersoAbsolutePosition(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *function = current();
+    stNodeInterpret *function = current();
     /* Only modify the node if the actor is valid */
     if ((c->isUltra && c->actorReference) || (!c->isUltra && c->owner))
     {
-        tdstVector3D position = fnActorGetPosition(c->isUltra ? c->actorReference : c->owner);
+        stVector3D position = fnActorGetPosition(c->isUltra ? c->actorReference : c->owner);
         /* Allocate a new vector */
         
         /* Use the padding fields of the node to assign a system address */
@@ -38,63 +38,63 @@ tdstNodeInterpret *fn_AIFunction_GetPersoAbsolutePosition(tdstTreeInterpretConte
     
 //    if (c->isUltra)
 //    {
-//        tdstActor *actor = c->
+//        stActor *actor = c->
 //    }
 //    else
 //    {
-//        tdstSuperObject *actorSO = fnSuperobe
-//        fnSuperobjectGetGlobalMatrix(<#const tdstSuperObject *so#>)
+//        stSuperObject *actorSO = fnSuperobe
+//        fnSuperobjectGetGlobalMatrix(<#const stSuperObject *so#>)
 //    }
 //    
 //    if (c->isUltra)
 //    {
-//        tdstNodeInterpret *function = current();
-//        fnSuperobjectGetGlobalMatrix(<#const tdstSuperObject *so#>)
-//        fnActorGetPosition(<#const tdstEngineObject *actor#>)
+//        stNodeInterpret *function = current();
+//        fnSuperobjectGetGlobalMatrix(<#const stSuperObject *so#>)
+//        fnActorGetPosition(<#const stEngineObject *actor#>)
 //    }
 //    
     return function;
 }
 
-tdstNodeInterpret *GetMyAbsolutePosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetAngleAroundZToPerso(tdstTreeInterpretContext *c);
+stNodeInterpret *GetMyAbsolutePosition(stTreeInterpretContext *c);
+stNodeInterpret *GetAngleAroundZToPerso(stTreeInterpretContext *c);
 
 /* Used */
-tdstNodeInterpret *DistanceToPerso(tdstTreeInterpretContext *c);
+stNodeInterpret *DistanceToPerso(stTreeInterpretContext *c);
 
-tdstNodeInterpret *DistanceXToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceYToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceZToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceXYToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceXZToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceYZToPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceXToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceYToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceZToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceXYToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceXZToPersoCenter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceYZToPersoCenter(tdstTreeInterpretContext *c);
+stNodeInterpret *DistanceXToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceYToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceZToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceXYToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceXZToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceYZToPerso(stTreeInterpretContext *c);
+stNodeInterpret *DistanceToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceXToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceYToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceZToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceXYToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceXZToPersoCenter(stTreeInterpretContext *c);
+stNodeInterpret *DistanceYZToPersoCenter(stTreeInterpretContext *c);
 
-tdstNodeInterpret *GetRadiusWP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CircularInterpolationBetween3WP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *BezierBetween3WP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DistanceToWP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetWPAbsolutePosition(tdstTreeInterpretContext *c);
+stNodeInterpret *GetRadiusWP(stTreeInterpretContext *c);
+stNodeInterpret *CircularInterpolationBetween3WP(stTreeInterpretContext *c);
+stNodeInterpret *BezierBetween3WP(stTreeInterpretContext *c);
+stNodeInterpret *DistanceToWP(stTreeInterpretContext *c);
+stNodeInterpret *GetWPAbsolutePosition(stTreeInterpretContext *c);
 
-tdstNodeInterpret *Int(tdstTreeInterpretContext *c)
+stNodeInterpret *Int(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *function = current();
-    tdstNodeInterpret *expression = op();
+    stNodeInterpret *function = current();
+    stNodeInterpret *expression = op();
     lval(function) = lval(expression);
     return function;
 }
 
-tdstNodeInterpret *RandomInt(tdstTreeInterpretContext *c)
+stNodeInterpret *RandomInt(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *function = current();
-    tdstNodeInterpret *min = op();
-    tdstNodeInterpret *max = op();
+    stNodeInterpret *function = current();
+    stNodeInterpret *min = op();
+    stNodeInterpret *max = op();
     
 //    int32 v = fnRNDCall(c->globals->rnd, 1, 0, lval(min), lval(max));
 //    lval(function) = v;
@@ -102,35 +102,35 @@ tdstNodeInterpret *RandomInt(tdstTreeInterpretContext *c)
     return function;
 }
 
-tdstNodeInterpret *Real(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Sinus(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cosinus(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Square(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SquareRoot(tdstTreeInterpretContext *c);
-tdstNodeInterpret *RandomReal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MinimumReal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MaximumReal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DegreeToRadian(tdstTreeInterpretContext *c);
-tdstNodeInterpret *RadianToDegree(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AbsoluteValue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LimitRealInRange(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Sign(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cube(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Modulo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernInf(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernSup(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernEq(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernInfEq(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernSupEq(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TernOp(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TemporalRealCombination(tdstTreeInterpretContext *c);
+stNodeInterpret *Real(stTreeInterpretContext *c);
+stNodeInterpret *Sinus(stTreeInterpretContext *c);
+stNodeInterpret *Cosinus(stTreeInterpretContext *c);
+stNodeInterpret *Square(stTreeInterpretContext *c);
+stNodeInterpret *SquareRoot(stTreeInterpretContext *c);
+stNodeInterpret *RandomReal(stTreeInterpretContext *c);
+stNodeInterpret *MinimumReal(stTreeInterpretContext *c);
+stNodeInterpret *MaximumReal(stTreeInterpretContext *c);
+stNodeInterpret *DegreeToRadian(stTreeInterpretContext *c);
+stNodeInterpret *RadianToDegree(stTreeInterpretContext *c);
+stNodeInterpret *AbsoluteValue(stTreeInterpretContext *c);
+stNodeInterpret *LimitRealInRange(stTreeInterpretContext *c);
+stNodeInterpret *Sign(stTreeInterpretContext *c);
+stNodeInterpret *Cube(stTreeInterpretContext *c);
+stNodeInterpret *Modulo(stTreeInterpretContext *c);
+stNodeInterpret *TernInf(stTreeInterpretContext *c);
+stNodeInterpret *TernSup(stTreeInterpretContext *c);
+stNodeInterpret *TernEq(stTreeInterpretContext *c);
+stNodeInterpret *TernInfEq(stTreeInterpretContext *c);
+stNodeInterpret *TernSupEq(stTreeInterpretContext *c);
+stNodeInterpret *TernOp(stTreeInterpretContext *c);
+stNodeInterpret *TemporalRealCombination(stTreeInterpretContext *c);
 
-tdstNodeInterpret *fn_AIFunction_HitPoints(tdstTreeInterpretContext *c)
+stNodeInterpret *fn_AIFunction_HitPoints(stTreeInterpretContext *c)
 {
-    tdstNodeInterpret *function = current();
-    tdstNodeInterpret *object = op();
-    tdstActor *actor = pointer(host_byteorder_32(object->param));
-    tdstStandardGameInfo *stdGame = fnActorGetStdGame(actor);
+    stNodeInterpret *function = current();
+    stNodeInterpret *object = op();
+    stActor *actor = pointer(host_byteorder_32(object->param));
+    stStandardGameInfo *stdGame = fnActorGetStdGame(actor);
     
     if (stdGame)
     {
@@ -146,7 +146,7 @@ tdstNodeInterpret *fn_AIFunction_HitPoints(tdstTreeInterpretContext *c)
             {
                 if (c->memoryAccessMode & INTERPRETER_WRITE)
                 {
-                    tdstNodeInterpret *add = op();
+                    stNodeInterpret *add = op();
                     if (stdGame->hitPoints + (uint8)lval(add) <= stdGame->maxHitPoints)
                         stdGame->hitPoints += (uint8)lval(add);
                     else
@@ -161,7 +161,7 @@ tdstNodeInterpret *fn_AIFunction_HitPoints(tdstTreeInterpretContext *c)
             {
                 if (c->memoryAccessMode & INTERPRETER_WRITE)
                 {
-                    tdstNodeInterpret *add = op();
+                    stNodeInterpret *add = op();
                     if ((int32)stdGame->hitPoints - lval(add) > 0)
                         stdGame->hitPoints -= lval(add);
                     else
@@ -195,629 +195,629 @@ tdstNodeInterpret *fn_AIFunction_HitPoints(tdstTreeInterpretContext *c)
 }
 
 /* List functions */
-tdstNodeInterpret *ListSize(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GivePersoInList(tdstTreeInterpretContext *c);
+stNodeInterpret *ListSize(stTreeInterpretContext *c);
+stNodeInterpret *GivePersoInList(stTreeInterpretContext *c);
 
 /* Vector */
-tdstNodeInterpret *AbsoluteVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *RelativeVector(tdstTreeInterpretContext *c);
+stNodeInterpret *AbsoluteVector(stTreeInterpretContext *c);
+stNodeInterpret *RelativeVector(stTreeInterpretContext *c);
 /* & space transform */
-tdstNodeInterpret *VecteurLocalToGlobal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VecteurGlobalToLocal(tdstTreeInterpretContext *c);
+stNodeInterpret *VecteurLocalToGlobal(stTreeInterpretContext *c);
+stNodeInterpret *VecteurGlobalToLocal(stTreeInterpretContext *c);
 
 /* Magnet */
-tdstNodeInterpret *GetMagnetStrength(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMagnetFar(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMagnetNear(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMagnetDuration(tdstTreeInterpretContext *c);
+stNodeInterpret *GetMagnetStrength(stTreeInterpretContext *c);
+stNodeInterpret *GetMagnetFar(stTreeInterpretContext *c);
+stNodeInterpret *GetMagnetNear(stTreeInterpretContext *c);
+stNodeInterpret *GetMagnetDuration(stTreeInterpretContext *c);
 
 /* Superobject */
-tdstNodeInterpret *SPO_GetDrawFlag(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPO_GetCollidedSPO(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPO_GetCollidedWallSPO(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPO_GetCollidedCeilingSPO(tdstTreeInterpretContext *c);
+stNodeInterpret *SPO_GetDrawFlag(stTreeInterpretContext *c);
+stNodeInterpret *GetSPO_GetCollidedSPO(stTreeInterpretContext *c);
+stNodeInterpret *GetSPO_GetCollidedWallSPO(stTreeInterpretContext *c);
+stNodeInterpret *GetSPO_GetCollidedCeilingSPO(stTreeInterpretContext *c);
 
 /* Timer */
-tdstNodeInterpret *GetTime(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetElapsedTime(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetDeltaT(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetFrameLength(tdstTreeInterpretContext *c);
+stNodeInterpret *GetTime(stTreeInterpretContext *c);
+stNodeInterpret *GetElapsedTime(stTreeInterpretContext *c);
+stNodeInterpret *GetDeltaT(stTreeInterpretContext *c);
+stNodeInterpret *GetFrameLength(stTreeInterpretContext *c);
 
 /* Joypad */
-tdstNodeInterpret *GetFirstActivePad(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputAnalogicValueX(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputRealAnalogicValueX(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputAnalogicValueY(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputRealAnalogicValueY(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputAnalogicValue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputRealAnalogicValue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VitessePadAnalogique(tdstTreeInterpretContext *c);
+stNodeInterpret *GetFirstActivePad(stTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValueX(stTreeInterpretContext *c);
+stNodeInterpret *InputRealAnalogicValueX(stTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValueY(stTreeInterpretContext *c);
+stNodeInterpret *InputRealAnalogicValueY(stTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValue(stTreeInterpretContext *c);
+stNodeInterpret *InputRealAnalogicValue(stTreeInterpretContext *c);
+stNodeInterpret *VitessePadAnalogique(stTreeInterpretContext *c);
 
-tdstNodeInterpret *GenerateObject(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CountGeneratedObjects(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetGlobalCounter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSubMapId(tdstTreeInterpretContext *c);
+stNodeInterpret *GenerateObject(stTreeInterpretContext *c);
+stNodeInterpret *CountGeneratedObjects(stTreeInterpretContext *c);
+stNodeInterpret *GetGlobalCounter(stTreeInterpretContext *c);
+stNodeInterpret *GetSubMapId(stTreeInterpretContext *c);
 
 /* Color */
-tdstNodeInterpret *AddColor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AddRed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AddGreen(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AddBlue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AddAlpha(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorRedGreenBlueAlpha(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorRedGreenBlue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorRed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorGreen(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorBlue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ColorAlpha(tdstTreeInterpretContext *c);
+stNodeInterpret *AddColor(stTreeInterpretContext *c);
+stNodeInterpret *AddRed(stTreeInterpretContext *c);
+stNodeInterpret *AddGreen(stTreeInterpretContext *c);
+stNodeInterpret *AddBlue(stTreeInterpretContext *c);
+stNodeInterpret *AddAlpha(stTreeInterpretContext *c);
+stNodeInterpret *ColorRedGreenBlueAlpha(stTreeInterpretContext *c);
+stNodeInterpret *ColorRedGreenBlue(stTreeInterpretContext *c);
+stNodeInterpret *ColorRed(stTreeInterpretContext *c);
+stNodeInterpret *ColorGreen(stTreeInterpretContext *c);
+stNodeInterpret *ColorBlue(stTreeInterpretContext *c);
+stNodeInterpret *ColorAlpha(stTreeInterpretContext *c);
 
 /* Visual material */
-tdstNodeInterpret *GetVMTColor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTSpecularCoef(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTSpecularExponent(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTDiffuseCoef(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTAmbientCoef(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTTextureScrollingCoefU(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTTextureScrollingCoefV(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTFrame(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVMTNumberOfFrames(tdstTreeInterpretContext *c);
+stNodeInterpret *GetVMTColor(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTSpecularCoef(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTSpecularExponent(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTDiffuseCoef(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTAmbientCoef(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTTextureScrollingCoefU(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTTextureScrollingCoefV(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTFrame(stTreeInterpretContext *c);
+stNodeInterpret *GetVMTNumberOfFrames(stTreeInterpretContext *c);
 
 /* Multiplayer */
-tdstNodeInterpret *MP_GetNumberOfPlayers(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MP_GetMaxNumberOfPlayers(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MP_GetViewPortOfPlayer(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MP_GetActiveMainActors(tdstTreeInterpretContext *c);
+stNodeInterpret *MP_GetNumberOfPlayers(stTreeInterpretContext *c);
+stNodeInterpret *MP_GetMaxNumberOfPlayers(stTreeInterpretContext *c);
+stNodeInterpret *MP_GetViewPortOfPlayer(stTreeInterpretContext *c);
+stNodeInterpret *MP_GetActiveMainActors(stTreeInterpretContext *c);
 
 /* Joypad */
-tdstNodeInterpret *PAD_GetHorizontalInvertion(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD_GetVerticalInvertion(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetRLITableIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetGlobalVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetHorizontalAxis(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetVerticalAxis(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetAnalogForce(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetTrueAnalogForce(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetRotationAngle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetPadSector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PAD2_GetLongDescValue(tdstTreeInterpretContext *c);
+stNodeInterpret *PAD_GetHorizontalInvertion(stTreeInterpretContext *c);
+stNodeInterpret *PAD_GetVerticalInvertion(stTreeInterpretContext *c);
+stNodeInterpret *GetRLITableIndex(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetGlobalVector(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetHorizontalAxis(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetVerticalAxis(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetAnalogForce(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetTrueAnalogForce(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetRotationAngle(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetPadSector(stTreeInterpretContext *c);
+stNodeInterpret *PAD2_GetLongDescValue(stTreeInterpretContext *c);
 
 /* Text */
-tdstNodeInterpret *TXT_GetNumberOfLines(tdstTreeInterpretContext *c);
+stNodeInterpret *TXT_GetNumberOfLines(stTreeInterpretContext *c);
 
 /* Input */
-tdstNodeInterpret *InputAnalogicValue2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputAnalogicValueV(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputRealAnalogicValueV(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputAnalogicValueZ(tdstTreeInterpretContext *c);
-tdstNodeInterpret *InputRealAnalogicValueZ(tdstTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValue2(stTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValueV(stTreeInterpretContext *c);
+stNodeInterpret *InputRealAnalogicValueV(stTreeInterpretContext *c);
+stNodeInterpret *InputAnalogicValueZ(stTreeInterpretContext *c);
+stNodeInterpret *InputRealAnalogicValueZ(stTreeInterpretContext *c);
 
 /* Save file */
-tdstNodeInterpret *SAV2_GetValue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2_GetValueIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2_GetNumberOfExistingSave(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2_GetTimeSaveGame(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2_GetDateSaveGame(tdstTreeInterpretContext *c);
+stNodeInterpret *SAV2_GetValue(stTreeInterpretContext *c);
+stNodeInterpret *SAV2_GetValueIndex(stTreeInterpretContext *c);
+stNodeInterpret *SAV2_GetNumberOfExistingSave(stTreeInterpretContext *c);
+stNodeInterpret *SAV2_GetTimeSaveGame(stTreeInterpretContext *c);
+stNodeInterpret *SAV2_GetDateSaveGame(stTreeInterpretContext *c);
 
-tdstNodeInterpret *GetTransitionSectorID(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FFBPreCreateConstantEffect(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FFBCreateAndLaunchConstantEffect(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FFBStopEffectWithFade(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CreateCheapCharacterList(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TestCheapCharacterList(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetClosestCheapCharacter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetFurthestCheapCharacter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetReactivateCheapCharacter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPointsDeMagie(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPointsDeMagieMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AjouteEtLitPointsDeMagie(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AjouteEtLitPointsDeMagieMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *EnleveEtLitPointsDeMagie(tdstTreeInterpretContext *c);
-tdstNodeInterpret *EnleveEtLitPointsDeMagieMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPointsDair(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPointsDairMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AjouteEtLitPointsDair(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AjouteEtLitPointsDairMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *EnleveEtLitPointsDair(tdstTreeInterpretContext *c);
-tdstNodeInterpret *EnleveEtLitPointsDairMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoLePlusProche(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoLePlusProcheExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoLePlusProcheDansSecteurCourant(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoLePlusProcheDansSecteurCourantExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorInFieldOfVision(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorInFieldOfVisionExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorOfFamilyInFieldOfVision(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorOfFamilyInFieldOfVisionExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorInFieldOfVisionWithOffset(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorInFieldOfVisionWithOffsetExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorOfFamilyInFOVWithOffset(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NearerActorOfFamilyInFOVWithOffsetExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNbActivePerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CibleLaPlusProche(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CibleLaPlusProcheExtended(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CibleLaPlusProcheAvecAngles(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CibleLaPlusProcheAvecAnglesExtended(tdstTreeInterpretContext *c);
+stNodeInterpret *GetTransitionSectorID(stTreeInterpretContext *c);
+stNodeInterpret *FFBPreCreateConstantEffect(stTreeInterpretContext *c);
+stNodeInterpret *FFBCreateAndLaunchConstantEffect(stTreeInterpretContext *c);
+stNodeInterpret *FFBStopEffectWithFade(stTreeInterpretContext *c);
+stNodeInterpret *CreateCheapCharacterList(stTreeInterpretContext *c);
+stNodeInterpret *TestCheapCharacterList(stTreeInterpretContext *c);
+stNodeInterpret *GetClosestCheapCharacter(stTreeInterpretContext *c);
+stNodeInterpret *GetFurthestCheapCharacter(stTreeInterpretContext *c);
+stNodeInterpret *GetReactivateCheapCharacter(stTreeInterpretContext *c);
+stNodeInterpret *LitPointsDeMagie(stTreeInterpretContext *c);
+stNodeInterpret *LitPointsDeMagieMax(stTreeInterpretContext *c);
+stNodeInterpret *AjouteEtLitPointsDeMagie(stTreeInterpretContext *c);
+stNodeInterpret *AjouteEtLitPointsDeMagieMax(stTreeInterpretContext *c);
+stNodeInterpret *EnleveEtLitPointsDeMagie(stTreeInterpretContext *c);
+stNodeInterpret *EnleveEtLitPointsDeMagieMax(stTreeInterpretContext *c);
+stNodeInterpret *LitPointsDair(stTreeInterpretContext *c);
+stNodeInterpret *LitPointsDairMax(stTreeInterpretContext *c);
+stNodeInterpret *AjouteEtLitPointsDair(stTreeInterpretContext *c);
+stNodeInterpret *AjouteEtLitPointsDairMax(stTreeInterpretContext *c);
+stNodeInterpret *EnleveEtLitPointsDair(stTreeInterpretContext *c);
+stNodeInterpret *EnleveEtLitPointsDairMax(stTreeInterpretContext *c);
+stNodeInterpret *PersoLePlusProche(stTreeInterpretContext *c);
+stNodeInterpret *PersoLePlusProcheExtended(stTreeInterpretContext *c);
+stNodeInterpret *PersoLePlusProcheDansSecteurCourant(stTreeInterpretContext *c);
+stNodeInterpret *PersoLePlusProcheDansSecteurCourantExtended(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorInFieldOfVision(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorInFieldOfVisionExtended(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorOfFamilyInFieldOfVision(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorOfFamilyInFieldOfVisionExtended(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorInFieldOfVisionWithOffset(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorInFieldOfVisionWithOffsetExtended(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorOfFamilyInFOVWithOffset(stTreeInterpretContext *c);
+stNodeInterpret *NearerActorOfFamilyInFOVWithOffsetExtended(stTreeInterpretContext *c);
+stNodeInterpret *GetNbActivePerso(stTreeInterpretContext *c);
+stNodeInterpret *CibleLaPlusProche(stTreeInterpretContext *c);
+stNodeInterpret *CibleLaPlusProcheExtended(stTreeInterpretContext *c);
+stNodeInterpret *CibleLaPlusProcheAvecAngles(stTreeInterpretContext *c);
+stNodeInterpret *CibleLaPlusProcheAvecAnglesExtended(stTreeInterpretContext *c);
 
 /* Graph */
-tdstNodeInterpret *GetCloserNetwork(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetWorkCloserCollisionWP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauWPLePlusProche(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauWPLePlusProcheZPoids(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkCloserWPOfType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkCloserCollisionWPOfType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkCloserWPOfExactType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauWPLePlusDansLAxe(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauWPLePlusDansLAxe2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauWPLePlusProcheAvecAngle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkNextWPWithCapa(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkNextWPWithExactCapa(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkNextWPWithCapaOptimalWeight(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkNextWPOfType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkNextWPOfExactType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkAffectTypeOfConnectedWP(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkAffectTypeOfConnectedWPWithCapa(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauCheminLePlusCourt(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkBuildOrderedPath(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkBuildOrderedPathCircular(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkAllocateGraphToMSWay(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkAllocateGraphToMSWayCircular(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkBuildRandomPath(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkBuildRandomCircularPath(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitIndexCourant(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauForceIndexCourant(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitPremierIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitDernierIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauIncrementIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauDecrementIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitWPAIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitCapaciteLiaisonAIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauChangeCapaciteLiaisonAIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitPoidsLiaisonAIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauChangePoidsLiaisonAIndex(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkGetIndexOfWPInMSWay(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkForceWPToCurrent(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkTestTheEnds(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitCapaciteLiaisonDansGraph(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauChangeCapaciteLiaisonDansGraph(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauLitPoidsLiaisonDansGraph(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReseauChangePoidsLiaisonDansGraph(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NetworkGetTypeOfWP(tdstTreeInterpretContext *c);
+stNodeInterpret *GetCloserNetwork(stTreeInterpretContext *c);
+stNodeInterpret *NetWorkCloserCollisionWP(stTreeInterpretContext *c);
+stNodeInterpret *ReseauWPLePlusProche(stTreeInterpretContext *c);
+stNodeInterpret *ReseauWPLePlusProcheZPoids(stTreeInterpretContext *c);
+stNodeInterpret *NetworkCloserWPOfType(stTreeInterpretContext *c);
+stNodeInterpret *NetworkCloserCollisionWPOfType(stTreeInterpretContext *c);
+stNodeInterpret *NetworkCloserWPOfExactType(stTreeInterpretContext *c);
+stNodeInterpret *ReseauWPLePlusDansLAxe(stTreeInterpretContext *c);
+stNodeInterpret *ReseauWPLePlusDansLAxe2(stTreeInterpretContext *c);
+stNodeInterpret *ReseauWPLePlusProcheAvecAngle(stTreeInterpretContext *c);
+stNodeInterpret *NetworkNextWPWithCapa(stTreeInterpretContext *c);
+stNodeInterpret *NetworkNextWPWithExactCapa(stTreeInterpretContext *c);
+stNodeInterpret *NetworkNextWPWithCapaOptimalWeight(stTreeInterpretContext *c);
+stNodeInterpret *NetworkNextWPOfType(stTreeInterpretContext *c);
+stNodeInterpret *NetworkNextWPOfExactType(stTreeInterpretContext *c);
+stNodeInterpret *NetworkAffectTypeOfConnectedWP(stTreeInterpretContext *c);
+stNodeInterpret *NetworkAffectTypeOfConnectedWPWithCapa(stTreeInterpretContext *c);
+stNodeInterpret *ReseauCheminLePlusCourt(stTreeInterpretContext *c);
+stNodeInterpret *NetworkBuildOrderedPath(stTreeInterpretContext *c);
+stNodeInterpret *NetworkBuildOrderedPathCircular(stTreeInterpretContext *c);
+stNodeInterpret *NetworkAllocateGraphToMSWay(stTreeInterpretContext *c);
+stNodeInterpret *NetworkAllocateGraphToMSWayCircular(stTreeInterpretContext *c);
+stNodeInterpret *NetworkBuildRandomPath(stTreeInterpretContext *c);
+stNodeInterpret *NetworkBuildRandomCircularPath(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitIndexCourant(stTreeInterpretContext *c);
+stNodeInterpret *ReseauForceIndexCourant(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitPremierIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitDernierIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauIncrementIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauDecrementIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitWPAIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitCapaciteLiaisonAIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauChangeCapaciteLiaisonAIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitPoidsLiaisonAIndex(stTreeInterpretContext *c);
+stNodeInterpret *ReseauChangePoidsLiaisonAIndex(stTreeInterpretContext *c);
+stNodeInterpret *NetworkGetIndexOfWPInMSWay(stTreeInterpretContext *c);
+stNodeInterpret *NetworkForceWPToCurrent(stTreeInterpretContext *c);
+stNodeInterpret *NetworkTestTheEnds(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitCapaciteLiaisonDansGraph(stTreeInterpretContext *c);
+stNodeInterpret *ReseauChangeCapaciteLiaisonDansGraph(stTreeInterpretContext *c);
+stNodeInterpret *ReseauLitPoidsLiaisonDansGraph(stTreeInterpretContext *c);
+stNodeInterpret *ReseauChangePoidsLiaisonDansGraph(stTreeInterpretContext *c);
+stNodeInterpret *NetworkGetTypeOfWP(stTreeInterpretContext *c);
 
 /* Capabilities */
-tdstNodeInterpret *GetCapabilities(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CapabilityAtBitNumber(tdstTreeInterpretContext *c);
+stNodeInterpret *GetCapabilities(stTreeInterpretContext *c);
+stNodeInterpret *CapabilityAtBitNumber(stTreeInterpretContext *c);
 
-tdstNodeInterpret *GetScrollSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MTGetScrollSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNbFrame(tdstTreeInterpretContext *c);
+stNodeInterpret *GetScrollSpeed(stTreeInterpretContext *c);
+stNodeInterpret *MTGetScrollSpeed(stTreeInterpretContext *c);
+stNodeInterpret *GetNbFrame(stTreeInterpretContext *c);
 
 /* Vector function */
-tdstNodeInterpret *DotProduct(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CrossProduct(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Normalize(tdstTreeInterpretContext *c);
+stNodeInterpret *DotProduct(stTreeInterpretContext *c);
+stNodeInterpret *CrossProduct(stTreeInterpretContext *c);
+stNodeInterpret *Normalize(stTreeInterpretContext *c);
 
 /* Superobject */
-tdstNodeInterpret *GetSPOCoordinates(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPOSighting(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPOHorizon(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSPOBanking(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetTractionFactor(tdstTreeInterpretContext *c);
+stNodeInterpret *GetSPOCoordinates(stTreeInterpretContext *c);
+stNodeInterpret *GetSPOSighting(stTreeInterpretContext *c);
+stNodeInterpret *GetSPOHorizon(stTreeInterpretContext *c);
+stNodeInterpret *GetSPOBanking(stTreeInterpretContext *c);
+stNodeInterpret *GetTractionFactor(stTreeInterpretContext *c);
 
 /* Collide object type */
-tdstNodeInterpret *GetCenterZDEType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCenterZDMType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCenterZDRType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCenterZDDType(tdstTreeInterpretContext *c);
+stNodeInterpret *GetCenterZDEType(stTreeInterpretContext *c);
+stNodeInterpret *GetCenterZDMType(stTreeInterpretContext *c);
+stNodeInterpret *GetCenterZDRType(stTreeInterpretContext *c);
+stNodeInterpret *GetCenterZDDType(stTreeInterpretContext *c);
 
-tdstNodeInterpret *TextAffiche(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MJTextAffiche(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCPUCounter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TurnToPosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FormatMemCard(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetDefaultLanguage(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PS2_MagicBox(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2_DoVarsNeedToBeSet(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CINEGetGenerateEvent(tdstTreeInterpretContext *c);
-tdstNodeInterpret *StringCompare(tdstTreeInterpretContext *c);
-tdstNodeInterpret *EmptyString(tdstTreeInterpretContext *c);
+stNodeInterpret *TextAffiche(stTreeInterpretContext *c);
+stNodeInterpret *MJTextAffiche(stTreeInterpretContext *c);
+stNodeInterpret *GetCPUCounter(stTreeInterpretContext *c);
+stNodeInterpret *TurnToPosition(stTreeInterpretContext *c);
+stNodeInterpret *FormatMemCard(stTreeInterpretContext *c);
+stNodeInterpret *GetDefaultLanguage(stTreeInterpretContext *c);
+stNodeInterpret *PS2_MagicBox(stTreeInterpretContext *c);
+stNodeInterpret *SAV2_DoVarsNeedToBeSet(stTreeInterpretContext *c);
+stNodeInterpret *CINEGetGenerateEvent(stTreeInterpretContext *c);
+stNodeInterpret *StringCompare(stTreeInterpretContext *c);
+stNodeInterpret *EmptyString(stTreeInterpretContext *c);
 
 /* Actor */
-tdstNodeInterpret *VitesseHorizontaleDuPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VitesseVerticaleDuPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetPersoZoomFactor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetPersoSighting(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetPersoHorizon(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetPersoBanking(tdstTreeInterpretContext *c);
+stNodeInterpret *VitesseHorizontaleDuPerso(stTreeInterpretContext *c);
+stNodeInterpret *VitesseVerticaleDuPerso(stTreeInterpretContext *c);
+stNodeInterpret *GetPersoZoomFactor(stTreeInterpretContext *c);
+stNodeInterpret *GetPersoSighting(stTreeInterpretContext *c);
+stNodeInterpret *GetPersoHorizon(stTreeInterpretContext *c);
+stNodeInterpret *GetPersoBanking(stTreeInterpretContext *c);
 
 /* ZDx */
-tdstNodeInterpret *LitPositionZDM(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPositionZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitPositionZDD(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitCentreZDM(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitCentreZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitCentreZDD(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitAxeZDM(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitAxeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitAxeZDD(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitDimensionZDM(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitDimensionZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LitDimensionZDD(tdstTreeInterpretContext *c);
+stNodeInterpret *LitPositionZDM(stTreeInterpretContext *c);
+stNodeInterpret *LitPositionZDE(stTreeInterpretContext *c);
+stNodeInterpret *LitPositionZDD(stTreeInterpretContext *c);
+stNodeInterpret *LitCentreZDM(stTreeInterpretContext *c);
+stNodeInterpret *LitCentreZDE(stTreeInterpretContext *c);
+stNodeInterpret *LitCentreZDD(stTreeInterpretContext *c);
+stNodeInterpret *LitAxeZDM(stTreeInterpretContext *c);
+stNodeInterpret *LitAxeZDE(stTreeInterpretContext *c);
+stNodeInterpret *LitAxeZDD(stTreeInterpretContext *c);
+stNodeInterpret *LitDimensionZDM(stTreeInterpretContext *c);
+stNodeInterpret *LitDimensionZDE(stTreeInterpretContext *c);
+stNodeInterpret *LitDimensionZDD(stTreeInterpretContext *c);
 
 /* Vector */
-tdstNodeInterpret *VecteurPointAxe(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VecteurPointSegment(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VectorContribution(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VectorCombination(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TemporalVectorCombination(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ScaledVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetVectorNorm(tdstTreeInterpretContext *c);
-tdstNodeInterpret *RotateVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VectorAngle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VectorCos(tdstTreeInterpretContext *c);
-tdstNodeInterpret *VectorSin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNormalCollideVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNormalSlopeVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNormalSlopeVectorAndAngle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNormalCollideVector2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollidePoint(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollidePoint2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetHandsCollidePoint(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideRate(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideRate2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideMaterialType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideMaterialType2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideMaterialDirection(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideMaterialCoeff(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollideMaterialTypeForAi(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollisionPoint(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollisionVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollisionPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollisionPointMaterial(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetFirstCollisionInfo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLastTraversedMaterialType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLastTraversedMaterial(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCurrentCollidedGMT(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetColliderType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetColliderActor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetColliderVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetColliderReal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLastCollisionActor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ComputeRebondVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleAbsolutePosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleRelativePosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleZoomFactor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleSighting(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleHorizon(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetModuleBanking(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CastIntegerToChannel(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlotDate(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlotName(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlotScore(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetStringCharAt(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ScanAsciiKey(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetFormattedTextInfo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetInputEntryName(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicGravityFactor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicSlide(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicRebound(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicSlopeLimit(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicInertiaX(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicInertiaY(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicInertiaZ(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicTiltIntensity(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicTiltInertia(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicTiltOrigin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicMaxSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicStreamPriority(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicStreamSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMechanicStreamFactor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlideFactorX(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlideFactorY(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSlideFactorZ(tdstTreeInterpretContext *c);
-tdstNodeInterpret *JumpImpulsion(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSpeedAnim(tdstTreeInterpretContext *c);
-tdstNodeInterpret *HierGetFather(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetActivationZDD(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetActivationZDM(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetActivationZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetActivationZDR(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCollisionFrequency(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetBrainFrequency(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLightFrequency(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetBooleanInArray(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNumberOfBooleanInArray(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetButtonName(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetOneCustomFloat(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetOneCustomLong(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetOneCustomVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetDriversAvailable(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCurrentLanguageId(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetNbLanguages(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLanguageText(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TextToInt(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NbAvailableResolution(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CurrentResolution(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SaveResolution(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsResolutionAvailable(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetBrightness(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NameResolution(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetTextureFiltering(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetAntiAliasing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetSaturationDistance(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetBackgroundDistance(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetTooFarLimit(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetTransparencyZoneMin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetTransparencyZoneMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetCurrentFrame(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ExecuteVariable(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ComputeProtectKey(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Xor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *And(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Or(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Not(tdstTreeInterpretContext *c);
-tdstNodeInterpret *DivUnsigned(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MulUnsigned(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AddUnsigned(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SubUnsigned(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetMemoryValue(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetXBoxRegion(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CreditsBegin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CreditsGetChapter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CreditsGetPageFromCurrentChapter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetShiftTarget(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetShiftPos(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetDistMin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetDistMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetBoundDistMin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetBoundDistMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngleAlpha(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngleShiftAlpha(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngleTheta(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngleShiftTheta(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetLinearSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetLinearIncreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetLinearDecreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngularSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngularIncreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetAngularDecreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTargetSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTargetIncreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTargetDecreaseSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetFocal(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetZMin(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetZMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTargetedSuperObject(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTypeOfViewport(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetCameraOfViewport(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetMainCamera(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_ComputeTargetWithTgtPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetCurrentTargetPosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetSectorCameraType(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetBestPos(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetTransparencyFlag(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_SetMirrorFlag(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_GetMirrorFlag(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CAM_GetViewportCoordinates(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CSHBackMode(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CSHMarioMode(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CSHStrafeLockMode(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetViewFinderDistance(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LinkInit(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LinkDoBehaviour(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LinkKill(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LinkGetNoCutpoints(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LinkGetCutPoint(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FollowLinkDirection(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSoundHandle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSendSoundRequestHandleState(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSendVoiceRequestHandleState(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSendMusicRequestHandleState(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSendAmbianceRequestHandleState(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSendMenuSndRequestHandleState(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetSoundVolume(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetVoiceVolume(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetMusicVolume(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetAmbianceVolume(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetMenuSndVolume(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsSoundPlaying(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SND_GetMusicMarker(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MonitoringSetVariable(tdstTreeInterpretContext *c);
-tdstNodeInterpret *R3GetScore(tdstTreeInterpretContext *c);
-tdstNodeInterpret *R3GetNbCage(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PS2DemoGetParameter(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetScreenDisplayFrequency(tdstTreeInterpretContext *c);
-tdstNodeInterpret *GetLastSaveGameOperationResult(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SinEffect_GetSinusPosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SFX_GetLightReflectionStatus(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SFX_GetWaterCirclesStatus(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SFX_IsLightReflectionPossible(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SFX_IsWaterCirclesPossible(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AGO_GetHandle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMcValid(tdstTreeInterpretContext *c);
-tdstNodeInterpret *FormatMc(tdstTreeInterpretContext *c);
+stNodeInterpret *VecteurPointAxe(stTreeInterpretContext *c);
+stNodeInterpret *VecteurPointSegment(stTreeInterpretContext *c);
+stNodeInterpret *VectorContribution(stTreeInterpretContext *c);
+stNodeInterpret *VectorCombination(stTreeInterpretContext *c);
+stNodeInterpret *TemporalVectorCombination(stTreeInterpretContext *c);
+stNodeInterpret *ScaledVector(stTreeInterpretContext *c);
+stNodeInterpret *GetVectorNorm(stTreeInterpretContext *c);
+stNodeInterpret *RotateVector(stTreeInterpretContext *c);
+stNodeInterpret *VectorAngle(stTreeInterpretContext *c);
+stNodeInterpret *VectorCos(stTreeInterpretContext *c);
+stNodeInterpret *VectorSin(stTreeInterpretContext *c);
+stNodeInterpret *GetNormalCollideVector(stTreeInterpretContext *c);
+stNodeInterpret *GetNormalSlopeVector(stTreeInterpretContext *c);
+stNodeInterpret *GetNormalSlopeVectorAndAngle(stTreeInterpretContext *c);
+stNodeInterpret *GetNormalCollideVector2(stTreeInterpretContext *c);
+stNodeInterpret *GetCollidePoint(stTreeInterpretContext *c);
+stNodeInterpret *GetCollidePoint2(stTreeInterpretContext *c);
+stNodeInterpret *GetHandsCollidePoint(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideRate(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideRate2(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideMaterialType(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideMaterialType2(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideMaterialDirection(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideMaterialCoeff(stTreeInterpretContext *c);
+stNodeInterpret *GetCollideMaterialTypeForAi(stTreeInterpretContext *c);
+stNodeInterpret *GetCollisionPoint(stTreeInterpretContext *c);
+stNodeInterpret *GetCollisionVector(stTreeInterpretContext *c);
+stNodeInterpret *GetCollisionPerso(stTreeInterpretContext *c);
+stNodeInterpret *GetCollisionPointMaterial(stTreeInterpretContext *c);
+stNodeInterpret *GetFirstCollisionInfo(stTreeInterpretContext *c);
+stNodeInterpret *GetLastTraversedMaterialType(stTreeInterpretContext *c);
+stNodeInterpret *GetLastTraversedMaterial(stTreeInterpretContext *c);
+stNodeInterpret *GetCurrentCollidedGMT(stTreeInterpretContext *c);
+stNodeInterpret *GetColliderType(stTreeInterpretContext *c);
+stNodeInterpret *GetColliderActor(stTreeInterpretContext *c);
+stNodeInterpret *GetColliderVector(stTreeInterpretContext *c);
+stNodeInterpret *GetColliderReal(stTreeInterpretContext *c);
+stNodeInterpret *GetLastCollisionActor(stTreeInterpretContext *c);
+stNodeInterpret *ComputeRebondVector(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleAbsolutePosition(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleRelativePosition(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleZoomFactor(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleSighting(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleHorizon(stTreeInterpretContext *c);
+stNodeInterpret *GetModuleBanking(stTreeInterpretContext *c);
+stNodeInterpret *CastIntegerToChannel(stTreeInterpretContext *c);
+stNodeInterpret *GetSlotDate(stTreeInterpretContext *c);
+stNodeInterpret *GetSlotName(stTreeInterpretContext *c);
+stNodeInterpret *GetSlotScore(stTreeInterpretContext *c);
+stNodeInterpret *GetStringCharAt(stTreeInterpretContext *c);
+stNodeInterpret *ScanAsciiKey(stTreeInterpretContext *c);
+stNodeInterpret *GetFormattedTextInfo(stTreeInterpretContext *c);
+stNodeInterpret *GetInputEntryName(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicGravityFactor(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicSlide(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicRebound(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicSlopeLimit(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicInertiaX(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicInertiaY(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicInertiaZ(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicTiltIntensity(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicTiltInertia(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicTiltOrigin(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicMaxSpeed(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicStreamPriority(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicStreamSpeed(stTreeInterpretContext *c);
+stNodeInterpret *GetMechanicStreamFactor(stTreeInterpretContext *c);
+stNodeInterpret *GetSlideFactorX(stTreeInterpretContext *c);
+stNodeInterpret *GetSlideFactorY(stTreeInterpretContext *c);
+stNodeInterpret *GetSlideFactorZ(stTreeInterpretContext *c);
+stNodeInterpret *JumpImpulsion(stTreeInterpretContext *c);
+stNodeInterpret *GetSpeedAnim(stTreeInterpretContext *c);
+stNodeInterpret *HierGetFather(stTreeInterpretContext *c);
+stNodeInterpret *GetActivationZDD(stTreeInterpretContext *c);
+stNodeInterpret *GetActivationZDM(stTreeInterpretContext *c);
+stNodeInterpret *GetActivationZDE(stTreeInterpretContext *c);
+stNodeInterpret *GetActivationZDR(stTreeInterpretContext *c);
+stNodeInterpret *GetCollisionFrequency(stTreeInterpretContext *c);
+stNodeInterpret *GetBrainFrequency(stTreeInterpretContext *c);
+stNodeInterpret *GetLightFrequency(stTreeInterpretContext *c);
+stNodeInterpret *GetBooleanInArray(stTreeInterpretContext *c);
+stNodeInterpret *GetNumberOfBooleanInArray(stTreeInterpretContext *c);
+stNodeInterpret *GetButtonName(stTreeInterpretContext *c);
+stNodeInterpret *GetOneCustomFloat(stTreeInterpretContext *c);
+stNodeInterpret *GetOneCustomLong(stTreeInterpretContext *c);
+stNodeInterpret *GetOneCustomVector(stTreeInterpretContext *c);
+stNodeInterpret *GetDriversAvailable(stTreeInterpretContext *c);
+stNodeInterpret *GetCurrentLanguageId(stTreeInterpretContext *c);
+stNodeInterpret *GetNbLanguages(stTreeInterpretContext *c);
+stNodeInterpret *GetLanguageText(stTreeInterpretContext *c);
+stNodeInterpret *TextToInt(stTreeInterpretContext *c);
+stNodeInterpret *NbAvailableResolution(stTreeInterpretContext *c);
+stNodeInterpret *CurrentResolution(stTreeInterpretContext *c);
+stNodeInterpret *SaveResolution(stTreeInterpretContext *c);
+stNodeInterpret *IsResolutionAvailable(stTreeInterpretContext *c);
+stNodeInterpret *GetBrightness(stTreeInterpretContext *c);
+stNodeInterpret *NameResolution(stTreeInterpretContext *c);
+stNodeInterpret *GetTextureFiltering(stTreeInterpretContext *c);
+stNodeInterpret *GetAntiAliasing(stTreeInterpretContext *c);
+stNodeInterpret *GetSaturationDistance(stTreeInterpretContext *c);
+stNodeInterpret *GetBackgroundDistance(stTreeInterpretContext *c);
+stNodeInterpret *GetTooFarLimit(stTreeInterpretContext *c);
+stNodeInterpret *GetTransparencyZoneMin(stTreeInterpretContext *c);
+stNodeInterpret *GetTransparencyZoneMax(stTreeInterpretContext *c);
+stNodeInterpret *GetCurrentFrame(stTreeInterpretContext *c);
+stNodeInterpret *ExecuteVariable(stTreeInterpretContext *c);
+stNodeInterpret *ComputeProtectKey(stTreeInterpretContext *c);
+stNodeInterpret *Xor(stTreeInterpretContext *c);
+stNodeInterpret *And(stTreeInterpretContext *c);
+stNodeInterpret *Or(stTreeInterpretContext *c);
+stNodeInterpret *Not(stTreeInterpretContext *c);
+stNodeInterpret *DivUnsigned(stTreeInterpretContext *c);
+stNodeInterpret *MulUnsigned(stTreeInterpretContext *c);
+stNodeInterpret *AddUnsigned(stTreeInterpretContext *c);
+stNodeInterpret *SubUnsigned(stTreeInterpretContext *c);
+stNodeInterpret *GetMemoryValue(stTreeInterpretContext *c);
+stNodeInterpret *GetXBoxRegion(stTreeInterpretContext *c);
+stNodeInterpret *CreditsBegin(stTreeInterpretContext *c);
+stNodeInterpret *CreditsGetChapter(stTreeInterpretContext *c);
+stNodeInterpret *CreditsGetPageFromCurrentChapter(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetShiftTarget(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetShiftPos(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetDistMin(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetDistMax(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetBoundDistMin(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetBoundDistMax(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngleAlpha(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngleShiftAlpha(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngleTheta(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngleShiftTheta(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetLinearSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetLinearIncreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetLinearDecreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngularSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngularIncreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetAngularDecreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTargetSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTargetIncreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTargetDecreaseSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetFocal(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetZMin(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetZMax(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTargetedSuperObject(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTypeOfViewport(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetCameraOfViewport(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetMainCamera(stTreeInterpretContext *c);
+stNodeInterpret *Cam_ComputeTargetWithTgtPerso(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetCurrentTargetPosition(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetSectorCameraType(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetBestPos(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetTransparencyFlag(stTreeInterpretContext *c);
+stNodeInterpret *Cam_SetMirrorFlag(stTreeInterpretContext *c);
+stNodeInterpret *Cam_GetMirrorFlag(stTreeInterpretContext *c);
+stNodeInterpret *CAM_GetViewportCoordinates(stTreeInterpretContext *c);
+stNodeInterpret *CSHBackMode(stTreeInterpretContext *c);
+stNodeInterpret *CSHMarioMode(stTreeInterpretContext *c);
+stNodeInterpret *CSHStrafeLockMode(stTreeInterpretContext *c);
+stNodeInterpret *GetViewFinderDistance(stTreeInterpretContext *c);
+stNodeInterpret *LinkInit(stTreeInterpretContext *c);
+stNodeInterpret *LinkDoBehaviour(stTreeInterpretContext *c);
+stNodeInterpret *LinkKill(stTreeInterpretContext *c);
+stNodeInterpret *LinkGetNoCutpoints(stTreeInterpretContext *c);
+stNodeInterpret *LinkGetCutPoint(stTreeInterpretContext *c);
+stNodeInterpret *FollowLinkDirection(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSoundHandle(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSendSoundRequestHandleState(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSendVoiceRequestHandleState(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSendMusicRequestHandleState(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSendAmbianceRequestHandleState(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSendMenuSndRequestHandleState(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetSoundVolume(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetVoiceVolume(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetMusicVolume(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetAmbianceVolume(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetMenuSndVolume(stTreeInterpretContext *c);
+stNodeInterpret *IsSoundPlaying(stTreeInterpretContext *c);
+stNodeInterpret *SND_GetMusicMarker(stTreeInterpretContext *c);
+stNodeInterpret *MonitoringSetVariable(stTreeInterpretContext *c);
+stNodeInterpret *R3GetScore(stTreeInterpretContext *c);
+stNodeInterpret *R3GetNbCage(stTreeInterpretContext *c);
+stNodeInterpret *PS2DemoGetParameter(stTreeInterpretContext *c);
+stNodeInterpret *GetScreenDisplayFrequency(stTreeInterpretContext *c);
+stNodeInterpret *GetLastSaveGameOperationResult(stTreeInterpretContext *c);
+stNodeInterpret *SinEffect_GetSinusPosition(stTreeInterpretContext *c);
+stNodeInterpret *SFX_GetLightReflectionStatus(stTreeInterpretContext *c);
+stNodeInterpret *SFX_GetWaterCirclesStatus(stTreeInterpretContext *c);
+stNodeInterpret *SFX_IsLightReflectionPossible(stTreeInterpretContext *c);
+stNodeInterpret *SFX_IsWaterCirclesPossible(stTreeInterpretContext *c);
+stNodeInterpret *AGO_GetHandle(stTreeInterpretContext *c);
+stNodeInterpret *IsMcValid(stTreeInterpretContext *c);
+stNodeInterpret *FormatMc(stTreeInterpretContext *c);
 
 
 #pragma mark - Conditions
 
 
-tdstNodeInterpret *CollidePersoZDDNoWithPerso(tdstTreeInterpretContext *c); // 10
-tdstNodeInterpret *CollideModuleZDDNoWithPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoAllZDDWithPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoZDDWithAnyPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideModuleZDDWithAnyPerso(tdstTreeInterpretContext *c); // 14
+stNodeInterpret *CollidePersoZDDNoWithPerso(stTreeInterpretContext *c); // 10
+stNodeInterpret *CollideModuleZDDNoWithPerso(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoAllZDDWithPerso(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoZDDWithAnyPerso(stTreeInterpretContext *c);
+stNodeInterpret *CollideModuleZDDWithAnyPerso(stTreeInterpretContext *c); // 14
 
-tdstNodeInterpret *CollidePersoZDENoWithPersoZDENo(tdstTreeInterpretContext *c); // 15
-tdstNodeInterpret *CollideModuleZDENoWithPersoZDENo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoZDENoWithModuleZDENo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideModuleZDENoWithModuleZDENo(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoZDENoWithPersoTypeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideModuleZDENoWithPersoTypeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoTypeZDEWithPersoTypeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoAllZDEWithPersoAllZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoTypeZDEWithPersoAllZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoAllZDEWithPersoTypeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollidePersoZDENoWithTypeZDE(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideModuleZDENoWithTypeZDE(tdstTreeInterpretContext *c); // 26
+stNodeInterpret *CollidePersoZDENoWithPersoZDENo(stTreeInterpretContext *c); // 15
+stNodeInterpret *CollideModuleZDENoWithPersoZDENo(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoZDENoWithModuleZDENo(stTreeInterpretContext *c);
+stNodeInterpret *CollideModuleZDENoWithModuleZDENo(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoZDENoWithPersoTypeZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollideModuleZDENoWithPersoTypeZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoTypeZDEWithPersoTypeZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoAllZDEWithPersoAllZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoTypeZDEWithPersoAllZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoAllZDEWithPersoTypeZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollidePersoZDENoWithTypeZDE(stTreeInterpretContext *c);
+stNodeInterpret *CollideModuleZDENoWithTypeZDE(stTreeInterpretContext *c); // 26
 
-tdstNodeInterpret *CollideWithGround(tdstTreeInterpretContext *c); // 27
-tdstNodeInterpret *CollideWithWall(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideWithNothing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideWithCeiling(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideWithPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideWithWater(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CollideWithThisPerso(tdstTreeInterpretContext *c); // 33
+stNodeInterpret *CollideWithGround(stTreeInterpretContext *c); // 27
+stNodeInterpret *CollideWithWall(stTreeInterpretContext *c);
+stNodeInterpret *CollideWithNothing(stTreeInterpretContext *c);
+stNodeInterpret *CollideWithCeiling(stTreeInterpretContext *c);
+stNodeInterpret *CollideWithPerso(stTreeInterpretContext *c);
+stNodeInterpret *CollideWithWater(stTreeInterpretContext *c);
+stNodeInterpret *CollideWithThisPerso(stTreeInterpretContext *c); // 33
 
-tdstNodeInterpret *ZDMCollideWithGround(tdstTreeInterpretContext *c); // 34
-tdstNodeInterpret *ZDMCollideWithWall(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ZDMCollideWithNothing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ZDMCollideWithCeiling(tdstTreeInterpretContext *c); // 37
+stNodeInterpret *ZDMCollideWithGround(stTreeInterpretContext *c); // 34
+stNodeInterpret *ZDMCollideWithWall(stTreeInterpretContext *c);
+stNodeInterpret *ZDMCollideWithNothing(stTreeInterpretContext *c);
+stNodeInterpret *ZDMCollideWithCeiling(stTreeInterpretContext *c); // 37
 
-tdstNodeInterpret *IsPersoInList(tdstTreeInterpretContext *c); // 38
-tdstNodeInterpret *IsModelInList(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsFamilyInList(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ListEmptyTest(tdstTreeInterpretContext *c); // 41
+stNodeInterpret *IsPersoInList(stTreeInterpretContext *c); // 38
+stNodeInterpret *IsModelInList(stTreeInterpretContext *c);
+stNodeInterpret *IsFamilyInList(stTreeInterpretContext *c);
+stNodeInterpret *ListEmptyTest(stTreeInterpretContext *c); // 41
 
-tdstNodeInterpret *UserEvent_IsSet(tdstTreeInterpretContext *c); // 42
-tdstNodeInterpret *UserEvent_IsSet2(tdstTreeInterpretContext *c);
-tdstNodeInterpret *UserEvent_IsSet3(tdstTreeInterpretContext *c); // 44
+stNodeInterpret *UserEvent_IsSet(stTreeInterpretContext *c); // 42
+stNodeInterpret *UserEvent_IsSet2(stTreeInterpretContext *c);
+stNodeInterpret *UserEvent_IsSet3(stTreeInterpretContext *c); // 44
 
-tdstNodeInterpret *PressedBut(tdstTreeInterpretContext *c); // 45
-tdstNodeInterpret *JustPressedBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReleasedBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *JustReleasedBut(tdstTreeInterpretContext *c); // 48
+stNodeInterpret *PressedBut(stTreeInterpretContext *c); // 45
+stNodeInterpret *JustPressedBut(stTreeInterpretContext *c);
+stNodeInterpret *ReleasedBut(stTreeInterpretContext *c);
+stNodeInterpret *JustReleasedBut(stTreeInterpretContext *c); // 48
 
-tdstNodeInterpret *IsTimeElapsed(tdstTreeInterpretContext *c); // 49
+stNodeInterpret *IsTimeElapsed(stTreeInterpretContext *c); // 49
 
-tdstNodeInterpret *IsValidObject(tdstTreeInterpretContext *c); // 50
-tdstNodeInterpret *IsValidWayPoint(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidGMT(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidVMT(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidAction(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidText(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidSPO(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsValidGraph(tdstTreeInterpretContext *c); // 57
+stNodeInterpret *IsValidObject(stTreeInterpretContext *c); // 50
+stNodeInterpret *IsValidWayPoint(stTreeInterpretContext *c);
+stNodeInterpret *IsValidGMT(stTreeInterpretContext *c);
+stNodeInterpret *IsValidVMT(stTreeInterpretContext *c);
+stNodeInterpret *IsValidAction(stTreeInterpretContext *c);
+stNodeInterpret *IsValidText(stTreeInterpretContext *c);
+stNodeInterpret *IsValidSPO(stTreeInterpretContext *c);
+stNodeInterpret *IsValidGraph(stTreeInterpretContext *c); // 57
 
-tdstNodeInterpret *SeePerso(tdstTreeInterpretContext *c); // 58
-tdstNodeInterpret *IsActivable(tdstTreeInterpretContext *c); // 59
-tdstNodeInterpret *IsAlreadyHandled(tdstTreeInterpretContext *c); // 60
-tdstNodeInterpret *Alw_IsMine(tdstTreeInterpretContext *c); // 61
+stNodeInterpret *SeePerso(stTreeInterpretContext *c); // 58
+stNodeInterpret *IsActivable(stTreeInterpretContext *c); // 59
+stNodeInterpret *IsAlreadyHandled(stTreeInterpretContext *c); // 60
+stNodeInterpret *Alw_IsMine(stTreeInterpretContext *c); // 61
 
-tdstNodeInterpret *IsPersoLightOn(tdstTreeInterpretContext *c); // 62
-tdstNodeInterpret *IsPersoLightPulseOn(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsPersoLightGyroPhareOn(tdstTreeInterpretContext *c); // 64
+stNodeInterpret *IsPersoLightOn(stTreeInterpretContext *c); // 62
+stNodeInterpret *IsPersoLightPulseOn(stTreeInterpretContext *c);
+stNodeInterpret *IsPersoLightGyroPhareOn(stTreeInterpretContext *c); // 64
 
-tdstNodeInterpret *IsRLITransitionInProgress(tdstTreeInterpretContext *c); // 65
-tdstNodeInterpret *IsInAlwaysActiveList(tdstTreeInterpretContext *c); // 66
-tdstNodeInterpret *IsAlwaysActive(tdstTreeInterpretContext *c); // 67
-tdstNodeInterpret *IsAnActivePad(tdstTreeInterpretContext *c); // 68
-tdstNodeInterpret *IsMultitap(tdstTreeInterpretContext *c); // 69
-tdstNodeInterpret *SAV2_IsValid(tdstTreeInterpretContext *c); // 70
-tdstNodeInterpret *IsWidescreen(tdstTreeInterpretContext *c); // 71
-tdstNodeInterpret *EngineIsInPAL(tdstTreeInterpretContext *c); // 72
+stNodeInterpret *IsRLITransitionInProgress(stTreeInterpretContext *c); // 65
+stNodeInterpret *IsInAlwaysActiveList(stTreeInterpretContext *c); // 66
+stNodeInterpret *IsAlwaysActive(stTreeInterpretContext *c); // 67
+stNodeInterpret *IsAnActivePad(stTreeInterpretContext *c); // 68
+stNodeInterpret *IsMultitap(stTreeInterpretContext *c); // 69
+stNodeInterpret *SAV2_IsValid(stTreeInterpretContext *c); // 70
+stNodeInterpret *IsWidescreen(stTreeInterpretContext *c); // 71
+stNodeInterpret *EngineIsInPAL(stTreeInterpretContext *c); // 72
 
-tdstNodeInterpret *IsZDMCollideWithObstacle(tdstTreeInterpretContext *c); // 73
-tdstNodeInterpret *IsZDMCollideWithWall(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsZDMCollideWithGround(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsZDMCollideWithCeiling(tdstTreeInterpretContext *c); // 76
+stNodeInterpret *IsZDMCollideWithObstacle(stTreeInterpretContext *c); // 73
+stNodeInterpret *IsZDMCollideWithWall(stTreeInterpretContext *c);
+stNodeInterpret *IsZDMCollideWithGround(stTreeInterpretContext *c);
+stNodeInterpret *IsZDMCollideWithCeiling(stTreeInterpretContext *c); // 76
 
-tdstNodeInterpret *CmtIdentifierContainsMask(tdstTreeInterpretContext *c); // 77
-tdstNodeInterpret *HitByCollider(tdstTreeInterpretContext *c); // 78
-tdstNodeInterpret *IsTypeOfGMTCollide(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInComport(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInReflexComport(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInAction(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ChangeActionEnable(tdstTreeInterpretContext *c); // 83
+stNodeInterpret *CmtIdentifierContainsMask(stTreeInterpretContext *c); // 77
+stNodeInterpret *HitByCollider(stTreeInterpretContext *c); // 78
+stNodeInterpret *IsTypeOfGMTCollide(stTreeInterpretContext *c);
+stNodeInterpret *IsInComport(stTreeInterpretContext *c);
+stNodeInterpret *IsInReflexComport(stTreeInterpretContext *c);
+stNodeInterpret *IsInAction(stTreeInterpretContext *c);
+stNodeInterpret *ChangeActionEnable(stTreeInterpretContext *c); // 83
 
-tdstNodeInterpret *EngineReinitRequested(tdstTreeInterpretContext *c); // 84
-tdstNodeInterpret *IsThereMechEvent(tdstTreeInterpretContext *c); // 85
-tdstNodeInterpret *CollisionWP(tdstTreeInterpretContext *c); // 86
-tdstNodeInterpret *IsCustomBitSet(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsPersoActive(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CheckActionEnd(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsCurrentStateCustomBitSet(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsGiBlock(tdstTreeInterpretContext *c);
+stNodeInterpret *EngineReinitRequested(stTreeInterpretContext *c); // 84
+stNodeInterpret *IsThereMechEvent(stTreeInterpretContext *c); // 85
+stNodeInterpret *CollisionWP(stTreeInterpretContext *c); // 86
+stNodeInterpret *IsCustomBitSet(stTreeInterpretContext *c);
+stNodeInterpret *IsPersoActive(stTreeInterpretContext *c);
+stNodeInterpret *CheckActionEnd(stTreeInterpretContext *c);
+stNodeInterpret *IsCurrentStateCustomBitSet(stTreeInterpretContext *c);
+stNodeInterpret *IsGiBlock(stTreeInterpretContext *c);
 
-tdstNodeInterpret *IsMechanicBlock(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicAnimation(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicCollide(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicGravity(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicTilt(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicGi(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicClimb(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicOnGround(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicSpider(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicShoot(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicSwim(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicNeverFall(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicCollisionControl(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicKeepSpeedZ(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicSpeedLimit(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicInertia(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicStream(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicStickOnPlatform(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicPatformCrash(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicScale(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicExec(tdstTreeInterpretContext *c);
+stNodeInterpret *IsMechanicBlock(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicAnimation(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicCollide(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicGravity(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicTilt(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicGi(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicClimb(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicOnGround(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicSpider(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicShoot(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicSwim(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicNeverFall(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicCollisionControl(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicKeepSpeedZ(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicSpeedLimit(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicInertia(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicStream(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicStickOnPlatform(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicPatformCrash(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicScale(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicExec(stTreeInterpretContext *c);
 
-tdstNodeInterpret *CanFall(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMechanicCrash(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsNullVector(tdstTreeInterpretContext *c);
-tdstNodeInterpret *HierIsSonOfActor(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsMorphing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CheckAnimEnd(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CheckAnimSmooth(tdstTreeInterpretContext *c);
-tdstNodeInterpret *HasTheCapability(tdstTreeInterpretContext *c);
-tdstNodeInterpret *HasOneOfTheCapabilities(tdstTreeInterpretContext *c);
-tdstNodeInterpret *HasTheCapabilityNumber(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoHasTheCapability(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoHasOneOfTheCapabilities(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PersoHasTheCapabilityNumber(tdstTreeInterpretContext *c);
-tdstNodeInterpret *MagnetIsActivated(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NEstPasEnCollisionAvecMap(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NEstPasEnCollisionAvecProjectile(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NEstPasEnCollisionAvecSecondCharact(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NEstPasEnCollisionAvecMainCharact(tdstTreeInterpretContext *c);
-tdstNodeInterpret *NEstPasEnCollisionAvecAutresSecteurs(tdstTreeInterpretContext *c);
+stNodeInterpret *CanFall(stTreeInterpretContext *c);
+stNodeInterpret *IsMechanicCrash(stTreeInterpretContext *c);
+stNodeInterpret *IsNullVector(stTreeInterpretContext *c);
+stNodeInterpret *HierIsSonOfActor(stTreeInterpretContext *c);
+stNodeInterpret *IsMorphing(stTreeInterpretContext *c);
+stNodeInterpret *CheckAnimEnd(stTreeInterpretContext *c);
+stNodeInterpret *CheckAnimSmooth(stTreeInterpretContext *c);
+stNodeInterpret *HasTheCapability(stTreeInterpretContext *c);
+stNodeInterpret *HasOneOfTheCapabilities(stTreeInterpretContext *c);
+stNodeInterpret *HasTheCapabilityNumber(stTreeInterpretContext *c);
+stNodeInterpret *PersoHasTheCapability(stTreeInterpretContext *c);
+stNodeInterpret *PersoHasOneOfTheCapabilities(stTreeInterpretContext *c);
+stNodeInterpret *PersoHasTheCapabilityNumber(stTreeInterpretContext *c);
+stNodeInterpret *MagnetIsActivated(stTreeInterpretContext *c);
+stNodeInterpret *NEstPasEnCollisionAvecMap(stTreeInterpretContext *c);
+stNodeInterpret *NEstPasEnCollisionAvecProjectile(stTreeInterpretContext *c);
+stNodeInterpret *NEstPasEnCollisionAvecSecondCharact(stTreeInterpretContext *c);
+stNodeInterpret *NEstPasEnCollisionAvecMainCharact(stTreeInterpretContext *c);
+stNodeInterpret *NEstPasEnCollisionAvecAutresSecteurs(stTreeInterpretContext *c);
 
-tdstNodeInterpret *IsInFamily(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInModel(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AJoypadIsConnected(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AKeyJustPressed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *AButtonPadJustPressed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInDemoMode(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsShapnessMax(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsTooFar(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsSubAnimPlaying(tdstTreeInterpretContext *c);
-tdstNodeInterpret *TestCBSubAnim(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsInSubAnim(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsSubAnimNearEnd(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsSameSPO(tdstTreeInterpretContext *c);
-tdstNodeInterpret *PressedPadBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *JustPressedPadBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *ReleasedPadBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *JustReleasedPadBut(tdstTreeInterpretContext *c);
-tdstNodeInterpret *IsCinePlaying(tdstTreeInterpretContext *c);
-tdstNodeInterpret *LoadInProgress(tdstTreeInterpretContext *c);
-tdstNodeInterpret *SAV2LastError(tdstTreeInterpretContext *c);
-tdstNodeInterpret *CheckMCStatus(tdstTreeInterpretContext *c);
+stNodeInterpret *IsInFamily(stTreeInterpretContext *c);
+stNodeInterpret *IsInModel(stTreeInterpretContext *c);
+stNodeInterpret *AJoypadIsConnected(stTreeInterpretContext *c);
+stNodeInterpret *AKeyJustPressed(stTreeInterpretContext *c);
+stNodeInterpret *AButtonPadJustPressed(stTreeInterpretContext *c);
+stNodeInterpret *IsInDemoMode(stTreeInterpretContext *c);
+stNodeInterpret *IsShapnessMax(stTreeInterpretContext *c);
+stNodeInterpret *IsTooFar(stTreeInterpretContext *c);
+stNodeInterpret *IsSubAnimPlaying(stTreeInterpretContext *c);
+stNodeInterpret *TestCBSubAnim(stTreeInterpretContext *c);
+stNodeInterpret *IsInSubAnim(stTreeInterpretContext *c);
+stNodeInterpret *IsSubAnimNearEnd(stTreeInterpretContext *c);
+stNodeInterpret *IsSameSPO(stTreeInterpretContext *c);
+stNodeInterpret *PressedPadBut(stTreeInterpretContext *c);
+stNodeInterpret *JustPressedPadBut(stTreeInterpretContext *c);
+stNodeInterpret *ReleasedPadBut(stTreeInterpretContext *c);
+stNodeInterpret *JustReleasedPadBut(stTreeInterpretContext *c);
+stNodeInterpret *IsCinePlaying(stTreeInterpretContext *c);
+stNodeInterpret *LoadInProgress(stTreeInterpretContext *c);
+stNodeInterpret *SAV2LastError(stTreeInterpretContext *c);
+stNodeInterpret *CheckMCStatus(stTreeInterpretContext *c);
 
-tdstNodeInterpret *Cam_IsActive(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsViewportOwner(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoDynamicTarget(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoAverageMoveTgtPerso(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoParseCutAngle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoVisibility(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoVisibilityWithDynHie(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoDynChangeTheta(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoShiftUntilPosReached(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoDynSpeed(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoLinearParsing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoLinearInertia(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoAngularParsing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoAngularInertia(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoTargetParsing(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoTargetInertia(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagNoObstacle(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagFixedOrientation(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagForcedPosition(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagForcedTarget(tdstTreeInterpretContext *c);
-tdstNodeInterpret *Cam_IsFlagForcedAxis(tdstTreeInterpretContext *c);
+stNodeInterpret *Cam_IsActive(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsViewportOwner(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoDynamicTarget(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoAverageMoveTgtPerso(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoParseCutAngle(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoVisibility(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoVisibilityWithDynHie(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoDynChangeTheta(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoShiftUntilPosReached(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoDynSpeed(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoLinearParsing(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoLinearInertia(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoAngularParsing(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoAngularInertia(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoTargetParsing(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoTargetInertia(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagNoObstacle(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagFixedOrientation(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagForcedPosition(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagForcedTarget(stTreeInterpretContext *c);
+stNodeInterpret *Cam_IsFlagForcedAxis(stTreeInterpretContext *c);

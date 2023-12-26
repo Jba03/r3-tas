@@ -4,29 +4,36 @@
 #include "library.hh"
 #include "stMatrix4D.hh"
 
-#define transform_type_uninitialized            0
-#define transform_type_identity                 1
-#define transform_type_translate                2
-#define transform_type_zoom                     3
-#define transform_type_scale                    4
-#define transform_type_rotation                 5
-#define transform_type_rotation_zoom            6
-#define transform_type_rotation_scale           7
-#define transform_type_rotation_scale_complex   8
-#define transform_type_undefined                9
+#define transformTypeUninitialized        0
+#define transformTypeIdentity             1
+#define transformTypeTranslate            2
+#define transformTypeZoom                 3
+#define transformTypeScale                4
+#define transformTypeRotation             5
+#define transformTypeRotationZoom         6
+#define transformTypeRotationScale        7
+#define transformTypeRotationScaleComplex 8
+#define transformTypeUndefined            9
 
-typedef struct stTransform stTransform;
-
-struct stTransform
-{
-    readonly uint32 type;
-    readonly stMatrix4D matrix;
-    readonly stVector4D scale;
+struct stTransform {
+  readonly uint32 type;
+  readonly stMatrix4D matrix;
+  readonly stVector4D scale;
+  
+  stTransform() : type(transformTypeIdentity) {
+    matrix = stMatrix4D();
+    scale = stVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+  }
+    
+  auto position() -> stVector3D {
+    return stVector3D(matrix.m30, matrix.m31, matrix.m32).host();
+  }
+  
+  auto setTranslation(stVector3D P) {
+    *(uint32_t*)&matrix.m30 = game_byteorder_f32(P.x);
+    *(uint32_t*)&matrix.m31 = game_byteorder_f32(P.y);
+    *(uint32_t*)&matrix.m32 = game_byteorder_f32(P.z);
+  }
 };
-
-static inline const stTransform transform_identity()
-{
-    return (stTransform){ transform_type_identity, matrix4_identity, vector4_new(1.0f, 1.0f, 1.0f, 1.0f) };
-}
 
 #endif /* stTransform_h */

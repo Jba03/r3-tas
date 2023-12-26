@@ -10,14 +10,14 @@
 #define sector_priority_max     127
 
 struct stSector {
-    readonly stDoublyLinkedList characterList;
-    readonly stDoublyLinkedList staticLightList;
-    readonly stDoublyLinkedList dynamicLightList;
-    readonly stDoublyLinkedList graphicSectorList;
-    readonly stDoublyLinkedList collisionSectorList;
-    readonly stDoublyLinkedList activitySectorList;
-    readonly stDoublyLinkedList soundSectorList;
-    readonly stDoublyLinkedList soundEventList;
+    readonly stDoublyLinkedList<> characterList;
+    readonly stDoublyLinkedList<> staticLightList;
+    readonly stDoublyLinkedList<> dynamicLightList;
+    readonly stDoublyLinkedList<> graphicSectorList;
+    readonly stDoublyLinkedList<> collisionSectorList;
+    readonly stDoublyLinkedList<> activitySectorList;
+    readonly stDoublyLinkedList<> soundSectorList;
+    readonly stDoublyLinkedList<> soundEventList;
     readonly stVector3D min;
     readonly stVector3D max;
     readonly float32 farPlane;
@@ -27,7 +27,7 @@ struct stSector {
     readonly int8 priority;
     readonly pointer<> skyMaterial;
     readonly uint8 fog;
-#if platform == GCN
+#if platform == platformGCN
     readonly char8 name[0x104];
 #endif
     

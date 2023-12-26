@@ -1,8 +1,16 @@
-//
-//  interface.cpp
-//  r3-tas
-//
-//  Created by Jba03 on 2023-07-29.
-//
+#include "interface.hh"
+#include "hook.hh"
 
-#include "interface.hpp"
+namespace interface
+{
+    bruteforcingTool *bruteforceTool = nullptr;
+  
+    auto initialize() -> bool
+    {
+      
+        bruteforceTool = new bruteforcingTool;
+      applyOptimizations();
+      
+        return true;
+    }
+};

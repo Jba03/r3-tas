@@ -19,12 +19,12 @@ struct stObjectTypeElement {
 };
 
 struct stObjectType {
-    readonly stDoublyLinkedList family;
-    readonly stDoublyLinkedList model;
-    readonly stDoublyLinkedList instance;
+    readonly stDoublyLinkedList<> family;
+    readonly stDoublyLinkedList<> model;
+    readonly stDoublyLinkedList<> instance;
     
     std::string getName(int kind, int idx) {
-        stDoublyLinkedList& list = family;
+        stDoublyLinkedList<>& list = family;
         switch (kind) {
             case object_family_name: list = family;
             case object_model_name: list = model;

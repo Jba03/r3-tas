@@ -5,8 +5,6 @@
 
 #define VECTOR2
 
-typedef struct stVector2D stVector2D;
-
 struct stVector2D
 {
     float x;

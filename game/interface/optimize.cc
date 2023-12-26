@@ -14,7 +14,7 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
     stVector3D p2 = (C - P);
     
     #define M_INV_SQRT_3 5.773502691896259E-1
-    #define SameSign(a,b) ((a >= 0.0f) == (b >= 0.0f))
+    #define ssign(a,b) ((a >= 0.0f) == (b >= 0.0f))
     
     #define MSM(a,b,c,d) ((a)*(b) - (c)*(d))
     #define dXY(a,b) MSM(a.x, b.y, a.y, b.x)
@@ -24,11 +24,11 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
     float det = 0.0f;
     if (std::fabs(N.z) >= M_INV_SQRT_3) {
         det = dXY(p0, p1);
-        if (SameSign(det, N.z)) {
+        if (ssign(det, N.z)) {
             det = dXY(p1, p2);
-            if (SameSign(det, N.z)) {
+            if (ssign(det, N.z)) {
                 det = dXY(p2, p0);
-                return SameSign(det, N.z);
+                return ssign(det, N.z);
             } else {
                 return false;
             }
@@ -38,11 +38,11 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
     } else {
         if (std::fabs(N.x) >= M_INV_SQRT_3) {
             det = dYZ(p0, p1);
-            if (SameSign(det, N.x)) {
+            if (ssign(det, N.x)) {
                 det = dYZ(p1, p2);
-                if (SameSign(det, N.x)) {
+                if (ssign(det, N.x)) {
                     det = dYZ(p2, p0);
-                    return SameSign(det, N.x);
+                    return ssign(det, N.x);
                 } else {
                     return false;
                 }
@@ -51,11 +51,11 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
             }
         } else {
             det = dZX(p0, p1);
-            if (SameSign(det, N.y)) {
+            if (ssign(det, N.y)) {
                 det = dZX(p1, p2);
-                if (SameSign(det, N.y)) {
+                if (ssign(det, N.y)) {
                     det = dZX(p2, p0);
-                    return SameSign(det, N.y);
+                    return ssign(det, N.y);
                 } else {
                     return false;
                 }
@@ -75,9 +75,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 namespace interface {
   
   static auto MTH4D_M_vMulMatrixVector() -> void {
-    stVector3D *dst = pointer<stVector3D>GPR(29);
-    stMatrix4D *T   = pointer<stMatrix4D>GPR(30);
-    stVector3D *src = pointer<stVector3D>GPR(31);
+    stVector3D *dst = pointer<stVector3D>(GPR(29));
+    stMatrix4D *T   = pointer<stMatrix4D>(GPR(30));
+    stVector3D *src = pointer<stVector3D>(GPR(31));
     
     stMatrix4D m = *T;
     stVector3D s = *src;
