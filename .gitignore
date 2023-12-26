@@ -17,6 +17,7 @@ build
 *.obj
 *.r3c
 *.bin
+*.triforce
 
 *~
 

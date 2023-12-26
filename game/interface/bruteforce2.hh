@@ -15,8 +15,6 @@
 
 #include <stdbool.h>
 
-#include "robin_hood.h"
-
 struct bruteforcingTool {
   bruteforcingTool();
 };
@@ -151,6 +149,6 @@ struct bState {
   bState() {}
 };
 
-extern robin_hood::unordered_map<uint64_t, bState> blocks;
+extern std::map<uint64_t, bState> blocks;
 
 #endif /* bruteforce_h */

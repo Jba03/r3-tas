@@ -33,13 +33,9 @@ static const uint64_t getRoughPositionHash(stVector3D pos) {
   float y = rround(float(pos.y), 0.1f);
   float z = rround(float(pos.z), 0.1f);
   
-//  uint64_t qx = std::hash<float>()(x);
-//  uint64_t qy = std::hash<float>()(y);
-//  uint64_t qz = std::hash<float>()(z);
-  
-  uint64_t qx = robin_hood::hash_int(*(uint32_t*)&x);
-  uint64_t qy = robin_hood::hash_int(*(uint32_t*)&y);
-  uint64_t qz = robin_hood::hash_int(*(uint32_t*)&z);
+  uint64_t qx = std::hash<float>()(x);
+  uint64_t qy = std::hash<float>()(y);
+  uint64_t qz = std::hash<float>()(z);
   
   //return (qx ^ (qy << 1)) ^ qz;
   return (qx << 32) | qy | (qz << 24);
@@ -90,7 +86,7 @@ static auto input(bInputState *input) -> void {
 static bool finished = false;
 static bool firstIteration = true;
 //std::map<uint64_t, bState> blocks;
-robin_hood::unordered_map<uint64_t, bState> blocks;
+std::map<uint64_t, bState> blocks;
 static bState *selectedBlock = nullptr;
 bState *initialBlock = nullptr;
 static float averageNumIterations = 0.0f;
