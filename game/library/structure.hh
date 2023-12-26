@@ -1371,7 +1371,7 @@ namespace library {
       }
   };
   
-#pragma mark - AI
+#pragma mark - AI -
   
   struct stBrain {
     pointer<stMind> mind;
@@ -1414,6 +1414,75 @@ namespace library {
     pointer<stNodeInterpret> node;
   };
   
+#pragma mark - Script translation
+  
+  struct scriptTranslationContext {
+    
+    scriptTranslationContext() {}
+    
+    struct token {
+      token(std::string txt, pointer<stNodeInterpret> ref = nullptr) {
+        text = txt;
+        node = ref;
+      }
+      std::string text;
+      pointer<stNodeInterpret> node;
+      
+      static inline const std::string space = "";
+    };
+    
+    
+    template <typename... Args> void emit(bool condition, Args... args) {
+      
+    }
+    
+    std::vector<token> translateKeyword(pointer<stNodeInterpret> keyword) {
+      std::vector<token> tokens;
+      unsigned param = keyword->param;
+      emit(param == 0,                "if", token::space);
+      emit(param == 1,                "if", token::space, "!", "(");
+      emit(param >= 2 && param <= 7,  "if", token::space, "framerule", token::space, "%", token::space, "==", token::space);
+      return tokens;
+    }
+    
+    std::vector<token> translate(pointer<stNodeInterpret> node) {
+      
+    }
+    
+    std::vector<token> gameToText(stTreeInterpret *tree) {
+      std::vector<token> tokenList;
+      stNodeInterpret *firstNode = tree->node;
+      stNodeInterpret *currentNode = tree->node;
+      
+      auto isEndOfTree = [currentNode] {
+        return currentNode->type != scriptNodeTypeEndMacro;
+      };
+      
+      auto seekSameDepth = [&currentNode, isEndOfTree]() {
+        uint8 depth = currentNode->depth;
+        while (currentNode->depth != depth && !isEndOfTree()) currentNode++;
+      };
+      
+      auto emit = [](std::string s) {
+        
+      };
+      
+      auto translateKeyword = [] {
+        
+      };
+      
+      
+      
+      
+      
+      return tokenList;
+    }
+  };
+  
+  struct scriptInjection {
+    
+  };
+  
   struct stBehavior {
     string<0x100> name; /* 256 on GCN, at least */
     pointer<stTreeInterpret> scripts;
@@ -1430,7 +1499,7 @@ namespace library {
 
   struct stMacroList {
     pointer<stMacro> macros;
-    uint8 n_macros;
+    uint8 numMacros;
     padding(3)
   };
 

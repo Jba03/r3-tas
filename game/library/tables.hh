@@ -4,6 +4,16 @@
 #include <string>
 #include <vector>
 
+static const std::vector<std::string> R3DsgVarTypeTable = {
+  "Boolean", "Byte", "UByte", "Short", "UShort", "Int",
+  "UInt", "Float", "Vector", "List", "Comport", "Action", "Capabilities",
+  "Input", "SoundEvent", "Light", "GameMaterial", "VisualMaterial", "Actor",
+  "Waypoint", "Graph", "Text", "SuperObject", "SOLinks", "ActorArray",
+  "VectorArray", "FloatArray", "IntArray", "WaypointArray", "TextArray",
+  "TextRefArray", "GraphArray", "Array9", "SoundEventArray", "Array11",
+  "Way", "ActionArray", "SuperObjectArray", "ObjectList", "Unknown",
+};
+
 static const std::vector<std::string> R3SuperObjectFlagsTable = {
   "Not pickable",
   "Hidden",

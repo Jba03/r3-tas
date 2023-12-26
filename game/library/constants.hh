@@ -97,6 +97,96 @@
 #define dynamicsObstacleWater     (1 <<  6)
 #define dynamicsObstacleError     (1 << 31)
 
+#pragma mark - AI
+
+/* DSG var types */
+#define dsgVarNumTypes              39
+#define dsgVarTypeBoolean           0
+#define dsgVarTypeByte              1
+#define dsgVarTypeUByte             2
+#define dsgVarTypeShort             3
+#define dsgVarTypeUShort            4
+#define dsgVarTypeInt               5
+#define dsgVarTypeUInt              6
+#define dsgVarTypeFloat             7
+#define dsgVarTypeVector            8
+#define dsgVarTypeList              9
+#define dsgVarTypeComport           10
+#define dsgVarTypeAction            11
+#define dsgVarTypeCapabilities      12
+#define dsgVarTypeInput             13
+#define dsgVarTypeSoundEvent        14
+#define dsgVarTypeLight             15
+#define dsgVarTypeGameMaterial      16
+#define dsgVarTypeVisualMaterial    17
+#define dsgVarTypeActor             18
+#define dsgVarTypeWaypoint          19
+#define dsgVarTypeGraph             20
+#define dsgVarTypeText              21
+#define dsgVarTypeSuperObject       22
+#define dsgVarTypeSOLinks           23
+#define dsgVarTypeActorArray        24
+#define dsgVarTypeVectorArray       25
+#define dsgVarTypeFloatArray        26
+#define dsgVarTypeIntArray          27
+#define dsgVarTypeWaypointArray     28
+#define dsgVarTypeTextArray         29
+#define dsgVarTypeTextRefArray      30
+#define dsgVarTypeGraphArray        31
+#define dsgVarTypeArray9            32
+#define dsgVarTypeSNDEventArray     33
+#define dsgVarTypeArray11           34
+#define dsgVarTypeWay               35
+#define dsgVarTypeActionArray       36
+#define dsgVarTypeSuperObjectrArray 37
+#define dsgVarTypeObjectList        38
+
+#define scriptNodeTypeKeyword            0
+#define scriptNodeTypeCondition          1
+#define scriptNodeTypeOperator           2
+#define scriptNodeTypeFunction           3
+#define scriptNodeTypeProcedure          4
+#define scriptNodeTypeMetaAction        5
+#define scriptNodeTypeBeginMacro        6
+#define scriptNodeTypeBeginMacro2       7
+#define scriptNodeTypeEndMacro          8
+#define scriptNodeTypeField              9
+#define scriptNodeTypeDsgVarRef          10
+#define scriptNodeTypeDsgVarRef2         11
+#define scriptNodeTypeConstant           12
+#define scriptNodeTypeReal               13
+#define scriptNodeTypeButton             14
+#define scriptNodeTypeConstantVector    15
+#define scriptNodeTypeVector             16
+#define scriptNodeTypeMask               17
+#define scriptNodeTypeModuleRef          18
+#define scriptNodeTypeDsgVarID           19
+#define scriptNodeTypeString             20
+#define scriptNodeTypeLipsSynchroRef     21
+#define scriptNodeTypeFamilyRef          22
+#define scriptNodeTypeActorRef           23
+#define scriptNodeTypeActionRef          24
+#define scriptNodeTypeSuperObjectRef     25
+#define scriptNodeTypeSOLinksRef         26 /* ? */
+#define scriptNodeTypeWaypointRef        27
+#define scriptNodeTypeTextRef            28
+#define scriptNodeTypeBehaviorRef        29
+#define scriptNodeTypeModuleRef2         30
+#define scriptNodeTypeSoundEventRef      31
+#define scriptNodeTypeObjectTableRef     32
+#define scriptNodeTypeGameMaterialRef    33
+#define scriptNodeTypeVisualMaterial     34
+#define scriptNodeTypeParticleGenerator  35
+#define scriptNodeTypeModelRef           36
+#define scriptNodeTypeModelRef2          37
+#define scriptNodeTypeCustomBits         38
+#define scriptNodeTypeCaps               39
+#define scriptNodeTypeGraph              40 /* ? */
+#define scriptNodeTypeSubroutine         41
+#define scriptNodeTypeNULL               42
+#define scriptNodeTypeCineRef            43 /* ? */
+#define scriptNodeTypeGraphRef           44
+
 #pragma mark - IPT
 
 #define IPT_E_Entry_FlyingModeHorizontalMouseAnalog 0
