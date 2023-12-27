@@ -47,7 +47,8 @@
 
 namespace library {
   
-  #pragma mark - Memory
+#pragma mark - Memory
+  
   namespace memory {
     
     /// Target memory base address
@@ -111,6 +112,8 @@ namespace library {
       return (T*)addr.hostAddress();
     }
   };
+  
+#pragma mark - Datatype
   
   // Type defined per platform byteorder
   template <typename T, typename OpT> struct type {
@@ -176,10 +179,6 @@ namespace library {
     T data;
   };
   
-  namespace external {
-    extern std::function<std::string(int, int)> nameLookup;
-  };
-  
 #ifdef TYPE_DECLARATIONS
   TYPE_DECLARATIONS();
 #else
@@ -195,6 +194,8 @@ namespace library {
   using uint64    = library::type<uint64_t, uint64_t>;
   using float32   = library::type<uint32_t, float>;
 #endif
+  
+#pragma mark - Pointer
   
   struct bad_ptr {
     std::string msg;
@@ -330,6 +331,26 @@ namespace library {
     int8_t string[size];
   };
   
+#pragma mark - External
+  
+  namespace external {
+    extern std::function<std::string(int, int)> nameLookup;
+  };
+  
+#pragma mark - Serialization
+  
+  struct serializer {
+    serializer() {}
+    
+    template <typename T, typename OpT> void add(type<T, OpT>& data) {
+      
+    }
+    
+    template <typename T> void add(T& data) {
+      data.serialize(*this);
+    }
+  };
+  
 #pragma mark -* Structure *-
   
   struct stEngineStructure;
@@ -439,6 +460,12 @@ namespace library {
     auto operator /(stVector3D v) -> stVector3D& { x /= v.x; y /= v.y; z /= v.z; return *this; }
     auto operator *(float s) -> stVector3D& { x *= s; y *= s; z *= s; return *this; }
     auto operator /(float s) -> stVector3D& { x /= s; y /= s; z /= s; return *this; }
+    
+    void serialize(serializer& s) {
+      s.add(x);
+      s.add(y);
+      s.add(z);
+    }
   };
   
   struct stVector4D {
@@ -453,6 +480,13 @@ namespace library {
     auto operator *(stVector4D v) -> stVector4D& { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
     auto operator /(stVector4D v) -> stVector4D& { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
     auto xyz() -> stVector3D { return stVector3D(x, y, z); }
+    
+    void serialize(serializer& s) {
+      s.add(x);
+      s.add(y);
+      s.add(z);
+      s.add(w);
+    }
   };
   
   union stMatrix3D {
@@ -552,6 +586,10 @@ namespace library {
       stVector4D q = stVector4D(v.x, v.y, v.z, 1.0f);
       return (*this * q).xyz();
     }
+    
+    void serialize(serializer& s) {
+      for (float32& e : m) s.add(e);
+    }
   };
   
   
@@ -561,6 +599,20 @@ namespace library {
   template <typename T = uint32> struct stLinkedList {
     pointer<T> first;
     int32 numEntries;
+    
+    template <typename F> void forEach(const F& f, void *userdata = nullptr) {
+      int cc = 0;
+      for (T *c = first; cc < numEntries; c = c->next) {
+        f(c, userdata);
+        c++;
+      }
+    }
+    
+    void serialize(serializer& s) {
+      forEach([&s](T *e, void*) {
+        s.add(e);
+      });
+    }
   };
 
   template <typename T = uint32> struct stDoublyLinkedList {
@@ -568,11 +620,16 @@ namespace library {
     pointer<T> last;
     int32 numEntries;
     
-    template <typename F>
-    void forEach(const F& f, void *userdata = nullptr) {
+    template <typename F> void forEach(const F& f, void *userdata = nullptr) {
       for (T *c = first; c; c = c->next) {
         f(c, userdata);
       }
+    }
+    
+    void serialize(serializer& s) {
+      forEach([&s](T *e, void*) {
+        s.add(e);
+      });
     }
   };
   
@@ -615,6 +672,12 @@ namespace library {
     auto operator *(stVector4D v) -> stVector4D {
       return matrix * v;
     }
+    
+    void serialize(serializer& s) {
+      s.add(type);
+      s.add(matrix);
+      s.add(scale);
+    }
   };
   
 #pragma mark - Always
@@ -625,6 +688,14 @@ namespace library {
     pointer<stSuperObject> alwaysSuperobject;
     pointer<stEngineObject> alwaysActors;
     pointer<stSuperObject> alwaysGeneratorSuperobjects;
+    
+    void serialize(serializer& s) {
+      s.add(numAlways);
+      s.add(alwaysModels);
+      s.add(alwaysSuperobject);
+      s.add(alwaysActors);
+      s.add(alwaysGeneratorSuperobjects);
+    }
   };
   
 #pragma mark - Object type
@@ -641,12 +712,27 @@ namespace library {
     uint8 priority;
     uint8 identifier;
     padding(2)
+    
+    void serialize(serializer& s) {
+      s.add(next);
+      s.add(prev);
+      s.add(father);
+      s.add(name);
+      s.add(priority);
+      s.add(identifier);
+    }
   };
 
   struct stObjectType {
     stDoublyLinkedList<stObjectTypeElement> family;
     stDoublyLinkedList<stObjectTypeElement> model;
     stDoublyLinkedList<stObjectTypeElement> instance;
+    
+    void serialize(serializer& s) {
+      s.add(family);
+      s.add(model);
+      s.add(instance);
+    }
   };
   
 #pragma mark - Engine structure
@@ -698,6 +784,22 @@ namespace library {
       uint32 totalPauseTimeLow;
       uint32 totalPauseTimeHigh;
       uint32 ticksPerMs;
+      
+      void serialize(serializer& s) {
+        s.add(frame);
+        s.add(timerHandle);
+        s.add(currentCount);
+        s.add(deltaCount);
+        s.add(counter);
+        s.add(usefulDeltaTime);
+        s.add(pauseTime);
+        s.add(frameLength);
+        s.add(totalRealTimeLow);
+        s.add(totalRealTimeHigh);
+        s.add(totalPauseTimeLow);
+        s.add(totalPauseTimeHigh);
+        s.add(ticksPerMs);
+      }
     };
     
     auto reloadLevel() -> void {
@@ -724,7 +826,7 @@ namespace library {
     uint8 multimodeColumnCount;
     uint8 multimodeMiniScreenRatio;
     padding(1)
-    pointer<stSuperObject> currentMainPlayers[4]; /* ::superobject */
+    pointer<stSuperObject> currentMainPlayers[4];
     int16 gldDevice;
     int16 gldViewport[5];
     padding(5 * 28 * 4) /* viewport attributes */
@@ -778,6 +880,67 @@ namespace library {
     doublepointer<> SOLinks;
     pointer<stGraphChainList> graphList;
     pointer<stCineManager> cineManager;
+    
+    void serialize(serializer& s) {
+      s.add(mode);
+      s.add(currentLevelName);
+      s.add(nextLevelName);
+      s.add(firstLevelName);
+      s.add(inputMode);
+      s.add(displayFixMode);
+      s.add(displayMode);
+      s.add(timer);
+      s.add(multimodePlayerCount);
+      s.add(multimodeColumnCount);
+      s.add(multimodeMiniScreenRatio);
+      s.add(gldDevice);
+      s.add(viewportArray);
+      s.add(cameraList);
+      s.add(drawSem);
+      s.add(familyList);
+      s.add(alwaysList);
+      s.add(mainCharacterList);
+      s.add(standardCamera);
+      s.add(debugCamera);
+      s.add(languageStructure);
+      s.add(levelFilenameList);
+      s.add(mainActorTransform);
+      s.add(mainCameraTransform);
+      s.add(submapNumber);
+      
+      s.add(paused);
+      s.add(paused2);
+      s.add(doGameSave);
+      
+      for (pointer<stSuperObject>& so : currentMainPlayers) s.add(so);
+      for (int16& i : gldViewport) s.add(i);
+      for (int16& i : gldFixViewport) s.add(i);
+      for (pointer<stCamera>& cam : viewportCamera) s.add(cam);
+      for (pointer<stCamera>& cam : fixCamera) s.add(cam);
+      for (string<30>& str : levelNames) s.add(str);
+      for (string<12>& str : demoNames) s.add(str);
+      for (string<12>& str : demoLevelNames) s.add(str);
+
+      s.add(demoCount);
+      s.add(levelCount);
+      s.add(currentLevel);
+      s.add(previousLevel);
+      s.add(previousLevelExitID);
+      s.add(globalLevelCounter);
+      s.add(demoMode);
+      s.add(currentLanguage);
+      s.add(languageCount);
+      s.add(engineFrozen);
+      s.add(resurrection);
+      s.add(cameraMode);
+      s.add(currentImportance);
+      s.add(numSuperObjectsAllocated);
+      s.add(numSuperObjectsLoaded);
+      s.add(numNonPersistentSOLinks);
+      s.add(SOLinks);
+      s.add(graphList);
+      s.add(cineManager);
+    }
   };
   
 #pragma mark - IPT
@@ -790,6 +953,16 @@ namespace library {
     float32 trueAnalogForce;
     float32 angle;
     int32 sector;
+    
+    void serialize(serializer& s) {
+      s.add(globalVector);
+      s.add(horizontalAxis);
+      s.add(verticalAxis);
+      s.add(analogForce);
+      s.add(trueAnalogForce);
+      s.add(angle);
+      s.add(sector);
+    }
   };
 
   struct stInputDevice {
@@ -818,6 +991,12 @@ namespace library {
     pointer<stInputEntryElement> joyButton[16];
     pointer<stInputEntryElement> keyButton[16];
     stPadReadingOutput padReadOutput;
+    
+    void serialize(serializer& s) {
+      s.add(valid);
+      s.add(handle);
+      s.add(joypadCounter);
+    }
   };
 
   struct stInputEntryElement {
@@ -830,6 +1009,16 @@ namespace library {
     float32 analogValue;
     int8 active;
     padding(3)
+    
+    void serialize(serializer& s) {
+      s.add(numKeywords);
+      s.add(keywordArray);
+      s.add(actionName);
+      s.add(entryName);
+      s.add(state);
+      s.add(analogValue);
+      s.add(active);
+    }
   };
 
   struct stInputStructure {
