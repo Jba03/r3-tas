@@ -347,7 +347,7 @@ namespace library {
     }
     
     template <typename T> void add(T& data) {
-      data.serialize(*this);
+      //data.serialize(*this);
     }
   };
   
