@@ -1,6 +1,5 @@
-#ifndef structure_h
-#define structure_h
-
+#ifndef structure_hh
+#define structure_hh
 
 #include <cstddef>
 #include <bit>
@@ -244,6 +243,17 @@ namespace library {
       ptr = memory::address(other);
     }
     
+    auto operator ++() -> pointer<T> {
+      *this = ptr.effectiveAddress() + sizeof(memory::address_type);
+      return *this;
+    }
+    
+    auto operator ++(int) -> pointer<T> {
+      pointer<T> o = ptr.effectiveAddress();
+      *this = o + sizeof(memory::address_type);
+      return o;
+    }
+    
     auto assign(T v) -> void {
       *(T*)pointee() = v;
     }
@@ -312,7 +322,9 @@ namespace library {
     
     auto lastPathComponent() -> std::string {
       std::string str = *this;
-      return str.substr(str.rfind(':') + 1 , std::string::npos);
+      size_t idx = str.rfind(':');
+      if (idx == std::string::npos) return "";
+      return str.substr(idx + 1, std::string::npos);
     }
     
     int8_t string[size];
@@ -381,12 +393,16 @@ namespace library {
   struct stPhysicalCollideSet;
   struct stCollideElementIndexedTriangles;
   struct stCollideElementIndexedTrianglesVisual;
+  struct stCollideMaterial; // defined in GMT under previous versions
   
   // GMT
   struct stGameMaterial;
   
   // GLI
+  struct stVertex2D;
   struct stCamera;
+  struct stTexture;
+  struct stAnimatedTextureNode;
   
   // WP
   struct stWayPoint;
@@ -961,6 +977,7 @@ namespace library {
   };
   
   
+  
 #pragma mark - SECT
   
   #define sectorPriorityMin     0
@@ -1178,6 +1195,17 @@ namespace library {
     float32 rebound1;
     float32 slide2;
     float32 rebound2;
+  };
+  
+  struct stCollideMaterial {
+    int16 zoneType;
+    uint16 identifier;
+    float32 xDirection;
+    float32 yDirection;
+    float32 zDirection;
+    float32 coefficient;
+    uint16 aiType;
+    padding(2)
   };
   
 #pragma mark - PO
@@ -1414,6 +1442,35 @@ namespace library {
     pointer<stNodeInterpret> node;
   };
   
+  struct stActionParam {
+    
+  };
+  
+  struct stActionTableEntry {
+  #if platform == GCN
+    string<0x50> name;
+    uint32 param[8];
+    padding(4) /* ? */
+    padding(4) /* ? */
+    pointer<string<>> namePointer; /* ? */
+  #else
+    stActionParam actionParam[8];
+  #endif
+    pointer<stNodeInterpret> node;
+    uint8 used;
+    uint8 numRules;
+    uint8 useDefaultReturn;
+    uint8 newReturn;
+  };
+
+  struct stActionTable {
+    pointer<stActionTableEntry> entries;
+    uint8 numEntries;
+    uint8 numEntriesUsed;
+    uint8 currentEntry;
+    padding(1)
+  };
+  
 #pragma mark - Script translation
   
   struct scriptTranslationContext {
@@ -1421,6 +1478,7 @@ namespace library {
     scriptTranslationContext() {}
     
     struct token {
+      token() {}
       token(std::string txt, pointer<stNodeInterpret> ref = nullptr) {
         text = txt;
         node = ref;
@@ -1428,55 +1486,126 @@ namespace library {
       std::string text;
       pointer<stNodeInterpret> node;
       
-      static inline const std::string space = "";
+      static inline const std::pair<std::string, pointer<stNodeInterpret>> non(std::string t) {
+        return {t, nullptr};
+      }
+      
+      static inline const std::pair<std::string, pointer<stNodeInterpret>> space {" ", nullptr};
+      static inline const std::pair<std::string, pointer<stNodeInterpret>> exclamation {"!", nullptr};
     };
     
     
     template <typename... Args> void emit(bool condition, Args... args) {
-      
-    }
-    
-    std::vector<token> translateKeyword(pointer<stNodeInterpret> keyword) {
-      std::vector<token> tokens;
-      unsigned param = keyword->param;
-      emit(param == 0,                "if", token::space);
-      emit(param == 1,                "if", token::space, "!", "(");
-      emit(param >= 2 && param <= 7,  "if", token::space, "framerule", token::space, "%", token::space, "==", token::space);
-      return tokens;
-    }
-    
-    std::vector<token> translate(pointer<stNodeInterpret> node) {
-      
-    }
-    
-    std::vector<token> gameToText(stTreeInterpret *tree) {
-      std::vector<token> tokenList;
-      stNodeInterpret *firstNode = tree->node;
-      stNodeInterpret *currentNode = tree->node;
-      
-      auto isEndOfTree = [currentNode] {
-        return currentNode->type != scriptNodeTypeEndMacro;
-      };
-      
-      auto seekSameDepth = [&currentNode, isEndOfTree]() {
-        uint8 depth = currentNode->depth;
-        while (currentNode->depth != depth && !isEndOfTree()) currentNode++;
-      };
-      
-      auto emit = [](std::string s) {
+      if (condition) {
         
-      };
-      
-      auto translateKeyword = [] {
-        
-      };
-      
-      
-      
-      
-      
-      return tokenList;
+      }
     }
+    
+    //std::vector<token>
+    
+//    std::vector<token> collect() {
+//      std::vector<token> c;
+//      return c;
+//    }
+//
+    using tok = token;
+    
+//    std::vector<tok> translateChild(int child = 0) {
+//      unsigned min =
+//
+////      unsigned min = t->current->depth;
+////      unsigned occ = 0;
+////
+////          struct script_node* orig = t->current;
+////          struct script_node* node = orig + 1;
+////          while (!IsEndOfTree(node) && node->depth > min)
+////          {
+////              if (node->depth == min + 1 && occ++ == child)
+////              {
+////                  t->current = node;
+////                  translate_node(t);
+////                  break;
+////              }
+////              node++;
+////          }
+////
+////          t->current = orig;
+//    }
+    
+    void translateKeyword(unsigned s) {
+      emit(s == 15,           "if", tok::space);
+      emit(s >= 2 && s <= 7,  "if", tok::space, "framerule", tok::space, "%", tok::space, "==", tok::space);
+      emit(s >= 8 && s <= 13, "if", tok::space, "" "framerule", tok::space, "%", tok::space, "==", tok::space);
+    }
+//
+//    std::vector<token> translateOperator(unsigned s) {
+////      emit(s == 0, "(", t0(), token::space, "+", token::space, ")");
+////      emit(s == 1, "(", t1(), token::space, "-", token::space, ")");
+////      emit(s == 2, "(", t1(), token::space, "*", token::space, ")");
+////      emit(s == 3, "(", t1(), token::space, "/", token::space, ")");
+////      emit(s == 2);
+////      emit(s == 3);
+////      emit(s == 4);
+////      emit(s == 5);
+////      emit(s == 6);
+////      emit(s == 7);
+////      emit(s == 8);
+////      emit(s == 9);
+////      emit(s == 10);
+////      emit(s == 11);
+////      emit(s == 12);
+////      emit(s == 13);
+////      emit(s == 14);
+////      emit(s == 15);
+////      emit(s == 16);
+////      emit(s == 17);
+////      emit(s == 18);
+////      emit(s == 19);
+////      emit(s == 20);
+////      emit(s == 21);
+////      emit(s == 22);
+////      emit(s == 23);
+////      emit(s == 24);
+////      emit(s == 25);
+////      emit(s == 26);
+////      emit(s == 27);
+//
+//      return collect();
+//    }
+    
+//    std::vector<token> translate(pointer<stNodeInterpret> node) {
+//      std::vector<token> result;
+//      return result;
+//    }
+//
+//    std::vector<token> gameToText(stTreeInterpret *tree) {
+//      std::vector<token> tokenList;
+//      stNodeInterpret *firstNode = tree->node;
+//      stNodeInterpret *currentNode = tree->node;
+//
+//      auto isEndOfTree = [currentNode] {
+//        return currentNode->type != scriptNodeTypeEndMacro;
+//      };
+//
+//      auto seekSameDepth = [&currentNode, isEndOfTree]() {
+//        uint8 depth = currentNode->depth;
+//        while (currentNode->depth != depth && !isEndOfTree()) currentNode++;
+//      };
+//
+//      auto emit = [](std::string s) {
+//
+//      };
+//
+//      auto translateKeyword = [] {
+//
+//      };
+//
+//
+//
+//
+//
+//      return tokenList;
+//    }
   };
   
   struct scriptInjection {
@@ -1687,6 +1816,75 @@ namespace library {
     uint32 usedMechanics;
   };
   
+#pragma mark - GMT
+  
+  struct stGameMaterial {
+    int32 materialSound;
+    pointer<stCollideMaterial> collideMaterial;
+  };
+  
+#pragma mark - GEO
+  
+  struct stColorGEO {
+    float32 r;
+    float32 g;
+    float32 b;
+    float32 a;
+  };
+  
+  struct stEdgeGEO {
+    int16 points[2];
+    stVector3D vectorPoints[2];
+  };
+  
+  struct stParallelBoxGEO {
+    stVector4D min;
+    stVector4D max;
+  };
+  
+  struct stGeometricObject {
+    pointer<stVector3D> points;
+    pointer<stVector3D> normals;
+    doublepointer<float32> vertexTransparency;
+    pointer<int16> elementTypes;
+    doublepointer<> elements;
+    pointer<stEdgeGEO> edges;
+    pointer<stParallelBoxGEO> AABBs;
+    uint32 type;
+    int16 numPoints;
+    int16 numElements;
+    int16 numEdges;
+    int16 numAABB;
+    float32 boundingSphereRadius;
+    padding(4)
+    stVector4D boundingSphereCenter;
+    pointer<> edgeList_di;
+    int16 numEdges_di;
+    int16 numOctreeEdges;
+    int32 shadowDrawing;
+    int32 shadowConstruction;
+    pointer<> sdc;
+    uint32 isStatic;
+    uint32 displayList;
+    uint8 sinus;
+    padding(3)
+  };
+  
+  union uVisualObjectGEO {
+    pointer<stGeometricObject> geometricObject;
+    pointer<> morphObject;
+  };
+  
+  struct stVisualSetGEO {
+    float32 lastDistance;
+    int16 numLodDefs;
+    int16 type;
+    pointer<float32> thresholdTable;
+    pointer<> lodDefinitions;
+    doublepointer<> RLI;
+    int32 numRLI;
+  };
+  
 #pragma mark - GLI
   
   struct stVertex2D {
@@ -1719,6 +1917,90 @@ namespace library {
     uint8 transparency;
     float32 transpDist;
     uint8 mirrored;
+  };
+  
+  struct stTexture {
+    int32 available;
+    int32 quality;
+    pointer<> data;
+    pointer<> colorTable;
+    pointer<> specularParam;
+    int32 caps;
+    uint16 height;
+    uint16 width;
+    uint16 realHeight;
+    uint16 realWidth;
+    float32 addU;
+    float32 addV;
+    int32 incrementEnable;
+    uint32 chromaKeyColor;
+    uint32 blendColor;
+    int32 numLod;
+    uint32 compressionCounter;
+    uint32 compressionType;
+    uint32 compressionMipMap;
+    pointer<> substitutingTexture;
+    uchar8 bilinearInterpolation;
+    uchar8 cyclingMode;
+    string<0x80> filename;
+    padding(2)
+    
+    std::string name() {
+      return filename.lastPathComponent();
+    }
+  };
+  
+  struct stAnimatedTextureNode {
+    pointer<stTexture> texture;
+    float32 displayDuration;
+    pointer<stAnimatedTextureNode> next;
+  };
+  
+  struct stUVTransformation {
+    float32 matrix[2][2];
+    float32 transformation[2];
+  };
+  
+  struct stMultiTextureMaterial {
+    pointer<stTexture> texture;
+    int8 defaultOperator;
+    int8 colorOperator;
+    int8 uvSource;
+    int8 flags;
+    stUVTransformation staticUVTransform;
+    stUVTransformation dynamicUVTransform;
+  };
+  
+  struct stMaterial {
+    uint32 type;
+    stColorGEO ambient;
+    stColorGEO diffuse;
+    stColorGEO specular;
+    stColorGEO color;
+    uint32 additionalType;
+    int32 specularExponent;
+    pointer<stTexture> texture;
+    float32 addU;
+    float32 addV;
+    float32 addConstantU;
+    float32 addConstantV;
+    int32 incrementEnable;
+    uint32 actualRefreshNumber;
+#if ((platform == GCN) || (platform == PC))
+    pointer<stTexture> firstTextureNodeAnimated;
+    pointer<stTexture> actualTextureNodeAnimated;
+#elif (platform == PS2)
+    pointer<stAnimatedTextureNode> firstTextureNodeAnimated;
+    pointer<stAnimatedTextureNode> actualTextureNodeAnimated;
+#endif
+    int32 numDisplayModes;
+    float32 actualDisplayTime;
+    uchar8 locked;
+    padding(3)
+    uint32 flags;
+    uint32 multiTextureType;
+    uint32 numTextureStages;
+    stMultiTextureMaterial multiTexturedMaterials[8];
   };
   
 #pragma mark - WP
@@ -1757,5 +2039,4 @@ namespace library {
   
 };
 
-
-#endif /* structure_h */
+#endif /* structure_hh */
