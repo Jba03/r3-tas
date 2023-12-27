@@ -44,7 +44,7 @@ static std::function<uint8_t*()> mram = nullptr;
 static std::function<std::string()> get_config_path = nullptr;
 
 static void on_load(emulator::message *msg) {
-  info(BOLD "r3-tas loaded successfully\n");
+  log::info(log::bold, log::green, "r3-tas loaded successfully\n");
   game::initialize();
   //graphics::initialize();
   gui::initialize();
@@ -91,8 +91,8 @@ static void graphics_initialize(emulator::message *msg) {
 }
 
 static void create_hle_hooks(emulator::message *msg) {
-    emulator::createHook = (void (*)(uint32_t, const char*, int, int, void (*)()))(msg->data);
-    interface::initialize();
+  emulator::createHook = (void (*)(uint32_t, const char*, int, int, void (*)()))(msg->data);
+  interface::initialize();
 }
 
 static void receive_ppc_state(emulator::message *msg) {
@@ -104,7 +104,7 @@ static void receive_ppc_state(emulator::message *msg) {
 }
 
 static void unload(struct message *msg) {
-    info(BOLD COLOR_RED "r3-tas successfully unloaded\n");
+  log::info(log::bold, log::red, "r3-tas successfully unloaded\n");
 }
 
 static const std::map<int, std::function<void(emulator::message*)>> msgmap {

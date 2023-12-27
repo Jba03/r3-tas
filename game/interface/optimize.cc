@@ -272,7 +272,7 @@ namespace interface {
   
   void applyOptimizations() {
     
-    info(BOLD COLOR_GREEN "Optimizations loaded\n" COLOR_DEFAULT);
+    log::info(log::bold, log::pink, "Optimizations loaded\n");
     
     //hook<0x8002e974>(replace1, hookType::replace);
     
