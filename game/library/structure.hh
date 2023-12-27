@@ -2,12 +2,13 @@
 #define structure_hh
 
 #include <cstddef>
-#include <bit>
-#include <string>
-#include <type_traits>
-#include <iostream>
-
 #include <cmath>
+
+#include <bit>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <type_traits>
 
 #include "constants.hh"
 
@@ -15,34 +16,12 @@
 #define PS2     1
 #define NATIVE  2
 
-/* CONFIGURATION */
+/* BEGIN CONFIGURATION */
 #define platform GCN
+/* END CONFIGURATION */
 
 #if defined(htonl) && defined(htons)
 # define OPTIMIZED_BYTESWAP
-#endif
-
-#define swap16(data) \
-    ((((data) >> 8) & 0x00FF) | (((data) << 8) & 0xFF00))
-
-#define swap32(data) \
-    ((((data) >> 24) & 0x000000FF) | (((data) >>  8) & 0x0000FF00) | \
-    ( ((data) <<  8) & 0x00FF0000) | (((data) << 24) & 0xFF000000) )
-
-#ifdef MSB_FIRST
-#
-#   define host_byteorder_16(data) (data)
-#   define host_byteorder_32(data) (data)
-#   define game_byteorder_16(data) (data)
-#   define game_byteorder_32(data) (data)
-#
-#else /* LSB_FIRST */
-#
-#   define host_byteorder_16(data) swap16(data)
-#   define host_byteorder_32(data) swap32(data)
-#   define game_byteorder_16(data) swap16(data)
-#   define game_byteorder_32(data) swap32(data)
-#
 #endif
 
 namespace library {

@@ -418,10 +418,11 @@ static auto fn_e_vMakeCharacterReact() -> void {
   
   // Normal return behavior
   uint32_t sp = GPR(1) & 0x7FFFFFFF; // sp = r1
-  GPR(29) = host_byteorder_32(*(uint32_t*)(memory::baseAddress + sp + 0x14));
-  GPR(30) = host_byteorder_32(*(uint32_t*)(memory::baseAddress + sp + 0x18));
-  GPR(31) = host_byteorder_32(*(uint32_t*)(memory::baseAddress + sp + 0x1C));
-  GPR(0)  = host_byteorder_32(*(uint32_t*)(memory::baseAddress + sp + 0x24)); // lr = r0
+  // if anything goes wrong here, the swap function is most likely the issue
+  GPR(29) = memory::swap(*(uint32_t*)(memory::baseAddress + sp + 0x14));
+  GPR(30) = memory::swap(*(uint32_t*)(memory::baseAddress + sp + 0x18));
+  GPR(31) = memory::swap(*(uint32_t*)(memory::baseAddress + sp + 0x1C));
+  GPR(0)  = memory::swap(*(uint32_t*)(memory::baseAddress + sp + 0x24)); // lr = r0
   GPR(1) += 32; // align sp
   NPC = LR = GPR(0); // jump
 }

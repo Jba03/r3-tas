@@ -8,8 +8,6 @@
 #ifndef game_h
 #define game_h
 
-#include <vector>
-
 #include "structure.hh"
 using namespace library;
 
