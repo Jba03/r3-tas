@@ -232,14 +232,6 @@ namespace game
     g_stAlways = NULL;
     g_stObjectTypes = NULL;
   }
-  
-  void game_memory_dump() {
-    char path[4096];
-    sprintf(path, "%s/memory.bin", LIBR3TAS_DIR);
-    FILE* fp = fopen(path, "wb");
-    fwrite(memoryBase, sizeof(uint8), 24 * 1000 * 1000, fp);
-    fclose(fp);
-  }
     
 //    stSuperObject *findActor(std::string instanceName) {
 //        if (actorLookupCache.contains(instanceName))

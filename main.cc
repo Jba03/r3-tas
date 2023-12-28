@@ -21,8 +21,6 @@
 #include "emulator.hh"
 #include "interface.hh"
 
-//#include "structure.hh"
-
 #pragma mark - Main
 
 #if defined(WIN32)
@@ -103,15 +101,16 @@ static void receive_ppc_state(emulator::message *msg) {
   emulator::ppcState.lr = s->lr;
 }
 
-static void unload(struct message *msg) {
+static void on_unload(emulator::message *msg) {
   log::info(log::bold, log::red, "r3-tas successfully unloaded\n");
 }
 
 static const std::map<int, std::function<void(emulator::message*)>> msgmap {
-  { m("load"), &on_load},
-  { m("mram-function"), &receive_mram_function},
-  { m("update"), &on_update},
-  { m("video"), &on_video},
+  { m("load"),          &on_load },
+  { m("mram-function"), &receive_mram_function },
+  { m("update"),        &on_update },
+  { m("video"),         &on_video },
+  { m("unload"),        &on_unload },
 };
 
 LIBR3TAS_EXPORT extern "C" void on_message(emulator::message msg) {

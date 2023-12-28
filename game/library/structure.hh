@@ -1249,14 +1249,22 @@ namespace library {
   };
 
   struct stZdxListEntry {
+  #if platform == GCN
     pointer<> next;
     pointer<> prev;
     pointer<> parent;
     pointer<> data;
+  #else
+    pointer<stCollideObject> data;
+  #endif
   };
 
   struct stZdxList {
+  #if platform == GCN
     stDoublyLinkedList<stZdxListEntry> list;
+  #else
+    stLinkedList<stZdxListEntry> list;
+  #endif
     uint16 numZdx;
     padding(2)
     
