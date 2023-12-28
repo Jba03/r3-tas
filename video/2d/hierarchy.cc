@@ -64,10 +64,10 @@ static auto drawHierarchy() -> void {
   ImGui::GetStyle().Colors[ImGuiCol_Border] = ImVec4(1.0f, 1.0f, 1.0f, 0.05f);
   ImGui::GetStyle().ScrollbarRounding = 0.0f;
     
-  ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(-1, ImGui::GetIO().DisplaySize.y - 200));
-  ImGui::SetNextWindowSize(ImVec2(-1, -1));
-  ImGui::Begin("Actual world", &HierarchyWindow.Open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-  ImGui::SetWindowPos(ImVec2(0, 100));
+//  ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(-1, ImGui::GetIO().DisplaySize.y - 200));
+//  ImGui::SetNextWindowSize(ImVec2(-1, -1));
+//  ImGui::Begin("Actual world", &HierarchyWindow.Open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+//  ImGui::SetWindowPos(ImVec2(0, 100));
   
   drawRecursive(p_stDynamicWorld, nullptr);
   drawRecursive(p_stInactiveDynamicWorld, nullptr);
@@ -75,7 +75,7 @@ static auto drawHierarchy() -> void {
   
   gui::drawPopup();
     
-  ImGui::End();
+  //ImGui::End();
   ImGui::GetStyle() = PreviousStyle;
 }
 

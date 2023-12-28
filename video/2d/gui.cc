@@ -12,7 +12,11 @@
 //#include "bruteforce.hh"
 //#include "stCollideElementIndexedSpheres.hh"
 
+#include "dynamics.cc"
+
 #include "bruteforce2.hh"
+
+#include "imgui_internal.h"
 
 #include <iostream>
 
@@ -206,263 +210,401 @@ static auto drawWorld(stSuperObject *root, stMatrix4D T) -> void {
 
 #include "hook.hh"
 
-namespace gui
-{
+namespace gui {
     
-    void initialize(void)
-    {
+  ImGuiID dockspaceID;
+  
+  static auto loadStyle() -> void {
+    
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.AntiAliasedFill = true;
+    style.FrameRounding = 0.0f;
+    style.TabRounding = 0.0f;
+    style.WindowPadding = ImVec2(5, 5);
+    
+    style.Colors[ImGuiCol_WindowBg] = ImColor(10, 27, 29, 255);
+    style.Colors[ImGuiCol_TitleBg] = ImColor(14, 33, 36, 255);
+    style.Colors[ImGuiCol_TitleBgActive] = ImColor(14, 33, 36, 255);
+    style.Colors[ImGuiCol_MenuBarBg] = ImColor(17, 49, 54, 255);
+    style.Colors[ImGuiCol_Border] = ImColor(17, 49, 54, 255);
+    style.Colors[ImGuiCol_Tab] = ImColor(17, 49, 54, 255);
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImColor(17, 49, 54, 255);
+    style.Colors[ImGuiCol_TabActive] = ImColor(17, 49, 54, 255);
+    style.Colors[ImGuiCol_DockingEmptyBg] = ImColor(0, 10, 10, 255);
+    style.Colors[ImGuiCol_DockingPreview] = ImColor(68, 168, 183, 128);
+    style.Colors[ImGuiCol_Button] = ImColor(32, 115, 131, 255);
+    style.Colors[ImGuiCol_ModalWindowDimBg] = ImColor(0.0f, 0.0f, 0.0f, 0.9f);
+    style.Colors[ImGuiCol_FrameBg] =  ImColor(32, 115, 131, 128);
+    
+    style.Colors[ImGuiCol_PopupBg] = ImColor(10, 27, 29, 255);
+    
+    style.Colors[ImGuiCol_TableHeaderBg] =  ImColor(32, 115, 131, 64);
+    style.Colors[ImGuiCol_TableRowBg] =  ImColor(32, 115, 131, 96);
+    style.Colors[ImGuiCol_TableRowBgAlt] =  ImColor(16, 115/2, 131/2, 128);
+    style.Colors[ImGuiCol_TableBorderStrong] =  ImColor(32*2, 115*2, 131*2, 64);
+    style.Colors[ImGuiCol_TableBorderLight] =  ImColor(32*2, 115*2, 131*2, 0);
+    
+    style.Colors[ImGuiCol_CheckMark] = ImColor(52, 186, 120, 255);
+    //style.FrameBorderSize = 1.0f;
+  }
+  
+  void initialize() {
+  }
+  
+  auto drawPanels() -> void {
+    
+  }
+  
+  auto dockLayout() -> void {
+   
+    
+    ImGui::DockBuilderRemoveNode(dockspaceID); // Clear out existing layout
+    ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace); // Add empty node
+    ImGui::DockBuilderSetNodeSize(dockspaceID, ImGui::GetMainViewport()->WorkSize);
+    
+    ImGuiID dock_main_id = dockspaceID;
+    
+    ImGuiID left1 = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.2f, nullptr, &dock_main_id);
+    ImGuiID left2 = ImGui::DockBuilderSplitNode(left1, ImGuiDir_Down, 0.5f, nullptr, &left1);
+    ImGuiID left3 = ImGui::DockBuilderSplitNode(left2, ImGuiDir_Down, 0.5f, nullptr, &left2);
+
+    ImGuiID middle1 = dock_main_id;// ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 1.0f, nullptr, &dock_main_id);
+    ImGuiID middle2 = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.33f, nullptr, &middle1);
+    ImGuiID middle3 = ImGui::DockBuilderSplitNode(middle2, ImGuiDir_Right, 0.25f, nullptr, &middle2);
+
+    ImGuiID right1 = ImGui::DockBuilderSplitNode(middle1, ImGuiDir_Right, 0.275f, nullptr, &middle1);;
+    ImGuiID right2 = ImGui::DockBuilderSplitNode(right1, ImGuiDir_Down, 0.33f, nullptr, &right1);
+    
+    ImGui::DockBuilderDockWindow("Common", left1);
+    ImGui::DockBuilderDockWindow("Hierarchy", left2);
+    ImGui::DockBuilderDockWindow("Movie", left3);
+    ImGui::DockBuilderDockWindow("Game", middle1);
+    ImGui::DockBuilderDockWindow("Object window", middle2);
+    ImGui::DockBuilderDockWindow("GameSub2", middle3);
+    ImGui::DockBuilderDockWindow("RNG", right1);
+    ImGui::DockBuilderDockWindow("Test", right2);
+    
+    ImGui::DockBuilderFinish(dockspaceID);
+    
+  }
+  
+  static bool firstTime = true;
+    
+  auto draw(void *c, void *texture, bool *windowed) -> void {
+    
+    GImGui = (ImGuiContext*)c;
+      
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+      
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+      
+    dockspaceID = ImGui::GetID("MyDockSpace");
+    ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+      
+    ImGui::Begin("Common");
+    ImGui::End();
+      
+    ImGui::Begin("Hierarchy");
+    HierarchyWindow.Draw();
+    ImGui::End();
+      
+    ImGui::Begin("Movie");
+    ImGui::End();
+    
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0,0), ImVec2(640,528));
+    ImGui::Begin("Game");
+    ImGui::SetWindowSize(ImVec2(640,528));
+    ImGui::Image(texture, ImGui::GetContentRegionAvail());
+    ImGui::End();
+      
+    ImGui::Begin("Object window");
+    if (game::isValidGameState()) {
+      pointer<stSuperObject> spo = memory::address(0x80BF0C0C);
+      pointer<stEngineObject> eng = spo->actor;
+      
+      drawDynamics(eng->dynam->dynamics);
+    }
+    ImGui::End();
+      
+    ImGui::Begin("GameSub2");
+    ImGui::End();
+    
+    ImGui::Begin("RNG");
+    ImGui::End();
+    
+    ImGui::Begin("Test");
+    ImGui::End();
+      
+    ImGui::End();
+      
+    /* Draw panels */
+    if (firstTime) {
+      loadStyle();
+      dockLayout();
+      firstTime = false;
     }
     
-    auto draw(void *c, void *texture, bool *windowed) -> void {
-      gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
+    ImGui::PopStyleVar(3);
       
-      GImGui = (ImGuiContext*)c;
+      //gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
+      
+    
       //DrawGameWindow(texture, windowed);
-        
-      //if (false)
-      if (game::isValidGameState()) {
-        stCamera *camera = nullptr;
-        if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
-          /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
-          graphics::projectionMatrix = stMatrix4D::perspective(-camera->xAlpha + 0.1, 640.0f / 528.0f, camera->near, camera->far);
-          
-          //            float *proj = graphics::getProjectionMatrix();
-          //            for (int i = 0; i < 16; i++) {
-          //              graphics::projectionMatrix.m[i] = *(proj + i); //float(graphics::getProjectionMatrix()->m[i]);
-          //            }
-          //
-          //                            graphics::projectionMatrix.m00 = -graphics::projectionMatrix.m00;
-          //                            graphics::projectionMatrix.m11 = -graphics::projectionMatrix.m11;
-          //                            graphics::projectionMatrix.m22 -= 1;
-          //                            graphics::projectionMatrix.m32 *= 0.5f;
-          //                            graphics::projectionMatrix.m23 *= 4.0f;
-          
-          
-          graphics::viewMatrix = camera->transform.matrix;
-          graphics::viewMatrix.m01 = -graphics::viewMatrix.m01; graphics::viewMatrix.m11 = -graphics::viewMatrix.m11;
-          graphics::viewMatrix.m21 = -graphics::viewMatrix.m21; graphics::viewMatrix.m22 = -graphics::viewMatrix.m22;
-          graphics::viewMatrix.m31 = -graphics::viewMatrix.m31; graphics::viewMatrix.m32 = -graphics::viewMatrix.m32;
-          graphics::viewMatrix.m02 = -graphics::viewMatrix.m02; graphics::viewMatrix.m12 = -graphics::viewMatrix.m12;
-        }
-        
-        //graphics::beginFrame(640, 528);
-        
-//        drawWorld(p_stFatherSector, stMatrix4D());
 //
-//        stSuperObject *rayman = pointer<stSuperObject>(0x80BF0C0C);
+//      //if (false)
+//      if (game::isValidGameState()) {
+//        stCamera *camera = nullptr;
+//        if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
+//          /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
+//          graphics::projectionMatrix = stMatrix4D::perspective(-camera->xAlpha + 0.1, 640.0f / 528.0f, camera->near, camera->far);
 //
-//        p_stDynamicWorld->forEachChild([&](stSuperObject *spo, void*) {
-//          try {
-//            uint32_t c = game::objectColor(spo);
-//            stVector4D color;
-//            color.z = float((c & 0x00FF0000) >> 16) / 255.0f;
-//            color.y = float((c & 0x0000FF00) >> 8) / 255.0f;
-//            color.x = float((c & 0x000000FF) >> 0) / 255.0f;
-//            color.w = 1.0f;//(c & 0x000000FF) >> 0;
+//          //            float *proj = graphics::getProjectionMatrix();
+//          //            for (int i = 0; i < 16; i++) {
+//          //              graphics::projectionMatrix.m[i] = *(proj + i); //float(graphics::getProjectionMatrix()->m[i]);
+//          //            }
+//          //
+//          //                            graphics::projectionMatrix.m00 = -graphics::projectionMatrix.m00;
+//          //                            graphics::projectionMatrix.m11 = -graphics::projectionMatrix.m11;
+//          //                            graphics::projectionMatrix.m22 -= 1;
+//          //                            graphics::projectionMatrix.m32 *= 0.5f;
+//          //                            graphics::projectionMatrix.m23 *= 4.0f;
 //
-//            graphics::drawPoint(spo->globalTransform->translation(), color);
 //
-//            if (spo->actor->collSet) {
-//              std::vector<std::pair<pointer<stZdxList>, stVector4D>> p = {
-//                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zddList, stVector4D(0.5f, 0.5f, 0.5f, 0.7f) },
-//                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdeList, stVector4D(0.0f, 0.1f, 1.0f, 0.5f) },
-//                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdmList, stVector4D(1.0f, 0.7f, 0.0f, 0.5f) },
-//                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdrList, stVector4D(1.0f, 0.0f, 0.0f, 0.5f) },
-//              };
-//
-//              for (std::pair<pointer<stZdxList>, stVector4D> pair : p) {
-//                if (pair.first) {
-//                  pair.first->forEachElement([&](stCollideObject *collideObject) {
-//                    if (collideObject) collideObject->forEachElement([&](int16 type, void *element) {
-//                      if (type == collideElementIndexedSpheres){
-//                        stCollideElementSpheres *spheres = static_cast<stCollideElementSpheres*>(element);
-//                        for (int i = 0; i < spheres->numSpheres; i++) {
-//                          stCollideElementIndexedSphere sphere = spheres->spheres[i];
-//                          stVector3D center = *(stTransform*)spo->globalTransform * collideObject->vertices[int(sphere.indexOfCenterPoint)];
-//                          graphics::drawSphere(center, sphere.radius, pair.second);
-//                        }
-//                      }
-//                    });
-//                  });
-//                }
-//              }
-//            }
-//          } catch (bad_ptr& e) {
-//            // std::cout << "Failed to draw graphs: " + e.what() + "\n";
-//          }
-//        });
-        
-        
-        // Draw graphs
-        //stGraphChainList *graphList = g_stEngineStructure->graphList;
-//        while (graphList) {
-//          //printf("%X, %lX\n", g_stEngineStructure->graphList.memoryOffset().physicalAddress(), long(graphList) - long(memory::baseAddress));
-//          //printf("graph: %X, %X\n", (graphList->graph.memoryOffset().physicalAddress()), graphList->next.pointeeAddress().physicalAddress());
-//          //graphics::drawGraph(graphList->graph);
-//          graphList = graphList->next;
+//          graphics::viewMatrix = camera->transform.matrix;
+//          graphics::viewMatrix.m01 = -graphics::viewMatrix.m01; graphics::viewMatrix.m11 = -graphics::viewMatrix.m11;
+//          graphics::viewMatrix.m21 = -graphics::viewMatrix.m21; graphics::viewMatrix.m22 = -graphics::viewMatrix.m22;
+//          graphics::viewMatrix.m31 = -graphics::viewMatrix.m31; graphics::viewMatrix.m32 = -graphics::viewMatrix.m32;
+//          graphics::viewMatrix.m02 = -graphics::viewMatrix.m02; graphics::viewMatrix.m12 = -graphics::viewMatrix.m12;
 //        }
-        
-//        for (std::pair<uint32_t, bState> kv : blocks) {
-//          //graphics::drawPoint(kv.second.physicsState.transform.position(), stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
-//        }
-        
-        
-        
-//        graphics::drawLine(rayman->globalTransform->position(), rayman->globalTransform->position() +stVector3D(0,0,5), stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
-        
-        
-        int count = 0;
-        
-        
-//        bState *state = &blocks[initialHash];
-//        if (state) {
-//          while (state != NULL) {
-//            if (state->next) {
 //
-//              stVector3D a = state->physicsState.transform.position();
-//              stVector3D b = state->next->physicsState.transform.position();
-//              graphics::drawLine(a, b, stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
-//            }
+//        //graphics::beginFrame(640, 528);
 //
-//            state = state->next;
-//            count++;
-//          }
-//        }
-        
-        //printf("num nodes: %d\n", count);
-        
-        //graphics::endFrame();
-      }
-      
-      
-      
-      
-//            stSuperObject *rayman = p_stDynamicWorld->find("Rayman", g_stObjectTypes);
-//            stEngineObject *object = rayman->data;
-//
-//          if (object->collSet) {
-//            if (object->collSet->zdmList) {
-//              object->collSet->zdmList->forEachElement([&](stCollideObject *zdm) {
-//                zdm->forEachElement([&](int16 type, void *element) {
-//                  if (type == collideObjectIndexedSpheres) {
-//                    stCollideElementSpheres* spheres = (stCollideElementSpheres*)element;
-//                    for (int i = 0; i < spheres->numSpheres; i++) {
-//                      stCollideElementIndexedSphere sphere = spheres->spheres[i];
-//
-//                      stVector3D center = zdm->vertices[(int16_t)sphere.indexOfCenterPoint].host();
-//                      //printf("%f %.2f %.2f %.2f\n", sphere.radius.f(), center.x, center.y, center.z);
-//
-//                      //if (sphere.radius.f() != 0.8f) zdm->vertices[(int16_t)sphere.indexOfCenterPoint] = stVector3D(0.0f, 0.0f, 100.0f).game();
-//
-//                      center = center + rayman->globalTransform->position();
-//
-//
-//
-//                      //printf("%d %.2f %.2f %.2f\n", (int16_t)sphere.indexOfCenterPoint, center.x, center.y, center.z);
-//
-//                      graphics::drawPoint(center, stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
-//                    }
-//                  }
-//                });
-//              });
-//            }
-//          }
-//
-////          rayman->recurse([&](stSuperObject *child, void*) {
-////            if (child->type == superobject_type_physical_object) {
-////              stPhysicalObject *physObj = child->data;
-////              if (physObj) {
-////                if (physObj->physicalCollideset) {
-////                  stCollideObject *zdm = physObj->physicalCollideset->zdr;
-////                  printf("addr: %X\n", physObj->physicalCollideset.offset());
-////                  if (zdm) {
-////                    printf("zdm yes\n");
-////                    zdm->forEachElement([&](int16 type, void *element) {
-////                      printf("element: %d\n", type);
-////                      if (type == collideObjectIndexedSpheres) {
-////                        printf("indexed sphere\n");
+////        drawWorld(p_stFatherSector, stMatrix4D());
+////
+////        stSuperObject *rayman = pointer<stSuperObject>(0x80BF0C0C);
+////
+////        p_stDynamicWorld->forEachChild([&](stSuperObject *spo, void*) {
+////          try {
+////            uint32_t c = game::objectColor(spo);
+////            stVector4D color;
+////            color.z = float((c & 0x00FF0000) >> 16) / 255.0f;
+////            color.y = float((c & 0x0000FF00) >> 8) / 255.0f;
+////            color.x = float((c & 0x000000FF) >> 0) / 255.0f;
+////            color.w = 1.0f;//(c & 0x000000FF) >> 0;
+////
+////            graphics::drawPoint(spo->globalTransform->translation(), color);
+////
+////            if (spo->actor->collSet) {
+////              std::vector<std::pair<pointer<stZdxList>, stVector4D>> p = {
+////                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zddList, stVector4D(0.5f, 0.5f, 0.5f, 0.7f) },
+////                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdeList, stVector4D(0.0f, 0.1f, 1.0f, 0.5f) },
+////                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdmList, stVector4D(1.0f, 0.7f, 0.0f, 0.5f) },
+////                std::pair<pointer<stZdxList>, stVector4D> { spo->actor->collSet->zdrList, stVector4D(1.0f, 0.0f, 0.0f, 0.5f) },
+////              };
+////
+////              for (std::pair<pointer<stZdxList>, stVector4D> pair : p) {
+////                if (pair.first) {
+////                  pair.first->forEachElement([&](stCollideObject *collideObject) {
+////                    if (collideObject) collideObject->forEachElement([&](int16 type, void *element) {
+////                      if (type == collideElementIndexedSpheres){
+////                        stCollideElementSpheres *spheres = static_cast<stCollideElementSpheres*>(element);
+////                        for (int i = 0; i < spheres->numSpheres; i++) {
+////                          stCollideElementIndexedSphere sphere = spheres->spheres[i];
+////                          stVector3D center = *(stTransform*)spo->globalTransform * collideObject->vertices[int(sphere.indexOfCenterPoint)];
+////                          graphics::drawSphere(center, sphere.radius, pair.second);
+////                        }
 ////                      }
 ////                    });
-////                  }
+////                  });
 ////                }
 ////              }
 ////            }
-////          }, nullptr);
-//
-//
-////            p_stDynamicWorld->forEachChild([&](stSuperObject *object, void*)
-////            {
-////                uint32_t c = game::objectColor(object);
-////                stVector4D color;
-////                color.z = (c & 0xFF000000) >> 24;
-////                color.y = (c & 0x00FF0000) >> 16;
-////                color.x = (c & 0x0000FF00) >> 8;
-////                color.w = (c & 0x000000FF) >> 0;
-////
-////                graphics::drawPoint(*(stVector3D*)&object->globalTransform->matrix.m30, color);
-////            });
-//
-////          for (std::pair<uint32_t, attempt*> kv : blockMap) {
-////            graphics::drawPoint(kv.second->states.back().currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+////          } catch (bad_ptr& e) {
+////            // std::cout << "Failed to draw graphs: " + e.what() + "\n";
 ////          }
+////        });
 //
-////          if (optimalAttempt) {
-////            for (int s = 0; s < optimalAttempt->states.size(); s += 1) {
-////              state& s1 = optimalAttempt->states[s + 0];
-////              state& s2 = optimalAttempt->states[s + 1];
-////              graphics::drawLine(s1.currentTranslation, s2.currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+//
+//        // Draw graphs
+//        //stGraphChainList *graphList = g_stEngineStructure->graphList;
+////        while (graphList) {
+////          //printf("%X, %lX\n", g_stEngineStructure->graphList.memoryOffset().physicalAddress(), long(graphList) - long(memory::baseAddress));
+////          //printf("graph: %X, %X\n", (graphList->graph.memoryOffset().physicalAddress()), graphList->next.pointeeAddress().physicalAddress());
+////          //graphics::drawGraph(graphList->graph);
+////          graphList = graphList->next;
+////        }
+//
+////        for (std::pair<uint32_t, bState> kv : blocks) {
+////          //graphics::drawPoint(kv.second.physicsState.transform.position(), stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+////        }
+//
+//
+//
+////        graphics::drawLine(rayman->globalTransform->position(), rayman->globalTransform->position() +stVector3D(0,0,5), stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
+//
+//
+//        int count = 0;
+//
+//
+////        bState *state = &blocks[initialHash];
+////        if (state) {
+////          while (state != NULL) {
+////            if (state->next) {
+////
+////              stVector3D a = state->physicsState.transform.position();
+////              stVector3D b = state->next->physicsState.transform.position();
+////              graphics::drawLine(a, b, stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
 ////            }
 ////
-//////            for (state& s : optimalAttempt->states) {
-//////              graphics::drawPoint(s.currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+////            state = state->next;
+////            count++;
+////          }
+////        }
+//
+//        //printf("num nodes: %d\n", count);
+//
+//        //graphics::endFrame();
+//      }
+//
+//
+//
+//
+////            stSuperObject *rayman = p_stDynamicWorld->find("Rayman", g_stObjectTypes);
+////            stEngineObject *object = rayman->data;
+////
+////          if (object->collSet) {
+////            if (object->collSet->zdmList) {
+////              object->collSet->zdmList->forEachElement([&](stCollideObject *zdm) {
+////                zdm->forEachElement([&](int16 type, void *element) {
+////                  if (type == collideObjectIndexedSpheres) {
+////                    stCollideElementSpheres* spheres = (stCollideElementSpheres*)element;
+////                    for (int i = 0; i < spheres->numSpheres; i++) {
+////                      stCollideElementIndexedSphere sphere = spheres->spheres[i];
+////
+////                      stVector3D center = zdm->vertices[(int16_t)sphere.indexOfCenterPoint].host();
+////                      //printf("%f %.2f %.2f %.2f\n", sphere.radius.f(), center.x, center.y, center.z);
+////
+////                      //if (sphere.radius.f() != 0.8f) zdm->vertices[(int16_t)sphere.indexOfCenterPoint] = stVector3D(0.0f, 0.0f, 100.0f).game();
+////
+////                      center = center + rayman->globalTransform->position();
+////
+////
+////
+////                      //printf("%d %.2f %.2f %.2f\n", (int16_t)sphere.indexOfCenterPoint, center.x, center.y, center.z);
+////
+////                      graphics::drawPoint(center, stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
+////                    }
+////                  }
+////                });
+////              });
+////            }
+////          }
+////
+//////          rayman->recurse([&](stSuperObject *child, void*) {
+//////            if (child->type == superobject_type_physical_object) {
+//////              stPhysicalObject *physObj = child->data;
+//////              if (physObj) {
+//////                if (physObj->physicalCollideset) {
+//////                  stCollideObject *zdm = physObj->physicalCollideset->zdr;
+//////                  printf("addr: %X\n", physObj->physicalCollideset.offset());
+//////                  if (zdm) {
+//////                    printf("zdm yes\n");
+//////                    zdm->forEachElement([&](int16 type, void *element) {
+//////                      printf("element: %d\n", type);
+//////                      if (type == collideObjectIndexedSpheres) {
+//////                        printf("indexed sphere\n");
+//////                      }
+//////                    });
+//////                  }
+//////                }
+//////              }
 //////            }
-////          }
+//////          }, nullptr);
+////
+////
+//////            p_stDynamicWorld->forEachChild([&](stSuperObject *object, void*)
+//////            {
+//////                uint32_t c = game::objectColor(object);
+//////                stVector4D color;
+//////                color.z = (c & 0xFF000000) >> 24;
+//////                color.y = (c & 0x00FF0000) >> 16;
+//////                color.x = (c & 0x0000FF00) >> 8;
+//////                color.w = (c & 0x000000FF) >> 0;
 //////
-////          int counter = 0;
-////          for (std::pair<uint32_t, bState> kv : blocks) {
-////            counter++;
-////            bState& block = kv.second;
-////            if (block.next && (counter % 5) == 0)
-////              graphics::drawLine(block.absolutePosition, block.next->absolutePosition, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
-////          }
+//////                graphics::drawPoint(*(stVector3D*)&object->globalTransform->matrix.m30, color);
+//////            });
+////
+//////          for (std::pair<uint32_t, attempt*> kv : blockMap) {
+//////            graphics::drawPoint(kv.second->states.back().currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+//////          }
+////
+//////          if (optimalAttempt) {
+//////            for (int s = 0; s < optimalAttempt->states.size(); s += 1) {
+//////              state& s1 = optimalAttempt->states[s + 0];
+//////              state& s2 = optimalAttempt->states[s + 1];
+//////              graphics::drawLine(s1.currentTranslation, s2.currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+//////            }
+//////
+////////            for (state& s : optimalAttempt->states) {
+////////              graphics::drawPoint(s.currentTranslation, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+////////            }
+//////          }
+////////
+//////          int counter = 0;
+//////          for (std::pair<uint32_t, bState> kv : blocks) {
+//////            counter++;
+//////            bState& block = kv.second;
+//////            if (block.next && (counter % 5) == 0)
+//////              graphics::drawLine(block.absolutePosition, block.next->absolutePosition, stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+//////          }
+////
+////
+////            drawWorld(p_stFatherSector, p_stFatherSector->globalTransform->matrix.hostByteOrder());
+////
+////            graphics::endFrame();
+////
+//////            ImGui::Begin("aaa");
+//////            if (graphics::texture())ImGui::Image(graphics::texture(), ImVec2(640, 528));
+//////            ImGui::End();
+////        }
+//
+////        if (!ConfigurationWindow.Open) {
+////            MenuBar.Draw();
+////            RNGWindow.Draw();
+////            HierarchyWindow.Draw();
+////            RunCreateWindow.Draw();
+////
+////            CinematicWindow.Draw();
+////
+////          bruteforceWindow.Draw();
+////        }
+////
+////        ConfigurationWindow.Draw();
+//        //    MovieInputWindow.Draw();
+//        //    ScriptWindow.Draw();
+//        //    SuperObjectWindow.Draw();
+//
+//      HierarchyWindow.Draw();
+//
+//      for (superObjectWindow& window : spoWindows)
+//        window.draw();
 //
 //
-//            drawWorld(p_stFatherSector, p_stFatherSector->globalTransform->matrix.hostByteOrder());
+//      //gui::popup(nullptr, nullptr);
 //
-//            graphics::endFrame();
-//
-////            ImGui::Begin("aaa");
-////            if (graphics::texture())ImGui::Image(graphics::texture(), ImVec2(640, 528));
-////            ImGui::End();
-//        }
-        
-//        if (!ConfigurationWindow.Open) {
-//            MenuBar.Draw();
-//            RNGWindow.Draw();
-//            HierarchyWindow.Draw();
-//            RunCreateWindow.Draw();
-//
-//            CinematicWindow.Draw();
-//
-//          bruteforceWindow.Draw();
-//        }
-//
-//        ConfigurationWindow.Draw();
-        //    MovieInputWindow.Draw();
-        //    ScriptWindow.Draw();
-        //    SuperObjectWindow.Draw();
-      
-      HierarchyWindow.Draw();
-      
-      for (superObjectWindow& window : spoWindows)
-        window.draw();
-      
-        
-      //gui::popup(nullptr, nullptr);
-      
-      //gui::memoryEditor.GotoAddr = 0xBF0C0C;
-      gui::memoryEditor.ReadOnly = false;
-      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
+//      //gui::memoryEditor.GotoAddr = 0xBF0C0C;
+//      gui::memoryEditor.ReadOnly = false;
+//      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
     }
     
 }

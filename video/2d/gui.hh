@@ -22,6 +22,8 @@ struct superObjectWindow {
 
 namespace gui {
   
+  extern ImGuiID dockspaceID;
+  
   void initialize();
   void draw(void *c, void *texture, bool *windowed);
   
