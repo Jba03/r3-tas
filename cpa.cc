@@ -21,11 +21,13 @@ static auto memory_swap(std::integral auto v) {
   
 #pragma mark - Address
   
-template <typename T> cpa::address<T>::operator T() const {
+template <typename T>
+cpa::address<T>::operator T() const {
   return addr;
 }
 
-template <typename T> T cpa::address<T>::physicalAddress() {
+template <typename T>
+T cpa::address<T>::physicalAddress() {
 #if platform == GCN
   return swap(addr);
 #else
@@ -33,7 +35,8 @@ template <typename T> T cpa::address<T>::physicalAddress() {
 #endif
 }
 
-template <typename T> T cpa::address<T>::effectiveAddress() {
+template <typename T>
+T cpa::address<T>::effectiveAddress() {
 #if platform == GCN
   return memory_swap(addr) & 0x7FFFFFFF;
 #else
@@ -41,14 +44,16 @@ template <typename T> T cpa::address<T>::effectiveAddress() {
 #endif
 }
 
-template <typename T> bool cpa::address<T>::valid() {
+template <typename T>
+bool cpa::address<T>::valid() {
   return effectiveAddress() != 0;
 }
 
 #pragma mark - Type
 
 template <typename T, typename OpT>
-template <typename S> cpa::type<T, OpT>::type(const S v) {
+template <typename S>
+cpa::type<T, OpT>::type(const S v) {
   if constexpr (std::is_floating_point<S>::value) {
     /* copy float type to memory */
     data = swap(*(T*)&v);
@@ -59,13 +64,15 @@ template <typename S> cpa::type<T, OpT>::type(const S v) {
 }
 
 template <typename T, typename OpT>
-template <typename S> cpa::type<T, OpT>& cpa::type<T, OpT>::operator =(const S v) {
+template <typename S>
+cpa::type<T, OpT>& cpa::type<T, OpT>::operator =(const S v) {
   if (memoryBound()) {
     
   }
 }
 
-template <typename T, typename OpT> bool cpa::type<T, OpT>::memoryBound() {
+template <typename T, typename OpT>
+bool cpa::type<T, OpT>::memoryBound() {
   
 }
 
