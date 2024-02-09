@@ -1,8 +1,12 @@
 #include "cpa.hh"
   
+#if defined(htonl) && defined(htons)
+# define OPTIMIZED_BYTESWAP
+#endif
+
 /* swap integral byteorder */
-auto cpa::memory_swap(std::integral auto v) {
-  if constexpr (endianness != std::endian::native) {
+static auto memory_swap(std::integral auto v) {
+  if constexpr (cpa::endianness != std::endian::native) {
 #ifdef OPTIMIZED_BYTESWAP
     if constexpr (sizeof(v) == 1) return v;
     if constexpr (sizeof(v) == 2) return htons(v);
@@ -31,7 +35,7 @@ template <typename T> T cpa::address<T>::physicalAddress() {
 
 template <typename T> T cpa::address<T>::effectiveAddress() {
 #if platform == GCN
-  return swap(addr) & 0x7FFFFFFF;
+  return memory_swap(addr) & 0x7FFFFFFF;
 #else
   /* ... */
 #endif
