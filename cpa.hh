@@ -10,14 +10,10 @@
 #include <type_traits>
 #include <vector>
 
-#ifndef CPA_VERSION
-# define CPA_VERSION CPA_VERSION_R3_GCN
-#endif
-
 #define CPA_ENDIAN_BIG      0
 #define CPA_ENDIAN_LITTLE   1
 
-
+/* TODO: correct endianness */
 #define CPA_MAKE_PLATFORM(I,E) ((I<<1)|E)
 #define CPA_PLATFORM_GCN      CPA_MAKE_PLATFORM(0x1, CPA_ENDIAN_BIG)
 #define CPA_PLATFORM_PS1      CPA_MAKE_PLATFORM(0x2, CPA_ENDIAN_LITTLE)
@@ -32,7 +28,7 @@
 #define CPA_PLATFORM_3DS      CPA_MAKE_PLATFORM(0xB, CPA_ENDIAN_BIG)
 #define CPA_PLATFORM_N64      CPA_MAKE_PLATFORM(0xC, CPA_ENDIAN_BIG)
 
-#define CPA_MAKE_VERSION(I,P) (P|(I<<6))
+#define CPA_MAKE_VERSION(I,P) ((I<<6)|P)
 #define CPA_VERSION_R2_PC                     CPA_MAKE_VERSION(0x00, CPA_PLATFORM_GCN)
 #define CPA_VERSION_R2_PC_DEMO_1999_08_18     CPA_MAKE_VERSION(0x01, CPA_PLATFORM_GCN)
 #define CPA_VERSION_R2_PC_DEMO_1999_09_04     CPA_MAKE_VERSION(0x02, CPA_PLATFORM_PS2)
@@ -62,6 +58,10 @@
 #define CPA_VERSION_R3_PC_DEMO_2003_01_29     CPA_MAKE_VERSION(0x1A, CPA_PLATFORM_PC)
 #define CPA_VERSION_R3_XBOX                   CPA_MAKE_VERSION(0x1B, CPA_PLATFORM_XBOX)
 #define CPA_VERSION_R3_XBOX360                CPA_MAKE_VERSION(0x1C, CPA_PLATFORM_XBOX360)
+
+#ifndef CPA_VERSION
+# define CPA_VERSION CPA_VERSION_R3_GCN
+#endif
 
 namespace CPA {
   
@@ -707,7 +707,7 @@ namespace CPA {
     padding(3)
     pointer<stDynamicsReport> report;
   };
-
+  
   struct stDynamicsAdvancedBlock {
     float32 xInertia;
     float32 yInertia;
@@ -1054,6 +1054,17 @@ namespace CPA {
     int16 aabbIndex;
   };
   
+  struct stCollideMaterial {
+    int16 zoneType;
+    uint16 identifier;
+    float32 xDirection;
+    float32 yDirection;
+    float32 zDirection;
+    float32 coefficient;
+    uint16 aiType;
+    padding(2)
+  };
+  
   struct stCollisionCase {
     float32 collisionTime;
     stVector3D collisionNormal;
@@ -1074,15 +1085,81 @@ namespace CPA {
     float32 rebound2;
   };
   
-  struct stCollideMaterial {
-    int16 zoneType;
-    uint16 identifier;
-    float32 xDirection;
-    float32 yDirection;
-    float32 zDirection;
-    float32 coefficient;
-    uint16 aiType;
-    padding(2)
+  struct stIndexedAlignedBox {
+    int16 min;
+    int16 max;
+    pointer<stGameMaterial> material;
+  };
+  
+  struct stCollideElementAlignedBoxes {
+    pointer<stIndexedAlignedBox> boxes;
+    int16 numBoxes;
+    int16 parallelBoxIndex;
+  };
+  
+  struct stGVForCollision {
+    pointer<stVector3D> vertex1;
+    stVector3D edgeVector;
+    pointer<stVector3D> vertex2;
+    stVector3D dinST0Point;
+    float32 dynamicRadius;
+    pointer<stTransform> staticGeomObjMatrix;
+    stVector3D dinST1Point;
+    stVector3D dinST01Vector;
+    pointer<stGameMaterial> dynamicMaterial;
+    pointer<stGameMaterial> staticMaterial;
+    pointer<> vParameter1;
+    int16 sParameter2;
+    pointer<stCollideObject> staticCollideObject;
+    pointer<stCollideElementIndexedTriangles> staticElementIndexedTriangles;
+    uint32 selectedCollisionCases;
+    int16 staticElementIndex;
+    int16 staticIndexedTriangleIndex;
+    pointer<stCollideElementIndexedSphere> dynamicIndexedSphere;
+    pointer<stOctree> octree;
+    uint8 staticGeomObjHasNoTransformationMatrix;
+    uint8 dynamicGeomObjHasZoomInsteadOfScale;
+    pointer<stCollideObject> dynamicCollideObject;
+    pointer<stTransform> t0DynamicGeometricObjectMatrix;
+    pointer<stTransform> t1DynamicGeometricObjectMatrix;
+    stTransform inverseMatrix;
+    stTransform d2st0TransformMatrix;
+    stTransform d2st1TransformMatrix;
+    stTransform s2dt0TransformMatrix;
+    stTransform s2dt1TransformMatrix;
+    float32 staticScale;
+    pointer<stCollideElementSpheres> dynamicElementSpheres;
+    pointer<stCollideElementSpheres> staticElementSpheres;
+    int32 bitFieldOfIndexedSpheresInCollision;
+    pointer<stCollideElementIndexedSphere> staticIndexedSphere;
+    stVector3D swapDinST0Point;
+    pointer<stVector3D> dynamicCenter;
+    pointer<stVector3D> staticCenter;
+    float32 swapRadius;
+    uint8 useEnlargedSphere;
+    int16 numSelectedNodes;
+    pointer<stOctreeNode> selectedOctreeNodes[100]; // 100 on r3 gcn
+    float32 selectedOctreeCoefficients[100];
+    pointer<stCollideElementAlignedBoxes> dynamicElementAlignedBoxes;
+    int16 dynamicIndexedAlignedBoxIndex;
+    pointer<stIndexedAlignedBox> dynamicIndexedAlignedBox;
+    pointer<stVector3D> dynamicMinPoint;
+    pointer<stVector3D> dynamicMaxPoint;
+    stVector3D dinST0MaxPoint;
+    stVector3D dinST0MinPoint;
+    stVector3D dinST1MaxPoint;
+    stVector3D dinST1MinPoint;
+    stVector3D dinST08VBox[8];
+    stVector3D dinST18VBox[8];
+    stVector3D dinST01Vect[8];
+    int16 staticIndexedSphereIndex;
+    pointer<stCollideElementAlignedBoxes> staticElementAlignedBoxes;
+    pointer<stIndexedAlignedBox> staticIndexedBox;
+    pointer<stVector3D> pStaticMinPoint;
+    pointer<stVector3D> pStaticMaxPoint;
+    stVector3D staticMinPoint;
+    stVector3D staticMaxPoint;
+    stVector3D static8VBox[8];
   };
   
 #pragma mark - PO
