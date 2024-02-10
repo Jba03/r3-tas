@@ -1283,6 +1283,60 @@ namespace CPA {
   
   #undef padding
   
+  
+#pragma mark - Namespace aliases
+  
+  /// WayPoint
+  namespace WP {
+    using tdstWayPoint = stWayPoint;
+    using stGraphNode = stGraphNode;
+    using tdstGraph = stGraph;
+    using tdstGraphChainList = stGraphChainList;
+    using tdstMSWay = stMSWay;
+  };
+  
+  /// Hierarchy
+  namespace HIE {
+    using tdstSuperObject = stSuperObject;
+  };
+  
+  /// Intelligence
+  namespace AI {
+    using tdstBrain = stBrain;
+    using tdstMind = stMind;
+    using tdstAIModel = stAIModel;
+    using tdstNodeInterpret = stNodeInterpret;
+    using tdstTreeInterpret = stTreeInterpret;
+    using tdstActionParam = stActionParam;
+    using tdstActionTableEntry = stActionTableEntry;
+    using tdstActionTable = stActionTable;
+    using tdstBehavior = stBehavior;
+    using tdstMacro = stMacro;
+    using tdstMacroList = stMacroList;
+    using tdstScriptAI = stScriptAI;
+    using tdstIntelligence = stIntelligence;
+    using tdstDsgVarInfo = stDsgVarInfo;
+    using tdstDsgVar = stDsgVar;
+    using tdstDsgMem = stDsgMem;
+  };
+  
+  /// Collision
+  namespace COL {
+    using tdstOctreeNode = stOctreeNode;
+    using tdstOctree = stOctree;
+    using tdstCollideObject = stCollideObject;
+    using tdstPhysicalCollideSet = stPhysicalCollideSet;
+    using tdstColliderInfo = stColliderInfo;
+    using tdstZdxListEntry = stZdxListEntry;
+    using tdstZdxList = stZdxList;
+    using tdstCsaList = stCsaList;
+    using tdstCollideSet = stCollideSet;
+    using tdstCollideElementIndexedTriangles = stCollideElementIndexedTriangles;
+    using tdstCollideElementIndexedSphere = stCollideElementIndexedSphere;
+    using tdstCollideElementSpheres = stCollideElementSpheres;
+    using tdstCollisionCase = stCollisionCase;
+  };
+  
 };
 
 #endif /* cpa_hh */
