@@ -80,6 +80,36 @@ bool cpa::type<T, OpT>::memoryBound() {
 
 /** ``STRUCTURE BEGIN ``**/
 
+template <typename T, unsigned N> const T cpa::stVector<T, N>::dot(const stVector<T, N> vector) { T s=0.0f; for(int i=0;i<N;i++)s+=v[i]*v[i]; return s;}
+template <typename T, unsigned N> const T cpa::stVector<T, N>::square() { return dot(*this); }
+template <typename T, unsigned N> const T cpa::stVector<T, N>::length() { return std::sqrt(square()); }
+template <typename T, unsigned N> const T cpa::stVector<T, N>::x() { return v[0]; }
+template <typename T, unsigned N> const T cpa::stVector<T, N>::y() { return v[1]; }
+template <typename T, unsigned N> const T cpa::stVector<T, N>::z() { return v[2]; }
+template <typename T, unsigned N> const T cpa::stVector<T, N>::w() { return v[3]; }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator +(const Vec a) { for (int i = 0; i < N; i++) v[i] += a.v[i]; }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator -(const Vec a) { for (int i = 0; i < N; i++) v[i] -= a.v[i]; }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator *(const Vec a) { for (int i = 0; i < N; i++) v[i] *= a.v[i]; }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator /(const Vec a) { for (int i = 0; i < N; i++) v[i] /= a.v[i]; }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator *(const T   a) { for (int i = 0; i < N; i++) v[i] *= a;      }
+template <typename T, unsigned N> const cpa::stVector<T, N> cpa::stVector<T, N>::operator /(const T   a) { for (int i = 0; i < N; i++) v[i] /= a;      }
+
+template <typename T, unsigned N> const cpa::stMatrix<T, N> cpa::stMatrix<T, N>::operator *(const cpa::stMatrix<T, N> a) {
+  cpa::stMatrix<T, N> result;
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      for (int k = 0; k < N; k++) {
+        result.m[i][j] += m[i][k] * a.m[k][j];
+      }
+    }
+  }
+  return result;
+}
+
+template <typename T, unsigned N> const cpa::stVector4D cpa::stMatrix<T, N>::operator *(const stVector4D a) {
+  
+}
+
 void cpa::stObjectTypeElement::serialize(serializer& s) {
   s.add(next);
   s.add(prev);

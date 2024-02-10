@@ -3,13 +3,14 @@
 
 #include <array>
 #include <bit>
+#include <cmath>
 #include <cstddef>
 #include <map>
 #include <string>
 #include <type_traits>
 #include <vector>
 
-#define platform GCN
+#define platform CPA_PLATFORM
 
 /* macros for synthesis of unique struct field names */
 #define CONCAT(a, b) CONCAT_INNER(a, b)
@@ -21,17 +22,17 @@ struct cpa {
   
   /** target platform endianness */
   #if platform == GCN
-    static const std::endian endianness = std::endian::big;
-    typedef uint32_t address_type;
+    static constexpr std::endian endianness = std::endian::big;
+    using address_type = uint32_t;
   #elif platform == PS2
-    static const std::endian endianness = std::endian::little;
-    typedef uint32_t address_type;
+    static constexpr std::endian endianness = std::endian::little;
+    using address_type = uint64_t;
   #elif platform == PC
-    static const std::endian endianness = std::endian::little;
-    typedef uint64_t address_type;
+    static constexpr std::endian endianness = std::endian::little;
+    using address_type = uint64_t;
   #elif platform == NATIVE
-    static const std::endian endianness = std::endian::native;
-    typedef uint64_t address_type;
+    static constexpr std::endian endianness = std::endian::native;
+    using address_type = uint64_t;
   #endif
   
 #pragma mark - Address
@@ -270,22 +271,35 @@ struct cpa {
   
   template <typename T, unsigned N>
   struct stVector {
-    stVector() { /* ... */ }
-    //std::enable_if_t<N == 2> T& x() { return elements[0]; }
+    using Vec = stVector<T, N>;
+    const T dot(const Vec a);
+    const T square();
+    const T length();
+    const T x(), y(), z(), w();
+    
+    const Vec operator +(const Vec a);
+    const Vec operator -(const Vec a);
+    const Vec operator *(const Vec a);
+    const Vec operator /(const Vec a);
+    const Vec operator *(const T a);
+    const Vec operator /(const T a);
   private:
     std::array<T, N> v;
-  };
-  
-  template <typename T, unsigned N>
-  struct stMatrix {
-    stMatrix() { /* ... */ }
-  private:
-    std::array<T, N*N> m;
   };
   
   using stVector2D = stVector<float32, 2>;
   using stVector3D = stVector<float32, 3>;
   using stVector4D = stVector<float32, 4>;
+  
+  template <typename T, unsigned N>
+  struct stMatrix {
+    using Mat = stMatrix<T, N>;
+    const Mat operator *(const Mat a);
+    const stVector4D operator *(const stVector4D a);
+  private:
+    std::array<T, N*N> m;
+  };
+  
   using stMatrix3D = stMatrix<float32, 3>;
   using stMatrix4D = stMatrix<float32, 4>;
   
@@ -1269,7 +1283,6 @@ struct cpa {
   /** ``STRUCTURE END`` **/
   
   #undef padding
-  
 };
 
 #endif /* cpa_hh */
