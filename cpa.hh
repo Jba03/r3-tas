@@ -17,8 +17,7 @@
 #define CONCAT_INNER(a, b) a ## b
 #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
 
-// template <typename Platform>
-struct cpa {
+namespace CPA {
   
   /** target platform endianness */
   #if platform == GCN
@@ -1283,6 +1282,7 @@ struct cpa {
   /** ``STRUCTURE END`` **/
   
   #undef padding
+  
 };
 
 #endif /* cpa_hh */
