@@ -10,29 +10,73 @@
 #include <type_traits>
 #include <vector>
 
-#define platform CPA_PLATFORM
+#ifndef CPA_VERSION
+# define CPA_VERSION CPA_VERSION_R3_GCN
+#endif
 
-/* macros for synthesis of unique struct field names */
-#define CONCAT(a, b) CONCAT_INNER(a, b)
-#define CONCAT_INNER(a, b) a ## b
-#define UNIQUE_NAME(base) CONCAT(base, __LINE__)
+#define CPA_ENDIAN_BIG      0
+#define CPA_ENDIAN_LITTLE   1
+
+
+#define CPA_MAKE_PLATFORM(I,E) ((I<<1)|E)
+#define CPA_PLATFORM_GCN      CPA_MAKE_PLATFORM(0x1, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_PS1      CPA_MAKE_PLATFORM(0x2, CPA_ENDIAN_LITTLE)
+#define CPA_PLATFORM_PS2      CPA_MAKE_PLATFORM(0x3, CPA_ENDIAN_LITTLE)
+#define CPA_PLATFORM_PS3      CPA_MAKE_PLATFORM(0x4, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_XBOX     CPA_MAKE_PLATFORM(0x5, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_XBOX360  CPA_MAKE_PLATFORM(0x6, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_PC       CPA_MAKE_PLATFORM(0x7, CPA_ENDIAN_LITTLE)
+#define CPA_PLATFORM_OSX      CPA_MAKE_PLATFORM(0x8, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_DC       CPA_MAKE_PLATFORM(0x9, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_NDS      CPA_MAKE_PLATFORM(0xA, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_3DS      CPA_MAKE_PLATFORM(0xB, CPA_ENDIAN_BIG)
+#define CPA_PLATFORM_N64      CPA_MAKE_PLATFORM(0xC, CPA_ENDIAN_BIG)
+
+#define CPA_MAKE_VERSION(I,P) (P|(I<<6))
+#define CPA_VERSION_R2_PC                     CPA_MAKE_VERSION(0x00, CPA_PLATFORM_GCN)
+#define CPA_VERSION_R2_PC_DEMO_1999_08_18     CPA_MAKE_VERSION(0x01, CPA_PLATFORM_GCN)
+#define CPA_VERSION_R2_PC_DEMO_1999_09_04     CPA_MAKE_VERSION(0x02, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R2_PS1                    CPA_MAKE_VERSION(0x03, CPA_PLATFORM_PS1)
+#define CPA_VERSION_R2_PS2                    CPA_MAKE_VERSION(0x04, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R2_N64                    CPA_MAKE_VERSION(0x05, CPA_PLATFORM_N64)
+#define CPA_VERSION_R2_NDS                    CPA_MAKE_VERSION(0x06, CPA_PLATFORM_NDS)
+#define CPA_VERSION_R2_3DS                    CPA_MAKE_VERSION(0x07, CPA_PLATFORM_3DS)
+#define CPA_VERSION_R2_DC                     CPA_MAKE_VERSION(0x08, CPA_PLATFORM_DC)
+#define CPA_VERSION_R2_DC_J                   CPA_MAKE_VERSION(0x09, CPA_PLATFORM_DC)
+#define CPA_VERSION_R2R_PS2                   CPA_MAKE_VERSION(0x0A, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R2R_PS2_J                 CPA_MAKE_VERSION(0x0B, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_GCN                    CPA_MAKE_VERSION(0x0C, CPA_PLATFORM_GCN)
+#define CPA_VERSION_R3_GCN_DEMO               CPA_MAKE_VERSION(0x0D, CPA_PLATFORM_GCN)
+#define CPA_VERSION_R3_PS2                    CPA_MAKE_VERSION(0x0E, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS2_DEMO_2002_05_17    CPA_MAKE_VERSION(0x0F, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS2_DEMO_2002_08_07    CPA_MAKE_VERSION(0x10, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS2_DEVB_2002_09_06    CPA_MAKE_VERSION(0x11, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS2_DEMO_2002_10_29    CPA_MAKE_VERSION(0x12, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS2_DEMO_2002_12_18    CPA_MAKE_VERSION(0x13, CPA_PLATFORM_PS2)
+#define CPA_VERSION_R3_PS3                    CPA_MAKE_VERSION(0x14, CPA_PLATFORM_PS3)
+#define CPA_VERSION_R3_PC                     CPA_MAKE_VERSION(0x15, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_PC_DEMO_2002_10_04     CPA_MAKE_VERSION(0x16, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_PC_DEMO_2002_10_21     CPA_MAKE_VERSION(0x17, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_PC_DEMO_2002_12_10     CPA_MAKE_VERSION(0x18, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_PC_DEMO_2003_01_08     CPA_MAKE_VERSION(0x19, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_PC_DEMO_2003_01_29     CPA_MAKE_VERSION(0x1A, CPA_PLATFORM_PC)
+#define CPA_VERSION_R3_XBOX                   CPA_MAKE_VERSION(0x1B, CPA_PLATFORM_XBOX)
+#define CPA_VERSION_R3_XBOX360                CPA_MAKE_VERSION(0x1C, CPA_PLATFORM_XBOX360)
 
 namespace CPA {
   
-  /** target platform endianness */
-  #if platform == GCN
+  #if (CPA_VERSION & 1) == CPA_ENDIAN_BIG
     static constexpr std::endian endianness = std::endian::big;
     using address_type = uint32_t;
-  #elif platform == PS2
+  #elif (CPA_VERSION & 1) == CPA_ENDIAN_LITTLE
     static constexpr std::endian endianness = std::endian::little;
-    using address_type = uint64_t;
-  #elif platform == PC
-    static constexpr std::endian endianness = std::endian::little;
-    using address_type = uint64_t;
-  #elif platform == NATIVE
-    static constexpr std::endian endianness = std::endian::native;
     using address_type = uint64_t;
   #endif
+  
+  /* macros for synthesis of unique struct field names */
+  #define CONCAT(a, b) CONCAT_INNER(a, b)
+  #define CONCAT_INNER(a, b) a ## b
+  #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
   
 #pragma mark - Address
   
@@ -254,7 +298,7 @@ namespace CPA {
   
 #pragma mark - Structure -
   
-  #if platform == NATIVE
+  #if CPA_PLATFORM == NATIVE
   # define padding(S)
   #else
   # define padding(S) uint8_t UNIQUE_NAME(padding) [S];
@@ -846,7 +890,7 @@ namespace CPA {
     int8 priority;
     pointer<> skyMaterial;
     uint8 fog;
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     string<0x104> name;
   #endif
   };
@@ -913,7 +957,7 @@ namespace CPA {
   };
 
   struct stZdxListEntry {
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     pointer<> next;
     pointer<> prev;
     pointer<> parent;
@@ -924,7 +968,7 @@ namespace CPA {
   };
 
   struct stZdxList {
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     stDoublyLinkedList<stZdxListEntry> list;
   #else
     stLinkedList<stZdxListEntry> list;
@@ -1059,7 +1103,7 @@ namespace CPA {
     pointer<stSuperObject> portalCamera;
     uint32 lastTransitionID;
     float32 lastRatioUsed;
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     string<0x32> name;
   #endif
   };
@@ -1143,7 +1187,7 @@ namespace CPA {
   };
   
   struct stNodeInterpret {
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     uint32 param;
     padding(3)
     uint8 type;
@@ -1162,7 +1206,7 @@ namespace CPA {
   };
   
   struct stActionTableEntry {
-  #if platform == GCN
+  #if CPA_PLATFORM == CPA_PLATFORM_GCN
     string<0x50> name;
     uint32 param[8];
     padding(4) /* ? */
