@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <fstream>
 
 #define CPA_ENDIAN_BIG      0
 #define CPA_ENDIAN_LITTLE   1
@@ -63,12 +64,19 @@
 # define CPA_VERSION CPA_VERSION_R3_GCN
 #endif
 
-namespace CPA {
+#define CPA_PLATFORM (CPA_VERSION & 0xF)
+#define CPA_ENDIANNESS (CPA_PLATFORM & 1)
+
+#if defined(htonl) && defined(htons)
+# define OPTIMIZED_BYTESWAP
+#endif
+
+struct CPA {
   
-  #if (CPA_VERSION & 1) == CPA_ENDIAN_BIG
+  #if CPA_ENDIANNESS == CPA_ENDIAN_BIG
     static constexpr std::endian endianness = std::endian::big;
     using address_type = uint32_t;
-  #elif (CPA_VERSION & 1) == CPA_ENDIAN_LITTLE
+  #elif CPA_ENDIANNESS == CPA_ENDIAN_LITTLE
     static constexpr std::endian endianness = std::endian::little;
     using address_type = uint64_t;
   #endif
@@ -78,34 +86,109 @@ namespace CPA {
   #define CONCAT_INNER(a, b) a ## b
   #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
   
+  struct memory {
+    /* swap integral byteorder */
+    static auto swap(std::integral auto v) {
+      if constexpr (CPA::endianness != std::endian::native) {
+    #ifdef OPTIMIZED_BYTESWAP
+        if constexpr (sizeof(v) == 1) return v;
+        if constexpr (sizeof(v) == 2) return htons(v);
+        if constexpr (sizeof(v) == 4) return htonl(v);
+    #else
+        if constexpr (sizeof(v) == 1) return v;
+        if constexpr (sizeof(v) == 2) return ((v>>8)&0x00FF)|((v<<8)&0xFF00);
+        if constexpr (sizeof(v) == 4) return ((v>>24)&0xFF)|((v>>8)&0xFF00)|((v<<8)&0xFF0000)|((v<<24)&0xFF000000);
+    #endif
+      }
+    }
+  };
+  
 #pragma mark - Address
   
   template <typename T = address_type>
   struct address {
-    operator T() const;
-    /** unmapped hardware address */
-    T physicalAddress();
-    /** emulated address */
-    T effectiveAddress();
-    /** is the address valid? */
-    bool valid();
+    address() : addr(0) { /* ... */ }
+    
+    template <typename X> address(X *hostAddress) {
+      this->baseAddress = 0;
+      addr = memory::swap(uint32_t(long(hostAddress) - long(this->baseAddress)));
+    }
+
+    operator T() const {
+      return addr;
+    }
+
+    T physicalAddress() {
+    #if CPA_PLATFORM == CPA_PLATFORM_GCN
+      return memory_swap(addr);
+    #else
+      /* ... */
+    #endif
+    }
+
+    T effectiveAddress() {
+    #if CPA_PLATFORM == CPA_PLATFORM_GCN
+      return memory::swap(addr) & 0x7FFFFFFF;
+    #else
+      /* ... */
+    #endif
+    }
+
+    void* hostAddress() {
+      return nullptr;//CPA::baseAddress() + effectiveAddress();
+    }
+
+    bool valid() {
+      return effectiveAddress() != 0;
+    }
+    
   private:
-    T addr = 0;
+    T addr;
   };
   
 #pragma mark - Type
   
+  template <class, template <class> class>
+  struct is_instance : public std::false_type {};
+
+  template <class T, template <class> class U>
+  struct is_instance<U<T>, U> : public std::true_type {};
+  
   template <typename T, typename OpT>
   struct type {
-    type() : data(0) { /* ... */ }
-    /** construct from arbitrary type */
-    template <typename S> type(const S v);
-    /** assign arbitrary type */
-    template <typename S> type& operator =(const S v);
-    /** cast to computational type */
-    operator OpT() const;
-    /** is the type bound to platform memory? */
-    bool memoryBound();
+    type() { /* ... */ }
+    
+    template <typename S> type(S v) {
+      if constexpr (std::is_same<S, float>::value) {
+        /* copy float type to memory */
+        data = memory::swap(*(T*)&v);
+      } else if constexpr (std::is_integral<S>::value) {
+        /* copy integral type to memory */
+
+      }
+    }
+    
+    template <typename S>
+    type<T, OpT>& operator =(const S v) {
+      if (memoryBound()) {
+        return *this;
+      }
+      data = memory::swap(*(T*)&v);
+      return *this;
+    }
+    
+    operator OpT() const {
+      T tmp = memory::swap(*(T*)(&data));
+      return *(OpT*)(&tmp);
+    }
+    
+    bool memoryBound() {
+      return false;
+    }
+    
+    T swap() {
+      return memory::swap(data);
+    }
     
     OpT operator +(std::integral auto v) { return OpT(data) + OpT(v); }
     OpT operator -(std::integral auto v) { return OpT(data) - OpT(v); }
@@ -141,30 +224,66 @@ namespace CPA {
   
 #pragma mark - Pointer
   
+  struct bad_pointer {
+    std::string msg;
+    std::string what() { return msg; }
+    bad_pointer(std::string s) : msg(s) {}
+  };
+  
   template <typename T = local_address_type>
   struct pointer {
-    /** construct from address */
-    pointer(address<> addr);
-    /** construct from host address */
-    pointer(void* addr);
-    /** construct from other pointer */
-    template <typename X> pointer(pointer<X>& other);
+    pointer() {
+      /* ... */
+    }
     
-    /** get the memory offset of this pointer */
-    address<> memoryOffset();
-    /** return the address the pointer points to */
-    address<> pointeeAddress();
+    pointer(address<> addr) : ptr(addr) {
+      /* ... */
+    }
     
-    /** return object pointed at */
-    template <typename X = T> X* pointee();
-    /** return object pointed at */
-    template <typename X = T> operator X*();
-    /** access the pointer type */
-    template <typename X = T> X* operator ->();
-    /** access the pointer as array */
-    template <typename X = T> X& operator [](std::integral auto idx);
-    /** assign from host value */
-    template <typename X> void operator =(X *other);
+    pointer(void* addr) : ptr(addr) {
+      /* ... */
+    }
+    
+    template <typename X>
+    pointer(pointer<X>& other) : ptr(other.ptr) {
+      /* ... */
+    }
+    
+    address<> memoryOffset() {
+      return address<T>(&ptr);
+    }
+    
+    address<> pointeeAddress() {
+      return ptr.effectiveAddress();
+    }
+    
+    template <typename X>
+    X* pointee() {
+      return ptr ? (X*)ptr.hostAddress() : nullptr;
+    }
+    
+    template <typename X>
+    operator X*() {
+      return pointee<X>();
+    }
+    
+    template <typename X>
+    X* operator ->() {
+      if (pointee() == nullptr) throw bad_pointer("bad pointer");
+      return pointee();
+    }
+    
+    template <typename X = T>
+    X& operator [](std::integral auto idx) {
+      X *obj = pointee<X>();
+      if (obj == nullptr) throw bad_pointer("array access into bad pointer");
+      else return *(obj + idx);
+    }
+    
+    template <typename X>
+    void operator =(X *other) {
+      ptr = other;
+    }
     
     pointer<T> operator +(int c) { return ptr.effectiveAddress() + sizeof(T) * c; }
     pointer<T> operator -(int c) { return ptr.effectiveAddress() - sizeof(T) * c; }
@@ -178,14 +297,25 @@ namespace CPA {
   
   template <typename T = address<>>
   struct doublepointer : pointer<pointer<T>> {
-    /** construct from address */
-    doublepointer(address<> addr);
-    /** construct from other doublepointer */
-    template <typename X> doublepointer(doublepointer<X>& other);
-    /** return the object pointed at */
-    template <typename X = T> X* pointee();
-    /** return the object pointed at */
-    template <typename X = T> operator X*();
+    doublepointer(address<> addr) : ptr(addr) {
+      /* ... */
+    }
+    
+    template <typename X>
+    doublepointer(doublepointer<X>& other) {
+      
+    }
+    
+    template <typename X>
+    X* pointee() {
+      address<> *primary = pointer<address<>>(ptr.physicalAddress());
+      return primary ? pointer<X>(primary->physicalAddress()) : nullptr;
+    }
+
+    template <typename X>
+    operator X*() {
+      return pointee<X>();
+    }
     
   private:
     address<> ptr;
@@ -193,20 +323,50 @@ namespace CPA {
   
 #pragma mark - String
   
-  /** a string, '\0'-terminated if size unspecified */
+  /// A string, '\0'-terminated unless size specified
   template <size_t size = std::string::npos>
   struct string {
-    constexpr size_t length();
-    operator std::string();
-    operator const char*();
-    operator void*();
+    /// The length of the string
+    size_t length() {
+      return size;
+    }
     
-    bool operator ==(string& other);
-    bool operator ==(std::string str);
-    bool operator ==(const char* str);
-    void operator =(std::string& str);
-    /** return the last path component, if such exists */
-    std::string lastPathComponent();
+    /// Return the last path component, if such exists
+    std::string lastPathComponent() {
+      std::string str = *this;
+      size_t idx = str.rfind(':');
+      if (idx == std::string::npos) return "";
+      return str.substr(idx + 1, std::string::npos);
+    }
+    
+    operator std::string() {
+      return std::string(reinterpret_cast<char*>(string), size);
+    }
+    
+    operator const char*() {
+      return (const char*)string;
+    }
+    
+    operator void*() {
+      return (void*)(&string);
+    }
+    
+    auto operator ==(struct string& str) {
+      return std::string(str) == std::string(this);
+    }
+    
+    auto operator ==(std::string str) {
+      return std::string(str) == std::string(reinterpret_cast<char*>(string), size);
+    }
+    
+    auto operator ==(const char *str) {
+      return std::string(str) == std::string(reinterpret_cast<char*>(string), size);
+    }
+    
+    auto operator =(std::string& str) {
+      std::memset(string.data(), 0, size);
+      std::memcpy(string.data(), str.data(), size);
+    }
     
   private:
     std::array<char8, size> string;
@@ -312,39 +472,51 @@ namespace CPA {
   
 #pragma mark - Common types
   
-  template <typename T, unsigned N>
-  struct stVector {
-    using Vec = stVector<T, N>;
-    const T dot(const Vec a);
-    const T square();
-    const T length();
-    const T x(), y(), z(), w();
+  struct stVector3D {
+    float32 x = 0.0f;
+    float32 y = 0.0f;
+    float32 z = 0.0f;
     
-    const Vec operator +(const Vec a);
-    const Vec operator -(const Vec a);
-    const Vec operator *(const Vec a);
-    const Vec operator /(const Vec a);
-    const Vec operator *(const T a);
-    const Vec operator /(const T a);
-  private:
-    std::array<T, N> v;
+    stVector3D(float x, float y, float z) : x(x), y(y), z(z) { /* ... */ }
+    
+    const float32 dot(stVector3D v) { return x * v.x + y * v.y + z * v.z; }
+    const float32 square() { return dot(*this); }
+    const float32 length() { return std::sqrt(square()); }
+    
+    const stVector3D operator +(stVector3D v) { x += v.x; y += v.y; z += v.z; return *this; }
+    const stVector3D operator -(stVector3D v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+    const stVector3D operator *(stVector3D v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+    const stVector3D operator /(stVector3D v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
+    const stVector3D operator *(float s) { x *= s; y *= s; z *= s; return *this; }
+    const stVector3D operator /(float s) { x /= s; y /= s; z /= s; return *this; }
   };
   
-  using stVector2D = stVector<float32, 2>;
-  using stVector3D = stVector<float32, 3>;
-  using stVector4D = stVector<float32, 4>;
-  
-  template <typename T, unsigned N>
-  struct stMatrix {
-    using Mat = stMatrix<T, N>;
-    const Mat operator *(const Mat a);
-    const stVector4D operator *(const stVector4D a);
-  private:
-    std::array<T, N*N> m;
+  struct stVector4D {
+    float32 x = 0.0f;
+    float32 y = 0.0f;
+    float32 z = 0.0f;
+    float32 w = 0.0f;
+    
+    const stVector4D operator +(stVector4D v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
+    const stVector4D operator -(stVector4D v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+    const stVector4D operator *(stVector4D v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+    const stVector4D operator /(stVector4D v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
+    const stVector4D operator *(float s) { x *= s; y *= s; z *= s; w *= s; return *this; }
+    const stVector4D operator /(float s) { x /= s; y /= s; z /= s; w /= s; return *this; }
   };
   
-  using stMatrix3D = stMatrix<float32, 3>;
-  using stMatrix4D = stMatrix<float32, 4>;
+  struct stMatrix3D {
+    float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f;
+    float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f;
+    float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f;
+  };
+  
+  struct stMatrix4D {
+    float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f, m03 = 0.0f;
+    float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f, m13 = 0.0f;
+    float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f, m23 = 0.0f;
+    float32 m30 = 0.0f, m31 = 0.0f, m32 = 0.0f, m33 = 1.0f;
+  };
   
 #pragma mark - Containers
   
@@ -371,31 +543,26 @@ namespace CPA {
   
 #pragma mark - stTransform
   
-  enum eTransformType : typename uint32::U {
-    /* gcn */
-    uninitialized = 0,
-    identity = 1,
-    translate = 2,
-    zoom = 3,
-    scale = 4,
-    rotation = 5,
-    rotation_zoom = 6,
-    rotation_scale = 7,
-    rotation_scale_complex = 8,
-    undefined = 9,
-  };
-  
-  struct a {
-    uint8_t v[];
-  };
-  
   struct stTransform {
-    stTransform() : type(uninitialized), matrix(stMatrix4D()), scale(stVector4D(/*1.0f*/)) {
-      /* ... */
-    }
+    
+    enum Type : uint32_t {
+      /* gcn */
+      Uninitialized = 0,
+      Identity = 1,
+      Translate = 2,
+      Zoom = 3,
+      Scale = 4,
+      Rotation = 5,
+      RotationZoom = 6,
+      RotationScale = 7,
+      RotationScaleComplex = 8,
+      Undefined = 9,
+    };
+    
+    stTransform();
     
     /** transform type */
-    eTransformType type;
+    Type type = Uninitialized;
     /** matrix */
     stMatrix4D matrix;
     /** external scale parameter */
@@ -431,22 +598,6 @@ namespace CPA {
   
 #pragma mark - Engine
   
-  enum eEngineMode : typename uint8::U {
-    invalid = 0,
-    initialize = 1,
-    deinitialize = 2,
-    initializeGameplay = 3,
-    deinitializeGameplay = 4,
-    enterLevel = 5,
-    changeLevel = 6,
-    gameplay = 9,
-  };
-  
-  enum eInputMode : typename uint8::U {
-    normal = 0,
-    commands = 1,
-  };
-  
   struct stEngineTimer : structure {
     uint32 currentFrame;
     int16 timerHandle;
@@ -457,7 +608,7 @@ namespace CPA {
     uint32 usefulDeltaTime;
     uint32 pauseTime;
     float32 frameLength;
-     uint32 totalRealTimeLow;
+    uint32 totalRealTimeLow;
     uint32 totalRealTimeHigh;
     uint32 totalPauseTimeLow;
     uint32 totalPauseTimeHigh;
@@ -466,7 +617,24 @@ namespace CPA {
   };
   
   struct stEngineStructure : structure {
-    eEngineMode mode;
+    
+    enum EngineMode : uint8_t {
+      Invalid = 0,
+      Initialize = 1,
+      Deinitialize = 2,
+      InitializeGameplay = 3,
+      DeinitializeGameplay = 4,
+      EnterLevel = 5,
+      ChangeLevel = 6,
+      Gameplay = 9,
+    };
+    
+    enum eInputMode : typename uint8::U {
+      normal = 0,
+      commands = 1,
+    };
+    
+    EngineMode mode = Invalid;
     string<30> currentLevelName;
     string<30> nextLevelName;
     string<30> firstLevelName;
@@ -534,9 +702,7 @@ namespace CPA {
     pointer<stGraphChainList> graphList;
     pointer<stCineManager> cineManager;
     
-    /** reload the current level */
-    void reloadLevel();
-    /** load level by name */
+    /// Load level by name
     void loadLevel(std::string levelName);
     
     void serialize(serializer& s);
@@ -730,27 +896,26 @@ namespace CPA {
     padding(3)
   };
   
+  struct stMACDPID {
+    float32 data0;
+    stVector3D data1;
+    stVector3D data2;
+    stVector3D data3;
+    float32 data4;
+    float32 data5;
+    float32 data6;
+    stDynamicsRotation data7;
+    stDynamicsRotation data8;
+    int8 data9;
+    uint16 data10;
+    stVector3D data11;
+    float32 data12;
+    stVector3D data13;
+    float32 data14;
+    uint8 data15;
+  };
+  
   struct stDynamicsComplexBlock {
-    
-    struct macdpid {
-      float32 data0;
-      stVector3D data1;
-      stVector3D data2;
-      stVector3D data3;
-      float32 data4;
-      float32 data5;
-      float32 data6;
-      stDynamicsRotation data7;
-      stDynamicsRotation data8;
-      int8 data9;
-      uint16 data10;
-      stVector3D data11;
-      float32 data12;
-      stVector3D data13;
-      float32 data14;
-      uint8 data15;
-    };
-    
     float32 tiltStrength;
     float32 tiltInertia;
     float32 tiltOrigin;
@@ -758,7 +923,7 @@ namespace CPA {
     float32 hangingLimit;
     stVector3D contact;
     stVector3D fallTranslation;
-    macdpid macdpid;
+    stMACDPID macdpid;
     pointer<stSuperObject> platformSuperObject;
     stTransform previousMatrixAbsolute;
     stTransform previousMatrixPrevious;
@@ -1185,7 +1350,7 @@ namespace CPA {
   #endif
   };
   
-#pragma mark - SPO
+#pragma mark - HIE
   
   #define superobjectTypeNone                 (0 << 0)
   #define superobjectTypeWorld                (1 << 0)
@@ -1200,7 +1365,6 @@ namespace CPA {
   #define superobjectTypeMirror               (1 << 9)
   
   struct stSuperObject {
-    
     uint32 type;
     union {
       pointer<> data;
@@ -1278,8 +1442,16 @@ namespace CPA {
     pointer<stNodeInterpret> node;
   };
   
+  union uGetSetParam {
+    int8 s8Value;
+    int16 s16Value;
+    int32 s32Value;
+    float32 floatValue;
+    pointer<> pointerValue;
+  };
+  
   struct stActionParam {
-    
+    union uGetSetParam param[8];
   };
   
   struct stActionTableEntry {
@@ -1289,8 +1461,8 @@ namespace CPA {
     padding(4) /* ? */
     padding(4) /* ? */
     pointer<string<>> namePointer; /* ? */
-  #else
-    stActionParam actionParam[8];
+  #elif CPA_PLATFORM == CPA_PLATFORM_PS2
+    stActionParam actionParam;
   #endif
     pointer<stNodeInterpret> node;
     uint8 used;
@@ -1404,11 +1576,10 @@ namespace CPA {
   
   #undef padding
   
-  
 #pragma mark - Namespace aliases
   
   /// WayPoint
-  namespace WP {
+  struct WP {
     using tdstWayPoint = stWayPoint;
     using stGraphNode = stGraphNode;
     using tdstGraph = stGraph;
@@ -1417,12 +1588,12 @@ namespace CPA {
   };
   
   /// Hierarchy
-  namespace HIE {
+  struct HIE {
     using tdstSuperObject = stSuperObject;
   };
   
   /// Intelligence
-  namespace AI {
+  struct AI {
     using tdstBrain = stBrain;
     using tdstMind = stMind;
     using tdstAIModel = stAIModel;
@@ -1442,7 +1613,7 @@ namespace CPA {
   };
   
   /// Collision
-  namespace COL {
+  struct COL {
     using tdstOctreeNode = stOctreeNode;
     using tdstOctree = stOctree;
     using tdstCollideObject = stCollideObject;
@@ -1458,6 +1629,8 @@ namespace CPA {
     using tdstCollisionCase = stCollisionCase;
   };
   
+private:
+  void *baseAddress;
 };
 
 #endif /* cpa_hh */
