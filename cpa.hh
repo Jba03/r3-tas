@@ -1592,6 +1592,14 @@ struct CPA {
     using tdstSuperObject = stSuperObject;
   };
   
+  /// Math
+  struct MTH {
+    using tdstVector3D = stVector3D;
+    using tdstVector4D = stVector4D;
+    using tdstMatrix3D = stMatrix3D;
+    using tdstMatrix4D = stMatrix4D;
+  };
+  
   /// Intelligence
   struct AI {
     using tdstBrain = stBrain;
