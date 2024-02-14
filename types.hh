@@ -6,6 +6,7 @@
 #include <array>
 #include <string>
 #include <concepts>
+#include <type_traits>
 #include <cmath>
 
 namespace CPA {
@@ -37,9 +38,10 @@ namespace CPA {
   template <typename T>
   concept ArithmeticType = std::is_arithmetic_v<T>;
   
+  struct TypeIdentifier {};
   /// A type convertible to and from target platform memory
   template <IntegralType T, ArithmeticType OpT>
-  struct Type {
+  struct Type : TypeIdentifier {
     Type() : data(0) {
       /* ... */
     }
@@ -91,9 +93,14 @@ namespace CPA {
     OpT operator -() { Type c = *this; return 0 - c; }
     
     using U = T;
+    using T1 = T;
+    using T2 = OpT;
   private:
     T data = 0;
   };
+
+  template <typename T>
+  using is_game_type = std::is_base_of<T, TypeIdentifier>;
   
   using TargetAddressTypeLocal = Type<Memory::TargetAddressType, Memory::TargetAddressType>;
   

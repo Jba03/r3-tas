@@ -2,6 +2,7 @@
 #define memory_hh
 
 #include <cstdint>
+#include <fstream>
 #include <type_traits>
 #include <bit>
 
@@ -35,6 +36,24 @@ namespace CPA {
     extern Memory::HostAddressType baseAddress;
     /// Size of the memory space
     extern size_t size;
+  };
+  
+  struct Stream {
+    /// Initialize with filename
+    Stream(std::string filename);
+    /// Seek to offset
+    void seek(size_t off);
+    
+    template <typename T>
+    const T read() {
+      uint8_t *x = static_cast<uint8_t*>(data) + pos;
+      return *static_cast<T*>(x);
+    }
+    
+  private:
+    void *data = nullptr;
+    size_t size = 0;
+    size_t pos = 0;
   };
   
 };

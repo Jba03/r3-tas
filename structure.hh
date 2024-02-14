@@ -124,6 +124,12 @@ namespace CPA::Structure {
     const stVector3D operator /(stVector3D v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
     const stVector3D operator *(float s) { x *= s; y *= s; z *= s; return *this; }
     const stVector3D operator /(float s) { x /= s; y /= s; z /= s; return *this; }
+    
+    void serialize(serializer& s) {
+      s.add(x);
+      s.add(y);
+      s.add(z);
+    }
   };
   
   struct stVector4D : structure {
