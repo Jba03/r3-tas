@@ -10,13 +10,25 @@ namespace CPA::Memory {
 namespace CPA {
   
   Stream::Stream(std::string filename) {
-    std::fstream s(filename, std::ios::binary | std::ios::ate);
-    size = s.tellg();
-    s.read((char*)data, size);
+    std::ifstream s(filename, std::ios::binary | std::ios::ate);
+    if (s.is_open()) {
+      size = s.tellg();
+      data = new uint8_t[size];
+      s.seekg(0);
+      s.read((char*)data, size);
+    }
   }
   
   void Stream::seek(size_t off) {
     pos = std::clamp(off, 0ul, size);
+  }
+  
+  void Stream::advance(size_t bytes) {
+    pos += bytes;
+  }
+  
+  size_t Stream::position() {
+    return pos;
   }
   
 };

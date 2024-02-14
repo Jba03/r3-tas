@@ -43,15 +43,20 @@ namespace CPA {
     Stream(std::string filename);
     /// Seek to offset
     void seek(size_t off);
+    /// Advance offset
+    void advance(size_t bytes);
+    /// Get stream position
+    size_t position();
     
     template <typename T>
     const T read() {
       uint8_t *x = static_cast<uint8_t*>(data) + pos;
-      return *static_cast<T*>(x);
+      pos += sizeof(T);
+      return *reinterpret_cast<T*>(x);
     }
     
-  private:
-    void *data = nullptr;
+  //private:
+    uint8_t *data = nullptr;
     size_t size = 0;
     size_t pos = 0;
   };

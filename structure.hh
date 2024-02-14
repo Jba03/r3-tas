@@ -6,22 +6,6 @@
 
 namespace CPA::Structure {
   
-  using char8   = Type<int8_t, int8_t>;
-  using uchar8  = Type<uint8_t, uint8_t>;
-  using int8    = Type<int8_t, int8_t>;
-  using uint8   = Type<uint8_t, uint8_t>;
-  using int16   = Type<int16_t, int16_t>;
-  using uint16  = Type<uint16_t, uint16_t>;
-  using int32   = Type<int32_t, int32_t>;
-  using uint32  = Type<uint32_t, uint32_t>;
-  using int64   = Type<int64_t, int64_t>;
-  using uint64  = Type<uint64_t, uint64_t>;
-  using float32 = Type<uint32_t, float>;
-  
-  template <typename T = Memory::TargetAddressType> using pointer = Pointer<T>;
-  template <typename T = Memory::TargetAddressType> using doublepointer = DoublePointer<T>;
-  template <size_t size = std::string::npos> using string = String<size>;
-  
   struct stEngineStructure;
   struct stEngineTimer;
   struct stCineManager;
