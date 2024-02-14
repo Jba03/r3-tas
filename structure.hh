@@ -1119,7 +1119,7 @@ namespace CPA::Structure {
     pointer<stNodeInterpret> node;
   };
   
-  union uGetSetParam : structure {
+  union uGetSetParam {
     int8 s8Value;
     int16 s16Value;
     int32 s32Value;
