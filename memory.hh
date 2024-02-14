@@ -48,10 +48,10 @@ namespace CPA {
     /// Get stream position
     size_t position();
     
-    template <typename T>
+    template <typename T, bool NoAdvance = false>
     const T read() {
       uint8_t *x = static_cast<uint8_t*>(data) + pos;
-      pos += sizeof(T);
+      if constexpr (!NoAdvance) pos += sizeof(T);
       return *reinterpret_cast<T*>(x);
     }
     

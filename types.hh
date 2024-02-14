@@ -63,7 +63,7 @@ namespace CPA {
       if (memoryBound()) {
         return *this;
       }
-      data = Memory::bswap(*static_cast<T*>(&v));
+      data = Memory::bswap(*(T*)&v);
       return *this;
     }
 

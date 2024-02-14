@@ -3,10 +3,13 @@
 
 #include "types.hh"
 #include "memory.hh"
+#include <vector>
 
 namespace CPA {
+  
   namespace FileFormat {
     
+    /// GCN Texture Palette Library
     struct TPL {
       struct FileHeader {
         uint32 code;
@@ -26,7 +29,6 @@ namespace CPA {
         uint16 width;
         uint32 format;
         uint32 imageDataOffset;
-        // Unused?
         uint32 wrapS;
         uint32 wrapT;
         uint32 minFilter;
@@ -38,9 +40,35 @@ namespace CPA {
         uint8 unpacked;
       };
       
-      TPL(Stream& s);
+      static bool isTPL(Stream& s) {
+        return s.read<FileHeader, true>().code == 0x0020AF30;
+      }
       
-      FileHeader header;
+      TPL(Stream& s);
+    };
+    
+    enum DataFileIndex {
+      FIX = 0,
+      LVL = 1,
+      Transit = 2,
+      Transit2 = 3,
+      VertexBuffer = 4,
+      KeyFramesFIX = 5,
+      KeyFramesLVL = 6,
+    };
+    
+    /// Pointer file
+    template <typename FileIndex = DataFileIndex>
+    struct PTR {
+      PTR(Stream& s);
+      /// <SourceFile, SourcePointer>
+      using PointerFilePair = std::tuple<FileIndex, pointer<>>;
+      /// <SourceFile, SourcePointer, TargetFile, TargetPointer>
+      using FillInPointerFilePair = std::tuple<FileIndex, pointer<>, FileIndex, pointer<>>;
+      /// Default pointers
+      std::vector<PointerFilePair> pointers;
+      /// Pointers to be replaced in the level
+      std::vector<FillInPointerFilePair> fillInPointers;
     };
     
   };
