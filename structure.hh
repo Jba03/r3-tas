@@ -138,17 +138,52 @@ namespace CPA::Structure {
     const stVector4D operator /(float s) { x /= s; y /= s; z /= s; w /= s; return *this; }
   };
   
-  struct stMatrix3D : structure {
-    float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f;
-    float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f;
-    float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f;
+  union stMatrix3D {
+    struct {
+      float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f;
+      float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f;
+      float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f;
+    };
+    struct {
+      float32 m[9];
+    }
+    
+    stMatrix3D();
   };
   
-  struct stMatrix4D : structure {
-    float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f, m03 = 0.0f;
-    float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f, m13 = 0.0f;
-    float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f, m23 = 0.0f;
-    float32 m30 = 0.0f, m31 = 0.0f, m32 = 0.0f, m33 = 1.0f;
+  union stMatrix4D {
+    struct {
+      float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f, m03 = 0.0f;
+      float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f, m13 = 0.0f;
+      float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f, m23 = 0.0f;
+      float32 m30 = 0.0f, m31 = 0.0f, m32 = 0.0f, m33 = 1.0f;
+    };
+    struct {
+      float32 m[16];
+    };
+    
+    stMatrix4D();
+      
+    const stMatrix4D operator * (stMatrix4D mm) {
+      stMatrix4D r;
+      r.m[0]  = m[0] * mm.m[0]  + m[4] * mm.m[1]  + m[8] * mm.m[2]   + m[12] * mm.m[3];
+      r.m[4]  = m[0] * mm.m[4]  + m[4] * mm.m[5]  + m[8] * mm.m[6]   + m[12] * mm.m[7];
+      r.m[8]  = m[0] * mm.m[8]  + m[4] * mm.m[9]  + m[8] * mm.m[10]  + m[12] * mm.m[11];
+      r.m[12] = m[0] * mm.m[12] + m[4] * mm.m[13] + m[8] * mm.m[14]  + m[12] * mm.m[15];
+      r.m[1]  = m[1] * mm.m[0]  + m[5] * mm.m[1]  + m[9] * mm.m[2]   + m[13] * mm.m[3];
+      r.m[5]  = m[1] * mm.m[4]  + m[5] * mm.m[5]  + m[9] * mm.m[6]   + m[13] * mm.m[7];
+      r.m[9]  = m[1] * mm.m[8]  + m[5] * mm.m[9]  + m[9] * mm.m[10]  + m[13] * mm.m[11];
+      r.m[13] = m[1] * mm.m[12] + m[5] * mm.m[13] + m[9] * mm.m[14]  + m[13] * mm.m[15];
+      r.m[2]  = m[2] * mm.m[0]  + m[6] * mm.m[1]  + m[10] * mm.m[2]  + m[14] * mm.m[3];
+      r.m[6]  = m[2] * mm.m[4]  + m[6] * mm.m[5]  + m[10] * mm.m[6]  + m[14] * mm.m[7];
+      r.m[10] = m[2] * mm.m[8]  + m[6] * mm.m[9]  + m[10] * mm.m[10] + m[14] * mm.m[11];
+      r.m[14] = m[2] * mm.m[12] + m[6] * mm.m[13] + m[10] * mm.m[14] + m[14] * mm.m[15];
+      r.m[3]  = m[3] * mm.m[0]  + m[7] * mm.m[1]  + m[11] * mm.m[2]  + m[15] * mm.m[3];
+      r.m[7]  = m[3] * mm.m[4]  + m[7] * mm.m[5]  + m[11] * mm.m[6]  + m[15] * mm.m[7];
+      r.m[11] = m[3] * mm.m[8]  + m[7] * mm.m[9]  + m[11] * mm.m[10] + m[15] * mm.m[11];
+      r.m[15] = m[3] * mm.m[12] + m[7] * mm.m[13] + m[11] * mm.m[14] + m[15] * mm.m[15];
+      return r;
+    }
     
     /// Create a new translation matrix
     static const stMatrix4D translation(stVector3D v) {
