@@ -204,6 +204,16 @@ namespace CPA::Structure {
     stVector4D operator * (stVector4D v);
   };
   
+#pragma mark - stAlways
+  
+  struct stAlways {
+    uint32 numAlways;
+    stDoublyLinkedList<> alwaysModels;
+    pointer<stSuperObject> alwaysSuperobject;
+    pointer<stEngineObject> alwaysActors;
+    pointer<stSuperObject> alwaysGeneratorSuperobjects;
+  };
+  
 #pragma mark - stObjectType
   
   /// Object identifier
