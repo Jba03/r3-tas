@@ -124,7 +124,11 @@ namespace CPA::Structure {
     float32 y = 0.0f;
     float32 z = 0.0f;
     float32 w = 0.0f;
+    
+    stVector4D();
     stVector4D(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { /* ... */ }
+    
+    const stVector3D xyz() { return stVector3D(x, y, z); }
     
     const stVector4D operator +(stVector4D v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
     const stVector4D operator -(stVector4D v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
@@ -145,6 +149,54 @@ namespace CPA::Structure {
     float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f, m13 = 0.0f;
     float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f, m23 = 0.0f;
     float32 m30 = 0.0f, m31 = 0.0f, m32 = 0.0f, m33 = 1.0f;
+    
+    /// Create a new translation matrix
+    static const stMatrix4D translation(stVector3D v) {
+      stMatrix4D result;
+      result.m30 = v.x;
+      result.m31 = v.y;
+      result.m32 = v.z;
+      return result;
+    }
+    
+    /// Create a new scale matrix
+    static const stMatrix4D scale(stVector3D v) {
+      stMatrix4D result;
+      result.m00 = v.x;
+      result.m11 = v.y;
+      result.m22 = v.z;
+      return result;
+    }
+    
+    /// Create a new perspective matrix
+    static const stMatrix4D perspective(float fovY, float aspect, float near, float far) {
+      float const ct = 1.0f / std::tanf(fovY / 2.0f);
+      
+      stMatrix4D result;
+      result.m00 = ct / aspect;
+      result.m11 = ct;
+      result.m22 = (far + near) / (near - far);
+      result.m23 = -1.0f;
+      result.m32 = (2.0f * far * near) / (near - far);
+      result.m33 = 0.0f;
+      return result;
+    }
+    
+    /// stMatrix4D * stVector4D -> stVector4D
+    const stVector4D operator * (stVector4D v) {
+      stVector4D result;
+      result.x = m00 * v.x + m10 * v.y + m20 * v.z + m30 * v.w;
+      result.y = m01 * v.x + m11 * v.y + m21 * v.z + m31 * v.w;
+      result.z = m02 * v.x + m12 * v.y + m22 * v.z + m32 * v.w;
+      result.w = m03 * v.x + m13 * v.y + m23 * v.z + m33 * v.w;
+      return result;
+    }
+    
+     const stVector3D operator *(stVector3D v) {
+      stVector4D V = (*this) * stVector4D(v.x, v.y, v.z, 1.0f);
+      return V.xyz();
+    }
+    
   };
   
 #pragma mark - Containers
