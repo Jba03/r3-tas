@@ -543,7 +543,6 @@ static auto fn_vDynamicsCameraMechanics() -> void {
 
 bruteforcingTool::bruteforcingTool()
 {
-  printf("hok!\n");
   hook<0x8003b054>(fn_vMakeCharacterThink, hookType::start);
 //
   hook<0x8003b248>(fn_s_vMakeCharacterReact, hookType::start);

@@ -1,8 +1,17 @@
 #ifndef collision_hh
 #define collision_hh
 
-namespace collision {
-  auto initialize() -> void;
+#include <vector>
+
+struct CollisionTracker {
+  CollisionTracker() {}
+  
+  struct Collision {
+    
+  };
+  
+private:
+  std::vector<Collision> collisions;
 };
 
 #endif /* collision_hh */

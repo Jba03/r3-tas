@@ -35,12 +35,6 @@ namespace gui {
   /// Popup
   auto drawPopup() -> void;
   extern pointer<> popupTarget;
-  
-  struct video_payload {
-    void* texture;
-    void* context;
-    bool windowed;
-  };
 }
 
 struct Window
@@ -56,6 +50,7 @@ extern Window RNGWindow;
 extern Window HierarchyWindow;
 extern Window RunCreateWindow;
 extern Window CinematicWindow;
+extern Window AIWindow;
 //extern Window MovieInputWindow;
 //extern Window ScriptWindow;
 //extern Window SuperObjectWindow;

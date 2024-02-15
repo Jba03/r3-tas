@@ -184,11 +184,13 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
   //out.color = float4(uniform.color); //float4(in.normal, 1.0f);
   
   if (uniform.enableShading) {
-    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
+    out.color = uniform.color; // float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
   } else {
     out.color = uniform.color;
   }
     
-    return out;
+//out.color = float4(1.0f, 0.0f, 0.0f, 1.0f);;
+  
+  return out;
 }
 

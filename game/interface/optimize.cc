@@ -7,7 +7,6 @@
 
 #pragma mark - Helper functions
 
-/** fnPointInTriangle: test if point lies in triangle **/
 static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D C, stVector3D N) -> bool {
     stVector3D p0 = (A - P);
     stVector3D p1 = (B - P);

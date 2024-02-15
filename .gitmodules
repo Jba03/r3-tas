@@ -1,0 +1,4 @@
+[submodule "game/library/cpatools"]
+	path = game/library/cpatools
+	url = https://github.com/Jba03/cpatools
+	branch = develop

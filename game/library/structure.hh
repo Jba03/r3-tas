@@ -4,12 +4,15 @@
 #include <cstddef>
 #include <cmath>
 
+#include <any>
 #include <bit>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <type_traits>
+#include <map>
 
+#include "tables.hh"
 #include "constants.hh"
 
 #define GCN     0
@@ -221,6 +224,14 @@ namespace library {
     
     template <typename X> void operator =(X *other) {
       ptr = memory::address(other);
+    }
+    
+    auto operator +(int c) -> pointer<T> {
+      return ptr.effectiveAddress() + sizeof(T) * c;
+    }
+    
+    auto operator -(int c) -> pointer<T> {
+      return ptr.effectiveAddress() - sizeof(T) * c;
     }
     
     auto operator ++() -> pointer<T> {
@@ -1077,6 +1088,152 @@ namespace library {
     pointer<stSuperObject> camera;
   };
   
+  
+#pragma mark - DNM
+
+  struct stDynamicsRotation {
+    float32 angle;
+    stVector3D axis;
+  };
+
+  struct stDynamicsBaseBlock {
+    int32 objectType;
+    pointer<> idcard;
+    uint32 flags;
+    uint32 endFlags;
+    float32 gravity;
+    float32 slopeLimit;
+    float32 slopeCosine;
+    float32 slide;
+    float32 rebound;
+    stVector3D imposeSpeed;
+    stVector3D proposeSpeed;
+    stVector3D previousSpeed;
+    stVector3D scale;
+    stVector3D animationProposeSpeed;
+    stVector3D safeTranslation;
+    stVector3D addedTranslation;
+    stTransform previousTransform;
+    stTransform currentTransform;
+    stMatrix3D imposedRotation;
+    uint8 nFrame;
+    padding(3)
+    pointer<stDynamicsReport> report;
+  };
+
+  struct stDynamicsAdvancedBlock {
+    float32 xInertia;
+    float32 yInertia;
+    float32 zInertia;
+    float32 streamPriority;
+    float32 streamFactor;
+    float32 xSlideFactor;
+    float32 ySlideFactor;
+    float32 zSlideFactor;
+    float32 previousSlide;
+    stVector3D maxSpeed;
+    stVector3D streamSpeed;
+    stVector3D addedSpeed;
+    stVector3D limit;
+    stVector3D collisionTranslation;
+    stVector3D inertiaTranslation;
+    stVector3D groundNormal;
+    stVector3D wallNormal;
+    int8 collideCount;
+    padding(3)
+  };
+  
+  struct stDynamicsComplexBlock {
+    
+    struct macdpid {
+      float32 data0;
+      stVector3D data1;
+      stVector3D data2;
+      stVector3D data3;
+      float32 data4;
+      float32 data5;
+      float32 data6;
+      stDynamicsRotation data7;
+      stDynamicsRotation data8;
+      int8 data9;
+      uint16 data10;
+      stVector3D data11;
+      float32 data12;
+      stVector3D data13;
+      float32 data14;
+      uint8 data15;
+    };
+    
+    float32 tiltStrength;
+    float32 tiltInertia;
+    float32 tiltOrigin;
+    float32 tiltAngle;
+    float32 hangingLimit;
+    stVector3D contact;
+    stVector3D fallTranslation;
+    macdpid macdpid;
+    pointer<stSuperObject> platformSuperObject;
+    stTransform previousMatrixAbsolute;
+    stTransform previousMatrixPrevious;
+  };
+
+  struct stDynamicsObstacle {
+    float32 rate;
+    stVector3D normal;
+    stVector3D contact;
+    pointer<> material;
+    pointer<> collideMaterial;
+    pointer<stSuperObject> superObject;
+  };
+
+  struct stDynamicsMovevement {
+    stVector3D linear;
+    stDynamicsRotation angular;
+  };
+
+  struct stDynamicsReport {
+    uint32 previousSurfaceState = 0;
+    uint32 currentSurfaceState = 0;
+    stDynamicsObstacle obstacle;
+    stDynamicsObstacle ground;
+    stDynamicsObstacle wall;
+    stDynamicsObstacle character;
+    stDynamicsObstacle water;
+    stDynamicsObstacle ceiling;
+    stDynamicsMovevement previousAbsoluteSpeed;
+    stDynamicsMovevement currentAbsoluteSpeed;
+    stDynamicsMovevement previousAbsolutePosition;
+    stDynamicsMovevement currentAbsolutePosition;
+    char8 bitField;
+    padding(3)
+  };
+
+  struct stDynamics {
+    stDynamicsBaseBlock base;
+    stDynamicsAdvancedBlock advanced;
+    stDynamicsComplexBlock complex;
+      
+    auto flag(int flag) -> bool {
+      return base.flags & flag;
+    }
+    
+    auto endFlag(int flag) -> bool {
+      return base.endFlags & flag;
+    }
+  };
+  
+  struct stDynamicsParsingData {
+    stVector3D position;
+    float32 outAlpha;
+    stVector3D vector;
+  };
+
+  struct stDynam {
+    pointer<stDynamics> dynamics;
+    pointer<stDynamicsParsingData> parsingData;
+    uint32 usedMechanics;
+  };
+  
 #pragma mark - Engine object
   
   struct stStandardGameInfo {
@@ -1137,6 +1294,37 @@ namespace library {
       }
       
       return name;
+    }
+    
+    /** get the current position of this actor */
+    auto getPosition() -> stVector3D {
+      try {
+        return dynam->dynamics->base.currentTransform.position();
+      } catch (bad_ptr& e) {
+        std::cout << "Failed to get position: " <<  e.what() << "\n";
+      }
+      return stVector3D();
+    }
+    
+    /** get the current speed of this actor */
+    auto getSpeed() -> stVector3D {
+      try {
+        return dynam->dynamics->base.previousSpeed;
+      } catch (bad_ptr& e) {
+        std::cout << "Failed to get speed: " <<  e.what() << "\n";
+      }
+      return stVector3D();
+    }
+    
+    /** get the current horizontal speed of this actor */
+    auto getHorizontalSpeed() -> float {
+      stVector3D spd = getSpeed();
+      return sqrt(spd.x * spd.x + spd.y * spd.y);
+    }
+    
+    /** get the current vertical speed of this actor */
+    auto getVerticalSpeed() -> float {
+      return getSpeed().z;
     }
     
     auto familyName() -> std::string { return name(objectFamilyName); }
@@ -1647,147 +1835,6 @@ namespace library {
     padding(1)
   };
   
-#pragma mark - Script translation
-  
-  struct scriptTranslationContext {
-    
-    scriptTranslationContext() {}
-    
-    struct token {
-      token() {}
-      token(std::string txt, pointer<stNodeInterpret> ref = nullptr) {
-        text = txt;
-        node = ref;
-      }
-      std::string text;
-      pointer<stNodeInterpret> node;
-      
-      static inline const std::pair<std::string, pointer<stNodeInterpret>> non(std::string t) {
-        return {t, nullptr};
-      }
-      
-      static inline const std::pair<std::string, pointer<stNodeInterpret>> space {" ", nullptr};
-      static inline const std::pair<std::string, pointer<stNodeInterpret>> exclamation {"!", nullptr};
-    };
-    
-    
-    template <typename... Args> void emit(bool condition, Args... args) {
-      if (condition) {
-        
-      }
-    }
-    
-    //std::vector<token>
-    
-//    std::vector<token> collect() {
-//      std::vector<token> c;
-//      return c;
-//    }
-//
-    using tok = token;
-    
-//    std::vector<tok> translateChild(int child = 0) {
-//      unsigned min =
-//
-////      unsigned min = t->current->depth;
-////      unsigned occ = 0;
-////
-////          struct script_node* orig = t->current;
-////          struct script_node* node = orig + 1;
-////          while (!IsEndOfTree(node) && node->depth > min)
-////          {
-////              if (node->depth == min + 1 && occ++ == child)
-////              {
-////                  t->current = node;
-////                  translate_node(t);
-////                  break;
-////              }
-////              node++;
-////          }
-////
-////          t->current = orig;
-//    }
-    
-    void translateKeyword(unsigned s) {
-      emit(s == 15,           "if", tok::space);
-      emit(s >= 2 && s <= 7,  "if", tok::space, "framerule", tok::space, "%", tok::space, "==", tok::space);
-      emit(s >= 8 && s <= 13, "if", tok::space, "" "framerule", tok::space, "%", tok::space, "==", tok::space);
-    }
-//
-//    std::vector<token> translateOperator(unsigned s) {
-////      emit(s == 0, "(", t0(), token::space, "+", token::space, ")");
-////      emit(s == 1, "(", t1(), token::space, "-", token::space, ")");
-////      emit(s == 2, "(", t1(), token::space, "*", token::space, ")");
-////      emit(s == 3, "(", t1(), token::space, "/", token::space, ")");
-////      emit(s == 2);
-////      emit(s == 3);
-////      emit(s == 4);
-////      emit(s == 5);
-////      emit(s == 6);
-////      emit(s == 7);
-////      emit(s == 8);
-////      emit(s == 9);
-////      emit(s == 10);
-////      emit(s == 11);
-////      emit(s == 12);
-////      emit(s == 13);
-////      emit(s == 14);
-////      emit(s == 15);
-////      emit(s == 16);
-////      emit(s == 17);
-////      emit(s == 18);
-////      emit(s == 19);
-////      emit(s == 20);
-////      emit(s == 21);
-////      emit(s == 22);
-////      emit(s == 23);
-////      emit(s == 24);
-////      emit(s == 25);
-////      emit(s == 26);
-////      emit(s == 27);
-//
-//      return collect();
-//    }
-    
-//    std::vector<token> translate(pointer<stNodeInterpret> node) {
-//      std::vector<token> result;
-//      return result;
-//    }
-//
-//    std::vector<token> gameToText(stTreeInterpret *tree) {
-//      std::vector<token> tokenList;
-//      stNodeInterpret *firstNode = tree->node;
-//      stNodeInterpret *currentNode = tree->node;
-//
-//      auto isEndOfTree = [currentNode] {
-//        return currentNode->type != scriptNodeTypeEndMacro;
-//      };
-//
-//      auto seekSameDepth = [&currentNode, isEndOfTree]() {
-//        uint8 depth = currentNode->depth;
-//        while (currentNode->depth != depth && !isEndOfTree()) currentNode++;
-//      };
-//
-//      auto emit = [](std::string s) {
-//
-//      };
-//
-//      auto translateKeyword = [] {
-//
-//      };
-//
-//
-//
-//
-//
-//      return tokenList;
-//    }
-  };
-  
-  struct scriptInjection {
-    
-  };
-  
   struct stBehavior {
     string<0x100> name; /* 256 on GCN, at least */
     pointer<stTreeInterpret> scripts;
@@ -1845,151 +1892,6 @@ namespace library {
     doublepointer<stDsgVar> dsgVars;
     pointer<> initialBuffer;
     pointer<> currentBuffer;
-  };
-  
-#pragma mark - DNM
-
-  struct stDynamicsRotation {
-    float32 angle;
-    stVector3D axis;
-  };
-
-  struct stDynamicsBaseBlock {
-    int32 objectType;
-    pointer<> idcard;
-    uint32 flags;
-    uint32 endFlags;
-    float32 gravity;
-    float32 slopeLimit;
-    float32 slopeCosine;
-    float32 slide;
-    float32 rebound;
-    stVector3D imposeSpeed;
-    stVector3D proposeSpeed;
-    stVector3D previousSpeed;
-    stVector3D scale;
-    stVector3D animationProposeSpeed;
-    stVector3D safeTranslation;
-    stVector3D addedTranslation;
-    stTransform previousTransform;
-    stTransform currentTransform;
-    stMatrix3D imposedRotation;
-    uint8 nFrame;
-    padding(3)
-    pointer<stDynamicsReport> report;
-  };
-
-  struct stDynamicsAdvancedBlock {
-    float32 xInertia;
-    float32 yInertia;
-    float32 zInertia;
-    float32 streamPriority;
-    float32 streamFactor;
-    float32 xSlideFactor;
-    float32 ySlideFactor;
-    float32 zSlideFactor;
-    float32 previousSlide;
-    stVector3D maxSpeed;
-    stVector3D streamSpeed;
-    stVector3D addedSpeed;
-    stVector3D limit;
-    stVector3D collisionTranslation;
-    stVector3D inertiaTranslation;
-    stVector3D groundNormal;
-    stVector3D wallNormal;
-    int8 collideCount;
-    padding(3)
-  };
-  
-  struct stDynamicsComplexBlock {
-    
-    struct macdpid {
-      float32 data0;
-      stVector3D data1;
-      stVector3D data2;
-      stVector3D data3;
-      float32 data4;
-      float32 data5;
-      float32 data6;
-      stDynamicsRotation data7;
-      stDynamicsRotation data8;
-      int8 data9;
-      uint16 data10;
-      stVector3D data11;
-      float32 data12;
-      stVector3D data13;
-      float32 data14;
-      uint8 data15;
-    };
-    
-    float32 tiltStrength;
-    float32 tiltInertia;
-    float32 tiltOrigin;
-    float32 tiltAngle;
-    float32 hangingLimit;
-    stVector3D contact;
-    stVector3D fallTranslation;
-    macdpid macdpid;
-    pointer<stSuperObject> platformSuperObject;
-    stTransform previousMatrixAbsolute;
-    stTransform previousMatrixPrevious;
-  };
-
-  struct stDynamicsObstacle {
-    float32 rate;
-    stVector3D normal;
-    stVector3D contact;
-    pointer<> material;
-    pointer<> collideMaterial;
-    pointer<stSuperObject> superObject;
-  };
-
-  struct stDynamicsMovevement {
-    stVector3D linear;
-    stDynamicsRotation angular;
-  };
-
-  struct stDynamicsReport {
-    uint32 previousSurfaceState = 0;
-    uint32 currentSurfaceState = 0;
-    stDynamicsObstacle obstacle;
-    stDynamicsObstacle ground;
-    stDynamicsObstacle wall;
-    stDynamicsObstacle character;
-    stDynamicsObstacle water;
-    stDynamicsObstacle ceiling;
-    stDynamicsMovevement previousAbsoluteSpeed;
-    stDynamicsMovevement currentAbsoluteSpeed;
-    stDynamicsMovevement previousAbsolutePosition;
-    stDynamicsMovevement currentAbsolutePosition;
-    char8 bitField;
-    padding(3)
-  };
-
-  struct stDynamics {
-    stDynamicsBaseBlock base;
-    stDynamicsAdvancedBlock advanced;
-    stDynamicsComplexBlock complex;
-      
-    auto flag(int flag) -> bool {
-      return base.flags & flag;
-    }
-    
-    auto endFlag(int flag) -> bool {
-      return base.endFlags & flag;
-    }
-  };
-  
-  struct stDynamicsParsingData {
-    stVector3D position;
-    float32 outAlpha;
-    stVector3D vector;
-  };
-
-  struct stDynam {
-    pointer<stDynamics> dynamics;
-    pointer<stDynamicsParsingData> parsingData;
-    uint32 usedMechanics;
   };
   
 #pragma mark - GMT

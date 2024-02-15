@@ -100,7 +100,8 @@ namespace graphics {
         renderBuffer = [metalDevice newBufferWithLength: 640 * 528 * sizeof(uint32_t) options: MTLResourceStorageModeShared];
         assert(renderTexture = [renderBuffer newTextureWithDescriptor: renderTextureDescriptor offset: 0 bytesPerRow: 640 * sizeof(uint32_t)]);
         
-        graphics::createTexture("Render Texture", 640, 528, 1);
+      
+        //graphics::createTexture("Render Texture", 640, 528, 1);
     }
     
     bool initialize()
@@ -134,7 +135,7 @@ namespace graphics {
         pipelineStateDescriptor.label = @"Simple Pipeline";
         pipelineStateDescriptor.vertexFunction = vertexFunction;
         pipelineStateDescriptor.fragmentFunction = fragmentFunction;
-        
+
         pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
         pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
         pipelineStateDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
@@ -143,11 +144,11 @@ namespace graphics {
         pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
         pipelineStateDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
         pipelineStateDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-        
+
         pipelineStateDescriptor.vertexDescriptor = vertexDescriptor;
         pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
         pipelineStateDescriptor.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
-        
+
         createTextures();
         
         if (!(pipelineState = [metalDevice newRenderPipelineStateWithDescriptor: pipelineStateDescriptor error: &error]))
@@ -204,7 +205,7 @@ namespace graphics {
     renderpassDescriptor.depthAttachment.clearDepth = 1.0f;
     renderpassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
     renderpassDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
-      //
+    
 //      renderpassDescriptor.stencilAttachment.texture = depthTexture;
 //      renderpassDescriptor.stencilAttachment.loadAction = MTLLoadActionClear;
 //      renderpassDescriptor.stencilAttachment.storeAction = MTLStoreActionStore;
@@ -420,15 +421,39 @@ namespace graphics {
   }
     
   auto texture() -> void* {
-    uint32_t W = (uint32_t)renderTexture.width;
-    uint32_t H = (uint32_t)renderTexture.width;
-    uint8_t *data = (uint8_t*)renderTexture.buffer.contents;
-    size_t length = renderTexture.buffer.length;
-    graphics::updateTexture("Render Texture", W, H, W, data, length);
+//    uint32_t W = (uint32_t)renderTexture.width;
+//    uint32_t H = (uint32_t)renderTexture.width;
+//    uint8_t *data = (uint8_t*)renderTexture.buffer.contents;
+//    size_t length = renderTexture.buffer.length;
+//    graphics::updateTexture("Render Texture", W, H, W, data, length);
         
     //[commandBuffer waitUntilCompleted];
+    
+    static struct MetalTextureWrapper {
+      uint32_t width;
+      uint32_t height = 0;
+      uint32_t levels = 0;
+      uint32_t layers = 1;
+      uint32_t samples = 1;
+      uint32_t format = 0;
+      uint32_t flags = 0;
+      uint32_t type = 0;
+      uint32_t typ2e = 0;
+      void *pointer;
+      /* 8 bytes of padding */
+    } *data = (struct MetalTextureWrapper*)malloc(sizeof(struct MetalTextureWrapper));
+    
+    memset(data, 0, sizeof(struct MetalTextureWrapper));
+    data->levels = 1;
+    data->layers = 1;
+    data->samples = 1;
+    
+    data->width = 640; //()renderTexture.width;
+    data->height = 528; //renderTexture.height;
+    //data->format =
+    data->pointer = renderTexture;
 
         
-    return graphics::getTexture("Render Texture");
+    return data;  //graphics::getTexture("Render Texture");
   }
 };

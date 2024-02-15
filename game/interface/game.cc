@@ -217,7 +217,7 @@ namespace game
     if (!object) return 0xAA808080;
     if (object->type == superobjectTypeIPO) return 0xFF00AAFF;
     if (object->type == superobjectTypeIPOMirror) return 0xFF00DDFF;
-    if (object->type != superobjectTypeActor) return 0xAA808080;
+    if (object->type != superobjectTypeActor) return 0xAAFFFFFF;
     stEngineObject *actor = object->data;
     if (!actor->stdGame) return 0x80808080;
     return color_table_index(2 * actor->stdGame->familyType + 1);

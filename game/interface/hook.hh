@@ -3,25 +3,27 @@
 
 #include "emulator.hh"
 
-enum hookType
-{
+enum hookType {
   none = 0,
-    start = 1,
-    replace = 2,
+  start = 1,
+  replace = 2,
 };
 
-enum hookFlag
-{
-    generic = 0,
-    debug = 1,
-    fixed = 2,
+enum hookFlag {
+  generic = 0,
+  debug = 1,
+  fixed = 2,
 };
 
 template <uint32_t address = 0x00>
-static inline void hook(void (*function)(), enum hookType type = hookType::start, enum hookFlag flags = hookFlag::fixed)
-{
-    std::string s = std::to_string(uint64_t(function));
-    emulator::createHook(address, s.c_str(), type, flags, (void (*)())function);
+static inline void hook(void (*function)(), enum hookType type = hookType::start, enum hookFlag flags = hookFlag::fixed) {
+  std::string s = std::to_string(uint64_t(function));
+  emulator::createHook(address, s.c_str(), type, flags, (void (*)())function);
+}
+
+static inline void hookDynamic(uint32_t address, void (*function)(), enum hookType type = hookType::start, enum hookFlag flags = hookFlag::fixed) {
+  std::string s = std::to_string(uint64_t(function));
+  emulator::createHook(address, s.c_str(), type, flags, (void (*)())function);
 }
 
 struct hookFunction

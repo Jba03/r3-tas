@@ -23,21 +23,6 @@
 
 #pragma mark - Main
 
-#if defined(WIN32)
-#   define LIBR3TAS_EXPORT __declspec(dllexport)
-#else
-#   define LIBR3TAS_EXPORT
-#endif
-
-constexpr std::size_t constexpr_strlen(std::string_view s) { return s.size(); }
-/* http://lolengine.net/blog/2011/12/20/cpp-constant-string-hash */
-#define H1(s,i,x)   (x*65599u+(uint8_t)s[(i)<constexpr_strlen(s)?constexpr_strlen(s)-1-(i):constexpr_strlen(s)])
-#define H4(s,i,x)   H1(s,i,H1(s,i+1,H1(s,i+2,H1(s,i+3,x))))
-#define H16(s,i,x)  H4(s,i,H4(s,i+4,H4(s,i+8,H4(s,i+12,x))))
-#define H64(s,i,x)  H16(s,i,H16(s,i+16,H16(s,i+32,H16(s,i+48,x))))
-#define H256(s,i,x) H64(s,i,H64(s,i+64,H64(s,i+128,H64(s,i+192,x))))
-#define m(s) ((uint32_t)(H256(s,0,0)^(H256(s,0,0)>>16)))
-
 static std::function<uint8_t*()> mram = nullptr;
 static std::function<std::string()> get_config_path = nullptr;
 
@@ -55,12 +40,13 @@ static void receive_mram_function(emulator::message *msg) {
 static void on_update(emulator::message *msg) {
   if (!memory::baseAddress)
     memory::baseAddress = mram();
+  
   game::update();
 }
 
 static void on_video(emulator::message *msg) {
-  gui::video_payload* payload = (gui::video_payload*)msg->data;
-  gui::draw(payload->context, payload->texture, &payload->windowed);
+//  gui::video_payload* payload = (gui::video_payload*)msg->data;
+//  gui::draw(payload->context, payload->texture, &payload->windowed);
 }
 
 static void receive_create_texture_function(emulator::message *msg) {
@@ -90,7 +76,7 @@ static void graphics_initialize(emulator::message *msg) {
 
 static void create_hle_hooks(emulator::message *msg) {
   emulator::createHook = (void (*)(uint32_t, const char*, int, int, void (*)()))(msg->data);
-  interface::initialize();
+  //interface::initialize();
 }
 
 static void receive_ppc_state(emulator::message *msg) {
@@ -105,17 +91,13 @@ static void on_unload(emulator::message *msg) {
   log::info(log::bold, log::red, "r3-tas successfully unloaded\n");
 }
 
-static const std::map<int, std::function<void(emulator::message*)>> msgmap {
-  { m("load"),          &on_load },
-  { m("mram-function"), &receive_mram_function },
-  { m("update"),        &on_update },
-  { m("video"),         &on_video },
-  { m("unload"),        &on_unload },
-};
-
-LIBR3TAS_EXPORT extern "C" void on_message(emulator::message msg) {
-  auto entry = msgmap.find(msg.type);
-  if (entry != msgmap.end()) entry->second(&msg);
+#if platform == GCN
+  static Interface *interface = new GCNInterface();
+#elif platform == NATIVE
+  static Interface *interface = new NativeInterface();
+#endif
+  
+//  interface->Update(&msg);
   
 //    switch (msg.type) {
 //        case m("load"):
@@ -208,4 +190,4 @@ LIBR3TAS_EXPORT extern "C" void on_message(emulator::message msg) {
 //        BeforeEngineExecuted(message.data);
 //        //BruteforceInput();
 //    }
-}
+//}
