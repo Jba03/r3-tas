@@ -216,6 +216,12 @@ namespace CPA::Structure {
   
 #pragma mark - stObjectType
   
+  enum eObjectType {
+    objectFamilyName = 0,
+    objectModelName = 1,
+    objectInstanceName = 2,
+  };
+  
   /// Object identifier
   struct stObjectTypeElement : structure {
     pointer<stObjectTypeElement> next;
