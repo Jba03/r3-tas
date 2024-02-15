@@ -53,7 +53,7 @@ namespace CPA {
         pointers.push_back({ fileID, ptr });
       }
       
-      uint32_t numFillInPointers = (s.size - s.position()) / 16;
+      size_t numFillInPointers = (s.size - s.position()) / 16;
       while (numFillInPointers--) {
         pointer<> dptr = s.read<pointer<>>();
         FileIndex sourceFileID = static_cast<FileIndex>(uint32_t(s.read<uint32>()));
@@ -65,6 +65,30 @@ namespace CPA {
     
     template struct PTR<DataFileIndex>;
     
+    template <typename FileIndex>
+    LVL<FileIndex>::LVL(Stream& lvl, Stream& ptr) {
+      pointerFile = new PTR<FileIndex>(ptr);
+    }
+    
+    template <typename FileIndex>
+    LVL<FileIndex>::LVL(std::filesystem::path& path) {
+      if (path.extension() == ".lvl") {
+        std::filesystem::path ptrfile = path;
+        ptrfile.replace_extension(".ptr");
+        if (std::filesystem::exists(ptrfile)) {
+          Stream ptr(ptrfile);
+          pointerFile = new PTR<FileIndex>(ptr);
+          stream = new Stream(path);
+        }
+      }
+    }
+    
+    template <typename FileIndex>
+    void LVL<FileIndex>::initialize() {
+      
+    }
+    
+    template struct LVL<DataFileIndex>;
     
   };
   

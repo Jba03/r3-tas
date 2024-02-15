@@ -1,5 +1,5 @@
-#ifndef config_h
-#define config_h
+#ifndef config_hh
+#define config_hh
 
 #define CPA_ENDIAN_BIG      0
 #define CPA_ENDIAN_LITTLE   1
@@ -61,4 +61,4 @@
 #define CPA_ENDIANNESS (CPA_PLATFORM & 1)
 #define CPA_ENGINE_VERSION ((CPA_VERSION & 0x1FF) >> 6)
 
-#endif /* config_h */
+#endif /* config_hh */

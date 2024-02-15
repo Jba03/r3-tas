@@ -9,7 +9,11 @@ namespace CPA {
     /* ... */
   }
   
-  Address::Address(void* hostAddress) {
+  Address::Address(Memory::TargetAddressType address) {
+    addr = address;
+  }
+  
+  Address::Address(Memory::HostAddressType hostAddress) {
     addr = Memory::bswap(uint32_t(long(hostAddress) - long(Memory::baseAddress)));
   }
   

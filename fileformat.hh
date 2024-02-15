@@ -3,7 +3,9 @@
 
 #include "types.hh"
 #include "memory.hh"
+
 #include <vector>
+#include <map>
 
 namespace CPA {
   
@@ -48,13 +50,13 @@ namespace CPA {
     };
     
     enum DataFileIndex {
-      FIX = 0,
-      LVL = 1,
+      Fix = 0,
+      Lvl = 1,
       Transit = 2,
       Transit2 = 3,
       VertexBuffer = 4,
-      KeyFramesFIX = 5,
-      KeyFramesLVL = 6,
+      KeyFramesFix = 5,
+      KeyFramesLvl = 6,
     };
     
     /// Pointer file
@@ -69,6 +71,17 @@ namespace CPA {
       std::vector<PointerFilePair> pointers;
       /// Pointers to be replaced in the level
       std::vector<FillInPointerFilePair> fillInPointers;
+    };
+    
+    /// Level file
+    template <typename FileIndex = DataFileIndex>
+    struct LVL {
+      LVL(Stream& lvl, Stream& ptr);
+      LVL(std::filesystem::path& path);
+      
+      void initialize();
+      Stream *stream = nullptr;
+      PTR<FileIndex> *pointerFile = nullptr;
     };
     
   };

@@ -7,6 +7,8 @@
 #include <string>
 #include <concepts>
 #include <type_traits>
+
+#include <cstdint>
 #include <cmath>
 
 namespace CPA {
@@ -14,8 +16,10 @@ namespace CPA {
   /// An address type on the target platform
   struct Address {
     Address();
+    /// Initialize with target address
+    Address(Memory::TargetAddressType address);
     /// Initialize with host address
-    Address(void* hostAddress);
+    Address(Memory::HostAddressType hostAddress);
     /// Return the physical hardware address
     Memory::TargetAddressType physicalAddress();
     /// Return the effective (emulated) address
@@ -51,7 +55,7 @@ namespace CPA {
     Type(const S value) {
       if constexpr (std::is_same<S, float>::value) {
         // Copy float type to memory
-        data = Memory::bswap(*static_cast<T*>(&value));
+        data = Memory::bswap(*(T*)&value);
       } else if constexpr (std::is_integral<S>::value) {
         // Copy integral type to memory
       }
@@ -75,7 +79,7 @@ namespace CPA {
     
     operator OpT() const {
       T tmp = Memory::bswap(*(T*)(&data));
-      return *static_cast<OpT*>(&tmp);
+      return *(OpT*)&tmp;
     }
 
     OpT operator  +(std::integral auto other) { return OpT(data) + OpT(other); }
@@ -171,13 +175,12 @@ namespace CPA {
       ptr = other;
     }
     
-    Pointer<T> operator +(int c) { return ptr.effectiveAddress() + sizeof(T) * c; }
+    Pointer<T> operator +(int c) { return Pointer<T>(ptr.effectiveAddress() + sizeof(T) * c); }
     Pointer<T> operator -(int c) { return ptr.effectiveAddress() - sizeof(T) * c; }
     Pointer<T> operator ++() { return (*this = ptr.effectiveAddress() + sizeof(Memory::TargetAddressType)); }
     Pointer<T> operator ++(int) { Pointer<T> o = ptr.effectiveAddress(); *this = o + sizeof(Memory::TargetAddressType); return o; }
     operator bool() { return ptr.valid(); }
     
-  private:
     Address ptr;
   };
   
