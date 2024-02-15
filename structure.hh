@@ -1147,6 +1147,15 @@ namespace CPA::Structure {
         f(ii, userdata);
       }
     }
+    
+  private:
+    template <typename F, typename UserData>
+    void _recurse(stSuperObject *root, UserData userdata, const F& f) {
+      for (stSuperObject *ii = root->firstChild; ii; ii = ii->next) {
+        f(ii, userdata);
+        _recurse(ii, userdata, f);
+      }
+    }
   };
   
 #pragma mark - AI
