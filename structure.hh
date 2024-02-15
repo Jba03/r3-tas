@@ -1059,7 +1059,7 @@ namespace CPA::Structure {
 #endif
   };
   
-#pragma mark - HIE
+#pragma mark - stSuperObject
   
   enum eSuperObjectType : uint32_t {
     superObjectTypeNone                 = (0 << 0),
@@ -1133,6 +1133,20 @@ namespace CPA::Structure {
     ///   For actors, return the first name available
     ///   in the order of [Family, Model, Instance]
     std::string name(ObjectNameResolver& resolve, bool fullname = false);
+    
+    /// Recurse the tree below this superobject
+    template <typename F, typename UserData>
+    void recurse(const F& f, UserData userdata) {
+      _recurse(this, userdata, f);
+    }
+      
+    /// Run a custom function for each child object
+    template <typename F>
+    void forEachChild(const F& f, void *userdata = nullptr) {
+      for (stSuperObject *ii = firstChild; ii; ii = ii->next) {
+        f(ii, userdata);
+      }
+    }
   };
   
 #pragma mark - AI

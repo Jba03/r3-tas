@@ -13,7 +13,7 @@
 namespace CPA {
   
   namespace Memory {
-    using HostAddressType = void*;
+    using HostAddressType = uint8_t*;
     using TargetAddressType = uint32_t;
     
     static constexpr std::endian endianness = std::endian::big;

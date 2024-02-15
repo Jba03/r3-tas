@@ -22,7 +22,7 @@ namespace CPA {
 #pragma mark - stSuperObject
     
     std::string stSuperObject::typeName() {
-      eSuperObjectType t = reinterpret_cast<eSuperObjectType>(type);
+      eSuperObjectType t = static_cast<eSuperObjectType>(uint32_t(type));
       if (stSuperObjectTypeNames.find(t) != stSuperObjectTypeNames.end()) {
         return stSuperObjectTypeNames[t];
       } else {
