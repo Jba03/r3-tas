@@ -1059,26 +1059,31 @@ namespace CPA::Structure {
   
 #pragma mark - HIE
   
-  #define superobjectTypeNone                 (0 << 0)
-  #define superobjectTypeWorld                (1 << 0)
-  #define superobjectTypeActor                (1 << 1)
-  #define superobjectTypeSector               (1 << 2)
-  #define superobjectTypePhysicalObject       (1 << 3)
-  #define superobjectTypePhysicalObjectMirror (1 << 4)
-  #define superobjectTypeIPO                  (1 << 5)
-  #define superobjectTypeIPOMirror            (1 << 6)
-  #define superobjectTypeSpecialEffect        (1 << 7)
-  #define superobjectTypeNoAction             (1 << 8)
-  #define superobjectTypeMirror               (1 << 9)
-  
+  enum eSuperObjectType : uint32_t {
+    superObjectTypeNone                 = (0 << 0),
+    superObjectTypeWorld                = (1 << 0),
+    superObjectTypeActor                = (1 << 1),
+    superObjectTypeSector               = (1 << 2),
+    superObjectTypePhysicalObject       = (1 << 3),
+    superObjectTypePhysicalObjectMirror = (1 << 4),
+    superObjectTypeIPO                  = (1 << 5),
+    superObjectTypeIPOMirror            = (1 << 6),
+    superObjectTypeSpecialEffect        = (1 << 7),
+    superObjectTypeNoAction             = (1 << 8),
+    superObjectTypeMirror               = (1 << 9),
+  };
+    
   struct stSuperObject : structure {
+    /// `eSuperObjectType`
     uint32 type;
+    
     union {
       pointer<> data;
       pointer<stEngineObject> actor;
       pointer<stSector> sector;
       pointer<stInstantiatedPhysicalObject> ipo;
     };
+    
     pointer<stSuperObject> firstChild;
     pointer<stSuperObject> lastChild;
     int32 numChildren;
@@ -1104,6 +1109,11 @@ namespace CPA::Structure {
     uint8 isSuperObject;
     uint8 transition;
     padding(1)
+    
+    /// Return the name of the superobject
+    ///   For actors, return the first name available
+    ///   in the order of [Family, Model, Instance]
+    std::string name();
   };
   
 #pragma mark - AI

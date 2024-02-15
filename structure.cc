@@ -4,6 +4,8 @@ namespace CPA {
   
   namespace Structure {
     
+#pragma mark - stEngineObject
+    
     std::string stEngineObject::familyName(ObjectNameResolver& resolve) {
       return resolve(objectFamilyName);
     }
@@ -14,6 +16,17 @@ namespace CPA {
     
     std::string stEngineObject::instanceName(ObjectNameResolver& resolve) {
       return resolve(objectInstanceName);
+    }
+    
+    
+#pragma mark - stSuperObject
+    
+    std::string stSuperObject::name() {
+      switch(type) {
+//        case superObjectTypeActor:
+//          return actor->
+      }
+      return "";
     }
     
   };
