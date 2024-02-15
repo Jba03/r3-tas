@@ -151,6 +151,14 @@ namespace CPA::Structure {
     pointer<T>& begin();
     pointer<T>& end();
     void serialize(serializer& s);
+    
+    template <typename F>
+    void forEach(const F& f, void *userdata = nullptr) {
+      for (T *c = first; c; c = c->next) {
+        f(c, userdata);
+      }
+    }
+    
   private:
     pointer<T> first;
     int32 numEntries;
@@ -162,6 +170,14 @@ namespace CPA::Structure {
     pointer<T>& begin();
     pointer<T>& end();
     void serialize(serializer& s);
+    
+    template <typename F>
+    void forEach(const F& f, void *userdata = nullptr) {
+      for (T *c = first; c; c = c->next) {
+        f(c, userdata);
+      }
+    }
+    
   private:
     pointer<T> first;
     pointer<T> last;
