@@ -6,6 +6,8 @@
 
 namespace CPA::Structure {
   
+#pragma mark - Predeclarations
+  
   struct stEngineStructure;
   struct stEngineTimer;
   struct stCineManager;
@@ -715,6 +717,8 @@ namespace CPA::Structure {
     /* :: custom values :: */
   };
   
+  using ObjectNameResolver = std::function<std::string(eObjectType)>;
+  
   struct stEngineObject : structure {
     pointer<st3DData> p3DData;
     pointer<stStandardGameInfo> stdGame;
@@ -727,6 +731,10 @@ namespace CPA::Structure {
     pointer<stSectorInfo> sectorInfo;
     pointer<stMicro> micro;
     pointer<stMSSound> msSound;
+      
+    std::string familyName(ObjectNameResolver& resolve);
+    std::string modelName(ObjectNameResolver& resolve);
+    std::string instanceName(ObjectNameResolver& resolve);
   };
   
 #pragma mark - SECT
