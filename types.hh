@@ -155,7 +155,7 @@ namespace CPA {
       return pointee<X>();
     }
     
-    template <typename X>
+    template <typename X = T>
     X* operator ->() {
       if (pointee() == nullptr)
         throw BadPointer("bad pointer");
