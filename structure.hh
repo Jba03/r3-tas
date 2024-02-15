@@ -77,13 +77,13 @@ namespace CPA::Structure {
   struct stGraphNode;
   struct stGraphChainList;
   
-  #pragma mark - Structure -
-    
-  #define CONCAT(a, b) CONCAT_INNER(a, b)
-  #define CONCAT_INNER(a, b) a ## b
-  #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
-    /// Create struct padding
-  #define padding(S) private: uint8_t UNIQUE_NAME(padding) [S]; public:
+#pragma mark - Structure -
+  
+#define CONCAT(a, b) CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a ## b
+#define UNIQUE_NAME(base) CONCAT(base, __LINE__)
+  /// Create struct padding
+#define padding(S) private: uint8_t UNIQUE_NAME(padding) [S]; public:
   
   struct structure : serializable {
     /* ... */
@@ -98,6 +98,7 @@ namespace CPA::Structure {
     float32 y = 0.0f;
     float32 z = 0.0f;
     
+    stVector3D();
     stVector3D(float x, float y, float z) : x(x), y(y), z(z) { /* ... */ }
     
     const float32 dot(stVector3D v) { return x * v.x + y * v.y + z * v.z; }
@@ -123,6 +124,7 @@ namespace CPA::Structure {
     float32 y = 0.0f;
     float32 z = 0.0f;
     float32 w = 0.0f;
+    stVector4D(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { /* ... */ }
     
     const stVector4D operator +(stVector4D v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
     const stVector4D operator -(stVector4D v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
@@ -731,7 +733,7 @@ namespace CPA::Structure {
     pointer<stSectorInfo> sectorInfo;
     pointer<stMicro> micro;
     pointer<stMSSound> msSound;
-      
+    
     std::string familyName(ObjectNameResolver& resolve);
     std::string modelName(ObjectNameResolver& resolve);
     std::string instanceName(ObjectNameResolver& resolve);
@@ -794,7 +796,7 @@ namespace CPA::Structure {
       Cones              = 9,
       DeformationSetInfo = 13,
     };
-      
+    
     int16 numVertices;
     int16 numElements;
     int16 numBoundingBoxes;
@@ -1072,6 +1074,20 @@ namespace CPA::Structure {
     superObjectTypeNoAction             = (1 << 8),
     superObjectTypeMirror               = (1 << 9),
   };
+  
+  static const std::map<eSuperObjectType, std::string> stSuperObjectTypeNames {
+    { superObjectTypeNone                , "Dummy SuperObject" },
+    { superObjectTypeWorld               , "World" },
+    { superObjectTypeActor               , "Actor" },
+    { superObjectTypeSector              , "Sector" },
+    { superObjectTypePhysicalObject      , "PhysicalObject" },
+    { superObjectTypePhysicalObjectMirror, "PhysicalObjectMirror" },
+    { superObjectTypeIPO                 , "IPO" },
+    { superObjectTypeIPOMirror           , "IPO.Mirror" },
+    { superObjectTypeSpecialEffect       , "SpecialEffect" },
+    { superObjectTypeNoAction            , "NoAction" },
+    { superObjectTypeMirror              , "Mirror" },
+  };
     
   struct stSuperObject : structure {
     /// `eSuperObjectType`
@@ -1110,10 +1126,13 @@ namespace CPA::Structure {
     uint8 transition;
     padding(1)
     
+    /// Return the name of this superobject's type
+    std::string typeName();
+    
     /// Return the name of the superobject
     ///   For actors, return the first name available
     ///   in the order of [Family, Model, Instance]
-    std::string name();
+    std::string name(ObjectNameResolver& resolve, bool fullname = false);
   };
   
 #pragma mark - AI

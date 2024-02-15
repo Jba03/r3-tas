@@ -21,12 +21,21 @@ namespace CPA {
     
 #pragma mark - stSuperObject
     
-    std::string stSuperObject::name() {
-      switch(type) {
-//        case superObjectTypeActor:
-//          return actor->
+    std::string stSuperObject::typeName() {
+      eSuperObjectType t = reinterpret_cast<eSuperObjectType>(type);
+      if (stSuperObjectTypeNames.find(t) != stSuperObjectTypeNames.end()) {
+        return stSuperObjectTypeNames[t];
+      } else {
+        return "";
       }
-      return "";
+    }
+    
+    std::string stSuperObject::name(ObjectNameResolver& resolve, bool fullname) {
+      switch (type) {
+        case superObjectTypeActor: return actor->instanceName(resolve);
+        case superObjectTypeIPO: return fullname ? ipo->name : ipo->name.lastPathComponent();
+        default: return typeName();
+      }
     }
     
   };

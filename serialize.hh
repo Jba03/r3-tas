@@ -3,6 +3,8 @@
 
 #include "types.hh"
 
+#include <map>
+
 namespace CPA {
   
   struct serializer {
