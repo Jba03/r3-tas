@@ -3,6 +3,11 @@
 
 namespace CPA {
   
+  MemoryStreamContext::MemoryStreamContext(void * memory, size_t size) {
+    Memory::baseAddress = memory;
+    Memory::size = size;
+  }
+  
   void FileStreamContext::Load() {
     for (auto& file : files) {
       FileFormat::LVL<> *lvl = file.second;

@@ -9,7 +9,6 @@ namespace CPA {
   /// Statically mapped context using live memory stream.
   struct MemoryStreamContext {
     MemoryStreamContext(void * memory, size_t size);
-    
   };
   
   /// Statically mapped context using file streams.
