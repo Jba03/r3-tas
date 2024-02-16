@@ -10,7 +10,7 @@ namespace CPA {
   }
   
   Address::Address(Memory::TargetAddressType address) {
-    addr = address;
+    addr = Memory::bswap(address);
   }
   
   Address::Address(Memory::HostAddressType hostAddress) {
@@ -18,7 +18,7 @@ namespace CPA {
   }
   
   Memory::TargetAddressType Address::physicalAddress() {
-    return Memory::bswap(addr);
+    return Memory::bswap(addr) | 0x80000000;
   }
   
   Memory::TargetAddressType Address::effectiveAddress() {
@@ -31,6 +31,10 @@ namespace CPA {
   
   bool Address::valid() {
     return effectiveAddress() != 0;
+  }
+  
+  Address::operator Memory::TargetAddressType() {
+    return addr;
   }
   
   Address::operator bool() {

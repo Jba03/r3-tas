@@ -93,12 +93,12 @@ namespace CPA::Structure {
   
 #pragma mark - Common types
   
-  struct stVector3D : structure {
+  struct stVector3D {
     float32 x = 0.0f;
     float32 y = 0.0f;
     float32 z = 0.0f;
     
-    stVector3D();
+    stVector3D() { /* ... */ }
     stVector3D(float x, float y, float z) : x(x), y(y), z(z) { /* ... */ }
     
     const float32 dot(stVector3D v) { return x * v.x + y * v.y + z * v.z; }
@@ -119,13 +119,13 @@ namespace CPA::Structure {
     }
   };
   
-  struct stVector4D : structure {
+  struct stVector4D {
     float32 x = 0.0f;
     float32 y = 0.0f;
     float32 z = 0.0f;
     float32 w = 0.0f;
     
-    stVector4D();
+    stVector4D() { /* ... */ }
     stVector4D(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { /* ... */ }
     
     const stVector3D xyz() { return stVector3D(x, y, z); }
@@ -144,11 +144,6 @@ namespace CPA::Structure {
       float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f;
       float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f;
     };
-    struct {
-      float32 m[9];
-    }
-    
-    stMatrix3D();
   };
   
   union stMatrix4D {
@@ -162,9 +157,9 @@ namespace CPA::Structure {
       float32 m[16];
     };
     
-    stMatrix4D();
+    stMatrix4D() { /* ... */ }
       
-    const stMatrix4D operator * (stMatrix4D mm) {
+    stMatrix4D operator * (stMatrix4D mm) {
       stMatrix4D r;
       r.m[0]  = m[0] * mm.m[0]  + m[4] * mm.m[1]  + m[8] * mm.m[2]   + m[12] * mm.m[3];
       r.m[4]  = m[0] * mm.m[4]  + m[4] * mm.m[5]  + m[8] * mm.m[6]   + m[12] * mm.m[7];
@@ -186,7 +181,7 @@ namespace CPA::Structure {
     }
     
     /// Create a new translation matrix
-    static const stMatrix4D translation(stVector3D v) {
+    static stMatrix4D translation(stVector3D v) {
       stMatrix4D result;
       result.m30 = v.x;
       result.m31 = v.y;
@@ -195,7 +190,7 @@ namespace CPA::Structure {
     }
     
     /// Create a new scale matrix
-    static const stMatrix4D scale(stVector3D v) {
+    static stMatrix4D scale(stVector3D v) {
       stMatrix4D result;
       result.m00 = v.x;
       result.m11 = v.y;
@@ -204,7 +199,7 @@ namespace CPA::Structure {
     }
     
     /// Create a new perspective matrix
-    static const stMatrix4D perspective(float fovY, float aspect, float near, float far) {
+    static stMatrix4D perspective(float fovY, float aspect, float near, float far) {
       float const ct = 1.0f / std::tanf(fovY / 2.0f);
       
       stMatrix4D result;
@@ -218,7 +213,7 @@ namespace CPA::Structure {
     }
     
     /// stMatrix4D * stVector4D -> stVector4D
-    const stVector4D operator * (stVector4D v) {
+    stVector4D operator * (stVector4D v) {
       stVector4D result;
       result.x = m00 * v.x + m10 * v.y + m20 * v.z + m30 * v.w;
       result.y = m01 * v.x + m11 * v.y + m21 * v.z + m31 * v.w;
@@ -227,7 +222,7 @@ namespace CPA::Structure {
       return result;
     }
     
-     const stVector3D operator *(stVector3D v) {
+    stVector3D operator *(stVector3D v) {
       stVector4D V = (*this) * stVector4D(v.x, v.y, v.z, 1.0f);
       return V.xyz();
     }
@@ -238,10 +233,9 @@ namespace CPA::Structure {
   
   /// A linked list
   template <typename T = uint32>
-  struct stLinkedList : structure {
-    pointer<T>& begin();
-    pointer<T>& end();
-    void serialize(serializer& s);
+  struct stLinkedList {
+    pointer<T> first;
+    int32 numEntries;
     
     template <typename F>
     void forEach(const F& f, void *userdata = nullptr) {
@@ -249,18 +243,14 @@ namespace CPA::Structure {
         f(c, userdata);
       }
     }
-    
-  private:
-    pointer<T> first;
-    int32 numEntries;
   };
   
   /// A doubly linked list
   template <typename T = uint32>
-  struct stDoublyLinkedList : structure {
-    pointer<T>& begin();
-    pointer<T>& end();
-    void serialize(serializer& s);
+  struct stDoublyLinkedList {
+    pointer<T> first;
+    pointer<T> last;
+    int32 numEntries;
     
     template <typename F>
     void forEach(const F& f, void *userdata = nullptr) {
@@ -269,16 +259,13 @@ namespace CPA::Structure {
       }
     }
     
-  private:
-    pointer<T> first;
-    pointer<T> last;
-    int32 numEntries;
+    
   };
   
 #pragma mark - stTransform
   
   /// World transform
-  struct stTransform : structure {
+  struct stTransform {
     
     enum Type : uint32_t {
       /* gcn */
@@ -330,7 +317,7 @@ namespace CPA::Structure {
   };
   
   /// Object identifier
-  struct stObjectTypeElement : structure {
+  struct stObjectTypeElement {
     pointer<stObjectTypeElement> next;
     pointer<stObjectTypeElement> prev;
     pointer<stDoublyLinkedList<stObjectTypeElement>> father;
@@ -342,7 +329,7 @@ namespace CPA::Structure {
   };
   
   /// Global object type table
-  struct stObjectType : structure {
+  struct stObjectType {
     stDoublyLinkedList<stObjectTypeElement> family;
     stDoublyLinkedList<stObjectTypeElement> model;
     stDoublyLinkedList<stObjectTypeElement> instance;
@@ -352,7 +339,7 @@ namespace CPA::Structure {
 #pragma mark - Engine
   
   /// Global engine timer
-  struct stEngineTimer : structure {
+  struct stEngineTimer {
     uint32 currentFrame;
     int16 timerHandle;
     padding(2)
@@ -370,9 +357,9 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
-  struct stEngineStructure : structure {
+  struct stEngineStructure {
     
-    enum EngineMode : uint8_t {
+    enum eEngineMode : uint8_t {
       Invalid = 0,
       Initialize = 1,
       Deinitialize = 2,
@@ -384,11 +371,11 @@ namespace CPA::Structure {
     };
     
     enum eInputMode : typename uint8::U {
-      normal = 0,
-      commands = 1,
+      Normal = 0,
+      Commands = 1,
     };
     
-    EngineMode mode = Invalid;
+    eEngineMode mode = Invalid;
     string<30> currentLevelName;
     string<30> nextLevelName;
     string<30> firstLevelName;
@@ -464,7 +451,7 @@ namespace CPA::Structure {
   
 #pragma mark - IPT
   
-  struct stPadReadingOutput : structure {
+  struct stPadReadingOutput {
     stVector3D globalVector;
     int16 horizontalAxis;
     int16 verticalAxis;
@@ -476,7 +463,7 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
-  struct stInputDevice : structure {
+  struct stInputDevice {
     uint8 valid;
     padding(3)
     pointer<> handle;
@@ -506,7 +493,7 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
-  struct stInputEntryElement : structure {
+  struct stInputEntryElement {
     padding(6 * 4) /* ? */
     uint32 numKeywords;
     pointer<> keywordArray;
@@ -520,7 +507,7 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
-  struct stInputStructure : structure {
+  struct stInputStructure {
     uint8 onePadActivate;
     padding(3)
     stInputDevice device[18];
@@ -560,7 +547,7 @@ namespace CPA::Structure {
 #endif
   
   /// Random number table structure
-  struct stRandom : structure {
+  struct stRandom {
     /// Index the random number table by absolute offset
     int32_t index(unsigned i) {
       return table ? ((table[std::max(0u, i)] >> 16) & 0x7FFF) : 0;
@@ -592,7 +579,7 @@ namespace CPA::Structure {
   
 #pragma mark - CINE
   
-  struct stCine : structure {
+  struct stCine {
     stDoublyLinkedList<stEngineObject> actors;
     pointer<stCine> next;
     pointer<stCine> prev;
@@ -603,7 +590,7 @@ namespace CPA::Structure {
     string<255> name;
   };
   
-  struct stCineManager : structure {
+  struct stCineManager {
 #if CPA_ENGINE_VERSION == CPA_ENGINE_VERSION_R3  // spec r3
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
     stDoublyLinkedList<stCine> cineList;
@@ -621,12 +608,12 @@ namespace CPA::Structure {
   
 #pragma mark - DNM
   
-  struct stDynamicsRotation : structure {
+  struct stDynamicsRotation {
     float32 angle;
     stVector3D axis;
   };
   
-  struct stDynamicsBaseBlock : structure {
+  struct stDynamicsBaseBlock {
     int32 objectType;
     pointer<> idcard;
     uint32 flags;
@@ -657,7 +644,7 @@ namespace CPA::Structure {
 #endif
   };
   
-  struct stDynamicsAdvancedBlock : structure {
+  struct stDynamicsAdvancedBlock {
     float32 xInertia;
     float32 yInertia;
     float32 zInertia;
@@ -680,7 +667,7 @@ namespace CPA::Structure {
   };
   
   /// AI and DNM message-interchange
-  struct stMACDPID : structure {
+  struct stMACDPID {
     float32 data0;
     stVector3D data1;
     stVector3D data2;
@@ -699,7 +686,7 @@ namespace CPA::Structure {
     uint8 data15;
   };
   
-  struct stDynamicsComplexBlock : structure {
+  struct stDynamicsComplexBlock {
     float32 tiltStrength;
     float32 tiltInertia;
     float32 tiltOrigin;
@@ -714,7 +701,7 @@ namespace CPA::Structure {
   };
   
   
-  struct stDynamicsObstacle : structure {
+  struct stDynamicsObstacle {
     float32 rate;
     stVector3D normal;
     stVector3D contact;
@@ -723,12 +710,12 @@ namespace CPA::Structure {
     pointer<stSuperObject> superObject;
   };
   
-  struct stDynamicsMovevement : structure {
+  struct stDynamicsMovevement {
     stVector3D linear;
     stDynamicsRotation angular;
   };
   
-  struct stDynamicsReport : structure {
+  struct stDynamicsReport {
     uint32 previousSurfaceState = 0;
     uint32 currentSurfaceState = 0;
     stDynamicsObstacle obstacle;
@@ -745,7 +732,7 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stDynamics : structure {
+  struct stDynamics {
     stDynamicsBaseBlock base;
     stDynamicsAdvancedBlock advanced;
     stDynamicsComplexBlock complex;
@@ -759,13 +746,13 @@ namespace CPA::Structure {
     }
   };
   
-  struct stDynamicsParsingData : structure {
+  struct stDynamicsParsingData {
     stVector3D position;
     float32 outAlpha;
     stVector3D vector;
   };
   
-  struct stDynam : structure {
+  struct stDynam {
     pointer<stDynamics> dynamics;
     pointer<stDynamicsParsingData> parsingData;
     uint32 usedMechanics;
@@ -773,7 +760,7 @@ namespace CPA::Structure {
   
 #pragma mark - Engine object
   
-  struct stStandardGameInfo : structure {
+  struct stStandardGameInfo {
     int32 familyType;
     int32 modelType;
     int32 instanceType;
@@ -806,9 +793,9 @@ namespace CPA::Structure {
     /* :: custom values :: */
   };
   
-  using ObjectNameResolver = std::function<std::string(eObjectType)>;
+  using ObjectNameResolver = std::function<std::string(eObjectType, int*)>;
   
-  struct stEngineObject : structure {
+  struct stEngineObject {
     pointer<st3DData> p3DData;
     pointer<stStandardGameInfo> stdGame;
     pointer<stDynam> dynam;
@@ -821,14 +808,15 @@ namespace CPA::Structure {
     pointer<stMicro> micro;
     pointer<stMSSound> msSound;
     
-    std::string familyName(ObjectNameResolver& resolve);
-    std::string modelName(ObjectNameResolver& resolve);
-    std::string instanceName(ObjectNameResolver& resolve);
+    std::string name(ObjectNameResolver resolve, eObjectType type);
+    std::string familyName(ObjectNameResolver resolve);
+    std::string modelName(ObjectNameResolver resolve);
+    std::string instanceName(ObjectNameResolver resolve);
   };
   
 #pragma mark - SECT
   
-  struct stSector : structure {
+  struct stSector {
     stDoublyLinkedList<> characterList;
     stDoublyLinkedList<> staticLightList;
     stDoublyLinkedList<> dynamicLightList;
@@ -853,14 +841,14 @@ namespace CPA::Structure {
   
 #pragma mark - COL
   
-  struct stOctreeNode : structure {
+  struct stOctreeNode {
     stVector3D min;
     stVector3D max;
     pointer<stOctreeNode> children;
     pointer<uint8> faceIndices;
   };
   
-  struct stOctree : structure {
+  struct stOctree {
     pointer<stOctree> rootNode;
     int16 numFaces;
     padding(2)
@@ -869,7 +857,7 @@ namespace CPA::Structure {
     stVector3D max;
   };
   
-  struct stCollideObject : structure {
+  struct stCollideObject {
     
     enum Type {
       IndexedTriangles   = 1,
@@ -897,14 +885,14 @@ namespace CPA::Structure {
     stVector4D boundingSpherePosition;
   };
   
-  struct stPhysicalCollideSet : structure {
+  struct stPhysicalCollideSet {
     pointer<stCollideObject> zdm;
     pointer<stCollideObject> zdd;
     pointer<stCollideObject> zde;
     pointer<stCollideObject> zdr;
   };
   
-  struct stColliderInfo : structure {
+  struct stColliderInfo {
     pointer<stSuperObject> colliderActors[2];
     stVector3D colliderVectors[2];
     float32 colliderReal[2];
@@ -913,7 +901,7 @@ namespace CPA::Structure {
     uint8 unused[2];
   };
   
-  struct stZdxListEntry : structure {
+  struct stZdxListEntry {
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
     pointer<> next;
     pointer<> prev;
@@ -924,7 +912,7 @@ namespace CPA::Structure {
 #endif
   };
   
-  struct stZdxList : structure {
+  struct stZdxList {
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
     stDoublyLinkedList<stZdxListEntry> list;
 #else
@@ -934,11 +922,11 @@ namespace CPA::Structure {
     padding(2)
   };
   
-  struct stCsaList : structure {
+  struct stCsaList {
     stDoublyLinkedList<> list;
   };
   
-  struct stCollideSet : structure {
+  struct stCollideSet {
     pointer<stZdxList> zddList;
     pointer<stZdxList> zdeList;
     pointer<stZdxList> zdmList;
@@ -962,7 +950,7 @@ namespace CPA::Structure {
     stColliderInfo colliderInfo;
   };
   
-  struct stElementIndexedTrianglesVisual : structure {
+  struct stElementIndexedTrianglesVisual {
     pointer<> visualMaterial;
     int16 numFaces;
     int16 numUVs;
@@ -984,7 +972,7 @@ namespace CPA::Structure {
     uint32 vao[4];
   };
   
-  struct stCollideElementIndexedTriangles : structure {
+  struct stCollideElementIndexedTriangles {
     pointer<stGameMaterial> material;
     pointer<uint16> faceIndices;
     pointer<stVector3D> normals;
@@ -998,20 +986,20 @@ namespace CPA::Structure {
     padding(2)
   };
   
-  struct stCollideElementIndexedSphere : structure {
+  struct stCollideElementIndexedSphere {
     float32 radius;
     pointer<stGameMaterial> material;
     int16 indexOfCenterPoint;
     padding(2)
   };
   
-  struct stCollideElementSpheres : structure {
+  struct stCollideElementSpheres {
     pointer<stCollideElementIndexedSphere> spheres;
     int16 numSpheres;
     int16 aabbIndex;
   };
   
-  struct stCollideMaterial : structure {
+  struct stCollideMaterial {
     int16 zoneType;
     uint16 identifier;
     float32 xDirection;
@@ -1022,7 +1010,7 @@ namespace CPA::Structure {
     padding(2)
   };
   
-  struct stCollisionCase : structure {
+  struct stCollisionCase {
     float32 collisionTime;
     stVector3D collisionNormal;
     stVector3D collisionPoint;
@@ -1042,13 +1030,13 @@ namespace CPA::Structure {
     float32 rebound2;
   };
   
-  struct stIndexedAlignedBox : structure {
+  struct stIndexedAlignedBox {
     int16 min;
     int16 max;
     pointer<stGameMaterial> material;
   };
   
-  struct stCollideElementAlignedBoxes : structure {
+  struct stCollideElementAlignedBoxes {
     pointer<stIndexedAlignedBox> boxes;
     int16 numBoxes;
     int16 parallelBoxIndex;
@@ -1058,7 +1046,7 @@ namespace CPA::Structure {
 # define COL_MAX_SELECTED_OCTREE_NODES 100
 #endif
   
-  struct stGVForCollision : structure {
+  struct stGVForCollision {
     pointer<stVector3D> vertex1;
     stVector3D edgeVector;
     pointer<stVector3D> vertex2;
@@ -1125,7 +1113,7 @@ namespace CPA::Structure {
   
 #pragma mark - PO
   
-  struct stPhysicalObject  : structure{
+  struct stPhysicalObject {
     pointer<> visualSet;
     pointer<stPhysicalCollideSet> physicalCollideset;
     pointer<> visualBoundingVolume;
@@ -1134,7 +1122,7 @@ namespace CPA::Structure {
   
 #pragma mark - IPO
   
-  struct stInstantiatedPhysicalObject : structure {
+  struct stInstantiatedPhysicalObject {
     pointer<stPhysicalObject> physicalObject;
     pointer<> currentRadiosity;
     doublepointer<> radiosity;
@@ -1176,7 +1164,7 @@ namespace CPA::Structure {
     { superObjectTypeMirror              , "Mirror" },
   };
     
-  struct stSuperObject : structure {
+  struct stSuperObject {
     /// `eSuperObjectType`
     uint32 type;
     
@@ -1219,7 +1207,7 @@ namespace CPA::Structure {
     /// Return the name of the superobject
     ///   For actors, return the first name available
     ///   in the order of [Family, Model, Instance]
-    std::string name(ObjectNameResolver& resolve, bool fullname = false);
+    std::string name(ObjectNameResolver resolve, bool fullname = false);
     
     /// Recurse the tree below this superobject
     template <typename F, typename UserData>
@@ -1247,7 +1235,7 @@ namespace CPA::Structure {
   
 #pragma mark - AI
   
-  struct stBrain : structure {
+  struct stBrain {
     pointer<stMind> mind;
     pointer<stGameMaterial> lastNoCollideMaterial;
     uint8 warnMechanics;
@@ -1255,7 +1243,7 @@ namespace CPA::Structure {
     padding(2)
   };
   
-  struct stMind : structure {
+  struct stMind {
     pointer<stAIModel> aiModel;
     pointer<stIntelligence> intelligence;
     pointer<stIntelligence> reflex;
@@ -1264,7 +1252,7 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stAIModel : structure {
+  struct stAIModel {
     pointer<stScriptAI> intelligenceBehaviorList;
     pointer<stScriptAI> reflexBehaviorList;
     pointer<stDsgVar> dsgVar;
@@ -1273,7 +1261,7 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stNodeInterpret : structure {
+  struct stNodeInterpret {
   #if CPA_PLATFORM == CPA_PLATFORM_GCN
     uint32 param;
     padding(3)
@@ -1284,7 +1272,7 @@ namespace CPA::Structure {
   #endif
   };
   
-  struct stTreeInterpret : structure {
+  struct stTreeInterpret {
     pointer<stNodeInterpret> node;
   };
   
@@ -1296,11 +1284,11 @@ namespace CPA::Structure {
     pointer<> pointerValue;
   };
   
-  struct stActionParam : structure {
+  struct stActionParam {
     union uGetSetParam param[8];
   };
   
-  struct stActionTableEntry : structure {
+  struct stActionTableEntry {
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
     string<0x50> name;
     uint32 param[8];
@@ -1317,7 +1305,7 @@ namespace CPA::Structure {
     uint8 newReturn;
   };
   
-  struct stActionTable : structure {
+  struct stActionTable {
     pointer<stActionTableEntry> entries;
     uint8 numEntries;
     uint8 numEntriesUsed;
@@ -1325,7 +1313,7 @@ namespace CPA::Structure {
     padding(1)
   };
   
-  struct stBehavior : structure {
+  struct stBehavior {
     string<0x100> name; /* 256 on GCN, at least */
     pointer<stTreeInterpret> scripts;
     pointer<stTreeInterpret> firstScript;
@@ -1333,19 +1321,19 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stMacro : structure {
+  struct stMacro {
     string<0x100> name;
     pointer<stTreeInterpret> initialTree;
     pointer<stTreeInterpret> currentTree;
   };
   
-  struct stMacroList : structure {
+  struct stMacroList {
     pointer<stMacro> macros;
     uint8 numMacros;
     padding(3)
   };
   
-  struct stScriptAI : structure {
+  struct stScriptAI {
     pointer<stBehavior> behavior;
     uint32 numBehaviors;
     uint32 noInitialization;
@@ -1353,7 +1341,7 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stIntelligence : structure {
+  struct stIntelligence {
     doublepointer<stScriptAI> scriptAI;
     pointer<stNodeInterpret> currentTree;
     pointer<stBehavior> currentBehavior;
@@ -1362,7 +1350,7 @@ namespace CPA::Structure {
     uint32 initializeBehavior;
   };
   
-  struct stDsgVarInfo : structure {
+  struct stDsgVarInfo {
     uint32 memOffset;
     uint32 type;
     int16 saveType;
@@ -1370,7 +1358,7 @@ namespace CPA::Structure {
     uint32 objectTreeInitialType;
   };
   
-  struct stDsgVar : structure {
+  struct stDsgVar {
     pointer<> memory;
     pointer<> info;
     uint32 memorySize;
@@ -1378,21 +1366,55 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  struct stDsgMem : structure {
+  struct stDsgMem {
     doublepointer<stDsgVar> dsgVars;
     pointer<> initialBuffer;
     pointer<> currentBuffer;
   };
   
+#pragma mark - GLI
+  
+  struct stVertex2D {
+    float32 x;
+    float32 y;
+    float32 dz;
+  };
+  
+  struct stCamera {
+    int32 cameraMode;
+    stTransform transform;
+    float32 xAlpha;
+    float32 yAlpha;
+    float32 near;
+    float32 far;
+    float32 screen;
+    stVertex2D scale;
+    stVertex2D trans;
+    float32 xProjectionR;
+    float32 yprojectionR;
+    stVector3D left;
+    float32 dLeft;
+    stVector3D right;
+    float32 dRight;
+    stVector3D up;
+    float32 dUp;
+    stVector3D down;
+    float32 dDown;
+    float32 ratio;
+    uint8 transparency;
+    float32 transpDist;
+    uint8 mirrored;
+  };
+  
 #pragma mark - WP
   
-  struct stWayPoint : structure {
+  struct stWayPoint {
     stVector3D point;
     float32 radius;
     pointer<stSuperObject> superobject;
   };
   
-  struct stGraphNode : structure {
+  struct stGraphNode {
     pointer<stGraphNode> next;
     pointer<stGraphNode> prev;
     pointer<stGraph> graph;
@@ -1402,16 +1424,16 @@ namespace CPA::Structure {
     pointer<> arcList;
   };
   
-  struct stGraph : structure {
+  struct stGraph {
     stDoublyLinkedList<stGraphNode> nodes;
   };
   
-  struct stGraphChainList : structure {
+  struct stGraphChainList {
     pointer<stGraph> graph;
     pointer<stGraphChainList> next;
   };
   
-  struct stMSWay : structure {
+  struct stMSWay {
     pointer<stGraph> graph;
     int32 index;
     uint8 spherical;

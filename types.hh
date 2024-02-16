@@ -30,6 +30,8 @@ namespace CPA {
     bool valid();
     /// valid
     operator bool();
+    /// cast
+    operator Memory::TargetAddressType();
     /// Any pointer cast
     template <typename T> operator T*() { return static_cast<T*>(hostAddress()); }
     
@@ -75,6 +77,10 @@ namespace CPA {
     bool memoryBound() {
       return Memory::HostAddressType(&data) >= static_cast<uint8_t*>(Memory::baseAddress) &&
              Memory::HostAddressType(&data) <=(static_cast<uint8_t*>(Memory::baseAddress) + Memory::size);
+    }
+    
+    Address memoryOffset() {
+      return &data;
     }
     
     operator OpT() const {
@@ -138,7 +144,7 @@ namespace CPA {
     }
     
     Address memoryOffset() {
-      return address<T>(&ptr);
+      return Address(&ptr);
     }
     
     Address pointeeAddress() {
@@ -192,22 +198,25 @@ namespace CPA {
     }
     
     template <typename X>
-    DoublePointer(DoublePointer<X>& other) {
-      
+    DoublePointer(DoublePointer<X>& other) : ptr(other.ptr) {
+      /* ... */
     }
     
-    template <typename X>
+    template <typename X = T>
     X* pointee() {
       Address *primary = Pointer<Address>(ptr.physicalAddress());
       return primary ? Pointer<X>(primary->physicalAddress()) : nullptr;
     }
     
-    template <typename X>
+    template <typename X = T>
     operator X*() {
       return pointee<X>();
     }
     
-  private:
+    operator bool() {
+      return ptr.valid();
+    }
+    
     Address ptr;
   };
   
@@ -227,16 +236,16 @@ namespace CPA {
       return str.substr(idx + 1, std::string::npos);
     }
     
-    operator void*() { return static_cast<void*>(&string); }
-    operator const char*() { return static_cast<const char*>(string); }
+    operator void*() { return static_cast<void*>(string); }
+    operator const char*() { return reinterpret_cast<const char*>(string); }
     operator std::string() { return std::string(reinterpret_cast<char*>(string), size); }
     auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
     auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
     auto operator ==(String&     str) { return std::string(str) == std::string(this); }
-    auto operator =(std::string& str) { std::memset(string.data(), 0, size); std::memcpy(string.data(), str.data(), size); }
+    auto operator =(std::string& str) { std::memset(string, 0, size); std::memcpy(string, str.data(), size); }
     
   private:
-    std::array<int8_t, size> string;
+    int8_t string[size];
   };
   
   using char8   = Type<int8_t, int8_t>;
