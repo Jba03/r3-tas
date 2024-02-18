@@ -1,6 +1,6 @@
 #include <cmath>
 
-#include "structure.hh"
+//#include "structure.hh"
 #include "interface.hh"
 #include "hook.hh"
 #include "log.hh"
@@ -71,7 +71,7 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
 template<class T> const T& min(const T& a, const T& b) { return (((a) < (b)) ? (a) : (b)); }
 template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (a) : (b)); }
 
-namespace interface {
+//namespace interface {
   
   static auto MTH4D_M_vMulMatrixVector() -> void {
     stVector3D *dst = pointer<stVector3D>(GPR(29));
@@ -89,10 +89,10 @@ namespace interface {
     *dst = result;
     
     uint32_t sp = GPR(1) & 0x7FFFFFFF; /* sp = r1 */
-    LR = GPR(0) = (*(uint32*)(memory::baseAddress + sp + 0x24)); /* lr = r0 */
-    GPR(29) = (*(uint32*)(memory::baseAddress + sp + 0x14));
-    GPR(30) = (*(uint32*)(memory::baseAddress + sp + 0x18));
-    GPR(31) = (*(uint32*)(memory::baseAddress + sp + 0x1C));
+    LR = GPR(0) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x24)); /* lr = r0 */
+    GPR(29) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x14));
+    GPR(30) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x18));
+    GPR(31) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x1C));
     GPR(1) += 0x20;
     NPC = LR;
   }
@@ -217,49 +217,49 @@ namespace interface {
            max(float(min1.z), float(min2.z)) <= min(float(max1.z), float(max2.z));
   }
   
-//  static auto COL_fn_vExploreRecursiveOctreeWithBox(stOctreeNode *p_stNodeToBeExplored, stVector3D *p_stMinSituation, stVector3D *p_stMaxSituation, uint32_t *d_pstSelectedNode, short *p_xNumberOfSelectedNodes) -> void {
-//    if (!p_stNodeToBeExplored) return;
-//
-//    if (INT_fn_bIntersectBoxWithBox( p_stMinSituation, p_stMaxSituation, &p_stNodeToBeExplored->min, &p_stNodeToBeExplored->max)) {
-//      if (p_stNodeToBeExplored->children) {
-//        for (int i = 0; i < 8; i++) {
-//          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(memoryBase + p_stNodeToBeExplored->children.address() + i * 4));
-//          COL_fn_vExploreRecursiveOctreeWithBox ( node, p_stMinSituation, p_stMaxSituation, d_pstSelectedNode, p_xNumberOfSelectedNodes );
-//        }
-//      } else {
-//        if (p_stNodeToBeExplored->faceIndices) {
-//          /* on recupere les noeuds */
-//          if ( *p_xNumberOfSelectedNodes < 100 ) {
-//            uint32_t addr = game_byteorder_32(((uint32_t)((long)p_stNodeToBeExplored - (long)memoryBase) | 0x80000000));
-//            d_pstSelectedNode[*p_xNumberOfSelectedNodes] = addr;
-//            (*p_xNumberOfSelectedNodes) ++;
-//          }
-//        }
-//      }
-//    }
-//  }
+  static auto COL_fn_vExploreRecursiveOctreeWithBox(stOctreeNode *p_stNodeToBeExplored, stVector3D *p_stMinSituation, stVector3D *p_stMaxSituation, uint32_t *d_pstSelectedNode, short *p_xNumberOfSelectedNodes) -> void {
+    if (!p_stNodeToBeExplored) return;
+
+    if (INT_fn_bIntersectBoxWithBox( p_stMinSituation, p_stMaxSituation, &p_stNodeToBeExplored->min, &p_stNodeToBeExplored->max)) {
+      if (p_stNodeToBeExplored->children) {
+        for (int i = 0; i < 8; i++) {
+          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(static_cast<uint8_t*>(Memory::baseAddress) + p_stNodeToBeExplored->children.memoryOffset().effectiveAddress() + i * 4));
+          COL_fn_vExploreRecursiveOctreeWithBox ( node, p_stMinSituation, p_stMaxSituation, d_pstSelectedNode, p_xNumberOfSelectedNodes );
+        }
+      } else {
+        if (p_stNodeToBeExplored->faceIndices) {
+          /* on recupere les noeuds */
+          if ( *p_xNumberOfSelectedNodes < 100 ) {
+            uint32_t addr = (((uint32_t)((long)p_stNodeToBeExplored - (long)Memory::baseAddress) | 0x80000000));
+            d_pstSelectedNode[*p_xNumberOfSelectedNodes] = addr;
+            (*p_xNumberOfSelectedNodes) ++;
+          }
+        }
+      }
+    }
+  }
   
-//  static auto COL_fn_vExploreOctreeWithBox() -> void {
-//
-//    stOctree *octree = pointer<stOctree, true>GPR(3);
-//    stVector3D *minPoint = pointer<stVector3D, true>GPR(4);
-//    stVector3D *maxPoint = pointer<stVector3D, true>GPR(5);
-//    uint32_t *selectedNodes = pointer<stOctreeNode*, true>GPR(6);
-//    short *numSelectedNodes = pointer<short, true>GPR(7);
-//
-//    *numSelectedNodes = host_byteorder_16(0);
-//
-//    COL_fn_vExploreRecursiveOctreeWithBox((stOctreeNode*)octree->root, minPoint, maxPoint, selectedNodes, numSelectedNodes);
-//
-//    //printf("num selected: %d\n", *numSelectedNodes);
-//
-//    // 803dc740
-//
-//    *numSelectedNodes = game_byteorder_16(*numSelectedNodes);
-//
-//
-//    NPC = LR;
-//  }
+  static auto COL_fn_vExploreOctreeWithBox() -> void {
+
+    stOctree *octree = pointer<stOctree>GPR(3);
+    stVector3D *minPoint = pointer<stVector3D>GPR(4);
+    stVector3D *maxPoint = pointer<stVector3D>GPR(5);
+    uint32_t *selectedNodes = pointer<stOctreeNode*>GPR(6);
+    short *numSelectedNodes = pointer<short>GPR(7);
+
+    //*numSelectedNodes = host_byteorder_16(0);
+
+    COL_fn_vExploreRecursiveOctreeWithBox((stOctreeNode*)octree->rootNode, minPoint, maxPoint, selectedNodes, numSelectedNodes);
+
+    printf("num selected: %d\n", *numSelectedNodes);
+
+    // 803dc740
+
+    //*numSelectedNodes = game_byteorder_16(*numSelectedNodes);
+
+
+    NPC = LR;
+  }
   
   static void COL_fn_vNewStaticCollisionForCharacter() {
     //printf("col static: %X\n", GPR(26));
@@ -268,8 +268,14 @@ namespace interface {
   static auto fn_vDisplayAll() -> void {
     NPC = LR;
   }
+
+  static auto fn_vDisplayFix() -> void {
+    NPC = LR;
+  }
+
+
   
-  void applyOptimizations() {
+  void Interface::applyOptimizations() {
     
     log::info(log::bold, log::pink, "Optimizations loaded\n");
     
@@ -279,10 +285,10 @@ namespace interface {
     //hook<0x80029358>(COL_fn_vExploreOctreeWithBox, hookType::replace);
     
     // MTH
-    //hook<0x800777e0>(MTH4D_M_vMulMatrixVector, hookType::replace);
+    hook<0x800777e0>(MTH4D_M_vMulMatrixVector, hookType::replace);
     
     // POS
-    //hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
+    hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
     
     
     //hook<0x8007568c>(POS_fn_vMulMatrixVertex, hookType::replace);
@@ -297,9 +303,10 @@ namespace interface {
 //    hook<0x8007e9d8>(replace2, hookType::replace);
 //    hook<0x8007d714>(replace3, hookType::replace);
     
-    //hook<0x80036174>(fn_vDisplayAll, hookType::replace);
+    hook<0x80036174>(fn_vDisplayAll, hookType::replace);
+    hook<0x80054498>(fn_vDisplayFix, hookType::replace);
     //hook_create(0x80054498, "hook_display_fix", HOOK_TYPE_REPLACE, HOOK_FLAG_FIXED, &hook_r_display_fix);
     
     
   }
-}
+//}

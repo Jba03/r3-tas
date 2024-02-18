@@ -10,15 +10,17 @@
 #import <Cocoa/Cocoa.h>
  
 #include <iomanip>
+#include <iostream>
 #include <vector>
 
-#include "structure.hh"
-namespace r3 = library;
+#include "game.hh"
+//#include "structure.hh"
+namespace r3 = CPA; //library;
 
 
 namespace graphics {
-  r3::stMatrix4D viewMatrix;
-  r3::stMatrix4D projectionMatrix;
+  stMatrix4D viewMatrix;
+  stMatrix4D projectionMatrix;
     
   std::vector<r3::pointer<>> highlightList;
   
@@ -175,7 +177,7 @@ namespace graphics {
       bool enableShading;
     } uniform;
     
-    static simd_float4x4 GameToMetalMatrix(r3::stMatrix4D mat)
+    static simd_float4x4 GameToMetalMatrix(stMatrix4D mat)
     {
         simd_float4x4 m;
         m.columns[0] = simd_make_float4(mat.m00, mat.m01, mat.m02, mat.m03);
@@ -226,12 +228,12 @@ namespace graphics {
     uniform.useGameIndexing = false;
   }
     
-  auto drawPoint(r3::stVector3D point, r3::stVector4D color) -> void {
+  auto drawPoint(stVector3D point, stVector4D color) -> void {
     uniform.useGameIndexing = false;
     uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
     uniform.use_texture = false;
     uniform.enableShading = false;
-    uniform.model = GameToMetalMatrix(r3::stMatrix4D());
+    uniform.model = GameToMetalMatrix(stMatrix4D());
     
     id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: (void*)&point length: sizeof point options: MTLResourceStorageModeShared];
     id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: (void*)&uniform length: sizeof uniform options: MTLResourceStorageModeShared];
@@ -269,12 +271,12 @@ namespace graphics {
 //    [uniformBuffer release];
 //  }
   
-  void drawLine(r3::stVector3D p1, r3::stVector3D p2, r3::stVector4D color) {
+  void drawLine(stVector3D p1, stVector3D p2, stVector4D color) {
     uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
     uniform.use_texture = false;
     uniform.useGameIndexing = false;
     
-    r3::stVector3D buf[2] = { p1, p2 };
+    stVector3D buf[2] = { p1, p2 };
     id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: (void*)buf length: sizeof buf options: MTLResourceStorageModeShared];
     id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: (void*)&uniform length: sizeof uniform options: MTLResourceStorageModeShared];
     [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
@@ -286,15 +288,15 @@ namespace graphics {
     [uniformBuffer release];
   }
   
-  auto draw(r3::stVector3D *vertices, r3::stVector3D *normals, r3::uint16 *indices, unsigned numVertices, unsigned numIndices, r3::stMatrix4D T, r3::stVector4D color) -> void {
+  auto draw(stVector3D *vertices, stVector3D *normals, r3::uint16 *indices, unsigned numVertices, unsigned numIndices, stMatrix4D T, stVector4D color) -> void {
     uniform.useGameIndexing = true;
     uniform.model = GameToMetalMatrix(T);
     uniform.useFaceNormals = false;
     uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
     
     id<MTLBuffer> indexBuffer = [metalDevice newBufferWithBytes: indices length: numIndices * sizeof(r3::uint16) options: MTLResourceStorageModePrivate];
-    id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: numVertices * sizeof(r3::stVector3D) options: MTLResourceStorageModePrivate];
-    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: numVertices * sizeof(r3::stVector3D) options: MTLResourceStorageModePrivate];
+    id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: numVertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
+    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: numVertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
     id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
     
     [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
@@ -312,105 +314,105 @@ namespace graphics {
     
     uniform.useFaceNormals = true;
     uniform.useGameIndexing = false;
-    uniform.model = GameToMetalMatrix(r3::stMatrix4D());
+    uniform.model = GameToMetalMatrix(stMatrix4D());
   }
   
-  auto drawIPO(r3::stInstantiatedPhysicalObject *ipo, r3::stMatrix4D T) -> void {
-    r3::stCollideObject *zdr = nullptr;
-    if ((zdr = ipo->zdr())) {
-      zdr->forEachElement([&](r3::int16 type, void *m) {
-        if (type == collideElementIndexedTriangles && m) {
-          r3::stCollideElementIndexedTriangles *mesh = static_cast<r3::stCollideElementIndexedTriangles*>(m);
-          
-          r3::stVector3D* vertices = zdr->vertices;
-          r3::stVector3D* normals = mesh->normals;
-          r3::uint16* indices = mesh->faceIndices;
-          
-          r3::int16 numVertices = zdr->numVertices;
-          r3::int16 numFaces = mesh->numFaces;
-
-          //uniform.color = collideMaterialGetColor(material);
-          uniform.model = GameToMetalMatrix(T);
-          uniform.useGameIndexing = true;
-          uniform.use_texture = true;
-          uniform.useFaceNormals = true;
-          
-          if (highlightList.size() != 0) {
-            uniform.color.w = 0.1f;
-          }
-          
-          for (r3::pointer<>& p : highlightList) {
-            if (ipo == p) {
-              uniform.color.w = 1.0f;
-            }
-          }
-          
-          //uniform.normal_matrix = getNormalMatrix(uniform.view, uniform.model);
-          id<MTLBuffer> indexBuffer = [metalDevice newBufferWithBytes: indices length: int(numFaces) * 3 * sizeof(r3::uint16) options: MTLResourceStorageModePrivate];
-          id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: int(numFaces) * sizeof(r3::stVector3D) options: MTLResourceStorageModePrivate];
-          id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: int(numVertices) * sizeof(r3::stVector3D) options: MTLResourceStorageModePrivate];
-          id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
-          
-          [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-          [renderEncoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
-          [renderEncoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
-          [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-          [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-          [renderEncoder setFragmentTexture: checkerTexture atIndex: 0];
-          [renderEncoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: int(numFaces) * 3];
-
-          [indexBuffer release];
-          [normalBuffer release];
-          [vertexBuffer release];
-          [uniformBuffer release];
-
-          uniform.useGameIndexing = false;
-        }
-      });
-
-//                int mesh_idx = 0;
-//                const stCollideElementIndexedTriangles* mesh;
-//                while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_idx)))
-//                {
-//                    uint16* indices = (uint16*)pointer(mesh->faceIndices);
-//                    stVector3D* vertices = (stVector3D*)pointer(zdr->vertices);
-//                    stVector3D* normals = (stVector3D*)pointer(mesh->normals);
+  auto drawIPO(stInstantiatedPhysicalObject *ipo, stMatrix4D T) -> void {
+//    stCollideObject *zdr = nullptr;
+//    if ((zdr = ipo->zdr())) {
+//      zdr->forEachElement([&](r3::int16 type, void *m) {
+//        if (type == collideElementIndexedTriangles && m) {
+//          stCollideElementIndexedTriangles *mesh = static_cast<stCollideElementIndexedTriangles*>(m);
+//          
+//          stVector3D* vertices = zdr->vertices;
+//          stVector3D* normals = mesh->normals;
+//          r3::uint16* indices = mesh->faceIndices;
+//          
+//          r3::int16 numVertices = zdr->numVertices;
+//          r3::int16 numFaces = mesh->numFaces;
 //
-//                    if (vertices && indices && normals)
-//                    {
-//                        const int16 n_faces = host_byteorder_16(mesh->numFaces);
+//          //uniform.color = collideMaterialGetColor(material);
+//          uniform.model = GameToMetalMatrix(T);
+//          uniform.useGameIndexing = true;
+//          uniform.use_texture = true;
+//          uniform.useFaceNormals = true;
+//          
+//          if (highlightList.size() != 0) {
+//            uniform.color.w = 0.1f;
+//          }
+//          
+//          for (r3::pointer<>& p : highlightList) {
+//            if (ipo == p) {
+//              uniform.color.w = 1.0f;
+//            }
+//          }
+//          
+//          //uniform.normal_matrix = getNormalMatrix(uniform.view, uniform.model);
+//          id<MTLBuffer> indexBuffer = [metalDevice newBufferWithBytes: indices length: int(numFaces) * 3 * sizeof(r3::uint16) options: MTLResourceStorageModePrivate];
+//          id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: int(numFaces) * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
+//          id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: int(numVertices) * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
+//          id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
+//          
+//          [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
+//          [renderEncoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
+//          [renderEncoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
+//          [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
+//          [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
+//          [renderEncoder setFragmentTexture: checkerTexture atIndex: 0];
+//          [renderEncoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: int(numFaces) * 3];
 //
+//          [indexBuffer release];
+//          [normalBuffer release];
+//          [vertexBuffer release];
+//          [uniformBuffer release];
 //
-//                        stCollideMaterial *material = (stCollideMaterial*)pointer(mesh->material);
+//          uniform.useGameIndexing = false;
+//        }
+//      });
 //
-//                        //uniform.color = collideMaterialGetColor(material);
-//                        uniform.model = GameToMetalMatrix(T);
-//                        uniform.normal_matrix = getNormalMatrix(uniform.view, uniform.model);
-//                        id<MTLBuffer> uniformBuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
-//
-//                        /* Cannot use newBufferWithBytesNoCopy here, since data is not page-aligned. Mark the buffers as private: they aren't written to by the CPU. */
-//                        id<MTLBuffer> indexBuffer = [device newBufferWithBytes: (void*)indices length: n_faces * 3 * sizeof(uint16) options: MTLResourceStorageModePrivate];
-//                        id<MTLBuffer> normalBuffer = [device newBufferWithBytes: (void*)normals length: n_faces * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
-//                        id<MTLBuffer> vertexBuffer = [device newBufferWithBytes: (void*)vertices length: n_vertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
-//
-//                        [render_encoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//                        [render_encoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
-//                        [render_encoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
-//                        [render_encoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//                        [render_encoder setFragmentTexture: checker_texture atIndex: 0];
-//                        [render_encoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//
-//                        [render_encoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: n_faces * 3];
-//
-//                        [indexBuffer release];
-//                        [normalBuffer release];
-//                        [vertexBuffer release];
-//                        [uniformBuffer release];
-//                    }
-//
-//                    mesh_idx++;
-//                }
-        }
+////                int mesh_idx = 0;
+////                const stCollideElementIndexedTriangles* mesh;
+////                while ((mesh = fnCollideObjectGetElementIndexedTriangles(zdr, mesh_idx)))
+////                {
+////                    uint16* indices = (uint16*)pointer(mesh->faceIndices);
+////                    stVector3D* vertices = (stVector3D*)pointer(zdr->vertices);
+////                    stVector3D* normals = (stVector3D*)pointer(mesh->normals);
+////
+////                    if (vertices && indices && normals)
+////                    {
+////                        const int16 n_faces = host_byteorder_16(mesh->numFaces);
+////
+////
+////                        stCollideMaterial *material = (stCollideMaterial*)pointer(mesh->material);
+////
+////                        //uniform.color = collideMaterialGetColor(material);
+////                        uniform.model = GameToMetalMatrix(T);
+////                        uniform.normal_matrix = getNormalMatrix(uniform.view, uniform.model);
+////                        id<MTLBuffer> uniformBuffer = [device newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
+////
+////                        /* Cannot use newBufferWithBytesNoCopy here, since data is not page-aligned. Mark the buffers as private: they aren't written to by the CPU. */
+////                        id<MTLBuffer> indexBuffer = [device newBufferWithBytes: (void*)indices length: n_faces * 3 * sizeof(uint16) options: MTLResourceStorageModePrivate];
+////                        id<MTLBuffer> normalBuffer = [device newBufferWithBytes: (void*)normals length: n_faces * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
+////                        id<MTLBuffer> vertexBuffer = [device newBufferWithBytes: (void*)vertices length: n_vertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
+////
+////                        [render_encoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
+////                        [render_encoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
+////                        [render_encoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
+////                        [render_encoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
+////                        [render_encoder setFragmentTexture: checker_texture atIndex: 0];
+////                        [render_encoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
+////
+////                        [render_encoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: n_faces * 3];
+////
+////                        [indexBuffer release];
+////                        [normalBuffer release];
+////                        [vertexBuffer release];
+////                        [uniformBuffer release];
+////                    }
+////
+////                    mesh_idx++;
+////                }
+//        }
     }
     
   auto endFrame() -> void {

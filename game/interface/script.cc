@@ -5,7 +5,7 @@
 //  Created by Jba03 on 2023-03-06.
 //
 
-#include "script.hh"
+//#include "script.hh"
 #include "tables.hh"
 
 #include <stdio.h>

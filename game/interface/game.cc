@@ -9,8 +9,14 @@
 #include <map>
 #include <string>
 
+#include "constants.hh"
 #include "game.hh"
 #include "log.hh"
+
+#define CONCAT(a, b) CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a ## b
+#define UNIQUE_NAME(base) CONCAT(base, __LINE__)
+#define padding(S) uint8_t UNIQUE_NAME(padding) [S];
 
 const uint8_t * memoryBase = NULL;
 
@@ -130,9 +136,8 @@ namespace game
       #pragma mark FIX
       {
             //info(BOLD COLOR_GREEN "FIX @ [0x%X : %p]\n", fixptr.offset(), fixptr.realAddress());
-            
             fix.header = fixptr;
-            
+        
             const unsigned char* offset = (const unsigned char*)(fix.header + 1);
             /* Skip demo save names */
             offset += 12 * fix.header->demo_name_count;
@@ -176,15 +181,20 @@ namespace game
   static auto nameLookup(int type, int idx) -> std::string {
     if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
       namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
+      
       try {
         if (type == objectFamilyName) return cache.familyNames.at(idx);
         if (type == objectModelName) return cache.modelNames.at(idx);
         if (type == objectInstanceName) return cache.instanceNames.at(idx);
       } catch (std::out_of_range& e) {
-        //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
+        std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
       }
     }
     return "Invalid name";
+  }
+  
+  std::string nameResolver(eObjectType type, int *index) {
+    return nameLookup(type, *index);
   }
     
   void update() {
@@ -198,7 +208,7 @@ namespace game
     p_stFatherSector         = doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
         
     g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
-      
+    
     if (isValidGameState()) {
       readLevel();
       cache();
@@ -215,9 +225,9 @@ namespace game
     
   uint32_t objectColor(stSuperObject *object) {
     if (!object) return 0xAA808080;
-    if (object->type == superobjectTypeIPO) return 0xFF00AAFF;
-    if (object->type == superobjectTypeIPOMirror) return 0xFF00DDFF;
-    if (object->type != superobjectTypeActor) return 0xAAFFFFFF;
+    if (object->type == superObjectTypeIPO) return 0xFF00AAFF;
+    if (object->type == superObjectTypeIPOMirror) return 0xFF00DDFF;
+    if (object->type != superObjectTypeActor) return 0xAAFFFFFF;
     stEngineObject *actor = object->data;
     if (!actor->stdGame) return 0x80808080;
     return color_table_index(2 * actor->stdGame->familyType + 1);

@@ -1,3 +1,5 @@
+#include "constants.hh"
+
 #define TC(label, ...)     \
   ImGui::TableNextColumn();       \
   ImGui::Text(label);             \
@@ -35,7 +37,7 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
       stVector3D scale = base.scale;
       stVector3D animSpeed = base.animationProposeSpeed;
       stVector3D safeTranslation = base.safeTranslation;
-      stVector3D addedTranslation = base.addedTranslation;
+      stVector3D addedTranslation = base.addTranslation;
       
       TC("Object type", "%X", uint32_t(base.objectType))
       TC("ID card", "%X", uint32_t(base.idcard))

@@ -38,7 +38,7 @@
 #define dynamicsFlagCollidePreserveZMomentum  (1 <<  8) // Preseve Z-axis momentum when colliding with a wall
 #define dynamicsFlagSpeedLimit                (1 <<  9) // Limit speed
 #define dynamicsFlagInertia                   (1 << 10) // Has inertia?
-#define dynamicsFlagStream                    (1 << 11) // Is affected by a stream?
+#define dynamicsFlagStream                    (1 << 11) // Is affected by stream?
 #define dynamicsFlagStuckToPlatform           (1 << 12) // No slide on platform
 #define dynamicsFlagHasScale                  (1 << 13) // Use scale parameters
 #define dynamicsFlagSpeedImposeAbsolute       (1 << 14) // Impose absolute speed

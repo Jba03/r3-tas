@@ -71,7 +71,7 @@ namespace graphics {
   }
   
   auto drawSphere(stVector3D point, float radius, stVector4D color) -> void {
-    stMatrix4D T = stMatrix4D::translation(point) * stMatrix4D::scale(radius, radius, radius);
+    stMatrix4D T = stMatrix4D::translation(point) * stMatrix4D::scale(stVector3D(radius, radius, radius));
     draw(sphereVertices, sphereNormals, sphereIndices, sphereVertexCount, sphereIndexCount, T, color);
   }
   

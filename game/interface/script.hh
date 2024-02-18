@@ -1,7 +1,7 @@
 #ifndef script_h
 #define script_h
 
-#include "structure.hh"
+//#include "structure.hh"
 
 #define script_node_type_keyword            0
 #define script_node_type_condition          1

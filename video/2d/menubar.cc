@@ -26,7 +26,7 @@ static void Draw()
     {
         if (ImGui::MenuItem("Reload"))
         {
-            game::g_stEngineStructure->reloadLevel();
+            game::g_stEngineStructure->loadLevel(game::g_stEngineStructure->currentLevelName);
         }
             
 //        if (ImGui::BeginMenu("Change"))

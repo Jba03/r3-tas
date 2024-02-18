@@ -20,7 +20,7 @@ static auto overrideName(stSuperObject *root) -> std::string  {
   else if (root == p_stDynamicWorld) return "Dynamic world (" + std::to_string(root->numChildren) + ")";
   else if (root == p_stInactiveDynamicWorld) return "Inactive dynamic world (" + std::to_string(root->numChildren) + ")";
   else if (root == p_stFatherSector) return "Father sector (" + std::to_string(root->numChildren) + ")";
-  return root->name();
+  return root->name(nameResolver);
 }
 
 static auto drawRecursive(stSuperObject *root, void*) -> void {
@@ -28,11 +28,11 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
   ImGui::PushID(root);
   ImGui::PushStyleColor(ImGuiCol_Text, game::objectColor(root));
   
-  if (root->type == superobjectTypeSector) {
-    if (root == g_stEngineStructure->currentMainPlayers[0]->currentSector(p_stFatherSector)) {
-      ImGui::PopStyleColor();
-      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.1f, 1.0f));
-    }
+  if (root->type == superObjectTypeSector) {
+//    if (root == g_stEngineStructure->currentMainPlayers[0]->currentSector(p_stFatherSector)) {
+//      ImGui::PopStyleColor();
+//      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.1f, 1.0f));
+//    }
   }
   
   ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None | (root->numChildren == 0 ? ImGuiTreeNodeFlags_Leaf : 0);

@@ -15,13 +15,14 @@
 
 #include "dynamics.cc"
 
-#include "bruteforce2.hh"
+//#include "bruteforce2.hh"
 
 #include "imgui_internal.h"
 #include "implot.h"
 #include "implot_internal.h"
 
 #include "tools.hh"
+#include "util.hh"
 
 #include <iostream>
 #include <deque>
@@ -209,7 +210,7 @@ static auto drawWorld(stSuperObject *root, stMatrix4D T) -> void {
   if (!root) return;
   
   T = root->globalTransform->matrix * T; //root->globalTransform->matrix.hostByteOrder() * T;
-  if (root->type == superobjectTypeIPO)
+  if (root->type == superObjectTypeIPO)
     graphics::drawIPO(root->data, T);
   
   root->forEachChild([&](stSuperObject *object, void*) {
@@ -266,6 +267,7 @@ namespace gui {
   void initialize() {
     graphics::initialize();
     GImPlot = ImPlot::CreateContext();
+    ImPlot::PushColormap(ImPlotColormap_Hot);
   }
   
   auto drawPanels() -> void {
@@ -329,11 +331,11 @@ namespace gui {
     
         
         
-        graphics::viewMatrix = camera->transform.matrix;
-        graphics::viewMatrix.m01 = -graphics::viewMatrix.m01; graphics::viewMatrix.m11 = -graphics::viewMatrix.m11;
-        graphics::viewMatrix.m21 = -graphics::viewMatrix.m21; graphics::viewMatrix.m22 = -graphics::viewMatrix.m22;
-        graphics::viewMatrix.m31 = -graphics::viewMatrix.m31; graphics::viewMatrix.m32 = -graphics::viewMatrix.m32;
-        graphics::viewMatrix.m02 = -graphics::viewMatrix.m02; graphics::viewMatrix.m12 = -graphics::viewMatrix.m12;
+//        graphics::viewMatrix = camera->transform;
+//        graphics::viewMatrix.m01 = -graphics::viewMatrix.m01; graphics::viewMatrix.m11 = -graphics::viewMatrix.m11;
+//        graphics::viewMatrix.m21 = -graphics::viewMatrix.m21; graphics::viewMatrix.m22 = -graphics::viewMatrix.m22;
+//        graphics::viewMatrix.m31 = -graphics::viewMatrix.m31; graphics::viewMatrix.m32 = -graphics::viewMatrix.m32;
+//        graphics::viewMatrix.m02 = -graphics::viewMatrix.m02; graphics::viewMatrix.m12 = -graphics::viewMatrix.m12;
       }
     
 //            graphics::beginFrame(640, 528);
@@ -451,11 +453,23 @@ namespace gui {
       }
   };
   
+  static bool transitionBegan = false;
+  static int framesUntilTransitionEnd = 0;
+  
   static void drawGameWindow(ImTextureID texture) {
     ImGui::Begin("Game", nullptr, ImGuiWindowFlags_MenuBar);
     ImGui::SetWindowSize(ImVec2(640,528));
     
+    if (g_stEngineStructure->mode == 6) {
+      transitionBegan = true;
+      framesUntilTransitionEnd = CalculateTransitionTime(g_stEngineStructure->nextLevelName) * 60;
+    } else {
+      transitionBegan = true;
+    }
+    
     if (ImGui::BeginMenuBar()) {
+      ImGui::TextColored(ImPlot::GetColormapColor(int(g_stEngineStructure->mode)), "%d", int(g_stEngineStructure->mode));
+      if (framesUntilTransitionEnd != 0) ImGui::TextColored(ImVec4(0,1,0,1), "DISK READ: -%d", framesUntilTransitionEnd--);
       if (ImGui::BeginMenu("Options")) {
         if (ImGui::BeginMenu("Change level")) {
           for (int n = 0; n < g_stEngineStructure->levelCount; n++) {
@@ -520,7 +534,7 @@ namespace gui {
       firstTime = false;
     }
     
-    ImPlot::ShowDemoWindow();
+    //ImPlot::ShowDemoWindow();
     
     
     static ScrollingBuffer speedbuffer;
@@ -529,11 +543,11 @@ namespace gui {
     
     try {
       t += ImGui::GetIO().DeltaTime;
-      float h = g_stEngineStructure->currentMainPlayers[0]->actor->getHorizontalSpeed();
-      float v = g_stEngineStructure->currentMainPlayers[0]->actor->getVerticalSpeed();
+      float h = 0;//g_stEngineStructure->currentMainPlayers[0]->actor->getHorizontalSpeed();
+      float v = 0;//g_stEngineStructure->currentMainPlayers[0]->actor->getVerticalSpeed();
       speedbuffer.AddPoint(t, h);
       speedbuffer_v.AddPoint(t, v);
-    } catch (bad_ptr& e) {
+    } catch (BadPointer& e) {
       std::cout << "Failed to get speed data: " << e.what() << "\n";
     }
     
@@ -573,7 +587,7 @@ namespace gui {
       
     ImGui::Begin("Object window");
     if (game::isValidGameState()) {
-      pointer<stSuperObject> spo = memory::address(0x80BF0C0C);
+      pointer<stSuperObject> spo = Address(0x80BF0C0C);
       pointer<stEngineObject> eng = spo->actor;
       
       drawDynamics(eng->dynam->dynamics);

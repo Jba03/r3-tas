@@ -1,6 +1,6 @@
 #include "interface.hh"
 #include "hook.hh"
-#include "debugger.hh"
+//#include "debugger.hh"
 #include "log.hh"
 #include "video.hh"
 
@@ -56,14 +56,8 @@ static void GCN_OnMemoryPointer(emulator::message *msg) {
 }
 
 static void GCN_OnUpdate(emulator::message *msg) {
-  memory::baseAddress = GCN_MemoryFunction();
-  
-  using ACP = CPA<R3_GCN>;
-  
-  ACP::stEngineStructure *st = ACP::Pointer<>(0x003e7c0c);
-  printf("%p\n", &st->mode);
-  printf("base: %p / %p\n", memory::baseAddress, st->drawSem.ptr.hostAddress());
-  
+  CPA::Memory::baseAddress = GCN_MemoryFunction();
+
   game::update();
 }
 
@@ -75,6 +69,19 @@ static void GCN_OnUnload(emulator::message *msg) {
   log::info(log::bold, log::red, "r3-tas unloaded successfully\n");
 }
 
+static void GCN_CreateHLEHooks(emulator::message *msg) {
+  emulator::createHook = (void (*)(uint32_t, const char*, int, int, void (*)()))(msg->data);
+  //GCN_Interface->applyOptimizations();
+}
+
+static void GCN_ReceivePPCState(emulator::message *msg) {
+  emulator::processorState *s = static_cast<emulator::processorState*>(msg->data);
+  emulator::ppcState.pc = s->pc;
+  emulator::ppcState.npc = s->npc;
+  emulator::ppcState.gpr = s->gpr;
+  emulator::ppcState.lr = s->lr;
+}
+
 static const std::map<int, std::function<void(emulator::message*)>> msgmap {
   { HASH("load"),          &GCN_OnLoad },
   { HASH("mram-function"), &GCN_OnMemoryPointer },
@@ -82,8 +89,8 @@ static const std::map<int, std::function<void(emulator::message*)>> msgmap {
   { HASH("video"),         &GCN_OnVideo },
   { HASH("unload"),        &GCN_OnUnload },
 //  /* debug */
-//  { HASH("hle-hook"),      &GCNInterface::create_hle_hooks },
-//  { HASH("ppcstate"),      &GCNInterface::receive_ppc_state },
+  { HASH("hle-hook"),      &GCN_CreateHLEHooks },
+  { HASH("ppcstate"),      &GCN_ReceivePPCState },
 };
 
 LIBR3TAS_EXPORT extern "C" void on_message(emulator::message msg) {

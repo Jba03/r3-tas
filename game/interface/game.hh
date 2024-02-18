@@ -8,8 +8,9 @@
 #ifndef game_h
 #define game_h
 
-#include "structure.hh"
-using namespace library;
+#include "cpa.hh"
+using namespace CPA;
+using namespace CPA::Structure;
 
 namespace game {
   
@@ -27,7 +28,7 @@ namespace game {
   extern stSuperObject *p_stFatherSector;
     
   /* Global variables */
-  extern uint8 *g_bGhostMode;
+  extern CPA::uint8 *g_bGhostMode;
     
     
   /* */
@@ -45,6 +46,8 @@ namespace game {
     
   stSuperObject *findObject(std::string instanceName);
   uint32_t objectColor(stSuperObject *object);
+  
+  std::string nameResolver(eObjectType type, int *index);
     
   bool isValidGameState();
   

@@ -5,10 +5,11 @@
 //  Created by Jba03 on 2023-06-26.
 //
 
-#include "bruteforce2.hh"
+//#include "bruteforce2.hh"
 #include "game.hh"
 #include "structure.hh"
 #include "hook.hh"
+#include "constants.hh"
 
 #define radians(deg) ((deg) * (M_PI / 180.0f))
 #define degrees(rad) ((rad) * (180.0f / M_PI))
@@ -49,7 +50,7 @@ static auto randomJoyStick() -> float {
 
 static auto input(bInputState *input) -> void {
   // Disable controller input
-  game::g_stEngineStructure->inputMode = stEngineStructure::inputMode::commands;  //stEngineStructure::inputMode::commands;
+  game::g_stEngineStructure->inputMode = stEngineStructure::eInputMode::Commands;  //stEngineStructure::inputMode::commands;
   
   game::g_stInputStructure->entries[IPT_E_Entry_Action_Pad0_AxeX].analogValue = input->mJoyX;
   game::g_stInputStructure->entries[IPT_E_Entry_Action_Pad0_AxeY].analogValue = input->mJoyY;

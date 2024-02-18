@@ -38,8 +38,8 @@ static void receive_mram_function(emulator::message *msg) {
 }
 
 static void on_update(emulator::message *msg) {
-  if (!memory::baseAddress)
-    memory::baseAddress = mram();
+  if (!Memory::baseAddress)
+    Memory::baseAddress = mram();
   
   game::update();
 }
