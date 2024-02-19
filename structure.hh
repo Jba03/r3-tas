@@ -258,8 +258,6 @@ namespace CPA::Structure {
         f(c, userdata);
       }
     }
-    
-    
   };
   
 #pragma mark - stTransform
@@ -812,7 +810,12 @@ namespace CPA::Structure {
     std::string familyName(ObjectNameResolver resolve);
     std::string modelName(ObjectNameResolver resolve);
     std::string instanceName(ObjectNameResolver resolve);
+    
+    /// Return the AI model of this actor
+    pointer<stAIModel> aiModel();
   };
+  
+  using stActor = stEngineObject;
   
 #pragma mark - SECT
   
@@ -1150,7 +1153,7 @@ namespace CPA::Structure {
     superObjectTypeMirror               = (1 << 9),
   };
   
-  static const std::map<eSuperObjectType, std::string> stSuperObjectTypeNames {
+  static std::map<eSuperObjectType, std::string> stSuperObjectTypeNames {
     { superObjectTypeNone                , "Dummy SuperObject" },
     { superObjectTypeWorld               , "World" },
     { superObjectTypeActor               , "Actor" },

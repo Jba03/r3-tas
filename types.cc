@@ -41,4 +41,8 @@ namespace CPA {
     return valid();
   }
   
+  bool Address::operator ==(Address other) {
+    return effectiveAddress() == other.effectiveAddress();
+  }
+  
 };

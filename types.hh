@@ -30,6 +30,8 @@ namespace CPA {
     bool valid();
     /// valid
     operator bool();
+    // equals
+    bool operator ==(Address other);
     /// cast
     operator Memory::TargetAddressType();
     /// Any pointer cast
@@ -88,10 +90,10 @@ namespace CPA {
       return *(OpT*)&tmp;
     }
 
-    OpT operator  +(std::integral auto other) { return OpT(data) + OpT(other); }
-    OpT operator  -(std::integral auto other) { return OpT(data) - OpT(other); }
-    OpT operator  *(std::integral auto other) { return OpT(data) * OpT(other); }
-    OpT operator  /(std::integral auto other) { return OpT(data) / OpT(other); }
+    T operator  +(std::integral auto other) { return OpT(data) + OpT(other); }
+    T operator  -(std::integral auto other) { return OpT(data) - OpT(other); }
+    T operator  *(std::integral auto other) { return OpT(data) * OpT(other); }
+    T operator  /(std::integral auto other) { return OpT(data) / OpT(other); }
     OpT operator +=(OpT other) { return *this = *this + other;  }
     OpT operator -=(OpT other) { return *this = *this - other;  }
     OpT operator *=(OpT other) { return *this = *this * other;  }
@@ -169,11 +171,11 @@ namespace CPA {
     }
     
     template <typename X = T>
-    X& operator [](std::integral auto idx) {
+    Pointer<X> operator [](auto idx) {
       X *obj = pointee<X>();
       if (obj == nullptr)
         throw BadPointer("array access into bad pointer");
-      else return *(obj + idx);
+      else return Pointer<X>(obj + idx);
     }
     
     template <typename X>
@@ -185,6 +187,7 @@ namespace CPA {
     Pointer<T> operator -(int c) { return ptr.effectiveAddress() - sizeof(T) * c; }
     Pointer<T> operator ++() { return (*this = ptr.effectiveAddress() + sizeof(Memory::TargetAddressType)); }
     Pointer<T> operator ++(int) { Pointer<T> o = ptr.effectiveAddress(); *this = o + sizeof(Memory::TargetAddressType); return o; }
+    template <typename X = T> bool operator ==(Pointer<X>& other) { return ptr == other.ptr; }
     operator bool() { return ptr.valid(); }
     
     Address ptr;

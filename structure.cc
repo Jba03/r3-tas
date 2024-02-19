@@ -37,13 +37,16 @@ namespace CPA {
       return name(resolve, objectInstanceName);
     }
     
+    pointer<stAIModel> stEngineObject::aiModel() {
+      return brain->mind->aiModel;
+    }
     
 #pragma mark - stSuperObject
     
     std::string stSuperObject::typeName() {
       eSuperObjectType t = static_cast<eSuperObjectType>(uint32_t(type));
       if (stSuperObjectTypeNames.find(t) != stSuperObjectTypeNames.end()) {
-        return "";//stSuperObjectTypeNames[t];
+        return stSuperObjectTypeNames[t];
       } else {
         return "";
       }
