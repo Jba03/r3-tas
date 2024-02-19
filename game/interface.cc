@@ -109,3 +109,10 @@ GCNInterface::GCNInterface() {
 NativeInterface::NativeInterface() {
   /* ... */
 }
+
+
+#if platform == GCN
+  static Interface *interface = new GCNInterface();
+#elif platform == NATIVE
+  static Interface *interface = new NativeInterface();
+#endif

@@ -22,7 +22,6 @@
 #include "implot_internal.h"
 
 #include "tools.hh"
-#include "util.hh"
 
 #include <iostream>
 #include <deque>
@@ -460,13 +459,6 @@ namespace gui {
     ImGui::Begin("Game", nullptr, ImGuiWindowFlags_MenuBar);
     ImGui::SetWindowSize(ImVec2(640,528));
     
-    if (g_stEngineStructure->mode == 6) {
-      transitionBegan = true;
-      framesUntilTransitionEnd = CalculateTransitionTime(g_stEngineStructure->nextLevelName) * 60;
-    } else {
-      transitionBegan = true;
-    }
-    
     if (ImGui::BeginMenuBar()) {
       ImGui::TextColored(ImPlot::GetColormapColor(int(g_stEngineStructure->mode)), "%d", int(g_stEngineStructure->mode));
       if (framesUntilTransitionEnd != 0) ImGui::TextColored(ImVec4(0,1,0,1), "DISK READ: -%d", framesUntilTransitionEnd--);
@@ -603,6 +595,8 @@ namespace gui {
     ImGui::Begin("Test");
     ImGui::End();
       
+    AIWindow(pointer<stSuperObject>(0x80BF0C0C)).draw();
+    
     ImGui::End();
     
     ImGui::PopStyleVar(3);

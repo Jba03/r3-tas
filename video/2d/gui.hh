@@ -11,6 +11,8 @@
 #include "imgui.h"
 #include "game.hh"
 
+#include <iostream>
+
 #include "imgui_memory_editor.h"
 
 struct superObjectWindow {
@@ -44,13 +46,31 @@ struct Window
     bool Open = false;
 };
 
+struct Window2D {
+  void draw();
+};
+
+struct AIWindow : public Window2D {
+  AIWindow(pointer<stSuperObject> target);
+  void draw();
+private:
+  pointer<stSuperObject> targetObject;
+  pointer<stBehaviour> targetBehaviorDefault;
+  pointer<stBehaviour> targetBehaviorReflex;
+  
+  void drawIntelligenceBehaviorList();
+  void drawReflexBehaviorList();
+};
+
+//using AIWindow = Window2D;
+using TestWindow = Window2D;
+
 extern Window MenuBar;
 extern Window ConfigurationWindow;
 extern Window RNGWindow;
 extern Window HierarchyWindow;
 extern Window RunCreateWindow;
 extern Window CinematicWindow;
-extern Window AIWindow;
 //extern Window MovieInputWindow;
 //extern Window ScriptWindow;
 //extern Window SuperObjectWindow;
