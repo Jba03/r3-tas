@@ -183,10 +183,10 @@ namespace CPA {
       ptr = other;
     }
     
-    Pointer<T> operator +(int c) { return Pointer<T>(ptr.effectiveAddress() + sizeof(T) * c); }
-    Pointer<T> operator -(int c) { return ptr.effectiveAddress() - sizeof(T) * c; }
-    Pointer<T> operator ++() { return (*this = ptr.effectiveAddress() + sizeof(Memory::TargetAddressType)); }
-    Pointer<T> operator ++(int) { Pointer<T> o = ptr.effectiveAddress(); *this = o + sizeof(Memory::TargetAddressType); return o; }
+    Pointer<T> operator +(std::integral auto c) { return Pointer<T>(ptr.physicalAddress() + sizeof(T) * c); }
+    Pointer<T> operator -(std::integral auto c) { return ptr.effectiveAddress() - sizeof(T) * c; }
+    Pointer<T> operator ++() { return (*this = Pointer<T>(ptr.physicalAddress() + sizeof(T))); }
+    Pointer<T> operator ++(std::integral auto) { Pointer<T> o = *this; (*this = Pointer<T>(ptr.physicalAddress() + sizeof(T))); return o; }
     template <typename X = T> bool operator ==(Pointer<X>& other) { return ptr == other.ptr; }
     operator bool() { return ptr.valid(); }
     
