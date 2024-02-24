@@ -4,6 +4,19 @@
 #include "structure.hh"
 #include "fileformat.hh"
 
+//
+// Ways of making this library dynamic (target platform changeable at runtime):
+//  1. Make CPA a class and template it with a version parameter.
+//     Enable struct members according to version specializations (may be difficult).
+//     Pros: It's dynamic. Cons: Header-only, single file, very slow compile time.
+//
+//  2. Create a version data library and read all structures into std:map.
+//     Pros: Dynamic, fast compile time. Cons: Ugly map access syntax + types not pre-specified, slow runtime with constant rwops.
+//
+//
+//
+//
+
 namespace CPA {
   
   /// Statically mapped context using live memory stream.

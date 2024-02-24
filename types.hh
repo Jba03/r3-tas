@@ -141,7 +141,7 @@ namespace CPA {
     }
     
     template <typename X>
-    Pointer(Pointer<X>& other) : ptr(other.ptr) {
+    Pointer(Pointer<X> other) : ptr(other.ptr.physicalAddress()) {
       /* ... */
     }
     

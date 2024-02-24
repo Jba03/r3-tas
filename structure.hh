@@ -45,7 +45,7 @@ namespace CPA::Structure {
   struct stScriptAI;
   struct stMacro;
   struct stMacroList;
-  struct stBehaviour;
+  struct stBehavior;
   
   // DNM
   struct stDynam;

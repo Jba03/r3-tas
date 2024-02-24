@@ -15,7 +15,7 @@ namespace CPA {
     
     struct TranslationToken {
       //yTranslationToken(const char* text, pointer<Node> originalNode = nullptr);
-      TranslationToken(std::string text, pointer<Node> originalNode = nullptr);
+      TranslationToken(std::string text, Node *originalNode = nullptr);
       /// Mode: Tree -> Source
       ///   Text string of the generated token
       std::string text;
@@ -24,28 +24,12 @@ namespace CPA {
       std::string description;
       /// Mode: Tree -> Source
       ///   The original script node from which this token was generated
-      pointer<Node> originalNode = nullptr;
+      Node *originalNode = nullptr;
       /// Mode: Source -> Tree
       ///   Output node
       Node node;
       /// equals
       bool operator ==(TranslationToken other);
-    };
-    
-    namespace TokenConstants {
-      static TranslationToken Space = TranslationToken("#[space]"); /* ' ' */
-      static TranslationToken NewLine = TranslationToken("#[newline]"); /* '\n' */
-      static TranslationToken Indentation = TranslationToken("#[indentation=]"); /* '!' */
-      
-      static TranslationToken IfDef = TranslationToken("#[ifdef]"); /* 'defined' */
-      
-      static TranslationToken LeftParen = TranslationToken("#[lpar]"); /* '(' */
-      static TranslationToken RightParen = TranslationToken("#[rpar]"); /* ')' */
-      static TranslationToken Negation = TranslationToken("#[negation]"); /* '!' */
-      static TranslationToken Eq = TranslationToken("#[equals]"); /* '==' */
-      static TranslationToken NEq = TranslationToken("#[not-equals]"); /* '!=' */
-      static TranslationToken And = TranslationToken("#[and]"); /* '&&' */
-      static TranslationToken Or = TranslationToken("#[or]"); /* '||' */
     };
     
     enum TranslationMode {
@@ -82,12 +66,11 @@ namespace CPA {
       TranslationEngine(TranslationOptions opt);
       TranslationResult *translate(pointer<Structure::stSuperObject> actor, pointer<Node> node);
       TranslationResult *translate(pointer<Structure::stSuperObject> actor, std::string source);
-    private:
+      TranslationOptions options;
+      
       TranslationMode mode;
       pointer<Node> initialNode;
       pointer<Node> currentNode;
-      
-      
     };
     
   };

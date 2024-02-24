@@ -9,7 +9,7 @@
 namespace CPA {
   namespace Script {
     
-    TranslationToken::TranslationToken(std::string text, pointer<Node> originalNode) {
+    TranslationToken::TranslationToken(std::string text, Node* originalNode) {
       this->text = text;
       this->originalNode = originalNode;
     }
@@ -19,22 +19,45 @@ namespace CPA {
     }
     
     struct TranslationContext {
-      TranslationContext(pointer<Node> tree, std::function<void(TranslationContext&)> fn) : currentNode(tree), function(fn) {
+      TranslationContext(pointer<Node> tree, std::function<void(TranslationContext&)> fn, TranslationEngine *e) : currentNode(tree), function(fn), engine(e) {
         /* ... */
       }
+      
+      TranslationEngine *engine;
       
       template <typename ... Args>
       void emit(bool condition, Args ...args) {
         if (condition) {
           //printf("afassaf\n");
           for (const auto v : { args... }) {
-            TranslationToken tok(v, currentNode);
+            std::string str = v;
+            pointer<Node> *targetNode = nullptr;
+            if (str.starts_with(":")) {
+             // *targetNode = currentNode;
+              str = str.substr(1, std::string::npos);
+            }
+            
+            
+            TranslationToken tok(str, std::string(v).starts_with(":") ? (Node*)currentNode : nullptr);
             tokens.push_back(tok);
+            
+            if (str == "\n") {
+              for (int i = 0; i < indentationLevel; i++) {
+                TranslationToken tok("  ", nullptr);
+                tokens.push_back(tok);
+              }
+            }
             //printf("%s", v);
 //            if constexpr (std::is_same<decltype(v), const char*>::value) {
 //              printf("%s\n", v);
 //            }
           }
+        }
+      }
+      
+      void indent(bool condition, int off) {
+        if (condition) {
+          indentationLevel += off;
         }
       }
       
@@ -51,7 +74,9 @@ namespace CPA {
       operator uint32_t() { return currentNode->param; }
       bool done() { return currentNode->type == scriptNodeTypeEndMacro || currentNode->depth == 0; }
       
+      pointer<Node> firstNode;
       pointer<Node> currentNode;
+      int indentationLevel = 0;
       
       void child(bool condition, int child = 0) {
         if (condition) {
@@ -83,9 +108,11 @@ namespace CPA {
             function(*this);
             
             // Avoid emitting newline twice
-            if (node->type != scriptNodeTypeOperator
-            &&  node->type != scriptNodeTypeProcedure
-            &&  node->type != scriptNodeTypeSubroutine && !args) emit(true, "\n");
+            //if (tokens.back().text == "}") emit(true, "\n");
+//            if (node->type != scriptNodeTypeOperator
+//            &&  node->type != scriptNodeTypeProcedure
+//            &&  node->type != scriptNodeTypeSubroutine && !args) emit(true, "\n");
+            //if (tokens.back().text == "}" || (node->type != scriptNodeTypeKeyword && (uint32_t)node->param != 17)) emit(true, "\n");
             // Argument separator
             if (args) {
               numArgs++;
@@ -95,11 +122,9 @@ namespace CPA {
           node++;
         }
         
-        if (numArgs <= 1) {
-          for (int i = 0; i < numArgs; i++) {
-            tokens.pop_back();
-            tokens.pop_back();
-          }
+        if (numArgs >= 1) {
+          tokens.pop_back();
+          tokens.pop_back();
         }
         
         currentNode = orig;
@@ -122,7 +147,7 @@ namespace CPA {
       }
       
       std::vector<TranslationToken> tokens;
-    private:
+    //private:
       
       std::function<void(TranslationContext&)> function;
       void _emit();
@@ -150,44 +175,47 @@ namespace CPA {
 //          }
 //        }
     
-    namespace T = TokenConstants;
-    
     static void keyword(TranslationContext& s) {
-      s.emit(s >= 0 && s <= 15, "if", " ");
+      s.emit(s >= 0 && s <= 15, ":if", " ");
       s.emit(s == 1 || s == 15, "!");
       s.emit(s == 14, "#debug");
       s.emit(s == 15, "defined", "(", "U64", ")");
       s.emit(s >= 2 && s <= 13, "framerule", " ", "%", " ", std::to_string(1 << (s.param() - 1)).c_str(), " ", s <= 7 ? "==" : "!=", " ", "0");
       s.emit(s >= 2 && s <= 15, " ", "&&", " ");
       s.child(s >= 0 && s <= 15);
+      s.emit(s >= 0 && s <= 15, " ");
       
-      s.emit(s == 17, "else", " ");
-      s.emit(s == 16 || s == 17, "{", "\n");
+      s.emit(s == 17, ":else", " ");
+      s.emit(s == 16 || s == 17, "\n", "{");
+      s.indent(s == 16 || s == 17, +1);
+      s.emit(s == 16 || s == 17, "\n");
       if (s == 16 || s == 17) s.branch();
-      s.emit(s == 16 || s == 17, "}");
-      
-      
+      if ((s == 16 || s == 17)) {
+        s.indent(s == 16 || s == 17, -1);
+        s.tokens.pop_back();
+      }
+      s.emit(s == 16 || s == 17, "}", "\n");
     }
     
     static void condition(TranslationContext& s) {
       //printf("condition: %d %X\n", s.currentNode->type, (uint32_t)s.currentNode->param);
       s.emit(s == 2, "!", "(");
       s.child(true, 0);
-      s.emit(s <= 9, " ");
-      s.emit(s == 0, "&&");
-      s.emit(s == 1, "||");
-      s.emit(s == 3, "^");
-      s.emit(s == 4, "==");
-      s.emit(s == 5, "!=");
-      s.emit(s == 6, "<");
-      s.emit(s == 7, ">");
-      s.emit(s == 8, "<=");
-      s.emit(s == 9, ">=");
-      s.emit(s <= 9, " ");
-      s.emit(s >= 10, R3ConditionTable[s.param()].c_str(), "(");
+      s.emit(s != 2 && s <= 9, " ");
+      s.emit(s == 0, ":&&");
+      s.emit(s == 1, ":||");
+      s.emit(s == 3, ":^");
+      s.emit(s == 4, ":==");
+      s.emit(s == 5, ":!=");
+      s.emit(s == 6, ":<");
+      s.emit(s == 7, ":>");
+      s.emit(s == 8, ":<=");
+      s.emit(s == 9, ":>=");
+      s.emit(s != 2 && s <= 9, " ");
+      s.emit(s >= 10, std::string(":" + R3ConditionTable[s.param()]).c_str(), "(");
       s.child(true, 1);
       s.emit(s == 2 || s >= 10, ")");
-      s.emit(true, " ");
+      //s.emit(true, " ");
     }
     
     static void _operator(TranslationContext& s) {
@@ -195,49 +223,59 @@ namespace CPA {
       s.emit(s <= 4 || (s >= 17 && s <= 21 && s != 19), "(");
       s.emit(s == 26, "(");
       s.child(s <= 27, 0);
-      s.emit(s == 0, " ", "+", " ");
-      s.emit(s == 1, " ", "-", " ");
-      s.emit(s == 2, " ", "*", " ");
-      s.emit(s == 3, " ", "/", " ");
-      s.emit(s == 5, " ", "%%", " ");
-      s.emit(s == 6, " ", "+=", " ");
-      s.emit(s == 7, " ", "-=", " ");
-      s.emit(s == 8, " ", "*=", " ");
-      s.emit(s == 9, " ", "/=", " ");
-      s.emit(s == 10, "++", ";", "\n");
-      s.emit(s == 11, "--", ";", "\n");
+      s.emit(s == 0, " ", ":+", " ");
+      s.emit(s == 1, " ", ":-", " ");
+      s.emit(s == 2, " ", ":*", " ");
+      s.emit(s == 3, " ", ":/", " ");
+      s.emit(s == 5, " ", ":%%", " ");
+      s.emit(s == 6, " ", ":+=", " ");
+      s.emit(s == 7, " ", ":-=", " ");
+      s.emit(s == 8, " ", ":*=", " ");
+      s.emit(s == 9, " ", ":/=", " ");
+      s.emit(s == 10, ":++", ";", "\n");
+      s.emit(s == 11, ":--", ";", "\n");
+      s.emit(s == 12, " ", ":=", " ");
+      s.emit(s == 13, ":.");
+      s.emit(s == 14, ".", ":X"); // vector x
+      s.emit(s == 15, ".", ":Y"); // vector y
+      s.emit(s == 16, ".", ":Z"); // vector z
+      s.emit(s == 17, " ", ":+", " "); // vector + vector
+      s.emit(s == 18, " ", ":-", " "); // vector - vector
+      //s.emit(s == 20, <#Args args...#>)
       
       
       s.child(s <= 27 && s != 4 && s != 10 && s != 11 && !(s >= 14 && s <= 16) && s != 19, 1);
+      s.emit(s == 12, ";", "\n");
     }
     
     static void function(TranslationContext& s) {
-      s.emit(true, R3FunctionTable[s.param()].c_str(), "(");
-      s.branch();
+      s.emit(true, std::string(":" + R3FunctionTable[s.param()]).c_str(), "(");
+      s.branch(true);
       s.emit(true, ")");
     }
     
     static void procedure(TranslationContext& s) {
-      s.emit(true, R3ProcedureTable[s.param()].c_str(), "(");
+      s.emit(true, std::string(":" + R3ProcedureTable[s.param()]).c_str(), "(");
+      s.branch(true);
       s.emit(true, ")", ";", "\n");
     }
     
     static void metaAction(TranslationContext& s) {
-      s.emit(true, R3MetaActionTable[s.param()].c_str(), "(");
+      s.emit(true, std::string(":" + R3MetaActionTable[s.param()]).c_str(), "(");
       s.branch(true);
       s.emit(true, ")", ";", "\n");
     }
     
     static void dsgvar(TranslationContext& s) {
-      s.emit(true, (std::string("DsgVar_") + std::to_string(s.param())).c_str());
+      s.emit(true, (std::string(":DsgVar_") + std::to_string(s.param())).c_str());
     }
     
     static void constant(TranslationContext& s) {
-      s.emit(true, std::to_string(s.param()).c_str());
+      s.emit(true, (":" + std::to_string((int32_t)s.param())).c_str());
     }
     
     static void real(TranslationContext& s) {
-      //s.emit(true, std::to_string(s.param()).c_str());
+      s.emit(true, std::to_string(*(float*)&s.currentNode->param).c_str());
     }
     
     static void button(TranslationContext& s) {
@@ -246,15 +284,26 @@ namespace CPA {
     
     static void _string(TranslationContext& s) {
       const char *str = pointer<string<>>(s.param());
-      s.emit(true, "\"", str, "\"");
+      s.emit(true, "\"", (":" + std::string(str)).c_str(), "\"");
     }
     
     static void subroutine(TranslationContext& s) {
-      std::stringstream ss;
-      ss << std::hex << std::to_string(s.param());
-      s.emit(true, "macro", "(", "@", ss.str().c_str(), ")", ";", "\n");
+      pointer<Structure::stMacro> macro = pointer<Structure::stMacro>(s.param());
+      if (s.engine->options.expandMacroReferences) {
+        TranslationEngine t(s.engine->options);
+        TranslationResult *result = t.translate(nullptr, macro->currentTree->node);
+        
+        for (TranslationToken& tok : result->tokens) {
+          s.tokens.push_back(tok);
+        }
+      } else {
+        s.emit(true, std::string(":" + macro->name.lastPathComponent()).c_str(), "(", ")", ";", "\n");
+      }
     }
     
+    static void reference(TranslationContext& s) {
+      s.emit(true, ":" + std::to_string(s.param()));
+    }
     
     static std::map<int, std::function<void(TranslationContext& s)>> TranslationTable {
       { scriptNodeTypeKeyword, &keyword },
@@ -278,19 +327,19 @@ namespace CPA {
       { scriptNodeTypeModuleRef, nullptr },
       { scriptNodeTypeDsgVarID, nullptr },
       { scriptNodeTypeString, &_string },
-      { scriptNodeTypeLipsSynchroRef, nullptr },
-      { scriptNodeTypeFamilyRef, nullptr },
-      { scriptNodeTypeActorRef, nullptr },
-      { scriptNodeTypeActionRef, nullptr },
-      { scriptNodeTypeSuperObjectRef, nullptr },
-      { scriptNodeTypeSOLinksRef, nullptr },
-      { scriptNodeTypeWaypointRef, nullptr },
-      { scriptNodeTypeTextRef, nullptr },
-      { scriptNodeTypeBehaviorRef, nullptr },
-      { scriptNodeTypeModuleRef2, nullptr },
-      { scriptNodeTypeSoundEventRef, nullptr },
-      { scriptNodeTypeObjectTableRef, nullptr },
-      { scriptNodeTypeGameMaterialRef, nullptr },
+      { scriptNodeTypeLipsSynchroRef, &reference },
+      { scriptNodeTypeFamilyRef, &reference },
+      { scriptNodeTypeActorRef, &reference},
+      { scriptNodeTypeActionRef, &reference },
+      { scriptNodeTypeSuperObjectRef, &reference },
+      { scriptNodeTypeSOLinksRef, &reference },
+      { scriptNodeTypeWaypointRef, &reference },
+      { scriptNodeTypeTextRef, &reference },
+      { scriptNodeTypeBehaviorRef, &reference },
+      { scriptNodeTypeModuleRef2, &reference },
+      { scriptNodeTypeSoundEventRef, &reference },
+      { scriptNodeTypeObjectTableRef, &reference },
+      { scriptNodeTypeGameMaterialRef, &reference },
       { scriptNodeTypeVisualMaterial, nullptr },
       { scriptNodeTypeParticleGenerator, nullptr },
       { scriptNodeTypeModelRef, nullptr },
@@ -314,12 +363,13 @@ namespace CPA {
       s.seekNextDepth();
     }
     
-    TranslationEngine::TranslationEngine(TranslationOptions opt) {
+    TranslationEngine::TranslationEngine(TranslationOptions opt) : options(opt) {
       /* ... */
     }
     
     TranslationResult *TranslationEngine::translate(pointer<Structure::stSuperObject> actor, pointer<Node> tree) {
-      TranslationContext s(tree, NodeTranslate);
+      initialNode = tree;
+      TranslationContext s(tree, NodeTranslate, this);
       while (!s.done())
         s.translate();
       
