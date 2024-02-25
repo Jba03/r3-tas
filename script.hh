@@ -14,7 +14,7 @@ namespace CPA {
     };
     
     struct TranslationToken {
-      //yTranslationToken(const char* text, pointer<Node> originalNode = nullptr);
+      // TranslationToken(const char* text, pointer<Node> originalNode = nullptr);
       TranslationToken(std::string text, Node *originalNode = nullptr);
       /// Mode: Tree -> Source
       ///   Text string of the generated token

@@ -4,6 +4,7 @@
 
 #include <any>
 #include <sstream>
+#include <format>
 
 
 namespace CPA {
@@ -147,43 +148,19 @@ namespace CPA {
       }
       
       std::vector<TranslationToken> tokens;
-    //private:
-      
       std::function<void(TranslationContext&)> function;
-      void _emit();
     };
-    
-    //std::vector<token>
-    
-    //    std::vector<token> collect() {
-    //      std::vector<token> c;
-    //      return c;
-    //    }
-    //
-    
-//        using tok = token;
-//
-//        void childNode(int child = 0) {
-//          uint8 min = current->depth, occ = 0;
-//          pointer<stNodeInterpret> node = current + 1;
-//          while (node->type != scriptNodeTypeEndMacro && node->depth > min) {
-//            if (node->depth == min + 1 && occ++ == child) {
-//              translate(node);
-//              break;
-//            }
-//            ++node;
-//          }
-//        }
     
     static void keyword(TranslationContext& s) {
       s.emit(s >= 0 && s <= 15, ":if", " ");
-      s.emit(s == 1 || s == 15, "!");
+      s.emit(s == 1 || s == 15, "!", "(");
       s.emit(s == 14, "#debug");
       s.emit(s == 15, "defined", "(", "U64", ")");
       s.emit(s >= 2 && s <= 13, "framerule", " ", "%", " ", std::to_string(1 << (s.param() - 1)).c_str(), " ", s <= 7 ? "==" : "!=", " ", "0");
       s.emit(s >= 2 && s <= 15, " ", "&&", " ");
       s.child(s >= 0 && s <= 15);
-      s.emit(s >= 0 && s <= 15, " ");
+      //s.emit(s >= 0 && s <= 15, " ");
+      s.emit(s == 1 || s == 15, ")");
       
       s.emit(s == 17, ":else", " ");
       s.emit(s == 16 || s == 17, "\n", "{");
@@ -195,12 +172,15 @@ namespace CPA {
         s.tokens.pop_back();
       }
       s.emit(s == 16 || s == 17, "}", "\n");
+      
+      s.emit(s == 19, "self");
+      s.emit(s == 20, "MainActor");
     }
     
     static void condition(TranslationContext& s) {
       //printf("condition: %d %X\n", s.currentNode->type, (uint32_t)s.currentNode->param);
       s.emit(s == 2, "!", "(");
-      s.child(true, 0);
+      s.child(s <= 9, 0);
       s.emit(s != 2 && s <= 9, " ");
       s.emit(s == 0, ":&&");
       s.emit(s == 1, ":||");
@@ -213,7 +193,7 @@ namespace CPA {
       s.emit(s == 9, ":>=");
       s.emit(s != 2 && s <= 9, " ");
       s.emit(s >= 10, std::string(":" + R3ConditionTable[s.param()]).c_str(), "(");
-      s.child(true, 1);
+      s <= 9 ? s.child(true, 1) : s.branch(true);
       s.emit(s == 2 || s >= 10, ")");
       //s.emit(true, " ");
     }
@@ -241,11 +221,20 @@ namespace CPA {
       s.emit(s == 16, ".", ":Z"); // vector z
       s.emit(s == 17, " ", ":+", " "); // vector + vector
       s.emit(s == 18, " ", ":-", " "); // vector - vector
-      //s.emit(s == 20, <#Args args...#>)
-      
+      s.emit(s == 20, " ", ":*", " "); // vector * scalar
+      s.emit(s == 21, " ", ":/", " "); // vector / scalar
+      s.emit(s == 22, ".", ":X", " ", "="); // vector.x = s
+      s.emit(s == 23, ".", ":Y", " ", "="); // vector.x = s
+      s.emit(s == 24, ".", ":Z", " ", "="); // vector.x = s
+      s.emit(s == 25, "."); // 'ultra'
+      s.emit(s == 26, ")", "("); // modelcast
+      s.emit(s == 27, "["); // array access
       
       s.child(s <= 27 && s != 4 && s != 10 && s != 11 && !(s >= 14 && s <= 16) && s != 19, 1);
-      s.emit(s == 12, ";", "\n");
+      s.emit(s == 26, ")", ")"); // modelcast
+      s.emit(s == 27, "]"); // array access
+      s.emit(s <= 4 || (s >= 17 && s <= 21 && s != 19), ")");
+      s.emit(s == 12 || (s >= 6 && s <= 9) || (s >= 22 && s <= 23), ";", "\n");
     }
     
     static void function(TranslationContext& s) {
@@ -266,6 +255,10 @@ namespace CPA {
       s.emit(true, ")", ";", "\n");
     }
     
+    static void field(TranslationContext& s) {
+      s.emit(true, (":" + R3FieldTable[s.param()]).c_str());
+    }
+    
     static void dsgvar(TranslationContext& s) {
       s.emit(true, (std::string(":DsgVar_") + std::to_string(s.param())).c_str());
     }
@@ -275,7 +268,17 @@ namespace CPA {
     }
     
     static void real(TranslationContext& s) {
-      s.emit(true, std::to_string(*(float*)&s.currentNode->param).c_str());
+      uint32_t p = s.param();
+      char buf[64];
+      std::sprintf(buf, ":%g", *(float*)&p);
+      
+      s.emit(true, std::string(buf).c_str());
+    }
+    
+    static void vector(TranslationContext& s) {
+      s.emit(true, ":Vector", "(");
+      s.branch(true);
+      s.emit(true, ")");
     }
     
     static void button(TranslationContext& s) {
@@ -285,6 +288,10 @@ namespace CPA {
     static void _string(TranslationContext& s) {
       const char *str = pointer<string<>>(s.param());
       s.emit(true, "\"", (":" + std::string(str)).c_str(), "\"");
+    }
+    
+    static void reference(TranslationContext& s) {
+      s.emit(true, ":" + std::to_string(s.param()));
     }
     
     static void subroutine(TranslationContext& s) {
@@ -301,8 +308,8 @@ namespace CPA {
       }
     }
     
-    static void reference(TranslationContext& s) {
-      s.emit(true, ":" + std::to_string(s.param()));
+    static void null(TranslationContext& s) {
+      s.emit(true, ":NULL");
     }
     
     static std::map<int, std::function<void(TranslationContext& s)>> TranslationTable {
@@ -315,14 +322,14 @@ namespace CPA {
       { scriptNodeTypeBeginMacro, nullptr },
       { scriptNodeTypeBeginMacro2, nullptr },
       { scriptNodeTypeEndMacro, nullptr },
-      { scriptNodeTypeField, nullptr },
+      { scriptNodeTypeField, &field },
       { scriptNodeTypeDsgVarRef, &dsgvar },
       { scriptNodeTypeDsgVarRef2, &dsgvar },
       { scriptNodeTypeConstant, &constant },
       { scriptNodeTypeReal, &real },
       { scriptNodeTypeButton, nullptr },
-      { scriptNodeTypeConstantVector, nullptr },
-      { scriptNodeTypeVector, nullptr },
+      { scriptNodeTypeConstantVector, &vector },
+      { scriptNodeTypeVector, &vector },
       { scriptNodeTypeMask, nullptr },
       { scriptNodeTypeModuleRef, nullptr },
       { scriptNodeTypeDsgVarID, nullptr },
@@ -348,7 +355,7 @@ namespace CPA {
       { scriptNodeTypeCaps, nullptr },
       { scriptNodeTypeGraph, nullptr },
       { scriptNodeTypeSubroutine, &subroutine },
-      { scriptNodeTypeNULL, nullptr },
+      { scriptNodeTypeNULL, &null },
       { scriptNodeTypeCineRef, nullptr },
       { scriptNodeTypeGraphRef, nullptr },
     };
