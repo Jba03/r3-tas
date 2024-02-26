@@ -1273,7 +1273,6 @@ namespace CPA::Structure {
     uint8 depth;
     padding(1)
   #endif
-    
     using ParamType = decltype(param);
   };
   

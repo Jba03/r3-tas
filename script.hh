@@ -9,8 +9,52 @@ namespace CPA {
     
     using Node = CPA::Structure::stNodeInterpret;
     
-    struct Tokenizer {
-     
+    enum ScriptNodeType : uint8_t {
+      Keyword           = 0,
+      Condition         = 1,
+      Operator          = 2,
+      Function          = 3,
+      Procedure         = 4,
+      MetaAction        = 5,
+      BeginMacro        = 6,
+      BeginMacro2       = 7,
+      EndMacro          = 8,
+      Field             = 9,
+      DsgVarRef         = 10,
+      DsgVarRef2        = 11,
+      Constant          = 12,
+      Real              = 13,
+      Button            = 14,
+      ConstantVector    = 15,
+      Vector            = 16,
+      Mask              = 17,
+      ModuleRef         = 18,
+      DsgVarID          = 19,
+      String            = 20,
+      LipsSynchroRef    = 21,
+      FamilyRef         = 22,
+      ActorRef          = 23,
+      ActionRef         = 24,
+      SuperObjectRef    = 25,
+      SOLinksRef        = 26, // ?
+      WaypointRef       = 27,
+      TextRef           = 28,
+      BehaviorRef       = 29,
+      ModuleRef2        = 30,
+      SoundEventRef     = 31,
+      ObjectTableRef    = 32,
+      GameMaterialRef   = 33,
+      VisualMaterial    = 34,
+      ParticleGenerator = 35,
+      ModelRef          = 36,
+      ModelRef2         = 37,
+      CustomBits        = 38,
+      Caps              = 39,
+      Graph             = 40, // ?
+      Subroutine        = 41,
+      Null              = 42,
+      CineRef           = 43, // ?
+      GraphRef          = 44,
     };
     
     struct TranslationToken {
@@ -44,6 +88,12 @@ namespace CPA {
       /// Mode: Tree -> Source
       ///   Replace macrorefs with their respective source trees
       bool expandMacroReferences;
+      
+      std::vector<std::string> conditionTable;
+      std::vector<std::string> functionTable;
+      std::vector<std::string> procedureTable;
+      std::vector<std::string> metaActionTable;
+      std::vector<std::string> fieldTable;
     };
     
     enum TranslationTokenType {
@@ -72,6 +122,8 @@ namespace CPA {
       pointer<Node> initialNode;
       pointer<Node> currentNode;
     };
+    
+    void testLexer(std::string source);
     
   };
 };

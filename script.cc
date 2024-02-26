@@ -1,11 +1,8 @@
 #include "script.hh"
-#include "constants.hh"
-#include "tables.hh"
 
 #include <any>
 #include <sstream>
 #include <format>
-
 
 namespace CPA {
   namespace Script {
@@ -73,7 +70,7 @@ namespace CPA {
       
       uint32_t param() { return currentNode->param; }
       operator uint32_t() { return currentNode->param; }
-      bool done() { return currentNode->type == scriptNodeTypeEndMacro || currentNode->depth == 0; }
+      bool done() { return currentNode->type == ScriptNodeType::EndMacro || currentNode->depth == 0; }
       
       pointer<Node> firstNode;
       pointer<Node> currentNode;
@@ -84,7 +81,7 @@ namespace CPA {
           pointer<Node> orig = currentNode;
           pointer<Node> node = currentNode + 1;
           uint8_t min = currentNode->depth, occ = 0;
-          while (node->type != scriptNodeTypeEndMacro && node->depth > min) {
+          while (node->type != ScriptNodeType::EndMacro && node->depth > min) {
             if (node->depth == min + 1 && occ++ == child) {
               currentNode = node;
               function(*this);
@@ -100,20 +97,11 @@ namespace CPA {
         pointer<Node> orig = currentNode;
         pointer<Node> node = currentNode + 1;
         uint8_t depth = currentNode->depth + 1, numArgs = 0;
-        while (node->type != scriptNodeTypeEndMacro && node->depth >= depth) {
+        while (node->type != ScriptNodeType::EndMacro && node->depth >= depth) {
           if (node->depth == depth) {
             currentNode = node;
-//            if (!args)
-            // indent
-//              emit(<#bool condition#>, <#Args args...#>)
             function(*this);
             
-            // Avoid emitting newline twice
-            //if (tokens.back().text == "}") emit(true, "\n");
-//            if (node->type != scriptNodeTypeOperator
-//            &&  node->type != scriptNodeTypeProcedure
-//            &&  node->type != scriptNodeTypeSubroutine && !args) emit(true, "\n");
-            //if (tokens.back().text == "}" || (node->type != scriptNodeTypeKeyword && (uint32_t)node->param != 17)) emit(true, "\n");
             // Argument separator
             if (args) {
               numArgs++;
@@ -132,7 +120,7 @@ namespace CPA {
       }
       
       bool isEnd(pointer<Node> node) {
-        return node->type == scriptNodeTypeEndMacro || node->depth == 0;
+        return node->type == EndMacro || node->depth == 0;
       }
       
       void seekNextDepth() {
@@ -149,6 +137,12 @@ namespace CPA {
       
       std::vector<TranslationToken> tokens;
       std::function<void(TranslationContext&)> function;
+      
+      std::vector<std::string> conditionTable;
+      std::vector<std::string> functionTable;
+      std::vector<std::string> procedureTable;
+      std::vector<std::string> fieldTable;
+      std::vector<std::string> metaActionTable;
     };
     
     static void keyword(TranslationContext& s) {
@@ -192,7 +186,7 @@ namespace CPA {
       s.emit(s == 8, ":<=");
       s.emit(s == 9, ":>=");
       s.emit(s != 2 && s <= 9, " ");
-      s.emit(s >= 10, std::string(":" + R3ConditionTable[s.param()]).c_str(), "(");
+      s.emit(s >= 10, std::string(":" + s.conditionTable[s.param()]).c_str(), "(");
       s <= 9 ? s.child(true, 1) : s.branch(true);
       s.emit(s == 2 || s >= 10, ")");
       //s.emit(true, " ");
@@ -238,25 +232,25 @@ namespace CPA {
     }
     
     static void function(TranslationContext& s) {
-      s.emit(true, std::string(":" + R3FunctionTable[s.param()]).c_str(), "(");
+      s.emit(true, std::string(":" + s.functionTable[s.param()]).c_str(), "(");
       s.branch(true);
       s.emit(true, ")");
     }
     
     static void procedure(TranslationContext& s) {
-      s.emit(true, std::string(":" + R3ProcedureTable[s.param()]).c_str(), "(");
+      s.emit(true, std::string(":" + s.procedureTable[s.param()]).c_str(), "(");
       s.branch(true);
       s.emit(true, ")", ";", "\n");
     }
     
     static void metaAction(TranslationContext& s) {
-      s.emit(true, std::string(":" + R3MetaActionTable[s.param()]).c_str(), "(");
+      s.emit(true, std::string(":" + s.metaActionTable[s.param()]).c_str(), "(");
       s.branch(true);
       s.emit(true, ")", ";", "\n");
     }
     
     static void field(TranslationContext& s) {
-      s.emit(true, (":" + R3FieldTable[s.param()]).c_str());
+      s.emit(true, (":" + s.fieldTable[s.param()]).c_str());
     }
     
     static void dsgvar(TranslationContext& s) {
@@ -270,7 +264,7 @@ namespace CPA {
     static void real(TranslationContext& s) {
       uint32_t p = s.param();
       char buf[64];
-      std::sprintf(buf, ":%g", *(float*)&p);
+      std::sprintf(buf, ":%.5gf", *(float*)&p);
       
       s.emit(true, std::string(buf).c_str());
     }
@@ -313,51 +307,51 @@ namespace CPA {
     }
     
     static std::map<int, std::function<void(TranslationContext& s)>> TranslationTable {
-      { scriptNodeTypeKeyword, &keyword },
-      { scriptNodeTypeCondition, &condition },
-      { scriptNodeTypeOperator, &_operator },
-      { scriptNodeTypeFunction, &function },
-      { scriptNodeTypeProcedure, &procedure },
-      { scriptNodeTypeMetaAction, &metaAction },
-      { scriptNodeTypeBeginMacro, nullptr },
-      { scriptNodeTypeBeginMacro2, nullptr },
-      { scriptNodeTypeEndMacro, nullptr },
-      { scriptNodeTypeField, &field },
-      { scriptNodeTypeDsgVarRef, &dsgvar },
-      { scriptNodeTypeDsgVarRef2, &dsgvar },
-      { scriptNodeTypeConstant, &constant },
-      { scriptNodeTypeReal, &real },
-      { scriptNodeTypeButton, nullptr },
-      { scriptNodeTypeConstantVector, &vector },
-      { scriptNodeTypeVector, &vector },
-      { scriptNodeTypeMask, nullptr },
-      { scriptNodeTypeModuleRef, nullptr },
-      { scriptNodeTypeDsgVarID, nullptr },
-      { scriptNodeTypeString, &_string },
-      { scriptNodeTypeLipsSynchroRef, &reference },
-      { scriptNodeTypeFamilyRef, &reference },
-      { scriptNodeTypeActorRef, &reference},
-      { scriptNodeTypeActionRef, &reference },
-      { scriptNodeTypeSuperObjectRef, &reference },
-      { scriptNodeTypeSOLinksRef, &reference },
-      { scriptNodeTypeWaypointRef, &reference },
-      { scriptNodeTypeTextRef, &reference },
-      { scriptNodeTypeBehaviorRef, &reference },
-      { scriptNodeTypeModuleRef2, &reference },
-      { scriptNodeTypeSoundEventRef, &reference },
-      { scriptNodeTypeObjectTableRef, &reference },
-      { scriptNodeTypeGameMaterialRef, &reference },
-      { scriptNodeTypeVisualMaterial, nullptr },
-      { scriptNodeTypeParticleGenerator, nullptr },
-      { scriptNodeTypeModelRef, nullptr },
-      { scriptNodeTypeModelRef2, nullptr },
-      { scriptNodeTypeCustomBits, nullptr },
-      { scriptNodeTypeCaps, nullptr },
-      { scriptNodeTypeGraph, nullptr },
-      { scriptNodeTypeSubroutine, &subroutine },
-      { scriptNodeTypeNULL, &null },
-      { scriptNodeTypeCineRef, nullptr },
-      { scriptNodeTypeGraphRef, nullptr },
+      { ScriptNodeType::Keyword, &keyword },
+      { ScriptNodeType::Condition, &condition },
+      { ScriptNodeType::Operator, &_operator },
+      { ScriptNodeType::Function, &function },
+      { ScriptNodeType::Procedure, &procedure },
+      { ScriptNodeType::MetaAction, &metaAction },
+      { ScriptNodeType::BeginMacro, nullptr },
+      { ScriptNodeType::BeginMacro2, nullptr },
+      { ScriptNodeType::EndMacro, nullptr },
+      { ScriptNodeType::Field, &field },
+      { ScriptNodeType::DsgVarRef, &dsgvar },
+      { ScriptNodeType::DsgVarRef2, &dsgvar },
+      { ScriptNodeType::Constant, &constant },
+      { ScriptNodeType::Real, &real },
+      { ScriptNodeType::Button, nullptr },
+      { ScriptNodeType::ConstantVector, &vector },
+      { ScriptNodeType::Vector, &vector },
+      { ScriptNodeType::Mask, nullptr },
+      { ScriptNodeType::ModuleRef, nullptr },
+      { ScriptNodeType::DsgVarID, nullptr },
+      { ScriptNodeType::String, &_string },
+      { ScriptNodeType::LipsSynchroRef, &reference },
+      { ScriptNodeType::FamilyRef, &reference },
+      { ScriptNodeType::ActorRef, &reference},
+      { ScriptNodeType::ActionRef, &reference },
+      { ScriptNodeType::SuperObjectRef, &reference },
+      { ScriptNodeType::SOLinksRef, &reference },
+      { ScriptNodeType::WaypointRef, &reference },
+      { ScriptNodeType::TextRef, &reference },
+      { ScriptNodeType::BehaviorRef, &reference },
+      { ScriptNodeType::ModuleRef2, &reference },
+      { ScriptNodeType::SoundEventRef, &reference },
+      { ScriptNodeType::ObjectTableRef, &reference },
+      { ScriptNodeType::GameMaterialRef, &reference },
+      { ScriptNodeType::VisualMaterial, nullptr },
+      { ScriptNodeType::ParticleGenerator, nullptr },
+      { ScriptNodeType::ModelRef, nullptr },
+      { ScriptNodeType::ModelRef2, nullptr },
+      { ScriptNodeType::CustomBits, nullptr },
+      { ScriptNodeType::Caps, nullptr },
+      { ScriptNodeType::Graph, nullptr },
+      { ScriptNodeType::Subroutine, &subroutine },
+      { ScriptNodeType::Null, &null },
+      { ScriptNodeType::CineRef, nullptr },
+      { ScriptNodeType::GraphRef, nullptr },
     };
     
     static void NodeTranslate(TranslationContext& s) {
@@ -377,6 +371,12 @@ namespace CPA {
     TranslationResult *TranslationEngine::translate(pointer<Structure::stSuperObject> actor, pointer<Node> tree) {
       initialNode = tree;
       TranslationContext s(tree, NodeTranslate, this);
+      s.conditionTable = options.conditionTable;
+      s.functionTable = options.functionTable;
+      s.procedureTable = options.procedureTable;
+      s.metaActionTable = options.metaActionTable;
+      s.fieldTable = options.fieldTable;
+    
       while (!s.done())
         s.translate();
       
@@ -388,6 +388,151 @@ namespace CPA {
     TranslationResult *TranslationEngine::translate(pointer<Structure::stSuperObject> actor, std::string source) {
       TranslationResult *result = new TranslationResult(TranslationMode::SourceToTree);
       return result;
+    }
+    
+#pragma mark - Source to Tree
+    
+    struct Lexer {
+      struct Token {
+        enum class Type {
+          None,
+          LeftParen,
+          RightParen,
+          LeftCurlyBracket,
+          RightCurlyBracket,
+          LeftSquareBracket,
+          RightSquareBracket,
+          Identifier,
+          Number,
+          Comma,
+          Colon,
+          SemiColon,
+          Plus,
+          Minus,
+          Asterisk,
+          Slash,
+          ExclamationMark,
+          DoubleQuote,
+          SingleQuote,
+          NumberSign,
+          Modulo,
+          Ampersand,
+          Dot,
+          Equal,
+          LessThan,
+          GreaterThan,
+          Comment,
+          Invalid,
+          End,
+        };
+        
+        Token() {}
+        Token(Type t, const char *start, const char *end) {
+          type = t;
+          text = std::string(start).substr(0, std::distance(start, end));
+        }
+        
+        Type type;
+        std::string text;
+      };
+      
+      Lexer(const char* source) : current(source) {
+        /* ... */
+      }
+      
+      bool is_space(char c) { return (c == ' ') || (c == '\n') || (c == '\t') || (c == '\r'); }
+      bool is_alpha(char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'); };
+      bool is_digit(char c) { return (c >= '0') && (c <= '9'); }
+      bool is_alphanumeric(char c) { return is_alpha(c) || is_digit(c); };
+      
+      Token number() {
+        const char *start = current;
+        while (is_digit(*current) || *current == '.') current++;
+        return Token(Token::Type::Number, start, current);
+      }
+      
+      Token identifier() {
+        const char *start = current;
+        while (is_alphanumeric(*current)) {
+          current++;
+        }
+        //current--;
+        return Token(Token::Type::Identifier, start, current);
+      }
+      
+      Token lex() {
+        while ((is_space(*current))) current++;
+        
+        Token t = Token(Token::Type::None, current, current + 1);
+        if (*current == '\0') t = Token(Token::Type::End, current, current + 1);
+        else if (*current == '(') t = Token(Token::Type::LeftParen, current, current + 1);
+        else if (*current == ')') t = Token(Token::Type::RightParen, current, current + 1);
+        else if (*current == '[') t = Token(Token::Type::LeftSquareBracket, current, current + 1);
+        else if (*current == ']') t = Token(Token::Type::RightSquareBracket, current, current + 1);
+        else if (*current == '{') t = Token(Token::Type::LeftCurlyBracket, current, current + 1);
+        else if (*current == '}') t = Token(Token::Type::RightCurlyBracket, current, current + 1);
+        else if (*current == '+') t = Token(Token::Type::Plus, current, current + 1);
+        else if (*current == '-') t = Token(Token::Type::Minus, current, current + 1);
+        else if (*current == '*') t = Token(Token::Type::Asterisk, current, current + 1);
+        else if (*current == '/') t = Token(Token::Type::Slash, current, current + 1); // also comment
+        else if (*current == '%') t = Token(Token::Type::Modulo, current, current + 1);
+        else if (*current == '#') t = Token(Token::Type::NumberSign, current, current + 1);
+        else if (*current == '=') t = Token(Token::Type::Equal, current, current + 1);
+        else if (*current == '<') t = Token(Token::Type::LessThan, current, current + 1);
+        else if (*current == '>') t = Token(Token::Type::GreaterThan, current, current + 1);
+        else if (*current == ':') t = Token(Token::Type::Colon, current, current + 1);
+        else if (*current == ';') t = Token(Token::Type::SemiColon, current, current + 1);
+        else if (*current == '\'') t = Token(Token::Type::SingleQuote, current, current + 1);
+        else if (*current == '\"') t = Token(Token::Type::DoubleQuote, current, current + 1);
+        else if (is_alpha(*current)) t = identifier();
+        else if (is_digit(*current)) t = number();
+        
+        current++;
+        
+        return t;
+      }
+      
+      const char *current;
+    };
+    
+    std::map<Lexer::Token::Type, std::string> TokenNames {
+      { Lexer::Token::Type::LeftParen, "LeftParen" },
+      { Lexer::Token::Type::RightParen, "RightParen" },
+      { Lexer::Token::Type::LeftCurlyBracket, "LeftCurlyBracket" },
+      { Lexer::Token::Type::RightCurlyBracket, "RightCurlyBracket" },
+      { Lexer::Token::Type::LeftSquareBracket, "LeftSquareBracket" },
+      { Lexer::Token::Type::RightSquareBracket, "RightSquareBracket" },
+      { Lexer::Token::Type::Identifier, "Identifier" },
+      { Lexer::Token::Type::Number, "Number" },
+      { Lexer::Token::Type::Comma, "Comma" },
+      { Lexer::Token::Type::Colon, "Colon" },
+      { Lexer::Token::Type::SemiColon, "SemiColon" },
+      { Lexer::Token::Type::Plus, "Plus" },
+      { Lexer::Token::Type::Minus, "Minus" },
+      { Lexer::Token::Type::Asterisk, "Asterisk" },
+      { Lexer::Token::Type::Slash, "Slash" },
+      { Lexer::Token::Type::ExclamationMark, "ExclamationMark" },
+      { Lexer::Token::Type::DoubleQuote, "DoubleQuote" },
+      { Lexer::Token::Type::SingleQuote, "SingleQuote" },
+      { Lexer::Token::Type::NumberSign, "NumberSign" },
+      { Lexer::Token::Type::Modulo, "Modulo" },
+      { Lexer::Token::Type::Ampersand, "Ampersand" },
+      { Lexer::Token::Type::Equal, "Equal" },
+      { Lexer::Token::Type::LessThan, "LessThan" },
+      { Lexer::Token::Type::GreaterThan, "GreaterThan" },
+      { Lexer::Token::Type::Dot, "Dot" },
+      { Lexer::Token::Type::Comment, "Comment" },
+      { Lexer::Token::Type::Invalid, "Invalid" },
+      { Lexer::Token::Type::End, "End" },
+    };
+    
+    void testLexer(std::string source) {
+      Lexer lexer(source.c_str());
+      Lexer::Token t = lexer.lex();
+      while (t.type != Lexer::Token::Type::End && t.type != Lexer::Token::Type::Invalid) {
+        printf("%s |%s|\n", TokenNames[t.type].c_str(), t.text.c_str());
+        t = lexer.lex();
+      }
     }
     
   };
