@@ -195,7 +195,7 @@ namespace CPA {
   
   /// A pointer to a pointer
   template <typename T = Address>
-  struct DoublePointer : Pointer<Pointer<T>> {
+  struct DoublePointer {
     DoublePointer(Address addr) : ptr(addr) {
       /* ... */
     }
@@ -242,8 +242,8 @@ namespace CPA {
     operator void*() { return static_cast<void*>(string); }
     operator const char*() { return reinterpret_cast<const char*>(string); }
     operator std::string() { return std::string(reinterpret_cast<char*>(string), size); }
-    auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
-    auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
+    auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
+    auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
     auto operator ==(String&     str) { return std::string(str) == std::string(this); }
     auto operator =(std::string& str) { std::memset(string, 0, size); std::memcpy(string, str.data(), size); }
     
