@@ -201,13 +201,19 @@ namespace game
     g_stEngineStructure = pointer<stSuperObject>    (GCN_POINTER_ENGINE_STRUCTURE);
     g_stInputStructure  = pointer<stInputStructure> (GCN_POINTER_INPUT_STRUCTURE);
     g_stRandomStructure = pointer<stRandom>         (GCN_POINTER_RND);
-
+    
     p_stActualWorld          = doublepointer<stSuperObject>(GCN_POINTER_ACTUAL_WORLD);
     p_stDynamicWorld         = doublepointer<stSuperObject>(GCN_POINTER_DYNAMIC_WORLD);
     p_stInactiveDynamicWorld = doublepointer<stSuperObject>(GCN_POINTER_INACTIVE_DYNAMIC_WORLD);
     p_stFatherSector         = doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
-        
+    
     g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
+    
+    pointer<uint8> v(GCN_POINTER_GHOST_MODE);
+    
+//    printf("%p %X, %lld, %p\n", Memory::baseAddress,
+//           g_stEngineStructure->standardCamera.memoryOffset().effectiveAddress(),
+//          (int64_t)g_stEngineStructure->standardCamera.memoryOffset().effectiveAddress() - (int64_t)0x3E7C0C, &g_stEngineStructure->standardCamera.ptr);
     
     if (isValidGameState()) {
       readLevel();

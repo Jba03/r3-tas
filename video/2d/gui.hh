@@ -9,7 +9,9 @@
 #define gui_hh
 
 #include "imgui.h"
+#include "implot.h"
 #include "game.hh"
+#include "interface.hh"
 
 #include <iostream>
 
@@ -46,31 +48,38 @@ struct Window
     bool Open = false;
 };
 
-struct Window2D {
+struct CommonWindow {
+  CommonWindow();
   void draw();
 };
 
-struct AIWindow : public Window2D {
+struct GameWindow {
+  GameWindow();
+  void draw(ImTextureID texture);
+};
+
+struct CinematicWindow {
+  CinematicWindow();
+  void draw();
+};
+
+struct AIWindow {
   AIWindow(pointer<stSuperObject> target);
   void draw();
 private:
   pointer<stSuperObject> targetObject;
-  pointer<stBehaviour> targetBehaviorDefault;
-  pointer<stBehaviour> targetBehaviorReflex;
+  pointer<stBehavior> targetBehavior;
   
-  void drawIntelligenceBehaviorList();
-  void drawReflexBehaviorList();
+  void drawInfo();
+  void drawBehaviorLists();
+  void drawScript();
 };
-
-//using AIWindow = Window2D;
-using TestWindow = Window2D;
 
 extern Window MenuBar;
 extern Window ConfigurationWindow;
 extern Window RNGWindow;
 extern Window HierarchyWindow;
 extern Window RunCreateWindow;
-extern Window CinematicWindow;
 //extern Window MovieInputWindow;
 //extern Window ScriptWindow;
 //extern Window SuperObjectWindow;

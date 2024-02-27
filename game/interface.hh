@@ -6,15 +6,11 @@
 
 #include "emulator.hh"
 
-//#include "bruteforce.hh"
-//#include "debugger.hh"
-//#include "collision.hh"
-
-//struct Message {
-//  const char *msg;
-//  void *data;
-//  uint64_t ts;
-//};
+enum InterfaceMode {
+  Speedrun,
+  Practice,
+  Advanced
+};
 
 struct Interface {
   Interface();
@@ -27,12 +23,14 @@ struct Interface {
   bool initialize();
   void applyOptimizations();
   
-  const std::string Host = "";
+  InterfaceMode mode;
   
-private:
+  const std::string Host = "";
   
   //std::string configPath;
 };
+
+extern Interface *interface;
 
 struct GCNInterface : public Interface {
   GCNInterface();

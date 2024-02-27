@@ -12,46 +12,46 @@ static bool CheatsEnabled = false;
 
 static void Draw()
 {
-    ImGui::BeginMainMenuBar();
-    if (ImGui::BeginMenu("File"))
-    {
-        if (ImGui::MenuItem("Configuration")) ConfigurationWindow.Open = true;
-        ImGui::Separator();
-        ImGui::Checkbox("Enable cheats", &CheatsEnabled);
-        
-        ImGui::EndMenu();
-    }
-    
-    if (ImGui::BeginMenu("Level"))
-    {
-        if (ImGui::MenuItem("Reload"))
-        {
-            game::g_stEngineStructure->loadLevel(game::g_stEngineStructure->currentLevelName);
-        }
-            
-//        if (ImGui::BeginMenu("Change"))
+//    ImGui::BeginMainMenuBar();
+//    if (ImGui::BeginMenu("File"))
+//    {
+//        if (ImGui::MenuItem("Configuration")) ConfigurationWindow.Open = true;
+//        ImGui::Separator();
+//        ImGui::Checkbox("Enable cheats", &CheatsEnabled);
+//        
+//        ImGui::EndMenu();
+//    }
+//    
+//    if (ImGui::BeginMenu("Level"))
+//    {
+//        if (ImGui::MenuItem("Reload"))
 //        {
-//            for (uint8 i = 0; i < game::g_stEngineStructure->levelCount; i++)
-//            {
-//                std::string LevelName = game::g_stEngineStructure->levelNames[i];
-//                bool selected = game::g_stEngineStructure->currentLevelName == LevelName;
-//                if (ImGui::MenuItem(LevelName.c_str(), NULL, &selected))
-//                    game::g_stEngineStructure->loadLevel(LevelName);
-//            }
-//            ImGui::EndMenu();
+//            game::g_stEngineStructure->loadLevel(game::g_stEngineStructure->currentLevelName);
 //        }
-      
-        ImGui::Separator();
-        
-        if (ImGui::MenuItem("New run"))
-        {
-            RunCreateWindow.Open = true;
-        }
-        
-        ImGui::EndMenu();
-    }
-    
-    ImGui::EndMainMenuBar();
+//            
+////        if (ImGui::BeginMenu("Change"))
+////        {
+////            for (uint8 i = 0; i < game::g_stEngineStructure->levelCount; i++)
+////            {
+////                std::string LevelName = game::g_stEngineStructure->levelNames[i];
+////                bool selected = game::g_stEngineStructure->currentLevelName == LevelName;
+////                if (ImGui::MenuItem(LevelName.c_str(), NULL, &selected))
+////                    game::g_stEngineStructure->loadLevel(LevelName);
+////            }
+////            ImGui::EndMenu();
+////        }
+//      
+//        ImGui::Separator();
+//        
+//        if (ImGui::MenuItem("New run"))
+//        {
+//            RunCreateWindow.Open = true;
+//        }
+//        
+//        ImGui::EndMenu();
+//    }
+//    
+//    ImGui::EndMainMenuBar();
 }
 
 

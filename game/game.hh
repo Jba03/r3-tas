@@ -20,7 +20,7 @@ namespace game {
   extern stObjectType *g_stObjectTypes;
   extern stInputStructure *g_stInputStructure;
   extern stRandom *g_stRandomStructure;
-    
+  
   /* World */
   extern stSuperObject *p_stActualWorld;
   extern stSuperObject *p_stDynamicWorld;

@@ -187,6 +187,48 @@
 #define scriptNodeTypeCineRef            43 /* ? */
 #define scriptNodeTypeGraphRef           44
 
+enum class DsgVarType {
+  Boolean           = 0,
+  Byte              = 1,
+  UByte             = 2,
+  Short             = 3,
+  UShort            = 4,
+  Int               = 5,
+  UInt              = 6,
+  Float             = 7,
+  Vector            = 8,
+  List              = 9,
+  Comport           = 10,
+  Action            = 11,
+  Capabilities      = 12,
+  Input             = 13,
+  SoundEvent        = 14,
+  Light             = 15,
+  GameMaterial      = 16,
+  VisualMaterial    = 17,
+  Actor             = 18,
+  Waypoint          = 19,
+  Graph             = 20,
+  Text              = 21,
+  SuperObject       = 22,
+  SOLinks           = 23,
+  ActorArray        = 24,
+  VectorArray       = 25,
+  FloatArray        = 26,
+  IntArray          = 27,
+  WaypointArray     = 28,
+  TextArray         = 29,
+  TextRefArray      = 30,
+  GraphArray        = 31,
+  Array9            = 32,
+  SNDEventArray     = 33,
+  Array11           = 34,
+  Way               = 35,
+  ActionArray       = 36,
+  SuperObjectrArray = 37,
+  ObjectList        = 38,
+};
+  
 #pragma mark - IPT
 
 #define IPT_E_Entry_FlyingModeHorizontalMouseAnalog 0

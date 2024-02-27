@@ -8,17 +8,11 @@
 #include "game.hh"
 #include "gui.hh"
 #include "graphics.hh"
-//#include "stCameraGLI.hh"
-//#include "bruteforce.hh"
-//#include "stCollideElementIndexedSpheres.hh"
 #include "interface.hh"
 
 #include "dynamics.cc"
 
-//#include "bruteforce2.hh"
-
 #include "imgui_internal.h"
-#include "implot.h"
 #include "implot_internal.h"
 
 #include "tools.hh"
@@ -236,11 +230,14 @@ namespace gui {
     style.FrameBorderSize = 0.0f;
     style.WindowBorderSize = 0.0f;
 
+    style.Colors[ImGuiCol_MenuBarBg] = ImColor(35, 35, 35, 255);
+    style.Colors[ImGuiCol_DockingEmptyBg] = ImColor(5, 5, 5, 255);
     style.Colors[ImGuiCol_WindowBg] = ImColor(10, 10, 10, 255);
     style.Colors[ImGuiCol_TitleBg] = ImColor(20, 20, 20, 255);
     style.Colors[ImGuiCol_TitleBgActive] = ImColor(30, 30, 30, 255);
     style.Colors[ImGuiCol_Border] = ImColor(20, 20, 20, 255);
     style.Colors[ImGuiCol_Tab] = ImColor(15, 15, 15, 255);
+    
 //    style.Colors[ImGuiCol_TabUnfocusedActive] = ImColor(17, 49, 54, 255);
 //    style.Colors[ImGuiCol_TabActive] = ImColor(17, 49, 54, 255);
 //    style.Colors[ImGuiCol_DockingEmptyBg] = ImColor(0, 10, 10, 255);
@@ -269,44 +266,60 @@ namespace gui {
     ImPlot::PushColormap(ImPlotColormap_Hot);
   }
   
-  auto drawPanels() -> void {
-    
+#pragma mark - Layout
+  
+  static bool needsLayout = true;
+  
+  static void speedrunLayout(ImGuiID dockMainID) {
+    ImGui::DockBuilderDockWindow("Game", dockMainID);
   }
   
-  auto dockLayout() -> void {
-   
+  static void practiceLayout(ImGuiID dockMainID) {
+    ImGuiID left1 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Left, 0.2f, nullptr, &dockMainID);
+    ImGuiID left2 = ImGui::DockBuilderSplitNode(left1, ImGuiDir_Down, 0.5f, nullptr, &left1);
+
+    ImGuiID middle1 = dockMainID;// ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 1.0f, nullptr, &dock_main_id);
+    ImGuiID middle2 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Down, 0.33f, nullptr, &middle1);
+    ImGuiID middle3 = ImGui::DockBuilderSplitNode(middle2, ImGuiDir_Right, 0.25f, nullptr, &middle2);
     
-    ImGui::DockBuilderRemoveNode(dockspaceID); // Clear out existing layout
-    ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace); // Add empty node
-    ImGui::DockBuilderSetNodeSize(dockspaceID, ImGui::GetMainViewport()->WorkSize);
-    
-    ImGuiID dock_main_id = dockspaceID;
-    
-    ImGuiID left1 = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.2f, nullptr, &dock_main_id);
+    ImGui::DockBuilderDockWindow("Common", left1);
+    ImGui::DockBuilderDockWindow("Hierarchy", left2);
+    ImGui::DockBuilderDockWindow("Game", middle1);
+  }
+  
+  static void advancedLayout(ImGuiID dockMainID) {
+    ImGuiID left1 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Left, 0.2f, nullptr, &dockMainID);
     ImGuiID left2 = ImGui::DockBuilderSplitNode(left1, ImGuiDir_Down, 0.5f, nullptr, &left1);
     ImGuiID left3 = ImGui::DockBuilderSplitNode(left2, ImGuiDir_Down, 0.5f, nullptr, &left2);
 
-    ImGuiID middle1 = dock_main_id;// ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 1.0f, nullptr, &dock_main_id);
-    ImGuiID middle2 = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.33f, nullptr, &middle1);
+    ImGuiID middle1 = dockMainID;// ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 1.0f, nullptr, &dock_main_id);
+    ImGuiID middle2 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Down, 0.33f, nullptr, &middle1);
     ImGuiID middle3 = ImGui::DockBuilderSplitNode(middle2, ImGuiDir_Right, 0.25f, nullptr, &middle2);
 
-    ImGuiID right1 = ImGui::DockBuilderSplitNode(middle1, ImGuiDir_Right, 0.275f, nullptr, &middle1);;
+    ImGuiID right1 = ImGui::DockBuilderSplitNode(middle1, ImGuiDir_Right, 0.275f, nullptr, &middle1);
     ImGuiID right2 = ImGui::DockBuilderSplitNode(right1, ImGuiDir_Down, 0.33f, nullptr, &right1);
     
     ImGui::DockBuilderDockWindow("Common", left1);
     ImGui::DockBuilderDockWindow("Hierarchy", left2);
     ImGui::DockBuilderDockWindow("Movie", left3);
     ImGui::DockBuilderDockWindow("Game", middle1);
-    ImGui::DockBuilderDockWindow("Object window", middle2);
+    ImGui::DockBuilderDockWindow("AI", middle2);
     ImGui::DockBuilderDockWindow("GameSub2", middle3);
     ImGui::DockBuilderDockWindow("RNG", right1);
     ImGui::DockBuilderDockWindow("Test", right2);
-    
-    ImGui::DockBuilderFinish(dockspaceID);
-    
   }
   
-  static bool firstTime = true;
+  static void layout(ImGuiID dockSpaceID) {
+    ImGui::DockBuilderRemoveNode(dockSpaceID);
+    ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace);
+    ImGui::DockBuilderSetNodeSize(dockSpaceID, ImGui::GetMainViewport()->WorkSize);
+    switch (interface->mode) {
+      case Speedrun: speedrunLayout(dockSpaceID); break;
+      case Practice: practiceLayout(dockSpaceID); break;
+      case Advanced: advancedLayout(dockSpaceID); break;
+    }
+    ImGui::DockBuilderFinish(dockSpaceID);
+  }
     
   
   static auto drawGraphics() -> void {
@@ -427,76 +440,33 @@ namespace gui {
           }
   }
   
-  struct ScrollingBuffer {
-      int MaxSize;
-      int Offset;
-      ImVector<ImVec2> Data;
-      ScrollingBuffer(int max_size = 3000) {
-          MaxSize = max_size;
-          Offset  = 0;
-          Data.reserve(MaxSize);
-      }
-      void AddPoint(float x, float y) {
-          if (Data.size() < MaxSize)
-              Data.push_back(ImVec2(x,y));
-          else {
-              Data[Offset] = ImVec2(x,y);
-              Offset =  (Offset + 1) % MaxSize;
-          }
-      }
-      void Erase() {
-          if (Data.size() > 0) {
-              Data.shrink(0);
-              Offset  = 0;
-          }
-      }
-  };
-  
-  static bool transitionBegan = false;
-  static int framesUntilTransitionEnd = 0;
-  
-  static void drawGameWindow(ImTextureID texture) {
-    ImGui::Begin("Game", nullptr, ImGuiWindowFlags_MenuBar);
-    ImGui::SetWindowSize(ImVec2(640,528));
-    
-    if (ImGui::BeginMenuBar()) {
-      ImGui::TextColored(ImPlot::GetColormapColor(int(g_stEngineStructure->mode)), "%d", int(g_stEngineStructure->mode));
-      if (framesUntilTransitionEnd != 0) ImGui::TextColored(ImVec4(0,1,0,1), "DISK READ: -%d", framesUntilTransitionEnd--);
-      if (ImGui::BeginMenu("Options")) {
-        if (ImGui::BeginMenu("Change level")) {
-          for (int n = 0; n < g_stEngineStructure->levelCount; n++) {
-            std::string name = game::g_stEngineStructure->levelNames[n];
-            bool b = name == game::g_stEngineStructure->currentLevelName;
-            if (b) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.65f, 0.0f, 1.0f));
-            if (ImGui::MenuItem(name.c_str())) {
-              g_stEngineStructure->loadLevel(name);
-            }
-            if (b) ImGui::PopStyleColor();
-          }
+  static void mainMenuBar() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("r3-tas")) {
+        if (ImGui::BeginMenu("Mode")) {
+          if (ImGui::MenuItem("Speedrunning", nullptr, interface->mode == Speedrun)) { interface->mode = Speedrun; needsLayout = true; }
+          if (ImGui::MenuItem("Practice", nullptr, interface->mode == Practice)) { interface->mode = Practice; needsLayout = true; }
+          if (ImGui::MenuItem("Advanced", nullptr, interface->mode == Advanced)) { interface->mode = Advanced; needsLayout = true; }
           ImGui::EndMenu();
         }
         ImGui::EndMenu();
       }
       
-      //if (ImGui::BeginMenu)
-      ImGui::EndMenuBar();
+      ImGui::EndMainMenuBar();
     }
-    
-    ImVec2 p = ImGui::GetCursorPos();
-    ImVec2 av = ImGui::GetContentRegionAvail();
-    ImVec2 m = ImVec2(av.x / 640.0f, av.y / 528.0f);
-    ImVec2 sz = av;
-    if (m.y < m.x) {
-      sz.x = av.y / 528.0f * 640.0f;
-      ImGui::SetCursorPosX(p.x + av.x / 2 - sz.x / 2);
-    } else if (m.x < m.y) {
-      sz.y = av.x / 640.0f * 528.0f;
-      ImGui::SetCursorPosY(p.y + av.y / 2 - sz.y / 2);
-    }
-    
-    ImGui::Image(texture, sz);
-    ImGui::End();
+    ImGui::PopStyleColor();
   }
+  
+  static AIWindow *aiWindow;
+  static GameWindow *gameWindow = new GameWindow();
+  static CinematicWindow *cineWindow = new CinematicWindow();
+  
+  
+  static void reloadWindows() {
+    aiWindow = new AIWindow(pointer<stSuperObject>(0x80BF0C0C));
+  }
+  
   
   auto draw(void *c, void *texture, bool *windowed) -> void {
     *windowed = true;
@@ -504,102 +474,75 @@ namespace gui {
     GImGui = (ImGuiContext*)c;
     loadStyle();
     
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration;
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
-      
+    
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("DockSpace Demo", nullptr, window_flags);
-      
+    ImGui::PopStyleVar();
+    
     dockspaceID = ImGui::GetID("MyDockSpace");
     ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-      
-    /* Draw panels */
-    if (firstTime) {
-      dockLayout();
-      firstTime = false;
+    
+    if (needsLayout) {
+      layout(dockspaceID);
+      reloadWindows();
+      needsLayout = false;
     }
     
-    //ImPlot::ShowDemoWindow();
     
     
-    static ScrollingBuffer speedbuffer;
-    static ScrollingBuffer speedbuffer_v;
-    static float t = 0.0f;
-    
-    try {
-      t += ImGui::GetIO().DeltaTime;
-      float h = 0;//g_stEngineStructure->currentMainPlayers[0]->actor->getHorizontalSpeed();
-      float v = 0;//g_stEngineStructure->currentMainPlayers[0]->actor->getVerticalSpeed();
-      speedbuffer.AddPoint(t, h);
-      speedbuffer_v.AddPoint(t, v);
-    } catch (BadPointer& e) {
-      std::cout << "Failed to get speed data: " << e.what() << "\n";
-    }
-    
-    static float history = 10;
-      
-    ImGui::Begin("Common");
-    if (ImPlot::BeginPlot("##Scrolling", ImVec2(-1,150))) {
-      ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_AutoFit);
-      ImPlot::SetupAxisLimits(ImAxis_X1,t - history, t, ImGuiCond_Always);
-      //ImPlot::SetupAxisLimits(ImAxis_Y1,0,-1);
-      ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 1.0f);
-      //ImPlot::PlotShaded("Speed", &speedbuffer.Data[0].x, &speedbuffer.Data[0].y, speedbuffer.Data.size(), -INFINITY, 0, speedbuffer.Offset, 2 * sizeof(float));
-      if (speedbuffer.Data.size() > 1) {
-        ImPlot::PlotLine("HSpeed", &speedbuffer.Data[0].x, &speedbuffer.Data[0].y, speedbuffer.Data.size(), 0, speedbuffer.Offset, 2*sizeof(float));
-        ImPlot::PlotLine("VSpeed", &speedbuffer_v.Data[0].x, &speedbuffer_v.Data[0].y, speedbuffer_v.Data.size(), 0, speedbuffer_v.Offset, 2*sizeof(float));
-      }
-      ImPlot::EndPlot();
-    }
-    ImGui::End();
-    
-      
-    ImGui::Begin("Hierarchy");
-    HierarchyWindow.Draw();
-    ImGui::End();
-      
-    ImGui::Begin("Movie");
-    ImGui::End();
+    mainMenuBar();
     
     
     drawGraphics();
     
     ImGui::SetNextWindowSizeConstraints(ImVec2(0,0), ImVec2(640,528));
     
-    drawGameWindow(static_cast<ImTextureID>(texture));
     
-    //free(texture2);
+    
+    gameWindow->draw(static_cast<ImTextureID>(texture));
+    cineWindow->draw();
+    
+    if (interface->mode == Advanced) {
+      ImGui::Begin("Hierarchy");
+      HierarchyWindow.Draw();
+      ImGui::End();
       
-    ImGui::Begin("Object window");
-    if (game::isValidGameState()) {
-      pointer<stSuperObject> spo = Address(0x80BF0C0C);
-      pointer<stEngineObject> eng = spo->actor;
+      ImGui::Begin("Movie");
+      ImGui::End();
       
-      drawDynamics(eng->dynam->dynamics);
+      ImGui::Begin("GameSub2");
+      ImGui::End();
+      
+      ImGui::Begin("RNG");
+      ImGui::End();
+      
+      ImGui::Begin("Test");
+      ImGui::End();
+      
+      ImGui::Begin("Object window");
+      if (game::isValidGameState()) {
+        pointer<stSuperObject> spo = Address(0x80BF0C0C);
+        pointer<stEngineObject> eng = spo->actor;
+        
+        drawDynamics(eng->dynam->dynamics);
+      }
+      ImGui::End();
     }
-    ImGui::End();
       
-    ImGui::Begin("GameSub2");
-    ImGui::End();
+    aiWindow->draw();
     
-    ImGui::Begin("RNG");
-    ImGui::End();
+    //ImGui::End();
     
-    ImGui::Begin("Test");
-    ImGui::End();
-      
-    AIWindow(pointer<stSuperObject>(0x80BF0C0C)).draw();
-    
-    ImGui::End();
-    
-    ImGui::PopStyleVar(3);
+    ImGui::PopStyleVar(2);
       
       //gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
       

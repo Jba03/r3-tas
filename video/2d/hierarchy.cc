@@ -95,6 +95,9 @@ static void DrawSearchWindow() {
 }
 
 static void Draw() {
+  if (interface->mode == Speedrun)
+    return;
+  
     if (isValidGameState()) {
       drawHierarchy();
       //DrawSearchWindow();
