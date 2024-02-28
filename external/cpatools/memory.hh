@@ -36,6 +36,8 @@ namespace CPA {
     extern Memory::HostAddressType baseAddress;
     /// Size of the memory space
     extern size_t size;
+    /// Is the memory marked readonly?
+    extern bool readonly;
   };
   
   struct Stream {

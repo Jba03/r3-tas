@@ -183,19 +183,31 @@ namespace CPA {
       ptr = other;
     }
     
+    void operator =(std::nullptr_t) {
+      ptr = Address();
+    }
+    
+    bool valid() {
+      return ptr.valid();
+    }
+    
     Pointer<T> operator +(std::integral auto c) { return Pointer<T>(ptr.physicalAddress() + sizeof(T) * c); }
     Pointer<T> operator -(std::integral auto c) { return ptr.effectiveAddress() - sizeof(T) * c; }
     Pointer<T> operator ++() { return (*this = Pointer<T>(ptr.physicalAddress() + sizeof(T))); }
     Pointer<T> operator ++(std::integral auto) { Pointer<T> o = *this; (*this = Pointer<T>(ptr.physicalAddress() + sizeof(T))); return o; }
     template <typename X = T> bool operator ==(Pointer<X>& other) { return ptr == other.ptr; }
-    operator bool() { return ptr.valid(); }
+    operator bool() { return valid(); }
     
     Address ptr;
   };
   
   /// A pointer to a pointer
   template <typename T = Address>
-  struct DoublePointer : Pointer<Pointer<T>> {
+  struct DoublePointer {
+    DoublePointer() {
+      /* ... */
+    }
+    
     DoublePointer(Address addr) : ptr(addr) {
       /* ... */
     }
@@ -213,6 +225,18 @@ namespace CPA {
     
     template <typename X = T>
     operator X*() {
+      return pointee<X>();
+    }
+    
+    template <typename X = T>
+    X* operator ->() {
+      if (pointee() == nullptr)
+        throw BadPointer("bad pointer");
+      return pointee();
+    }
+    
+    template <typename X = T>
+    operator Pointer<X>() {
       return pointee<X>();
     }
     
@@ -242,8 +266,8 @@ namespace CPA {
     operator void*() { return static_cast<void*>(string); }
     operator const char*() { return reinterpret_cast<const char*>(string); }
     operator std::string() { return std::string(reinterpret_cast<char*>(string), size); }
-    auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
-    auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string), size); }
+    auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
+    auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
     auto operator ==(String&     str) { return std::string(str) == std::string(this); }
     auto operator =(std::string& str) { std::memset(string, 0, size); std::memcpy(string, str.data(), size); }
     

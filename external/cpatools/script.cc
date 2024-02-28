@@ -289,8 +289,8 @@ namespace CPA {
     }
     
     static void subroutine(TranslationContext& s) {
-      pointer<Structure::stMacro> macro = pointer<Structure::stMacro>(s.param());
       if (s.engine->options.expandMacroReferences) {
+        pointer<Structure::stMacro> macro = pointer<Structure::stMacro>(s.param());
         TranslationEngine t(s.engine->options);
         TranslationResult *result = t.translate(nullptr, macro->currentTree->node);
         
@@ -298,7 +298,7 @@ namespace CPA {
           s.tokens.push_back(tok);
         }
       } else {
-        s.emit(true, std::string(":" + macro->name.lastPathComponent()).c_str(), "(", ")", ";", "\n");
+        s.emit(true, std::string(":" + std::to_string(s.param())).c_str(), "(", ")", ";", "\n");
       }
     }
     
