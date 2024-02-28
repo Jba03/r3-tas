@@ -47,6 +47,10 @@ namespace CPA::Structure {
   struct stMacroList;
   struct stBehavior;
   
+  // CINE
+  struct stCine;
+  struct stCineActor;
+  
   // DNM
   struct stDynam;
   struct stDynamics;
@@ -288,8 +292,11 @@ namespace CPA::Structure {
     /** external scale parameter */
     stVector4D scale;
     
-    /** get translation vector */
-    stVector3D& translation();
+    /// Get translation vector
+    stVector3D& translation() {
+      return *(stVector3D*)&matrix.m30;
+    }
+    
     /** transform x stVector3D -> stVector3D */
     stVector3D operator * (stVector3D v);
     /** transform x stVector4D -> stVector4D */
@@ -355,24 +362,23 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
+  enum eEngineMode : uint8_t {
+    Invalid = 0,
+    Initialize = 1,
+    Deinitialize = 2,
+    InitializeGameplay = 3,
+    DeinitializeGameplay = 4,
+    EnterLevel = 5,
+    ChangeLevel = 6,
+    Gameplay = 9,
+  };
+  
+  enum eInputMode : typename uint8::U {
+    Normal = 0,
+    Commands = 1,
+  };
+  
   struct stEngineStructure {
-    
-    enum eEngineMode : uint8_t {
-      Invalid = 0,
-      Initialize = 1,
-      Deinitialize = 2,
-      InitializeGameplay = 3,
-      DeinitializeGameplay = 4,
-      EnterLevel = 5,
-      ChangeLevel = 6,
-      Gameplay = 9,
-    };
-    
-    enum eInputMode : typename uint8::U {
-      Normal = 0,
-      Commands = 1,
-    };
-    
     eEngineMode mode = Invalid;
     string<30> currentLevelName;
     string<30> nextLevelName;
@@ -575,13 +581,97 @@ namespace CPA::Structure {
     pointer<uint32> table;
   };
   
+#pragma mark - 3D
+  
+  struct stAnim3D {
+    
+  };
+  
+  struct stSubAnim {
+    pointer<stAnim3D> subAnim;
+  };
+  
+  struct stActiveSubAnim {
+    pointer<stActiveSubAnim> next;
+    pointer<stActiveSubAnim> prev;
+    stDoublyLinkedList<stActiveSubAnim> parent;
+    pointer<stSubAnim> subAnim;
+    pointer<uint8> eventActivation;
+    uint32 startFrame;
+    uint32 customBits;
+    uint32 loop;
+    float32 frame;
+    uint8 nextEvent;
+    uint8 stop;
+    uint8 merge;
+    padding(1);
+  };
+  
 #pragma mark - CINE
   
+  struct stCineActor {
+    stSubAnim subAnim;
+    pointer<stActiveSubAnim> activeSubAnim;
+    string<255> animationName;
+    padding(1)
+    pointer<stEngineObject> actor;
+    pointer</*stState*/> stateAfterCine;
+    pointer</*stState*/> stateDuringCine;
+    pointer</*stState*/> stateForActorTmp;
+    uint8 skipAI;
+    uint8 skipMechanics;
+    uint8 previousAIState;
+    uint8 previousMechanicsState;
+    uint8 repeatAnimation;
+    int8 animationSpeed;
+    uint8 actorMoveAtStart;
+    padding(1)
+    pointer<stSuperObject> superobject;
+    uint8 actorMoveAtEnd;
+    padding(1)
+    uint16 channel;
+    uint8 playingAnimation;
+    uint8 isSubAnim;
+    uint8 changeIntelligenceAtStart;
+    padding(1)
+    pointer<stBehavior> intelligenceStart;
+    uint8 changeReflexAtStart;
+    padding(3)
+    pointer<stBehavior> reflexStart;
+    uint8 changeIntelligenceAtEnd;
+    padding(3)
+    pointer<stBehavior> intelligenceEnd;
+    uint8 changeReflexAtEnd;
+    padding(3)
+    pointer<stBehavior> reflexEnd;
+    uint8 startUseSoundRequest;
+    uint8 startUseVoiceRequest;
+    uint8 startUseMusicRequest;
+    uint8 startUseAmbianceRequest;
+    pointer</*stSoundBlockEvent*/> startSoundRequest;
+    pointer</*stSoundBlockEvent*/> startVoiceRequest;
+    pointer</*stSoundBlockEvent*/> startMusicRequest;
+    pointer</*stSoundBlockEvent*/> startAmbianceRequest;
+    uint8 endUseSoundRequest;
+    uint8 endUseVoiceRequest;
+    uint8 endUseMusicRequest;
+    uint8 endUseAmbianceRequest;
+    pointer</*stSoundBlockEvent*/> endSoundRequest;
+    pointer</*stSoundBlockEvent*/> endVoiceRequest;
+    pointer</*stSoundBlockEvent*/> endMusicRequest;
+    pointer</*stSoundBlockEvent*/> endAmbianceRequest;
+    pointer<stCine> cinematic;
+    stDoublyLinkedList<> channelLink;
+    pointer<stCineActor> next;
+    pointer<stCineActor> prev;
+    pointer<stDoublyLinkedList<stCineActor>> parents;
+  };
+  
   struct stCine {
-    stDoublyLinkedList<stEngineObject> actors;
+    stDoublyLinkedList<stCineActor> actors;
     pointer<stCine> next;
     pointer<stCine> prev;
-    pointer<stDoublyLinkedList<stCine>> parent;
+    pointer<stDoublyLinkedList<stCine>> parents;
     uint8 playing;
     padding(3)
     uint32 event;
