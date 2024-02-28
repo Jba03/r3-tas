@@ -217,34 +217,50 @@ namespace gui {
     
   ImGuiID dockspaceID;
   
-  static auto loadStyle() -> void {
+  static void loadStyle() {
     
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
     style.AntiAliasedFill = true;
-    style.FrameRounding = 0.0f;
+    style.AntiAliasedLines = true;
+    
+    style.FrameRounding = 5.0f;
     style.TabRounding = 5.0f;
+    style.PopupRounding = 5.0f;
+    style.GrabRounding = 5.0f;
+    style.ChildRounding = 5.0f;
     
     style.WindowPadding = ImVec2(5, 5);
     
+  
     style.FrameBorderSize = 0.0f;
-    style.WindowBorderSize = 0.0f;
-
+    style.PopupBorderSize = 1.0f;
+    //style.WindowBorderSize = 0.0f;
+    //style.Colors[ImGuiCol_Border] = ImColor(35, 35, 35, 255);
+    
     style.Colors[ImGuiCol_MenuBarBg] = ImColor(35, 35, 35, 255);
     style.Colors[ImGuiCol_DockingEmptyBg] = ImColor(5, 5, 5, 255);
     style.Colors[ImGuiCol_WindowBg] = ImColor(10, 10, 10, 255);
     style.Colors[ImGuiCol_TitleBg] = ImColor(20, 20, 20, 255);
     style.Colors[ImGuiCol_TitleBgActive] = ImColor(30, 30, 30, 255);
-    style.Colors[ImGuiCol_Border] = ImColor(20, 20, 20, 255);
+    style.Colors[ImGuiCol_Border] = ImColor(35, 35, 35, 255);
+    //style.Colors[ImGuiCol_BorderShadow] = ImColor(255, 25, 25, 255);
     style.Colors[ImGuiCol_Tab] = ImColor(15, 15, 15, 255);
+    style.Colors[ImGuiCol_PopupBg] = ImColor(20, 20, 20, 255);
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImColor(45, 45, 45, 255);
+    style.Colors[ImGuiCol_TabActive] = ImColor(65, 65, 65, 255);
     
-//    style.Colors[ImGuiCol_TabUnfocusedActive] = ImColor(17, 49, 54, 255);
-//    style.Colors[ImGuiCol_TabActive] = ImColor(17, 49, 54, 255);
-//    style.Colors[ImGuiCol_DockingEmptyBg] = ImColor(0, 10, 10, 255);
-//    style.Colors[ImGuiCol_DockingPreview] = ImColor(68, 168, 183, 128);
-//    style.Colors[ImGuiCol_Button] = ImColor(32, 115, 131, 255);
-//    style.Colors[ImGuiCol_ModalWindowDimBg] = ImColor(0.0f, 0.0f, 0.0f, 0.9f);
-//    style.Colors[ImGuiCol_FrameBg] =  ImColor(32, 115, 131, 128);
+    style.Colors[ImGuiCol_Header] = ImColor(65, 65, 65, 255);
+    style.Colors[ImGuiCol_HeaderHovered] = ImColor(65, 65, 65, 255);
+    style.Colors[ImGuiCol_HeaderActive] = ImColor(65, 65, 65, 255);
+    
+    style.Colors[ImGuiCol_Button] = ImColor(65, 65, 65, 255);
+    style.Colors[ImGuiCol_ChildBg] = ImColor(30, 30, 30, 50);
+   // style.Colors[ImGuiCol_HeaderActive] = ImColor(105, 65, 65, 255);
+    
+    if (interface->mode == Speedrun)
+      style.Colors[ImGuiCol_MenuBarBg] = ImColor(0,0,0,0);
+    
 //
 //    style.Colors[ImGuiCol_PopupBg] = ImColor(10, 27, 29, 255);
 
@@ -254,9 +270,9 @@ namespace gui {
 //    style.Colors[ImGuiCol_TableBorderStrong] =  ImColor(32*2, 115*2, 131*2, 64);
 //    style.Colors[ImGuiCol_TableBorderLight] =  ImColor(32*2, 115*2, 131*2, 0);
 
-    //style.Colors[ImGuiCol_CheckMark] = ImColor(52, 186, 120, 255);
-    
-    ImPlot::GetStyle().Colors[ImPlotCol_FrameBg] = ImVec4(0,0,0,0);
+    style.Colors[ImGuiCol_CheckMark] = ImColor(52, 186, 120, 255);
+     
+    style.Colors[ImPlotCol_FrameBg] = ImColor(25, 25, 25, 255);
     
   }
   
@@ -450,6 +466,11 @@ namespace gui {
           if (ImGui::MenuItem("Advanced", nullptr, interface->mode == Advanced)) { interface->mode = Advanced; needsLayout = true; }
           ImGui::EndMenu();
         }
+        
+        if (ImGui::BeginMenu("Memory", interface->mode != Speedrun)) {
+          ImGui::Checkbox("Readonly", &Memory::readonly);
+          ImGui::EndMenu();
+        }
         ImGui::EndMenu();
       }
       
@@ -463,7 +484,7 @@ namespace gui {
   static CinematicWindow *cineWindow = new CinematicWindow();
   
   
-  static void reloadWindows() {
+  static void loadWindows() {
     aiWindow = new AIWindow(pointer<stSuperObject>(0x80BF0C0C));
   }
   
@@ -473,6 +494,10 @@ namespace gui {
     
     GImGui = (ImGuiContext*)c;
     loadStyle();
+    
+    mainMenuBar();
+    if (interface->mode == Speedrun)
+      return;
     
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -493,14 +518,12 @@ namespace gui {
     
     if (needsLayout) {
       layout(dockspaceID);
-      reloadWindows();
+      loadStyle();
+      loadWindows();
       needsLayout = false;
     }
     
-    
-    
-    mainMenuBar();
-    
+    clearMarkers();
     
     drawGraphics();
     
@@ -544,6 +567,7 @@ namespace gui {
     
     ImGui::PopStyleVar(2);
       
+    
       //gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
       
     
@@ -795,4 +819,38 @@ namespace gui {
 //      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
     }
     
+  
+  ImVec4 projectWorldCoordinate(stVector3D P) {
+    try {
+      #define ASPECT (528.0f / 640.0f)
+      // These ratios vary per level
+      #define PROJECTION_RATIO_X  0.377f
+      #define PROJECTION_RATIO_Y  0.708f
+      
+      pointer<stCamera> camera = g_stEngineStructure->viewportCamera[0];
+      if (!camera)
+        return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+      
+      stMatrix4D view = camera->transform.matrix;
+      /* Change sign of the two middle columns (flipping the rotation) */
+      view.m01 = -view.m01; view.m11 = -view.m11;
+      view.m21 = -view.m21; view.m22 = -view.m22;
+      view.m31 = -view.m31; view.m32 = -view.m32;
+      view.m02 = -view.m02; view.m12 = -view.m12;
+      
+      const float fov = camera->xAlpha;
+      stMatrix4D projection = stMatrix4D::perspective(fov, ASPECT, 0.1f, 1000.0f);
+      stMatrix4D viewprojection = projection * view;
+      stVector4D P2 = stVector4D(P.x, P.y, P.z, 1.0f);
+      stVector4D R = viewprojection * P2;
+      
+      float xp = (R.x / R.w) * PROJECTION_RATIO_X + 0.5f;
+      float yp = (R.y / R.w) * PROJECTION_RATIO_Y + 0.5f;
+      
+      return ImVec4(xp, yp, R.z, R.w);
+    } catch (BadPointer& e) {
+      return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+  }
+  
 }

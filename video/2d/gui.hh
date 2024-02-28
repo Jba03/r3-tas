@@ -12,6 +12,7 @@
 #include "implot.h"
 #include "game.hh"
 #include "interface.hh"
+#include "script.hh"
 
 #include <iostream>
 
@@ -39,6 +40,9 @@ namespace gui {
   /// Popup
   auto drawPopup() -> void;
   extern pointer<> popupTarget;
+  
+  /// Project a world coordinate to the screen
+  ImVec4 projectWorldCoordinate(stVector3D p);
 }
 
 struct Window
@@ -56,6 +60,9 @@ struct CommonWindow {
 struct GameWindow {
   GameWindow();
   void draw(ImTextureID texture);
+private:
+  void drawMenuBar();
+  void drawGame(ImTextureID texture);
 };
 
 struct CinematicWindow {
@@ -64,15 +71,23 @@ struct CinematicWindow {
 };
 
 struct AIWindow {
-  AIWindow(pointer<stSuperObject> target);
+  AIWindow(pointer<stSuperObject> targetObject);
+  void setTargetMacro(pointer<stMacro> macro);
+  void setTargetBehavior(pointer<stBehavior> behavior);
+  void drawScript();
   void draw();
 private:
-  pointer<stSuperObject> targetObject;
-  pointer<stBehavior> targetBehavior;
+  pointer<stSuperObject> targetObject = nullptr;
+  pointer<stBehavior> targetBehavior = nullptr;
+  pointer<stMacro> targetMacro = nullptr;
   
+  bool displayActive = true;
+  bool drawLineNumbers = true;
+  bool quietReferences = false;
+  
+  void drawMenuBar();
   void drawInfo();
   void drawBehaviorLists();
-  void drawScript();
 };
 
 extern Window MenuBar;
@@ -84,5 +99,15 @@ extern Window RunCreateWindow;
 //extern Window ScriptWindow;
 //extern Window SuperObjectWindow;
 extern Window bruteforceWindow;
+
+
+#pragma mark - Marker
+
+/// A marker which references an object. Can be assigned to
+/// other marker references compatible with the type of object `T`.
+template <typename T>
+void marker(pointer<T> reference, bool readonly = false, std::string customText = "", bool quiet = false);
+void marker(CPA::Script::TranslationToken tok, bool readonly = false, std::string customText = "", bool quiet = false);
+void clearMarkers();
 
 #endif /* gui_hh */

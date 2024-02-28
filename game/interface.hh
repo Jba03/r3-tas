@@ -23,7 +23,7 @@ struct Interface {
   bool initialize();
   void applyOptimizations();
   
-  InterfaceMode mode;
+  InterfaceMode mode = Advanced;
   
   const std::string Host = "";
   

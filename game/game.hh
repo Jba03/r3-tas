@@ -51,6 +51,7 @@ namespace game {
     
   bool isValidGameState();
   
+  bool engineModeChangedTo(eEngineMode mode, eEngineMode from = eEngineMode::Invalid);
   
   void setEngineLoopIterations(int i);
 }

@@ -12,6 +12,7 @@
 #include "constants.hh"
 #include "game.hh"
 #include "log.hh"
+#include "tools.hh"
 
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
@@ -42,23 +43,23 @@ static const std::vector<uint32_t> color_table = {
 
 namespace game
 {
-    /* Globals */
-    stAlways *g_stAlways = nullptr;
-    stEngineStructure *g_stEngineStructure = nullptr;
-    stObjectType *g_stObjectTypes = nullptr;
-    stInputStructure *g_stInputStructure = nullptr;
-    stRandom *g_stRandomStructure = nullptr;
-    
-    /* Global variables */
-    uint8 *g_bGhostMode = nullptr;
-    
-    /* World */
-    stSuperObject *p_stActualWorld = nullptr;
-    stSuperObject *p_stDynamicWorld = nullptr;
-    stSuperObject *p_stInactiveDynamicWorld = nullptr;
-    stSuperObject *p_stFatherSector = nullptr;
-    
-    std::map<std::string, stSuperObject*> objectLookupCache;
+  /* Globals */
+  stAlways *g_stAlways = nullptr;
+  stEngineStructure *g_stEngineStructure = nullptr;
+  stObjectType *g_stObjectTypes = nullptr;
+  stInputStructure *g_stInputStructure = nullptr;
+  stRandom *g_stRandomStructure = nullptr;
+  
+  /* Global variables */
+  uint8 *g_bGhostMode = nullptr;
+  
+  /* World */
+  stSuperObject *p_stActualWorld;
+  stSuperObject *p_stDynamicWorld;
+  stSuperObject *p_stInactiveDynamicWorld;
+  stSuperObject *p_stFatherSector;
+  
+  std::map<std::string, stSuperObject*> objectLookupCache;
   
   struct namecache {
     std::vector<std::string> familyNames;
@@ -68,6 +69,8 @@ namespace game
   
   std::map<std::string, namecache> objectNameCache;
     
+  static eEngineMode lastEngineMode = Invalid;
+  
 #pragma mark - FIX
     
     struct fix_header {
@@ -181,13 +184,13 @@ namespace game
   static auto nameLookup(int type, int idx) -> std::string {
     if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
       namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
-      
       try {
         if (type == objectFamilyName) return cache.familyNames.at(idx);
         if (type == objectModelName) return cache.modelNames.at(idx);
         if (type == objectInstanceName) return cache.instanceNames.at(idx);
       } catch (std::out_of_range& e) {
-        std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
+        //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
+        return "Invalid name";
       }
     }
     return "Invalid name";
@@ -209,16 +212,14 @@ namespace game
     
     g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
     
-    pointer<uint8> v(GCN_POINTER_GHOST_MODE);
-    
-//    printf("%p %X, %lld, %p\n", Memory::baseAddress,
-//           g_stEngineStructure->standardCamera.memoryOffset().effectiveAddress(),
-//          (int64_t)g_stEngineStructure->standardCamera.memoryOffset().effectiveAddress() - (int64_t)0x3E7C0C, &g_stEngineStructure->standardCamera.ptr);
-    
     if (isValidGameState()) {
       readLevel();
       cache();
     }
+    
+    R3::autoSplitter.update();
+    
+    lastEngineMode = g_stEngineStructure->mode;
   }
   
   void initialize() {
@@ -266,6 +267,12 @@ namespace game
     && p_stDynamicWorld
     && p_stInactiveDynamicWorld
     && p_stFatherSector;
+  }
+  
+  bool engineModeChangedTo(eEngineMode mode, eEngineMode from) {
+    return (from == eEngineMode::Invalid) ?
+    (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) :
+    (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) && (lastEngineMode == from);
   }
     
 }

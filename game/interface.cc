@@ -3,6 +3,7 @@
 //#include "debugger.hh"
 #include "log.hh"
 #include "video.hh"
+#include "tools.hh"
 
 #undef GCN
 #undef PS2
