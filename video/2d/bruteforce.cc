@@ -8,6 +8,7 @@
 #include "gui.hh"
 #include "game.hh"
 
+
 static void dumpGeometry(FILE *fp) {
 //  game::p_stFatherSector->recurse([&](stSuperObject *spo, void*) {
 //    // Write type

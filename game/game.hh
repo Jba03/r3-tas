@@ -15,11 +15,11 @@ using namespace CPA::Structure;
 namespace game {
   
   /* Global structures */
-  extern stAlways *g_stAlways;
-  extern stEngineStructure *g_stEngineStructure;
-  extern stObjectType *g_stObjectTypes;
-  extern stInputStructure *g_stInputStructure;
-  extern stRandom *g_stRandomStructure;
+  extern pointer<stAlways> g_stAlways;
+  extern pointer<stEngineStructure> g_stEngineStructure;
+  extern pointer<stObjectType> g_stObjectTypes;
+  extern pointer<stInputStructure> g_stInputStructure;
+  extern pointer<stRandom> g_stRandomStructure;
   
   /* World */
   extern stSuperObject *p_stActualWorld;

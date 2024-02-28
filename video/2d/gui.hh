@@ -90,6 +90,11 @@ private:
   void drawBehaviorLists();
 };
 
+struct StructureExplorerWindow {
+  StructureExplorerWindow();
+  void draw();
+};
+
 extern Window MenuBar;
 extern Window ConfigurationWindow;
 extern Window RNGWindow;

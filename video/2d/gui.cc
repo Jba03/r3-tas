@@ -320,7 +320,7 @@ namespace gui {
     ImGui::DockBuilderDockWindow("Movie", left3);
     ImGui::DockBuilderDockWindow("Game", middle1);
     ImGui::DockBuilderDockWindow("AI", middle2);
-    ImGui::DockBuilderDockWindow("GameSub2", middle3);
+    ImGui::DockBuilderDockWindow("Structure Explorer", middle3);
     ImGui::DockBuilderDockWindow("RNG", right1);
     ImGui::DockBuilderDockWindow("Test", right2);
   }
@@ -482,7 +482,7 @@ namespace gui {
   static AIWindow *aiWindow;
   static GameWindow *gameWindow = new GameWindow();
   static CinematicWindow *cineWindow = new CinematicWindow();
-  
+  static StructureExplorerWindow *structureExplorerWindow = new StructureExplorerWindow();
   
   static void loadWindows() {
     aiWindow = new AIWindow(pointer<stSuperObject>(0x80BF0C0C));
@@ -539,11 +539,11 @@ namespace gui {
       HierarchyWindow.Draw();
       ImGui::End();
       
-      ImGui::Begin("Movie");
-      ImGui::End();
-      
-      ImGui::Begin("GameSub2");
-      ImGui::End();
+//      ImGui::Begin("Movie");
+//      ImGui::End();
+//
+//      ImGui::Begin("GameSub2");
+//      ImGui::End();
       
       ImGui::Begin("RNG");
       ImGui::End();
@@ -562,6 +562,7 @@ namespace gui {
     }
       
     aiWindow->draw();
+    structureExplorerWindow->draw();
     
     //ImGui::End();
     

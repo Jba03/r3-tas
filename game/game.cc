@@ -44,11 +44,11 @@ static const std::vector<uint32_t> color_table = {
 namespace game
 {
   /* Globals */
-  stAlways *g_stAlways = nullptr;
-  stEngineStructure *g_stEngineStructure = nullptr;
-  stObjectType *g_stObjectTypes = nullptr;
-  stInputStructure *g_stInputStructure = nullptr;
-  stRandom *g_stRandomStructure = nullptr;
+  pointer<stAlways> g_stAlways = nullptr;
+  pointer<stEngineStructure> g_stEngineStructure = nullptr;
+  pointer<stObjectType> g_stObjectTypes = nullptr;
+  pointer<stInputStructure> g_stInputStructure = nullptr;
+  pointer<stRandom> g_stRandomStructure = nullptr;
   
   /* Global variables */
   uint8 *g_bGhostMode = nullptr;
