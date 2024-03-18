@@ -4,7 +4,7 @@
 #include <chrono>
 
 class HelperTool {
-  void run();
+  void update();
 };
 
 namespace R3 {
@@ -34,6 +34,8 @@ namespace R3 {
     bool connect();
     void split();
   };
+  
+  
   
   extern AutoSplitter autoSplitter;
   

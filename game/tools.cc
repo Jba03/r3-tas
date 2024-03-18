@@ -28,11 +28,11 @@ namespace R3 {
   void AutoSplitter::update() {
     if (game::engineModeChangedTo(ChangeLevel)) {
       if (whenToSplit == EndTriggerTouch) {
-        printf("split!\n");
+        split();
       }
     } else if (game::engineModeChangedTo(EnterLevel, /* from */ ChangeLevel)) {
       if (whenToSplit == StarsAppear) {
-        printf("stars appear!\n");
+        split();
       } else if (whenToSplit == FirstStar) {
         splitDelay = 27;
       }
