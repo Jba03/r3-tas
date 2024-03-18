@@ -14,7 +14,7 @@ namespace CPA {
   }
   
   Address::Address(Memory::HostAddressType hostAddress) {
-    addr = Memory::bswap(uint32_t(long(hostAddress) - long(Memory::baseAddress)));
+    addr = hostAddress == nullptr ? 0 : Memory::bswap(uint32_t(long(hostAddress) - long(Memory::baseAddress)));
   }
   
   Memory::TargetAddressType Address::physicalAddress() {
