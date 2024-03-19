@@ -8,6 +8,9 @@
 #ifndef constants_h
 #define constants_h
 
+#include <vector>
+#include <string>
+
 #pragma mark - Pointers
 
 /* GCN */
@@ -187,7 +190,7 @@
 #define scriptNodeTypeCineRef            43 /* ? */
 #define scriptNodeTypeGraphRef           44
 
-enum class DsgVarType {
+enum DsgVarType {
   Boolean           = 0,
   Byte              = 1,
   UByte             = 2,
@@ -228,7 +231,50 @@ enum class DsgVarType {
   SuperObjectrArray = 37,
   ObjectList        = 38,
 };
-  
+
+static const std::vector<std::string> DsgVarTypenameTable {
+  "Boolean",
+  "Byte",
+  "UByte",
+  "Short",
+  "UShort",
+  "Int",
+  "UInt",
+  "Float",
+  "Vector",
+  "List",
+  "Comport",
+  "Action",
+  "Capabilities",
+  "Input",
+  "SoundEvent",
+  "Light",
+  "GameMaterial",
+  "VisualMaterial",
+  "Actor",
+  "Waypoint",
+  "Graph",
+  "Text",
+  "SuperObject",
+  "SOLinks",
+  "ActorArray",
+  "VectorArray",
+  "FloatArray",
+  "IntArray",
+  "WaypointArray",
+  "TextArray",
+  "TextRefArray",
+  "GraphArray",
+  "Array9",
+  "SNDEventArray",
+  "Array11",
+  "Way",
+  "ActionArray",
+  "SuperObjectrArray",
+  "ObjectList",
+};
+
+
 #pragma mark - IPT
 
 #define IPT_E_Entry_FlyingModeHorizontalMouseAnalog 0

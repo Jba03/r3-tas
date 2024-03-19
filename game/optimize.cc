@@ -74,6 +74,8 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 //namespace interface {
   
   static auto MTH4D_M_vMulMatrixVector() -> void {
+    event("MTH4D_M_vMulMatrixVector").fire();
+    
     stVector3D *dst = pointer<stVector3D>(GPR(29));
     stMatrix4D *T   = pointer<stMatrix4D>(GPR(30));
     stVector3D *src = pointer<stVector3D>(GPR(31));
@@ -303,8 +305,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 //    hook<0x8007e9d8>(replace2, hookType::replace);
 //    hook<0x8007d714>(replace3, hookType::replace);
     
-    hook<0x80036174>(fn_vDisplayAll, hookType::replace);
-    hook<0x80054498>(fn_vDisplayFix, hookType::replace);
+    //hook<0x80036174>(fn_vDisplayAll, hookType::replace);
+    //hook<0x80054498>(fn_vDisplayFix, hookType::replace);
+    
     //hook_create(0x80054498, "hook_display_fix", HOOK_TYPE_REPLACE, HOOK_FLAG_FIXED, &hook_r_display_fix);
     
     

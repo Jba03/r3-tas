@@ -1,6 +1,7 @@
 #ifndef structure_hh
 #define structure_hh
 
+#include "config.hh"
 #include "types.hh"
 #include "serialize.hh"
 
@@ -89,7 +90,7 @@ namespace CPA::Structure {
   /// Create struct padding
 #define padding(S) private: uint8_t UNIQUE_NAME(padding) [S]; public:
   
-  struct structure : serializable {
+  struct structure {
     /* ... */
   };
   
@@ -109,18 +110,15 @@ namespace CPA::Structure {
     const float32 square() { return dot(*this); }
     const float32 length() { return std::sqrt(square()); }
     
-    const stVector3D operator +(stVector3D v) { x += v.x; y += v.y; z += v.z; return *this; }
-    const stVector3D operator -(stVector3D v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-    const stVector3D operator *(stVector3D v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
-    const stVector3D operator /(stVector3D v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
-    const stVector3D operator *(float s) { x *= s; y *= s; z *= s; return *this; }
-    const stVector3D operator /(float s) { x /= s; y /= s; z /= s; return *this; }
+    const stVector3D operator +(stVector3D v) { return stVector3D(x + v.x, y + v.y, z + v.z); }
+    const stVector3D operator -(stVector3D v) { return stVector3D(x - v.x, y - v.y, z - v.z); }
+    const stVector3D operator *(stVector3D v) { return stVector3D(x * v.x, y * v.y, z * v.z); }
+    const stVector3D operator /(stVector3D v) { return stVector3D(x / v.x, y / v.y, z / v.z); }
+    const stVector3D operator *(float s) { return stVector3D(x * s, y * s, z * s); }
+    const stVector3D operator /(float s) { return stVector3D(x * s, y * s, z * s); }
+    const stVector3D operator -() { return stVector3D(-x, -y, -z); }
     
-    void serialize(serializer& s) {
-      s.add(x);
-      s.add(y);
-      s.add(z);
-    }
+    void serialize(serializer& s);
   };
   
   struct stVector4D {
@@ -134,12 +132,34 @@ namespace CPA::Structure {
     
     const stVector3D xyz() { return stVector3D(x, y, z); }
     
-    const stVector4D operator +(stVector4D v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
-    const stVector4D operator -(stVector4D v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
-    const stVector4D operator *(stVector4D v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
-    const stVector4D operator /(stVector4D v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
-    const stVector4D operator *(float s) { x *= s; y *= s; z *= s; w *= s; return *this; }
-    const stVector4D operator /(float s) { x /= s; y /= s; z /= s; w /= s; return *this; }
+    const stVector4D operator +(stVector4D v) { return stVector4D(x + v.x, y + v.y, z + v.z, w + v.w); }
+    const stVector4D operator -(stVector4D v) { return stVector4D(x - v.x, y - v.y, z - v.z, w - v.w); }
+    const stVector4D operator *(stVector4D v) { return stVector4D(x * v.x, y * v.y, z * v.z, w * v.w); }
+    const stVector4D operator /(stVector4D v) { return stVector4D(x / v.x, y / v.y, z / v.z, w / v.w); }
+    const stVector4D operator *(float s) { return stVector4D(x * s, y * s, z * s, w * s); }
+    const stVector4D operator /(float s) { return stVector4D(x / s, y / s, z / s, w / s); }
+  };
+  
+  template <typename T, unsigned Rows, unsigned Columns>
+  struct Matrix {
+    auto operator()(unsigned row, unsigned col) -> T& { return m[row][col]; }
+    
+    template <unsigned R, unsigned C>
+    auto operator *(const Matrix<T, R, C>& src) const -> Matrix<T, Rows, Columns> {
+      static_assert(Columns == C);
+      Matrix<T, Rows, Columns> result;
+      for (unsigned y = 0; y < Rows; y++) {
+        for (unsigned x = 0, sum = 0; x < C; x++, sum = 0) {
+          for (unsigned z = 0; z < Columns; z++) {
+            sum += this(y, z) * src(z, x);
+          }
+          result(y, x) = sum;
+        }
+      }
+      return result;
+    }
+    
+    T m[Rows][Columns];
   };
   
   union stMatrix3D {
@@ -373,7 +393,7 @@ namespace CPA::Structure {
     Gameplay = 9,
   };
   
-  enum eInputMode : typename uint8::U {
+  enum eInputMode : uint8::UnderlyingPrimaryType {
     Normal = 0,
     Commands = 1,
   };
@@ -501,8 +521,8 @@ namespace CPA::Structure {
     padding(6 * 4) /* ? */
     uint32 numKeywords;
     pointer<> keywordArray;
-    pointer<> actionName;
-    pointer<> entryName;
+    pointer<string<>> actionName;
+    pointer<string<>> entryName;
     int32 state;
     float32 analogValue;
     int8 active;
@@ -554,11 +574,12 @@ namespace CPA::Structure {
   struct stRandom {
     /// Index the random number table by absolute offset
     int32_t index(unsigned i) {
-      return table ? ((table[std::max(0u, i)] >> 16) & 0x7FFF) : 0;
+      uint32_t* T = table;
+      return T ? ((T[i % RND_TABLE_COUNT] >> 16) & 0x7FFF) : 0;
     }
     /// Index the random number table using an index from tableIndices, optionally offset
     int32_t indexRelative(unsigned TableIndicesIdx, unsigned Offset) {
-      return index(tableIndices[TableIndicesIdx] + Offset);
+      return index(uint32_t(tableIndices[TableIndicesIdx]) + Offset);
     }
     /// Simulate `Count` calls into the RND table, bounding the value by `Min` and `Max`
     int32_t call(unsigned const Count, unsigned const Min, unsigned const Max, unsigned const Index = RND_DEFAULT_INDEX) {
@@ -903,6 +924,12 @@ namespace CPA::Structure {
     
     /// Return the AI model of this actor
     pointer<stAIModel> aiModel();
+    /// Get the dsg variable memory at specified index
+    pointer<> dsgVar(int idx);
+    
+    void serialize(serializer& s);
+    
+    //static const inline std::string className = "stEngineObject";
   };
   
   using stActor = stEngineObject;
@@ -1445,7 +1472,7 @@ namespace CPA::Structure {
   };
   
   struct stDsgVarInfo {
-    uint32 memOffset;
+    uint32 memoryOffset;
     uint32 type;
     int16 saveType;
     padding(2)
@@ -1454,7 +1481,7 @@ namespace CPA::Structure {
   
   struct stDsgVar {
     pointer<> memory;
-    pointer<> info;
+    pointer<stDsgVarInfo> info;
     uint32 memorySize;
     uint8 infoLength;
     padding(3)
@@ -1464,6 +1491,10 @@ namespace CPA::Structure {
     doublepointer<stDsgVar> dsgVars;
     pointer<> initialBuffer;
     pointer<> currentBuffer;
+    
+    pointer<stDsgVarInfo> dsgVarInfo(int idx) {
+      return dsgVars->info[idx];
+    }
   };
   
 #pragma mark - GLI

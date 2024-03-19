@@ -55,6 +55,12 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
     ImGui::OpenPopup("SPO");
     printf("click\n");
   }
+  
+  if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+    if (root->type == eSuperObjectType::superObjectTypeActor) {
+      gui::aiWindow->setTargetObject(root);
+    }
+  }
 }
 
 static auto drawHierarchy() -> void {

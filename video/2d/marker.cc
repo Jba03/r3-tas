@@ -8,15 +8,30 @@ static bool line = true;
 
 struct Marker {
   bool hovered;
+  ImVec2 pos;
+  int idx;
 };
 
 static std::vector<Marker> activeMarkers;
-static Marker* selectedMarker = nullptr;
 
-static bool markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad, float round, bool *clicked = nullptr) {
+static Marker* hoveredMarker = nullptr;
+static Marker* marker1 = nullptr;
+static Marker* marker2 = nullptr;
+
+static void markerConnect() {
+  if (marker1) {
+    ImDrawList *fgDrawlist = ImGui::GetForegroundDrawList();
+    //fgDrawlist->AddCircleFilled(marker1->, 2.5f, ImColor(0.3f, 0.6f, 1.0f, 1.0f));
+    fgDrawlist->AddLine(marker1->pos, ImGui::GetMousePos(), ImColor(0.3f, 0.6f, 1.0f, 0.75f), 2.0f);
+    //fgDrawlist->AddCircleFilled(ImGui::GetMousePos(), 2.5f, ImColor(0.3f, 0.6f, 1.0f, 1.0f));
+  }
+}
+
+#define MARKER_HOVERED  (1 << 0)
+#define MARKER_CLICKED  (1 << 1)
+
+static int markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad, float round) {
   ImDrawList *drawlist = ImGui::GetWindowDrawList();
-  
-  
   
   ImVec2 itemPos = ImGui::GetCursorScreenPos();
   ImVec2 itemSize = ImGui::CalcTextSize(text.c_str());
@@ -30,7 +45,8 @@ static bool markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad
   bgCol.Value.w = 0.15f;
   
   bool hovered = false;
-  if (mousePos.x >= min.x && mousePos.y >= min.y && mousePos.x <= max.x && mousePos.y <= max.y && selectedMarker == nullptr) {
+  bool clicked = false;
+  if (mousePos.x >= min.x && mousePos.y >= min.y && mousePos.x <= max.x && mousePos.y <= max.y && hoveredMarker == nullptr) {
     txtCol.Value.x *= 1.5f;
     txtCol.Value.y *= 1.5f;
     txtCol.Value.z *= 1.5f;
@@ -42,7 +58,7 @@ static bool markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad
     
     hovered = true;
     ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-    clicked ? (*clicked = ImGui::IsMouseDown(ImGuiMouseButton_Left)) : 0;
+    clicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
   }
   
   if (!quiet || (quiet && hovered)) drawlist->AddRectFilled(min, max, bgCol, round);
@@ -51,19 +67,24 @@ static bool markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + itemSize.x + pad.x * 2.0f);
   //ImGui::SetCursorPosY(ImGui::GetCursorPosY() + itemSize.y + pad.y * 2.0f);
   
-//  ImDrawList *fgDrawlist = ImGui::GetForegroundDrawList();
-//  fgDrawlist->AddCircleFilled(itemPos, 2.5f, ImColor(0.3f, 0.6f, 1.0f, 1.0f));
-//  fgDrawlist->AddLine(itemPos, ImGui::GetMousePos(), ImColor(0.3f, 0.6f, 1.0f, 0.75f), 2.0f);
-//  fgDrawlist->AddCircleFilled(ImGui::GetMousePos(), 2.5f, ImColor(0.3f, 0.6f, 1.0f, 1.0f));
-  
   if (hovered) {
     Marker m;
+    m.pos = ImGui::GetCursorScreenPos();
     m.hovered = hovered;
+    m.idx = activeMarkers.size();
     activeMarkers.push_back(m);
-    selectedMarker = &activeMarkers.back();
+    hoveredMarker = &activeMarkers.back();
+    
+//    if (clicked) {
+//      printf("click\n");
+//      marker1 = &activeMarkers[m.idx];
+//    }
   }
     
-  return hovered;
+  int flags = 0;
+  if (hovered) flags |= MARKER_HOVERED;
+  if (clicked) flags |= MARKER_CLICKED;
+  return flags;
 }
 
 template <typename T>
@@ -102,8 +123,9 @@ void marker(CPA::Script::TranslationToken tok, bool readonly, std::string custom
       markerElement(customText, quiet, ImVec4(0.9, 0.4, 0.45, 1.0f), ImVec2(0.0f, 0.0f), defaultRounding);
       break;
       
-    case Script::ScriptNodeType::Subroutine:
-      if (markerElement(customText, quiet, ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f), ImVec2(0.0f, 0.0f), defaultRounding)) {
+    case Script::ScriptNodeType::Subroutine: {
+      int q = markerElement(customText, quiet, ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f), ImVec2(0.0f, 0.0f), defaultRounding);
+      if (q & MARKER_HOVERED) {
         AIWindow w(nullptr);
         ImGui::SetNextWindowPos(ImGui::GetMousePos());
         ImGui::SetNextWindowSize(ImVec2(700,500));
@@ -111,8 +133,20 @@ void marker(CPA::Script::TranslationToken tok, bool readonly, std::string custom
         w.setTargetMacro(pointer<stMacro>(uint32_t(tok.originalNode->param)));
         w.drawScript();
         ImGui::End();
+        
+        if (marker1) {
+          
+        } else {
+//          marker1 =
+//          marker2 = nullptr;
+        }
       }
+      
+      //      if (q & MARKER_CLICKED) {
+      //
+      //      }
       break;
+    }
       
     default:
       break;
@@ -120,6 +154,8 @@ void marker(CPA::Script::TranslationToken tok, bool readonly, std::string custom
 }
 
 void clearMarkers() {
+  markerConnect();
+  
   activeMarkers.clear();
-  selectedMarker = nullptr;
+  hoveredMarker = nullptr;
 }

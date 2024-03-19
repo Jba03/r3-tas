@@ -35,10 +35,13 @@ namespace R3 {
     void split();
   };
   
+  struct AutoMovement : HelperTool {
+    void update();
+    
+  };
   
-  
+  extern AutoMovement autoMovement;
   extern AutoSplitter autoSplitter;
-  
 };
 
 #endif /* tools_hh */

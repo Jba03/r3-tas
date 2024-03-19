@@ -82,22 +82,50 @@ static void overlayDrawObjects() {
 //  }
 }
 
+static void drawVector22() {
+  try {
+    pointer<stSuperObject> mainchar = game::g_stEngineStructure->currentMainPlayers[0];
+    stVector3D pos = mainchar->globalTransform->translation();
+    stVector3D dsg22 = *(stVector3D*)mainchar->actor->dsgVar(22);
+    stVector3D t = pos + dsg22;
+    
+    
+    ImVec4 p1 = gui::projectWorldCoordinate(pos);
+    ImVec4 p2 = gui::projectWorldCoordinate(t);
+    ImVec2 s1 = ImPlot::PlotToPixels(ImPlotPoint(640.0f - p1.x * 640.0f, 528.0f - p1.y * 528.0f));
+    ImVec2 s2 = ImPlot::PlotToPixels(ImPlotPoint(640.0f - p2.x * 640.0f, 528.0f - p2.y * 528.0f));
+    
+    ImDrawList *drawlist = ImPlot::GetPlotDrawList();
+    drawlist->AddLine(s1, s2, ImColor(0.0f, 1.0f, 1.0f, 1.0f), 2.5f);
+  } catch (BadPointer& e) {
+    /* ... */
+  }
+}
+
+static void drawOverlayCommon() {
+  try {
+    pointer<stEngineObject> global = game::findObject("global")->actor;
+    
+    int currentHealth = *(int32*)global->dsgVar(60);
+    int maxHealth = *(int32*)global->dsgVar(61);
+    std::string health = std::to_string(currentHealth) + "/" + std::to_string(maxHealth);
+    text(health, ImPlotPoint(450, 72), ImVec4(1.0f, 0.525f, 0.75f, 1.0f), ImVec4(0.5f, 0.1f, 0.1f, 0.5f), 0.1f);
+    
+  } catch (...) {
+    /* ... */
+  }
+}
+
 static void drawOverlay() {
   if (interface->mode == Practice)
     text("PRACTICE MODE", ImVec2(0, 528), ImVec4(1.0f, 0.4f, 0.5f, 1.0f), ImVec4(1.0f, 0.0f, 0.0f, 0.25f));
   
-  ImPlot::PushStyleColor(ImPlotCol_InlayText, ImVec4(1.0f, 0.4f, 0.6f, 1.0f));
-  ImPlot::PlotText("Health 40/100", 450, 65);
-  ImPlot::PopStyleColor();
+  drawOverlayCommon();
   
-  ImPlot::PushStyleColor(ImPlotCol_InlayText, ImVec4(1.0f, 1.0f, 0.7f, 1.0f));
-  ImPlot::PlotText("Bossbar", 120, 48);
-  ImPlot::PopStyleColor();
-  
-  //overlayDrawObjects();
   ImDrawList *drawlist = ImPlot::GetPlotDrawList();
   objectMarkersDrawWorld(game::p_stDynamicWorld, drawlist);
   
+  drawVector22();
 }
 
 void GameWindow::drawGame(ImTextureID texture) {
@@ -162,14 +190,35 @@ void GameWindow::drawMenuBar() {
         }
         
         if (ImGui::BeginMenu("Change timescale")) {
-          if (ImGui::SliderFloat("Timescale", &timescale, 0.1f, 10.0f, "%.1f")) {
-            game::g_stEngineStructure->timer.ticksPerMs = uint32_t(40500 * 1.0f / timescale);
-          }
+          ImGui::SliderFloat("##timescale-param", &timescale, 0.1f, 10.0f, "%.1f");
           ImGui::EndMenu();
         }
         
         ImGui::EndMenu();
       }
+      
+      if (ImGui::BeginMenu("Projections")) {
+        if (ImGui::BeginMenu("Objects")) {
+          ImGui::MenuItem("Dynamic world", nullptr, true);
+          ImGui::MenuItem("Inactive dynamic world", nullptr, true);
+          ImGui::MenuItem("Father sector", nullptr, true);
+          ImGui::Separator();
+          ImGui::MenuItem("Actor children", nullptr, false);
+          ImGui::MenuItem("Actor children", nullptr, false);
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Collision")) {
+          ImGui::MenuItem("Enable", nullptr, true);
+          ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+      }
+      
+      if (ImGui::BeginMenu("Tools")) {
+       // ImGui::
+        ImGui::EndMenu();
+      }
+      
     } else {
       if (game::g_stEngineStructure->currentLevelName == "intro_10" && game::isValidGameState()) {
         if (ImGui::Button("Skip intro")) {
@@ -203,4 +252,7 @@ void GameWindow::draw(ImTextureID texture) {
   drawGame(texture);
   
   ImGui::End();
+  
+  // Update timescale
+  game::g_stEngineStructure->timer.ticksPerMs = uint32_t(40500 * 1.0f / timescale);
 }

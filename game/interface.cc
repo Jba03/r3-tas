@@ -72,7 +72,7 @@ static void GCN_OnUnload(emulator::message *msg) {
 
 static void GCN_CreateHLEHooks(emulator::message *msg) {
   emulator::createHook = (void (*)(uint32_t, const char*, int, int, void (*)()))(msg->data);
-  //GCN_Interface->applyOptimizations();
+  GCN_Interface->applyOptimizations();
 }
 
 static void GCN_ReceivePPCState(emulator::message *msg) {

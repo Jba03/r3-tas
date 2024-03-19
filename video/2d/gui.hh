@@ -25,26 +25,6 @@ struct superObjectWindow {
   auto draw() -> void;
 };
 
-namespace gui {
-  
-  extern ImGuiID dockspaceID;
-  
-  void initialize();
-  void draw(void *c, void *texture, bool *windowed);
-  
-  extern MemoryEditor memoryEditor;
-  auto memoryEditorHighlight(const ImU8 *address, size_t offset) -> bool;
-  
-  extern std::vector<superObjectWindow> spoWindows;
-  
-  /// Popup
-  auto drawPopup() -> void;
-  extern pointer<> popupTarget;
-  
-  /// Project a world coordinate to the screen
-  ImVec4 projectWorldCoordinate(stVector3D p);
-}
-
 struct Window
 {
     void (*Draw)(void);
@@ -57,12 +37,21 @@ struct CommonWindow {
   void draw();
 };
 
+struct RNGWindow {
+  RNGWindow();
+  void draw();
+private:
+  int numEntriesShown = 20;
+};
+
 struct GameWindow {
   GameWindow();
   void draw(ImTextureID texture);
 private:
   void drawMenuBar();
   void drawGame(ImTextureID texture);
+  
+  bool projectObjectPositions;
 };
 
 struct CinematicWindow {
@@ -72,9 +61,11 @@ struct CinematicWindow {
 
 struct AIWindow {
   AIWindow(pointer<stSuperObject> targetObject);
+  void setTargetObject(pointer<stSuperObject> targetObject);
   void setTargetMacro(pointer<stMacro> macro);
   void setTargetBehavior(pointer<stBehavior> behavior);
   void drawScript();
+  void drawDsgVars();
   void draw();
 private:
   pointer<stSuperObject> targetObject = nullptr;
@@ -95,15 +86,46 @@ struct StructureExplorerWindow {
   void draw();
 };
 
+class InputWindow {
+public:
+  void draw();
+private:
+  bool displayJoyPad = true;
+  float joystickRadius = 35.0f;
+  ImColor joystickColor = IM_COL32(255, 0, 0, 196);
+};
+
 extern Window MenuBar;
 extern Window ConfigurationWindow;
-extern Window RNGWindow;
+//extern Window RNGWindow;
 extern Window HierarchyWindow;
 extern Window RunCreateWindow;
 //extern Window MovieInputWindow;
 //extern Window ScriptWindow;
 //extern Window SuperObjectWindow;
 extern Window bruteforceWindow;
+
+namespace gui {
+  
+  extern ImGuiID dockspaceID;
+  
+  void initialize();
+  void draw(void *c, void *texture, bool *windowed);
+  
+  extern MemoryEditor memoryEditor;
+  auto memoryEditorHighlight(const ImU8 *address, size_t offset) -> bool;
+  
+  extern std::vector<superObjectWindow> spoWindows;
+  
+  /// Popup
+  auto drawPopup() -> void;
+  extern pointer<> popupTarget;
+  
+  /// Project a world coordinate to the screen
+  ImVec4 projectWorldCoordinate(stVector3D p);
+  
+  extern AIWindow *aiWindow;
+}
 
 
 #pragma mark - Marker

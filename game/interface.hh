@@ -5,6 +5,7 @@
 #include <string>
 
 #include "emulator.hh"
+#include "event.hh"
 
 enum InterfaceMode {
   Speedrun,
@@ -25,9 +26,9 @@ struct Interface {
   
   InterfaceMode mode = Advanced;
   
-  const std::string Host = "";
+  EventList events;
   
-  //std::string configPath;
+  const std::string Host = "";
 };
 
 extern Interface *interface;
@@ -41,5 +42,12 @@ struct NativeInterface : public Interface {
   NativeInterface();
   const std::string Host = "PC";
 };
+
+static inline Event& event(std::string name) {
+  EventList& events = interface->events;
+  if (events.find(name) == events.end())
+    events[name] = new Event(name);
+  return *events[name];
+}
 
 #endif /* interface_hh */

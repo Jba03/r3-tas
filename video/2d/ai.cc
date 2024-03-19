@@ -3,49 +3,68 @@
 #include "constants.hh"
 #include "tables.hh"
 
+#include <sstream>
+
 using namespace CPA::Script;
 
 void AIWindow::drawBehaviorLists() {
+  auto list = [this](pointer<stScriptAI> list, pointer<stBehavior> current) {
+    for (int i = 0; i < list->numBehaviors; i++) {
+      pointer<stBehavior> behavior = list->behavior[i];
+      ImGui::PushStyleColor(ImGuiCol_Text, behavior == current ? ImVec4(0.1f, 1.0f, 0.25f, 1.0f) :  ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
+      if (ImGui::Selectable(behavior->name.lastPathComponent().c_str())) {
+        setTargetBehavior(behavior);
+      }
+      ImGui::PopStyleColor();
+    }
+  };
+  
+  pointer<stAIModel> aiModel;
+  pointer<stScriptAI> intelligenceList;
+  pointer<stScriptAI> reflexList;
+  pointer<stMacroList> macroList;
+  pointer<stBehavior> currentIntelligenceBehavior;
+  pointer<stBehavior> currentReflexBehavior;
+  
   try {
-    pointer<stAIModel> aiModel = targetObject->actor->aiModel();
-    pointer<stScriptAI> intelligenceList = aiModel->intelligenceBehaviorList;
-    pointer<stScriptAI> reflexList = aiModel->reflexBehaviorList;
-    pointer<stMacroList> macroList = aiModel->macroList;
-    pointer<stBehavior> currentIntelligenceBehavior = targetObject->actor->brain->mind->intelligence->currentBehavior;
-    pointer<stBehavior> currentReflexBehavior = targetObject->actor->brain->mind->reflex->currentBehavior;
-    
-    auto list = [this](pointer<stScriptAI> list, pointer<stBehavior> current) {
-      for (int i = 0; i < list->numBehaviors; i++) {
-        pointer<stBehavior> behavior = list->behavior[i];
-        ImGui::PushStyleColor(ImGuiCol_Text, behavior == current ? ImVec4(0.1f, 1.0f, 0.25f, 1.0f) :  ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
-        if (ImGui::Selectable(behavior->name.lastPathComponent().c_str())) {
-          setTargetBehavior(behavior);
-        }
-        ImGui::PopStyleColor();
-      }
-    };
-    
+    aiModel = targetObject->actor->aiModel();
+    intelligenceList = aiModel->intelligenceBehaviorList;
+    reflexList = aiModel->reflexBehaviorList;
+    macroList = aiModel->macroList;
+    currentIntelligenceBehavior = targetObject->actor->brain->mind->intelligence->currentBehavior;
+    currentReflexBehavior = targetObject->actor->brain->mind->reflex->currentBehavior;
+  } catch (BadPointer& e) {
+    /* ... */
+  }
+  
+  try {
     if (ImGui::BeginChild("Intelligence", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true)) {
-      if (ImGui::TreeNode("Intelligence")) {
-        list(intelligenceList, currentIntelligenceBehavior);
-        ImGui::TreePop();
-      }
-      
-      if (ImGui::TreeNode("Reflex")) {
-        list(reflexList, currentReflexBehavior);
-        ImGui::TreePop();
-      }
-      
-      if (ImGui::TreeNode("Macro")) {
-        for (uint8 n = 0; n < macroList->numMacros; n++) {
-          pointer<stMacro> macro = macroList->macros[n];
-          ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
-          if (ImGui::Selectable(macro->name.lastPathComponent().c_str())) {
-            setTargetMacro(macro);
-          }
-          ImGui::PopStyleColor();
+      if (intelligenceList) {
+        if (ImGui::TreeNode("Intelligence")) {
+          list(intelligenceList, currentIntelligenceBehavior);
+          ImGui::TreePop();
         }
-        ImGui::TreePop();
+      }
+      
+      if (reflexList) {
+        if (ImGui::TreeNode("Reflex")) {
+          list(reflexList, currentReflexBehavior);
+          ImGui::TreePop();
+        }
+      }
+      
+      if (macroList) {
+        if (ImGui::TreeNode("Macro")) {
+          for (uint8 n = 0; n < macroList->numMacros; n++) {
+            pointer<stMacro> macro = macroList->macros[n];
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
+            if (ImGui::Selectable(macro->name.lastPathComponent().c_str())) {
+              setTargetMacro(macro);
+            }
+            ImGui::PopStyleColor();
+          }
+          ImGui::TreePop();
+        }
       }
       
       
@@ -54,6 +73,41 @@ void AIWindow::drawBehaviorLists() {
   } catch (CPA::BadPointer& e) {
     std::cout << "Failed to draw behavior list: " << e.what() << "\n";
   }
+}
+
+void AIWindow::drawInfo() {
+  pointer<stBehavior> currentIntelligence = nullptr;
+  pointer<stBehavior> currentReflex = nullptr;
+  
+  ImGui::BeginChild("##ai-general-info", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 100), true);
+  
+  marker(targetObject, true);
+  ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), ">");
+  ImGui::SameLine();
+  marker(targetObject->actor->brain, true);
+  ImGui::NewLine();
+  
+  try {
+    currentIntelligence = targetObject->actor->brain->mind->intelligence->currentBehavior;
+    ImGui::Text("INTL:");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentIntelligence->name.lastPathComponent().c_str());
+    
+    if (displayActive) targetBehavior = currentIntelligence;
+  } catch (BadPointer& e) {
+    /* ... */
+  }
+  
+  try {
+    currentReflex = targetObject->actor->brain->mind->reflex->currentBehavior;
+    ImGui::Text("RFLX:");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentReflex->name.lastPathComponent().c_str());
+  } catch(BadPointer&e) {
+    /* ... */
+  }
+  
+  ImGui::EndChild();
 }
 
 void AIWindow::setTargetMacro(pointer<stMacro> macro) {
@@ -110,18 +164,18 @@ void AIWindow::drawScript() {
         if (tok.originalNode) {
           try {
             switch (tok.originalNode->type) {
-              case Keyword: color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f); break;
-              case Condition:
-              case Function:
-              case Procedure: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
-              case Constant:
-              case Real: color = ImVec4(210.0f / 255.0f, 148.0f / 255.0f, 93.0f / 255.0f, 1.0f); break;
-              case DsgVarRef:
-              case DsgVarRef2: color = ImVec4(0.9, 0.4, 0.45, 1.0f); break;
-              case ConstantVector:
-              case Vector: color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f); break;
-              case Field: color = ImVec4(170.0f / 255.0f, 13.0f / 255.0f, 145.0f / 255.0f, 1.0f); break;
-              case Subroutine: color = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f); break;
+              case ScriptNodeType::Keyword: color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f); break;
+              case ScriptNodeType::Condition:
+              case ScriptNodeType::Function:
+              case ScriptNodeType::Procedure: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
+              case ScriptNodeType::Constant:
+              case ScriptNodeType::Real: color = ImVec4(210.0f / 255.0f, 148.0f / 255.0f, 93.0f / 255.0f, 1.0f); break;
+              case ScriptNodeType::DsgVarRef:
+              case ScriptNodeType::DsgVarRef2: color = ImVec4(0.9, 0.4, 0.45, 1.0f); break;
+              case ScriptNodeType::ConstantVector:
+              case ScriptNodeType::Vector: color = ImVec4(229.0f / 255.0f, 193.0f / 255.0f, 124.0f / 255.0f, 1.0f); break;
+              case ScriptNodeType::Field: color = ImVec4(170.0f / 255.0f, 13.0f / 255.0f, 145.0f / 255.0f, 1.0f); break;
+              case ScriptNodeType::Subroutine: color = ImVec4(84.0f / 255.0f, 222.0f / 255.0f, 101.0f / 255.0f, 1.0f); break;
               case ScriptNodeType::String: color = ImVec4(144.0f / 255.0f, 195.0f / 255.0f, 120.0f / 255.0f, 1.0f); break;
             }
           } catch (BadPointer& e) {
@@ -200,17 +254,7 @@ void AIWindow::drawScript() {
       ImGui::PopStyleVar();
     };
     
-    ImGui::BeginChild("##script", ImVec2(ImGui::GetContentRegionAvail().x, 0), true);
-    
-//    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0,0));
-//    ImGui::BeginChild("##script-line-numbers", ImVec2(18, 0), false);
-//    for (int i = 0; i < 100; i++) {
-//      ImGui::Text("%02d", i);
-//    }
-//    ImGui::EndChild();
-//    ImGui::SameLine();
-//    ImGui::PopStyleVar();
-    
+    ImGui::BeginChild("##script", ImVec2(ImGui::GetContentRegionAvail().x, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
     try {
       if (targetBehavior) {
         for (int i = 0; i < targetBehavior->numScripts; i++) {
@@ -220,20 +264,6 @@ void AIWindow::drawScript() {
       } else if (targetMacro) {
         draw(targetMacro->currentTree->node, targetMacro->name.lastPathComponent().c_str(), 0);
       }
-      
-//      ImDrawList *drawlist = ImGui::GetForegroundDrawList();
-//      ImVec2 min = ImGui::GetWindowPos();
-//     // min.x -= 3;
-//      float length = 100;
-//      float width = 40;
-//      for (int i = 0; i < lineNum; i++) {
-//        ImGui::SetCursorScreenPos(ImVec2(min.x, min.y + i * ImGui::GetTextLineHeightWithSpacing()));
-//        ImGui::Text("%02d", i);
-//      }
-      
-     //drawlist->AddRectFilled(min, ImVec2(min.x + width, min.y + length), ImColor(255, 255, 255, 10), 5.0f, ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomLeft);
-      //drawlist->AddLine(ImVec2(min.x + width, min.y), ImVec2(min.x + width, min.y + length), ImColor(255,255,255,25));
-      
     } catch (BadPointer& e) {
       fprintf(stderr, "Failed to draw translated script tree: %s\n", e.what().c_str());
     }
@@ -241,42 +271,170 @@ void AIWindow::drawScript() {
   }
 }
 
-void AIWindow::drawInfo() {
+#pragma mark - DSG
+
+static const ImColor bright_red = ImColor(0xff3d11ee);
+static const ImColor bright_pink = ImColor(0xffa501d3);
+static const ImColor bright_yellow = ImColor(0xff49bef8);
+static const ImColor bright_green = ImColor(0xff63f147);
+static const ImColor bright_blue = ImColor(0xfff8c212);
+
+static const ImColor dark_red = ImColor(0xff1c0b98);
+static const ImColor orange = ImColor(0xff107dea);
+static const ImColor dark_yellow = ImColor(0xff1ac6ff);
+static const ImColor dark_green = ImColor(0xff3e6803);
+static const ImColor dark_blue = ImColor(0xffb54103);
+static const ImColor dark_purple = ImColor(0xff650183);
+
+static ImColor dsgVarColorTable[] = {
+    dark_blue, /* boolean */
+    bright_blue, /* byte */
+    dark_yellow, /* ubyte */
+    bright_red, /* short */
+    dark_red, /* ushort */
+    bright_blue, /* int */
+    dark_blue, /* uint */
+    bright_pink, /* float */
+    bright_green, /* vector */
+    dark_green, /* list */
+    dark_purple, /* behavior */
+    dark_yellow, /* action */
+    dark_blue, /* capabilities */
+    dark_red, /* input */
+    dark_purple, /* soundevent */
+    bright_yellow, /* light */
+    dark_yellow, /* game material */
+    dark_yellow, /* visual material */
+    bright_yellow, /* actor */
+    bright_pink, /* waypoint */
+    dark_green, /* graph */
+    dark_purple, /* text */
+    orange, /* superobject */
+    orange, /* superobject links */
+    bright_red, /* actor array */
+    bright_red, /* vector array */
+    bright_red, /* float array */
+    bright_red, /* int array */
+    bright_red, /* waypoint array */
+    bright_red, /* text array */
+    bright_red, /* textref array */
+    bright_red, /* graph array */
+    bright_red, /* ? */
+    bright_red, /* sound event array */
+    bright_red, /* ? */
+    dark_purple, /* way */
+    bright_red, /* action array */
+    bright_red, /* superobject array */
+    orange, /* object list */
+};
+
+
+static std::string dsgVarFormatBoolean(pointer<uint8> v) {
+  return *(uint8*)v ? "TRUE" : "FALSE";
+}
+
+template <typename T>
+static std::string dsgVarFormatIntegral(pointer<T> v) {
+  return std::to_string(*(T*)v);
+}
+
+static std::string dsgVarFormatFloat(pointer<float> v) {
+  std::stringstream s;
+  s << std::setprecision(3);
+  s << *(float*)v;
+  return s.str();
+}
+
+static std::string dsgVarFormatVector(pointer<stVector3D> v) {
+  std::stringstream s;
+  s << std::setprecision(3);
+  s << "(" << float(v->x) << ", " << float(v->y) << ", " << float(v->z) << ")";
+  return s.str();
+}
+
+static std::map<DsgVarType, std::function<std::string(pointer<>)>> dsgFormatTable {
+  { DsgVarType::Boolean, dsgVarFormatBoolean },
+  { DsgVarType::Byte, dsgVarFormatIntegral<int8> },
+  { DsgVarType::UByte, dsgVarFormatIntegral<uint8> },
+  { DsgVarType::Short, dsgVarFormatIntegral<int16> },
+  { DsgVarType::UShort, dsgVarFormatIntegral<uint16> },
+  { DsgVarType::Int, dsgVarFormatIntegral<int32> },
+  { DsgVarType::UInt, dsgVarFormatIntegral<uint32> },
+  { DsgVarType::Float, dsgVarFormatFloat },
+  { DsgVarType::Vector, &dsgVarFormatVector },
+  { DsgVarType::List, nullptr },
+  { DsgVarType::Comport, nullptr },
+  { DsgVarType::Action, nullptr },
+  { DsgVarType::Capabilities, nullptr },
+  { DsgVarType::Input, nullptr },
+  { DsgVarType::SoundEvent, nullptr },
+  { DsgVarType::Light, nullptr },
+  { DsgVarType::GameMaterial, nullptr },
+  { DsgVarType::VisualMaterial, nullptr },
+  { DsgVarType::Actor, nullptr },
+  { DsgVarType::Waypoint, nullptr },
+  { DsgVarType::Graph, nullptr },
+  { DsgVarType::Text, nullptr },
+  { DsgVarType::SuperObject, nullptr },
+  { DsgVarType::SOLinks, nullptr },
+  { DsgVarType::ActorArray, nullptr },
+  { DsgVarType::VectorArray, nullptr },
+  { DsgVarType::FloatArray, nullptr },
+  { DsgVarType::IntArray, nullptr },
+  { DsgVarType::WaypointArray, nullptr },
+  { DsgVarType::TextArray, nullptr },
+  { DsgVarType::TextRefArray, nullptr },
+  { DsgVarType::GraphArray, nullptr },
+  { DsgVarType::Array9, nullptr },
+  { DsgVarType::SNDEventArray, nullptr },
+  { DsgVarType::Array11, nullptr },
+  { DsgVarType::Way, nullptr },
+  { DsgVarType::ActionArray, nullptr },
+  { DsgVarType::SuperObjectrArray, nullptr },
+  { DsgVarType::ObjectList, nullptr },
+};
+
+static std::string dsgVarFormat(pointer<stDsgVarInfo> info, pointer<> memory) {
   try {
-    //targetMacro = targetObject->actor->brain->mind->aiModel->macroList->macros[0];
-    pointer<stBehavior> currentIntelligence = targetObject->actor->brain->mind->intelligence->currentBehavior;
-    pointer<stBehavior> currentReflex = targetObject->actor->brain->mind->reflex->currentBehavior;
-    
-    ImGui::BeginChild("##ai-general-info", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 100), true);
-    
-    //ImGui::Text("%s", targetObject->name(game::nameResolver).c_str());
-    
-    marker(targetObject, true);
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), ">");
-    ImGui::SameLine();
-    marker(targetObject->actor->brain, true);
-    ImGui::NewLine();
-    
-    ImGui::Text("INTL:");
-    ImGui::SameLine();
-    ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentIntelligence->name.lastPathComponent().c_str());
-    
-    ImGui::Text("RFLX:");
-    ImGui::SameLine();
-    ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentReflex->name.lastPathComponent().c_str());
-    
-    
-    if (displayActive) {
-      targetBehavior = currentIntelligence;
+    DsgVarType type = static_cast<DsgVarType>((uint32_t)info->type);
+    if (dsgFormatTable.find(type) != dsgFormatTable.end()) {
+      std::function<std::string(pointer<>)> fn = dsgFormatTable[type];
+      return fn ? fn(memory) : "";
     }
+  } catch (BadPointer& e) {
+      
+  }
+  return "";
+}
+
+void AIWindow::drawDsgVars() {
+  try {
+    pointer<stMind> mind = targetObject->actor->brain->mind;
+    pointer<stDsgMem> mem = mind->dsgMem;
+    pointer<stDsgVar> vars = mem->dsgVars;
+    pointer<> memory = mem->currentBuffer;
     
+    if (ImGui::BeginChild("Designer variables", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true)) {
+      for (int i = 0; i < vars->infoLength; i++) {
+        pointer<stDsgVarInfo> info = mem->dsgVarInfo(i);
+        pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
+        std::string format = dsgVarFormat(info, data);
+        std::string name = DsgVarTypenameTable[info->type];
+        ImGui::TextColored(dsgVarColorTable[info->type], "%s_%d: %s", name.c_str(), i, format.c_str());
+      }
+    }
     ImGui::EndChild();
+    
   } catch (BadPointer& e) {
     /* ... */
   }
 }
 
 AIWindow::AIWindow(pointer<stSuperObject> target) {
+  setTargetObject(target);
+}
+
+void AIWindow::setTargetObject(pointer<stSuperObject> target) {
   targetObject = target;
 }
 
@@ -303,9 +461,7 @@ void AIWindow::draw() {
   if (interface->mode == Speedrun)
     return;
   
-  
-  
-  std::string name = "AI";//"AI - " + targetObject->name(game::nameResolver);
+  std::string name = "AI"; //"AI - " + targetObject->name(game::nameResolver);
   ImGui::SetNextWindowSize(ImVec2(200,100));
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_MenuBar);
   if (targetObject->type == eSuperObjectType::superObjectTypeActor) {
@@ -314,6 +470,8 @@ void AIWindow::draw() {
     drawInfo();
     drawBehaviorLists();
     ImGui::EndGroup();
+    ImGui::SameLine();
+    drawDsgVars();
     ImGui::SameLine();
     drawScript();
   } else {

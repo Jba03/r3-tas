@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "interface.hh"
 #include "constants.hh"
 #include "game.hh"
 #include "log.hh"
@@ -60,6 +61,7 @@ namespace game
   stSuperObject *p_stFatherSector;
   
   std::map<std::string, stSuperObject*> objectLookupCache;
+  std::map<std::string, pointer<stInputEntryElement>> inputEntryElementCache;
   
   struct namecache {
     std::vector<std::string> familyNames;
@@ -125,11 +127,6 @@ namespace game
     
 #pragma mark - Engine
     
-    /* */
-    uint8_t previous_engine_mode = 0;
-    char previous_level_name[30];
-    unsigned transition_frame = 0;
-    
     void readLevel() {
       doublepointer<> fixptr(GCN_POINTER_FIX);
       doublepointer<> lvlptr(GCN_POINTER_LVL);
@@ -181,6 +178,24 @@ namespace game
     }
   }
   
+  static void cacheInputEntries() { // b24460
+    //printf("entries: %X\n", g_stInputStructure->entries.memoryOffset().effectiveAddress());
+    try {
+      for (int i = 0; i < g_stInputStructure->numEntries; i++) {
+        pointer<stInputEntryElement> element = g_stInputStructure->entries[i];
+        if (element->actionName) inputEntryElementCache[std::string(element->actionName)] = element;
+      }
+    } catch (...) {
+      
+    }
+  }
+  
+  pointer<stInputEntryElement> findInputEntryElement(std::string name) {
+    if (inputEntryElementCache.find(name) != inputEntryElementCache.end())
+      return inputEntryElementCache[name];
+    return nullptr;
+  }
+  
   static auto nameLookup(int type, int idx) -> std::string {
     if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
       namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
@@ -215,6 +230,20 @@ namespace game
     if (isValidGameState()) {
       readLevel();
       cache();
+      cacheInputEntries();
+      
+//      serializer s("root", "");
+//      g_stEngineStructure->currentMainPlayers[0]->actor->serialize(s);
+//      
+//      serializer_node::forEach([](serializer_node *nd) {
+//        printf("node: %s %s\n", nd->name.c_str(), nd->name.c_str());
+//      }, s.root);
+      
+      //serializer::node nd = serializer::serialize(g_stEngineStructure->currentMainPlayers[0]->actor);
+    }
+    
+    if (g_stEngineStructure->mode != lastEngineMode) {
+      event("EngineModeChanged").fire({{"from", lastEngineMode}, {"to", g_stEngineStructure->mode}});
     }
     
     R3::autoSplitter.update();
@@ -257,6 +286,21 @@ namespace game
 //        
 //        return p_stActualWorld->find(instanceName, g_stObjectTypes);
 //    }
+  
+  pointer<stSuperObject> findObject(std::string instanceName) {
+    if (!isValidGameState()) return nullptr;
+    pointer<stSuperObject> target = nullptr;
+    try {
+      p_stDynamicWorld->recurse([&](stSuperObject *obj, void *data) {
+        if (obj->name(game::nameResolver) == instanceName) {
+          target = obj;
+        }
+      }, nullptr);
+    } catch (...) {
+      /* ... */
+    }
+    return target;
+  }
     
   bool isValidGameState() {
     if (!g_stEngineStructure) return false;

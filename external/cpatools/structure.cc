@@ -1,4 +1,5 @@
 #include "structure.hh"
+#include "serialize.hh"
 
 namespace CPA {
   
@@ -14,10 +15,10 @@ namespace CPA {
 #pragma mark - stEngineObject
     
     std::string stEngineObject::name(ObjectNameResolver resolve, eObjectType type) {
-      std::string name = "Invalid";
+      std::string name = "Invalid name";
       std::array<int, 3> index { stdGame->familyType, stdGame->modelType, stdGame->instanceType };
       int t = static_cast<int>(type);
-      while (name == "Invalid" && t >= 0) {
+      while (name == "Invalid name" && t >= 0) {
         name = resolve(static_cast<eObjectType>(t), &index[t]);
         t--;
       }
@@ -41,6 +42,20 @@ namespace CPA {
       return brain->mind->aiModel;
     }
     
+    pointer<> stEngineObject::dsgVar(int idx) {
+      try {
+        pointer<stMind> mind = brain->mind;
+        pointer<stDsgMem> mem = mind->dsgMem;
+        pointer<stDsgVar> vars = mem->dsgVars;
+        pointer<> memory = mem->currentBuffer;
+        pointer<stDsgVarInfo> info = mem->dsgVarInfo(idx);
+        pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
+        return data;
+      } catch (BadPointer& e) {
+        return nullptr;
+      }
+    }
+    
 #pragma mark - stSuperObject
     
     std::string stSuperObject::typeName() {
@@ -53,11 +68,15 @@ namespace CPA {
     }
     
     std::string stSuperObject::name(ObjectNameResolver resolve, bool fullname) {
-      switch (type) {
-        case superObjectTypeActor: return actor->instanceName(resolve);
-        case superObjectTypeIPO: return fullname ? ipo->name : ipo->name.lastPathComponent();
-        case superObjectTypeSector: return fullname ? sector->name : sector->name.lastPathComponent();
-        default: return typeName();
+      try {
+        switch (type) {
+          case superObjectTypeActor: return actor->instanceName(resolve);
+          case superObjectTypeIPO: return fullname ? ipo->name : ipo->name.lastPathComponent();
+          case superObjectTypeSector: return fullname ? sector->name : sector->name.lastPathComponent();
+          default: return typeName();
+        }
+      } catch (...) {
+        return "";
       }
     }
     

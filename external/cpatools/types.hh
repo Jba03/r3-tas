@@ -2,7 +2,9 @@
 #define types_hh
 
 #include "memory.hh"
+#include "serialize.hh"
 
+#include <map>
 #include <array>
 #include <string>
 #include <concepts>
@@ -46,10 +48,10 @@ namespace CPA {
   template <typename T>
   concept ArithmeticType = std::is_arithmetic_v<T>;
   
-  struct TypeIdentifier {};
+  struct TypeID {};
   /// A type convertible to and from target platform memory
   template <IntegralType T, ArithmeticType OpT>
-  struct Type : TypeIdentifier {
+  struct Type : TypeID {
     Type() : data(0) {
       /* ... */
     }
@@ -104,15 +106,16 @@ namespace CPA {
     T operator --(int) { Type c = *this; --(*this); return c; }
     OpT operator -() { Type c = *this; return 0 - c; }
     
-    using U = T;
-    using T1 = T;
-    using T2 = OpT;
+    using UnderlyingPrimaryType = T;
+    using UnderlyingSecondaryType = OpT;
+    
+//    void serialize(serializer& s) {
+//      
+//    }
+    
   private:
     T data = 0;
   };
-
-  template <typename T>
-  using is_game_type = std::is_base_of<T, TypeIdentifier>;
   
   using TargetAddressTypeLocal = Type<Memory::TargetAddressType, Memory::TargetAddressType>;
   
@@ -125,9 +128,11 @@ namespace CPA {
     BadPointer(std::string s) : msg(s) {}
   };
   
+  
+  struct PointerID {};
   /// A pointer
   template <typename T = Address>
-  struct Pointer {
+  struct Pointer : PointerID {
     Pointer() {
       /* ... */
     }
@@ -198,12 +203,14 @@ namespace CPA {
     template <typename X = T> bool operator ==(Pointer<X>& other) { return ptr == other.ptr; }
     operator bool() { return valid(); }
     
+    using UnderlyingType = T;
+    
     Address ptr;
   };
   
   /// A pointer to a pointer
   template <typename T = Address>
-  struct DoublePointer {
+  struct DoublePointer : PointerID {
     DoublePointer() {
       /* ... */
     }
@@ -236,6 +243,12 @@ namespace CPA {
     }
     
     template <typename X = T>
+    Pointer<X> operator [](auto idx) {
+      Address *primary = Pointer<Address>(ptr.physicalAddress()) + idx;
+      return primary ? Pointer<X>(primary->physicalAddress()) : nullptr;
+    }
+    
+    template <typename X = T>
     operator Pointer<X>() {
       return pointee<X>();
     }
@@ -244,15 +257,17 @@ namespace CPA {
       return ptr.valid();
     }
     
+    using UnderlyingType = T;
+    
     Address ptr;
   };
   
   /// A string, zero-terminated unless size specified
-  template <size_t size = std::string::npos>
+  template <size_t Size = 0>
   struct String {
     /// The length of the string
     size_t length() {
-      return size;
+      return Size;
     }
     
     /// Return the last path component, if such exists
@@ -265,14 +280,14 @@ namespace CPA {
     
     operator void*() { return static_cast<void*>(string); }
     operator const char*() { return reinterpret_cast<const char*>(string); }
-    operator std::string() { return std::string(reinterpret_cast<char*>(string), size); }
+    operator std::string() { return std::string(reinterpret_cast<char*>(string), Size); }
     auto operator ==(const char *str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
     auto operator ==(std::string str) { return std::string(str) == std::string(reinterpret_cast<char*>(string)); }
     auto operator ==(String&     str) { return std::string(str) == std::string(this); }
-    auto operator =(std::string& str) { std::memset(string, 0, size); std::memcpy(string, str.data(), size); }
+    auto operator =(std::string& str) { std::memset(string, 0, Size); std::memcpy(string, str.data(), Size); }
     
   private:
-    int8_t string[size];
+    std::conditional_t<(Size == 0), const char*, int8_t> string[Size];
   };
   
   using char8   = Type<int8_t, int8_t>;
@@ -289,7 +304,10 @@ namespace CPA {
   
   template <typename T = Memory::TargetAddressType> using pointer = Pointer<T>;
   template <typename T = Memory::TargetAddressType> using doublepointer = DoublePointer<T>;
-  template <size_t size = std::string::npos> using string = String<size>;
+  template <size_t Size = 0> using string = String<Size>;
+  
+  template <typename T> using is_type = std::is_base_of<T, TypeID>;
+  template <typename T> using is_pointer = std::is_base_of<T, PointerID>;
   
 };
   

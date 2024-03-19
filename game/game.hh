@@ -30,30 +30,26 @@ namespace game {
   /* Global variables */
   extern CPA::uint8 *g_bGhostMode;
     
-    
-  /* */
-  extern uint8_t previous_engine_mode;
-  extern char previous_level_name[30];
-  extern unsigned transition_frame;
-  /* just_entered_mode: true if engine mode differs from previous frame */
-  #define just_entered_mode(m) ((engine->mode == m) && (previous_engine_mode != m))
-    
-  void level_read();
-    
   void initialize();
   void update();
   void deinitialize();
-    
-  stSuperObject *findObject(std::string instanceName);
+  void level_read();
+  
+  /** find an object by instance name*/
+  pointer<stSuperObject> findObject(std::string instanceName);
+  /** get object type color */
   uint32_t objectColor(stSuperObject *object);
-  
+  /** resolve object name */
   std::string nameResolver(eObjectType type, int *index);
-    
-  bool isValidGameState();
   
+  /** look up input structure element */
+  pointer<stInputEntryElement> findInputEntryElement(std::string name);
+  
+  /** is the engine in a valid state? */
+  bool isValidGameState();
+  /** did the engine mode change? */
   bool engineModeChangedTo(eEngineMode mode, eEngineMode from = eEngineMode::Invalid);
   
-  void setEngineLoopIterations(int i);
 }
 
 #endif /* game_h */

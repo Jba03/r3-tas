@@ -280,6 +280,10 @@ namespace gui {
     graphics::initialize();
     GImPlot = ImPlot::CreateContext();
     ImPlot::PushColormap(ImPlotColormap_Hot);
+    
+    gui::memoryEditor.Cols = 10;
+    gui::memoryEditor.OptShowDataPreview = true;
+    //gui::memoryEditor.optshow
   }
   
 #pragma mark - Layout
@@ -304,30 +308,35 @@ namespace gui {
   }
   
   static void advancedLayout(ImGuiID dockMainID) {
-    ImGuiID left1 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Left, 0.2f, nullptr, &dockMainID);
-    ImGuiID left2 = ImGui::DockBuilderSplitNode(left1, ImGuiDir_Down, 0.5f, nullptr, &left1);
-    ImGuiID left3 = ImGui::DockBuilderSplitNode(left2, ImGuiDir_Down, 0.5f, nullptr, &left2);
-
-    ImGuiID middle1 = dockMainID;// ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 1.0f, nullptr, &dock_main_id);
-    ImGuiID middle2 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Down, 0.33f, nullptr, &middle1);
-    ImGuiID middle3 = ImGui::DockBuilderSplitNode(middle2, ImGuiDir_Right, 0.25f, nullptr, &middle2);
-
-    ImGuiID right1 = ImGui::DockBuilderSplitNode(middle1, ImGuiDir_Right, 0.275f, nullptr, &middle1);
-    ImGuiID right2 = ImGui::DockBuilderSplitNode(right1, ImGuiDir_Down, 0.33f, nullptr, &right1);
+    //ImGui::GetIO().MouseWhee
     
-    ImGui::DockBuilderDockWindow("Common", left1);
-    ImGui::DockBuilderDockWindow("Hierarchy", left2);
-    ImGui::DockBuilderDockWindow("Movie", left3);
+    ImGuiID left1 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Left, 0.2f, nullptr, &dockMainID);
+    ImGuiID left2 = ImGui::DockBuilderSplitNode(left1, ImGuiDir_Down, 0.2f, nullptr, &left1);
+    ImGuiID left3 = ImGui::DockBuilderSplitNode(left2, ImGuiDir_Down, 0.75f, nullptr, &left2);
+    ImGuiID left4 = ImGui::DockBuilderSplitNode(left3, ImGuiDir_Down, 0.5f, nullptr, &left3);
+    ImGuiID left5 = ImGui::DockBuilderSplitNode(left4, ImGuiDir_Down, 0.3f, nullptr, &left4);
+    
+    ImGuiID middle1 = ImGui::DockBuilderSplitNode(dockMainID, ImGuiDir_Left, 0.75f, nullptr, &dockMainID);
+    ImGuiID middle2 = ImGui::DockBuilderSplitNode(middle1, ImGuiDir_Down, 0.33f, nullptr, &middle1);
+
+    ImGuiID right1 = dockMainID;
+    ImGuiID right2 = ImGui::DockBuilderSplitNode(right1, ImGuiDir_Down, 0.33f, nullptr, &right1);
+    ImGuiID right3 = ImGui::DockBuilderSplitNode(right2, ImGuiDir_Down, 0.25f, nullptr, &right2);
+    
+    ImGui::DockBuilderDockWindow("Common", left2);
+    ImGui::DockBuilderDockWindow("Hierarchy", left3);
+    ImGui::DockBuilderDockWindow("Memory editor", left4);
+    ImGui::DockBuilderDockWindow("Input", left5);
     ImGui::DockBuilderDockWindow("Game", middle1);
     ImGui::DockBuilderDockWindow("AI", middle2);
-    ImGui::DockBuilderDockWindow("Structure Explorer", middle3);
+    ImGui::DockBuilderDockWindow("Structure Explorer", right3);
     ImGui::DockBuilderDockWindow("RNG", right1);
     ImGui::DockBuilderDockWindow("Test", right2);
   }
   
   static void layout(ImGuiID dockSpaceID) {
     ImGui::DockBuilderRemoveNode(dockSpaceID);
-    ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace);
+    ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
     ImGui::DockBuilderSetNodeSize(dockSpaceID, ImGui::GetMainViewport()->WorkSize);
     switch (interface->mode) {
       case Speedrun: speedrunLayout(dockSpaceID); break;
@@ -479,17 +488,23 @@ namespace gui {
     ImGui::PopStyleColor();
   }
   
-  static AIWindow *aiWindow;
+  AIWindow *aiWindow;
   static GameWindow *gameWindow = new GameWindow();
   static CinematicWindow *cineWindow = new CinematicWindow();
   static StructureExplorerWindow *structureExplorerWindow = new StructureExplorerWindow();
+  static RNGWindow *rngWindow = new RNGWindow();
+  static CommonWindow *commonWindow = new CommonWindow();
+  static InputWindow *inputWindow = new InputWindow();
   
   static void loadWindows() {
     aiWindow = new AIWindow(pointer<stSuperObject>(0x80BF0C0C));
   }
   
+  static int numCallsToMul = 0;
   
   auto draw(void *c, void *texture, bool *windowed) -> void {
+    
+    
     *windowed = true;
     
     GImGui = (ImGuiContext*)c;
@@ -499,72 +514,83 @@ namespace gui {
     if (interface->mode == Speedrun)
       return;
     
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
+    
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration;
+    window_flags |= ImGuiWindowFlags_NoBackground;
+    
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
     
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("DockSpace Demo", nullptr, window_flags);
     ImGui::PopStyleVar();
     
     dockspaceID = ImGui::GetID("MyDockSpace");
-    ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+    ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
     
     if (needsLayout) {
       layout(dockspaceID);
       loadStyle();
       loadWindows();
       needsLayout = false;
+      
+      event("MTH4D_M_vMulMatrixVector").subscribe("gui", [&](Event::Param& p) {
+        numCallsToMul++;
+      });
     }
-    
+
     clearMarkers();
-    
+
     drawGraphics();
-    
+
     ImGui::SetNextWindowSizeConstraints(ImVec2(0,0), ImVec2(640,528));
+
     
-    
-    
+
     gameWindow->draw(static_cast<ImTextureID>(texture));
-    cineWindow->draw();
-    
+
     if (interface->mode == Advanced) {
       ImGui::Begin("Hierarchy");
       HierarchyWindow.Draw();
       ImGui::End();
+
+      ImGui::Begin("Movie");
       
-//      ImGui::Begin("Movie");
-//      ImGui::End();
-//
-//      ImGui::Begin("GameSub2");
-//      ImGui::End();
-      
-      ImGui::Begin("RNG");
       ImGui::End();
+
+      ImGui::Begin("GameSub2");
+      ImGui::Text("num calls: %d\n", numCallsToMul);
+      ImGui::End();
+      numCallsToMul= 0;
       
+      inputWindow->draw();
+      commonWindow->draw();
+      cineWindow->draw();
+      aiWindow->draw();
+      rngWindow->draw();
+      structureExplorerWindow->draw();
+
       ImGui::Begin("Test");
       ImGui::End();
-      
+
       ImGui::Begin("Object window");
       if (game::isValidGameState()) {
         pointer<stSuperObject> spo = Address(0x80BF0C0C);
         pointer<stEngineObject> eng = spo->actor;
-        
+
         drawDynamics(eng->dynam->dynamics);
       }
       ImGui::End();
     }
       
-    aiWindow->draw();
-    structureExplorerWindow->draw();
     
-    //ImGui::End();
+    
+    ImGui::End();
     
     ImGui::PopStyleVar(2);
       
@@ -815,9 +841,9 @@ namespace gui {
 //
 //      //gui::popup(nullptr, nullptr);
 //
-//      //gui::memoryEditor.GotoAddr = 0xBF0C0C;
-//      gui::memoryEditor.ReadOnly = false;
-//      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
+      //gui::memoryEditor.GotoAddr = 0xBF0C0C;
+      gui::memoryEditor.ReadOnly = false;
+      gui::memoryEditor.DrawWindow("Memory editor", (void*)Memory::baseAddress, 24 * 1000 * 1000);
     }
     
   
