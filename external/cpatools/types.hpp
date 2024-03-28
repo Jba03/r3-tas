@@ -141,80 +141,81 @@ struct pointer : pointer_id {
   address ptr;
 };
   
-  /// A pointer to a pointer
-  template <typename T = address>
-  struct doublepointer : pointer_id {
-    doublepointer() = default;
-    doublepointer(address addr) : ptr(addr) {}
-    template<typename X> doublepointer(doublepointer<X>& other) : ptr(other.ptr) {}
-    
-    template<typename X = T> X* pointee() {
-      address* primary = pointer<address> { ptr.physicalAddress() };
-      return primary ? pointer<X> { primary->physicalAddress() } : nullptr;
-    }
-    
-    template<typename X = T> pointer<X> operator [](auto idx) {
-      address *primary = pointer<address>(ptr.physicalAddress()) + idx;
-      return primary ? pointer<X>(primary->physicalAddress()) : nullptr;
-    }
-    
-    template<typename X = T> X* operator ->() {
-      if (!pointee()) throw bad_pointer("bad pointer");
-      return pointee();
-    }
-    
-    template<typename X = T> operator X*() { return pointee<X>(); }
-    template<typename X = T> operator pointer<X>() { return pointee<X>(); }
-    operator bool() { return ptr.valid(); }
-    
-    using UnderlyingType = T;
-    
-  private:
-    address ptr;
-  };
+/// A pointer to a pointer
+template <typename T = address>
+struct doublepointer : pointer_id {
+  doublepointer() = default;
+  doublepointer(address addr) : ptr(addr) {}
+  template<typename X> doublepointer(doublepointer<X>& other) : ptr(other.ptr) {}
   
-  /// A string, zero-terminated unless size specified
-  template <size_t Size = 0>
-  struct string : string_id {
-    string() = default;
-    
-    static constexpr bool FixedSize = Size != 0;
-    /// The true length of the string
-    inline constexpr auto length() -> size_t { return FixedSize ? Size : strlen(_string); }
-    /// Return the last path component, if such exists
-    auto lastPathComponent() -> std::string {
-      std::string str = *this;
-      size_t idx = str.rfind(':');
-      if (idx == std::string::npos) return "";
-      return str.substr(idx + 1, std::string::npos);
-    }
-    
-    operator void*() { return static_cast<void*>(_string); }
-    operator const char*() { return reinterpret_cast<const char*>(_string); }
-    operator std::string() { return std::string(reinterpret_cast<char*>(_string), Size); }
-    
-    auto operator ==(const char *str) -> bool { return std::string(str) == std::string(reinterpret_cast<char*>(_string)); }
-    auto operator ==(std::string str) -> bool { return std::string(str) == std::string(reinterpret_cast<char*>(_string)); }
-    auto operator ==(string&     str) -> bool { return std::string(str) == std::string(this); }
-    auto operator =(std::string& str) -> void { std::memset(_string, 0, Size); std::memcpy(_string, str.data(), Size); }
-    
-  private:
-    std::conditional_t<FixedSize, int8_t[Size], char*> _string;
-  };
+  template<typename X = T> X* pointee() {
+    address* primary = pointer<address> { ptr.physicalAddress() };
+    return primary ? pointer<X> { primary->physicalAddress() } : nullptr;
+  }
   
-  using char8   = type<int8_t, int8_t>;
-  using uchar8  = type<uint8_t, uint8_t>;
-  using int8    = type<int8_t, int8_t>;
-  using uint8   = type<uint8_t, uint8_t>;
-  using int16   = type<int16_t, int16_t>;
-  using uint16  = type<uint16_t, uint16_t>;
-  using int32   = type<int32_t, int32_t>;
-  using uint32  = type<uint32_t, uint32_t>;
-  using int64   = type<int64_t, int64_t>;
-  using uint64  = type<uint64_t, uint64_t>;
-  using float32 = type<uint32_t, float>;
+  template<typename X = T> pointer<X> operator [](auto idx) {
+    address *primary = pointer<address>(ptr.physicalAddress()) + idx;
+    return primary ? pointer<X>(primary->physicalAddress()) : nullptr;
+  }
   
-  template<typename T> using is_type = std::is_base_of<type_id, T>;
-  template<typename T> using is_pointer = std::is_base_of<pointer_id, T>;
-  template<typename T> using is_string = std::is_base_of<string_id, T>;
+  template<typename X = T> X* operator ->() {
+    if (!pointee()) throw bad_pointer("bad pointer");
+    return pointee();
+  }
+  
+  template<typename X = T> operator X*() { return pointee<X>(); }
+  template<typename X = T> operator pointer<X>() { return pointee<X>(); }
+  operator bool() { return ptr.valid(); }
+  
+  using UnderlyingType = T;
+  
+private:
+  address ptr;
+};
+
+/// A string, zero-terminated unless size specified
+template <size_t Size = 0>
+struct string : string_id {
+  string() = default;
+  
+  static constexpr bool FixedSize = Size != 0;
+  /// The true length of the string
+  inline constexpr auto length() -> size_t { return FixedSize ? Size : strlen(_string); }
+  /// Return the last path component, if such exists
+  auto lastPathComponent() -> std::string {
+    std::string str = *this;
+    size_t idx = str.rfind(':');
+    if (idx == std::string::npos) return "";
+    return str.substr(idx + 1, std::string::npos);
+  }
+  
+  operator void*() { return static_cast<void*>(_string); }
+  operator const char*() { return reinterpret_cast<const char*>(_string); }
+  operator std::string() { return std::string(reinterpret_cast<char*>(_string), Size); }
+  
+  auto operator ==(const char *str) -> bool { return std::string(str) == std::string(reinterpret_cast<char*>(_string)); }
+  auto operator ==(std::string str) -> bool { return std::string(str) == std::string(reinterpret_cast<char*>(_string)); }
+  auto operator ==(string&     str) -> bool { return std::string(str) == std::string(this); }
+  auto operator =(std::string& str) -> void { std::memset(_string, 0, Size); std::memcpy(_string, str.data(), Size); }
+  
+private:
+  std::conditional_t<FixedSize, int8_t[Size], char*> _string;
+};
+
+using char8   = type<int8_t, int8_t>;
+using uchar8  = type<uint8_t, uint8_t>;
+using int8    = type<int8_t, int8_t>;
+using uint8   = type<uint8_t, uint8_t>;
+using int16   = type<int16_t, int16_t>;
+using uint16  = type<uint16_t, uint16_t>;
+using int32   = type<int32_t, int32_t>;
+using uint32  = type<uint32_t, uint32_t>;
+using int64   = type<int64_t, int64_t>;
+using uint64  = type<uint64_t, uint64_t>;
+using float32 = type<uint32_t, float>;
+
+template<typename T> using is_type = std::is_base_of<type_id, T>;
+template<typename T> using is_pointer = std::is_base_of<pointer_id, T>;
+template<typename T> using is_string = std::is_base_of<string_id, T>;
+
 };
