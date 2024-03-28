@@ -74,8 +74,6 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 //namespace interface {
   
   static auto MTH4D_M_vMulMatrixVector() -> void {
-    event("MTH4D_M_vMulMatrixVector").fire();
-    
     stVector3D *dst = pointer<stVector3D>(GPR(29));
     stMatrix4D *T   = pointer<stMatrix4D>(GPR(30));
     stVector3D *src = pointer<stVector3D>(GPR(31));
@@ -84,17 +82,17 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     stVector3D s = *src;
     
     stVector3D result;
-    result.x = (m.m20 * s.z) + (m.m00 * s.x) + (m.m10 * s.y) + m.m30;
-    result.y = (m.m21 * s.z) + (m.m01 * s.x) + (m.m11 * s.y) + m.m31;
-    result.z = (m.m22 * s.z) + (m.m02 * s.x) + (m.m12 * s.y) + m.m32;
+//    result.x = (m.m20 * s.z) + (m.m00 * s.x) + (m.m10 * s.y) + m.m30;
+//    result.y = (m.m21 * s.z) + (m.m01 * s.x) + (m.m11 * s.y) + m.m31;
+//    result.z = (m.m22 * s.z) + (m.m02 * s.x) + (m.m12 * s.y) + m.m32;
     
     *dst = result;
     
     uint32_t sp = GPR(1) & 0x7FFFFFFF; /* sp = r1 */
-    LR = GPR(0) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x24)); /* lr = r0 */
-    GPR(29) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x14));
-    GPR(30) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x18));
-    GPR(31) = (*(uint32*)(static_cast<uint8_t*>(Memory::baseAddress) + sp + 0x1C));
+    LR = GPR(0) = (*(uint32*)(static_cast<uint8_t*>(memory::baseAddress) + sp + 0x24)); /* lr = r0 */
+    GPR(29) = (*(uint32*)(static_cast<uint8_t*>(memory::baseAddress) + sp + 0x14));
+    GPR(30) = (*(uint32*)(static_cast<uint8_t*>(memory::baseAddress) + sp + 0x18));
+    GPR(31) = (*(uint32*)(static_cast<uint8_t*>(memory::baseAddress) + sp + 0x1C));
     GPR(1) += 0x20;
     NPC = LR;
   }
@@ -225,14 +223,14 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     if (INT_fn_bIntersectBoxWithBox( p_stMinSituation, p_stMaxSituation, &p_stNodeToBeExplored->min, &p_stNodeToBeExplored->max)) {
       if (p_stNodeToBeExplored->children) {
         for (int i = 0; i < 8; i++) {
-          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(static_cast<uint8_t*>(Memory::baseAddress) + p_stNodeToBeExplored->children.memoryOffset().effectiveAddress() + i * 4));
+          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(static_cast<uint8_t*>(memory::baseAddress) + p_stNodeToBeExplored->children.memoryOffset().effectiveAddress() + i * 4));
           COL_fn_vExploreRecursiveOctreeWithBox ( node, p_stMinSituation, p_stMaxSituation, d_pstSelectedNode, p_xNumberOfSelectedNodes );
         }
       } else {
         if (p_stNodeToBeExplored->faceIndices) {
           /* on recupere les noeuds */
           if ( *p_xNumberOfSelectedNodes < 100 ) {
-            uint32_t addr = (((uint32_t)((long)p_stNodeToBeExplored - (long)Memory::baseAddress) | 0x80000000));
+            uint32_t addr = (((uint32_t)((long)p_stNodeToBeExplored - (long)memory::baseAddress) | 0x80000000));
             d_pstSelectedNode[*p_xNumberOfSelectedNodes] = addr;
             (*p_xNumberOfSelectedNodes) ++;
           }
@@ -275,7 +273,12 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     NPC = LR;
   }
 
-
+static auto fn_p_stEvalTree() -> void {
+  pointer<stSuperObject> object = pointer<stSuperObject>GPR(3);
+  pointer<stNodeInterpret> tree = pointer<stNodeInterpret>GPR(4);
+  pointer<uGetSetParam> gsparam = pointer<uGetSetParam>GPR(5);
+  event("AITreeEval").fire({{"object", object}, {"tree", tree}, {"getSetParam", gsparam}});
+}
   
   void Interface::applyOptimizations() {
     
@@ -287,10 +290,12 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     //hook<0x80029358>(COL_fn_vExploreOctreeWithBox, hookType::replace);
     
     // MTH
-    hook<0x800777e0>(MTH4D_M_vMulMatrixVector, hookType::replace);
+    //hook<0x800777e0>(MTH4D_M_vMulMatrixVector, hookType::replace);
     
     // POS
-    hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
+    //hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
+    
+    //hook<0x80136234>(fn_p_stEvalTree, hookType::start);
     
     
     //hook<0x8007568c>(POS_fn_vMulMatrixVertex, hookType::replace);

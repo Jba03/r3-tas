@@ -40,6 +40,13 @@ namespace R3 {
     
   };
   
+  class AIDebugger : HelperTool {
+    
+  public:
+    void update();
+  };
+  
+  extern AIDebugger aiDebugger;
   extern AutoMovement autoMovement;
   extern AutoSplitter autoSplitter;
 };

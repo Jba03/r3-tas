@@ -5,10 +5,12 @@
 #include "video.hh"
 #include "tools.hh"
 
+#include <locale>
+
 #undef GCN
 #undef PS2
 #undef PC
-#include "cpa.hh"
+#include <cpatools/cpa.hpp>
 
 #if defined(WIN32)
 # define LIBR3TAS_EXPORT __declspec(dllexport)
@@ -28,7 +30,7 @@ constexpr std::size_t constexpr_strlen(std::string_view s) { return s.size(); }
 static VideoInterface *videoInterface;
 
 Interface::Interface() {
-  
+  std::locale::global(std::locale::classic()); //for stringstream
   videoInterface = new VideoInterface(this);
   
 //  debugger = new Debugger("/Users/jba03/Library/Application Support/Dolphin/Maps/GRHE41.map");
@@ -57,7 +59,7 @@ static void GCN_OnMemoryPointer(emulator::message *msg) {
 }
 
 static void GCN_OnUpdate(emulator::message *msg) {
-  CPA::Memory::baseAddress = GCN_MemoryFunction();
+  cpa::memory::baseAddress = GCN_MemoryFunction();
 
   game::update();
 }

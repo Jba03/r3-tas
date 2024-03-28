@@ -1,5 +1,4 @@
-#ifndef config_hh
-#define config_hh
+#pragma once
 
 #define CPA_ENDIAN_BIG      0
 #define CPA_ENDIAN_LITTLE   1
@@ -61,5 +60,3 @@
 #if !(CPA_VERSION & CPA_VERSION_ID_BIT)
 # error Version not set. Please define CPA_VERSION to one of CPA_VERSION_#.
 #endif
-
-#endif /* config_hh */

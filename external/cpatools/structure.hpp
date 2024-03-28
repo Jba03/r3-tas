@@ -1,86 +1,87 @@
-#ifndef structure_hh
-#define structure_hh
+#pragma once
 
-#include "config.hh"
-#include "types.hh"
-#include "serialize.hh"
+#include <cpatools/common.hpp>
+#include <cpatools/configuration.hpp>
+#include <cpatools/types.hpp>
+#include <cpatools/serialize.hpp>
 
-namespace CPA::Structure {
+#include <map>
+
+namespace cpa::structure {
   
-#pragma mark - Predeclarations
-  
-  struct stEngineStructure;
-  struct stEngineTimer;
-  struct stCineManager;
-  struct stLanguageStructure;
-  struct stRandom;
-  
-  // IPT
-  struct stInputStructure;
-  struct stInputEntryElement;
-  struct stPadReadingOutput;
-  
-  // Object
-  struct stSuperObject;
-  struct stSector;
-  struct stEngineObject;
-  struct st3DData;
-  struct stStandardGameInfo;
-  struct stCollideSet;
-  struct stCineInfo;
-  struct stMSWay;
-  struct stMSLight;
-  struct stSectorInfo;
-  struct stMicro;
-  struct stMSSound;
-  struct stInstantiatedPhysicalObject;
-  struct stPhysicalObject;
-  
-  // AI
-  struct stBrain;
-  struct stMind;
-  struct stAIModel;
-  struct stIntelligence;
-  struct stDsgMem;
-  struct stDsgVar;
-  struct stScriptAI;
-  struct stMacro;
-  struct stMacroList;
-  struct stBehavior;
-  
-  // CINE
-  struct stCine;
-  struct stCineActor;
-  
-  // DNM
-  struct stDynam;
-  struct stDynamics;
-  struct stDynamicsBaseBlock;
-  struct stDynamicsAdvancedBlock;
-  struct stDynamicsComplexBlock;
-  struct stDynamicsReport;
-  struct stDynamicsRotation;
-  struct stDynamicsMovevement;
-  struct stDynamicsParsingData;
-  
-  // COL
-  struct stPhysicalCollideSet;
-  struct stCollideElementIndexedTriangles;
-  struct stCollideElementIndexedTrianglesVisual;
-  struct stCollideMaterial; // defined in GMT under previous versions
-  
-  // GMT, GLI, GLD
-  struct stGameMaterial;
-  struct stVertex2D;
-  struct stCamera;
-  struct stTexture;
-  struct stAnimatedTextureNode;
-  
-  // WP
-  struct stWayPoint;
-  struct stGraph;
-  struct stGraphNode;
-  struct stGraphChainList;
+struct stEngineStructure;
+struct stEngineTimer;
+struct stCineManager;
+struct stLanguageStructure;
+struct stRandom;
+
+// IPT
+struct stInputStructure;
+struct stInputEntryElement;
+struct stPadReadingOutput;
+
+// Object
+struct stSuperObject;
+struct stSector;
+struct stEngineObject;
+struct st3DData;
+struct stStandardGameInfo;
+struct stCollideSet;
+struct stCineInfo;
+struct stMSWay;
+struct stMSLight;
+struct stSectorInfo;
+struct stMicro;
+struct stMSSound;
+struct stInstantiatedPhysicalObject;
+struct stPhysicalObject;
+
+// AI
+struct stBrain;
+struct stMind;
+struct stAIModel;
+struct stIntelligence;
+struct stDsgMem;
+struct stDsgVar;
+struct stDsgVarInfo;
+struct stScriptAI;
+struct stMacro;
+struct stMacroList;
+struct stBehavior;
+
+// CINE
+struct stCine;
+struct stCineActor;
+
+// DNM
+struct stDynam;
+struct stDynamics;
+struct stDynamicsBaseBlock;
+struct stDynamicsAdvancedBlock;
+struct stDynamicsComplexBlock;
+struct stDynamicsReport;
+struct stDynamicsRotation;
+struct stDynamicsMovevement;
+struct stDynamicsParsingData;
+
+// COL
+struct stPhysicalCollideSet;
+struct stCollideElementIndexedTriangles;
+struct stCollideElementIndexedTrianglesVisual;
+struct stCollideMaterial; // defined in GMT under previous versions
+
+// GMT, GLI, GLD
+struct stGameMaterial;
+struct stVertex2D;
+struct stCamera;
+struct stTexture;
+struct stAnimatedTextureNode;
+
+// WP
+struct stWayPoint;
+struct stGraph;
+struct stGraphNode;
+struct stGraphChainList;
   
 #pragma mark - Structure -
   
@@ -93,203 +94,179 @@ namespace CPA::Structure {
   struct structure {
     /* ... */
   };
+
+#define s(what) s.add(#what, what);
   
   /** ``STRUCTURE BEGIN`` **/
   
 #pragma mark - Common types
   
-  struct stVector3D {
-    float32 x = 0.0f;
-    float32 y = 0.0f;
-    float32 z = 0.0f;
-    
-    stVector3D() { /* ... */ }
-    stVector3D(float x, float y, float z) : x(x), y(y), z(z) { /* ... */ }
-    
-    const float32 dot(stVector3D v) { return x * v.x + y * v.y + z * v.z; }
-    const float32 square() { return dot(*this); }
-    const float32 length() { return std::sqrt(square()); }
-    
-    const stVector3D operator +(stVector3D v) { return stVector3D(x + v.x, y + v.y, z + v.z); }
-    const stVector3D operator -(stVector3D v) { return stVector3D(x - v.x, y - v.y, z - v.z); }
-    const stVector3D operator *(stVector3D v) { return stVector3D(x * v.x, y * v.y, z * v.z); }
-    const stVector3D operator /(stVector3D v) { return stVector3D(x / v.x, y / v.y, z / v.z); }
-    const stVector3D operator *(float s) { return stVector3D(x * s, y * s, z * s); }
-    const stVector3D operator /(float s) { return stVector3D(x * s, y * s, z * s); }
-    const stVector3D operator -() { return stVector3D(-x, -y, -z); }
-    
-    void serialize(serializer& s);
+template<unsigned N, typename T = float32>
+union vector {
+  template<typename... Args, std::enable_if_t<sizeof...(Args) == N && std::conjunction_v<std::is_convertible<Args, float>...>>* = nullptr>
+  vector(Args... args): data { static_cast<float>(args)... } { /* ... */ }
+  template<unsigned N2> vector(std::array<float32, N2>& vec) { for (auto i : range(N)) data[i] = vec[i]; }
+  vector() { /* ... */}
+  
+  auto dot(vector<N> v) const { float s = 0.0f; for (auto i : range(N)) s += data[i] * v[i]; return s; }
+  auto square() const { return dot(*this); }
+  auto length() const { return sqrt(square()); }
+  auto& operator [](auto i) { return data[i]; }
+  
+  auto operator +(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] + v[i]; return result; }
+  auto operator -(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] - v[i]; return result; }
+  auto operator *(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] * v[i]; return result; }
+  auto operator /(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] / v[i]; return result; }
+  auto operator *(float     s) { vector<N> result; for(auto i : range(N)) result[i] = data[i] *    s; return result; }
+  auto operator /(float     s) { vector<N> result; for(auto i : range(N)) result[i] = data[i] /    s; return result; }
+  auto operator -()            { vector<N> result; for(auto i : range(N)) result[i] =-data[i];        return result; }
+  auto xyz() -> vector<3> { return vector<3>(x, y, z); }
+  
+  struct {
+    std::conditional_t<N >= 1, T, zero_t> x;
+    std::conditional_t<N >= 2, T, zero_t> y;
+    std::conditional_t<N >= 3, T, zero_t> z;
+    std::conditional_t<N >= 4, T, zero_t> w;
   };
   
-  struct stVector4D {
-    float32 x = 0.0f;
-    float32 y = 0.0f;
-    float32 z = 0.0f;
-    float32 w = 0.0f;
-    
-    stVector4D() { /* ... */ }
-    stVector4D(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { /* ... */ }
-    
-    const stVector3D xyz() { return stVector3D(x, y, z); }
-    
-    const stVector4D operator +(stVector4D v) { return stVector4D(x + v.x, y + v.y, z + v.z, w + v.w); }
-    const stVector4D operator -(stVector4D v) { return stVector4D(x - v.x, y - v.y, z - v.z, w - v.w); }
-    const stVector4D operator *(stVector4D v) { return stVector4D(x * v.x, y * v.y, z * v.z, w * v.w); }
-    const stVector4D operator /(stVector4D v) { return stVector4D(x / v.x, y / v.y, z / v.z, w / v.w); }
-    const stVector4D operator *(float s) { return stVector4D(x * s, y * s, z * s, w * s); }
-    const stVector4D operator /(float s) { return stVector4D(x / s, y / s, z / s, w / s); }
-  };
+  auto serialize(serializer::node& nd) {
+    nd.type("vector<" + std::to_string(N) + ">");
+    for (auto i : range(N)) nd.add(std::string(1, "xyzw"[i]), x);
+  }
   
-  template <typename T, unsigned Rows, unsigned Columns>
-  struct Matrix {
-    auto operator()(unsigned row, unsigned col) -> T& { return m[row][col]; }
-    
-    template <unsigned R, unsigned C>
-    auto operator *(const Matrix<T, R, C>& src) const -> Matrix<T, Rows, Columns> {
-      static_assert(Columns == C);
-      Matrix<T, Rows, Columns> result;
-      for (unsigned y = 0; y < Rows; y++) {
-        for (unsigned x = 0, sum = 0; x < C; x++, sum = 0) {
-          for (unsigned z = 0; z < Columns; z++) {
-            sum += this(y, z) * src(z, x);
-          }
-          result(y, x) = sum;
-        }
+private:
+  struct { std::array<T, N> data; };
+};
+
+using stVector2D = vector<2>;
+using stVector3D = vector<3>;
+using stVector4D = vector<4>;
+  
+template<unsigned Rows, unsigned Columns, typename T>
+struct matrix {
+  matrix() {
+    for (auto y : range(Rows)) {
+      for (auto x : range(Columns)) {
+        (*this)(x, y) = (y == x ? 1.0f : 0.0f);
       }
-      return result;
     }
-    
-    T m[Rows][Columns];
   };
   
-  union stMatrix3D {
-    struct {
-      float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f;
-      float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f;
-      float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f;
-    };
-  };
+  T& operator()(auto row, auto col) { return m[col + row * Columns]; }
   
-  union stMatrix4D {
-    struct {
-      float32 m00 = 1.0f, m01 = 0.0f, m02 = 0.0f, m03 = 0.0f;
-      float32 m10 = 0.0f, m11 = 1.0f, m12 = 0.0f, m13 = 0.0f;
-      float32 m20 = 0.0f, m21 = 0.0f, m22 = 1.0f, m23 = 0.0f;
-      float32 m30 = 0.0f, m31 = 0.0f, m32 = 0.0f, m33 = 1.0f;
-    };
-    struct {
-      float32 m[16];
-    };
-    
-    stMatrix4D() { /* ... */ }
-      
-    stMatrix4D operator * (stMatrix4D mm) {
-      stMatrix4D r;
-      r.m[0]  = m[0] * mm.m[0]  + m[4] * mm.m[1]  + m[8] * mm.m[2]   + m[12] * mm.m[3];
-      r.m[4]  = m[0] * mm.m[4]  + m[4] * mm.m[5]  + m[8] * mm.m[6]   + m[12] * mm.m[7];
-      r.m[8]  = m[0] * mm.m[8]  + m[4] * mm.m[9]  + m[8] * mm.m[10]  + m[12] * mm.m[11];
-      r.m[12] = m[0] * mm.m[12] + m[4] * mm.m[13] + m[8] * mm.m[14]  + m[12] * mm.m[15];
-      r.m[1]  = m[1] * mm.m[0]  + m[5] * mm.m[1]  + m[9] * mm.m[2]   + m[13] * mm.m[3];
-      r.m[5]  = m[1] * mm.m[4]  + m[5] * mm.m[5]  + m[9] * mm.m[6]   + m[13] * mm.m[7];
-      r.m[9]  = m[1] * mm.m[8]  + m[5] * mm.m[9]  + m[9] * mm.m[10]  + m[13] * mm.m[11];
-      r.m[13] = m[1] * mm.m[12] + m[5] * mm.m[13] + m[9] * mm.m[14]  + m[13] * mm.m[15];
-      r.m[2]  = m[2] * mm.m[0]  + m[6] * mm.m[1]  + m[10] * mm.m[2]  + m[14] * mm.m[3];
-      r.m[6]  = m[2] * mm.m[4]  + m[6] * mm.m[5]  + m[10] * mm.m[6]  + m[14] * mm.m[7];
-      r.m[10] = m[2] * mm.m[8]  + m[6] * mm.m[9]  + m[10] * mm.m[10] + m[14] * mm.m[11];
-      r.m[14] = m[2] * mm.m[12] + m[6] * mm.m[13] + m[10] * mm.m[14] + m[14] * mm.m[15];
-      r.m[3]  = m[3] * mm.m[0]  + m[7] * mm.m[1]  + m[11] * mm.m[2]  + m[15] * mm.m[3];
-      r.m[7]  = m[3] * mm.m[4]  + m[7] * mm.m[5]  + m[11] * mm.m[6]  + m[15] * mm.m[7];
-      r.m[11] = m[3] * mm.m[8]  + m[7] * mm.m[9]  + m[11] * mm.m[10] + m[15] * mm.m[11];
-      r.m[15] = m[3] * mm.m[12] + m[7] * mm.m[13] + m[11] * mm.m[14] + m[15] * mm.m[15];
-      return r;
+  static inline auto identity() {
+    matrix result;
+    for (auto y : range(Rows)) {
+      for (auto x : range(Columns)) {
+        result(x, y) = (y == x ? 1.0f : 0.0f);
+      }
     }
-    
-    /// Create a new translation matrix
-    static stMatrix4D translation(stVector3D v) {
-      stMatrix4D result;
-      result.m30 = v.x;
-      result.m31 = v.y;
-      result.m32 = v.z;
-      return result;
+    return result;
+  }
+  
+  template <unsigned R, unsigned C>
+  auto operator* (matrix<R, C, T> src) {
+    static_assert(Columns == C);
+    matrix<Rows, Columns, T> result;
+    for (auto y : range(Rows)) {
+      for (auto x : range(C)) {
+        T sum = 0.0f;
+        for (auto z : range(Columns)) {
+          sum += src(y, z) * (*this)(z, x);
+        }
+        result(y,x) = sum;
+      }
     }
-    
-    /// Create a new scale matrix
-    static stMatrix4D scale(stVector3D v) {
-      stMatrix4D result;
-      result.m00 = v.x;
-      result.m11 = v.y;
-      result.m22 = v.z;
-      return result;
+    return result;
+  }
+  
+  auto operator* (stVector4D v) -> stVector4D {
+    stVector4D result;
+    for (auto y : range(Rows)) {
+      result[y] = 0.0f;
+      for (auto x : range(Columns)) {
+        result[y] += (*this)(x,y) * v[x];
+      }
     }
-    
-    /// Create a new perspective matrix
-    static stMatrix4D perspective(float fovY, float aspect, float near, float far) {
-      float const ct = 1.0f / std::tanf(fovY / 2.0f);
-      
-      stMatrix4D result;
-      result.m00 = ct / aspect;
-      result.m11 = ct;
-      result.m22 = (far + near) / (near - far);
-      result.m23 = -1.0f;
-      result.m32 = (2.0f * far * near) / (near - far);
-      result.m33 = 0.0f;
-      return result;
-    }
-    
-    /// stMatrix4D * stVector4D -> stVector4D
-    stVector4D operator * (stVector4D v) {
-      stVector4D result;
-      result.x = m00 * v.x + m10 * v.y + m20 * v.z + m30 * v.w;
-      result.y = m01 * v.x + m11 * v.y + m21 * v.z + m31 * v.w;
-      result.z = m02 * v.x + m12 * v.y + m22 * v.z + m32 * v.w;
-      result.w = m03 * v.x + m13 * v.y + m23 * v.z + m33 * v.w;
-      return result;
-    }
-    
-    stVector3D operator *(stVector3D v) {
-      stVector4D V = (*this) * stVector4D(v.x, v.y, v.z, 1.0f);
-      return V.xyz();
-    }
-    
-  };
+    return result;
+  }
+  
+  auto operator* (stVector3D v) -> stVector3D {
+    return ((*this) * stVector4D(v.x, v.y, v.z, 1.0f)).xyz();
+  }
+  
+  static inline auto make_translation(vector<3> p) {
+    matrix result = identity();
+    for (auto i : range(3)) result(Rows-1,i) = p[i];
+    return result;
+  }
+  
+  static inline auto make_scale(vector<3> p){
+    matrix result = identity();
+    for (auto i : range(3)) result(i,i) = p[i];
+    return result;
+  }
+  
+  static inline auto make_perspective(float fovY, float aspect, float near, float far) {
+    float ct = 1.0f / std::tan(fovY / 2.0f);
+    matrix<4,4,T> result = identity();
+    result(0,0) = ct / aspect;
+    result(1,1) = ct;
+    result(2,2) = (far + near) / (near - far);
+    result(2,3) = -1.0f;
+    result(3,2) = (2.0f * far * near) / (near - far);
+    result(3,3) = 0.0f;
+    return result;
+  }
+  
+  inline auto translation() -> stVector3D& {
+    return *(stVector3D*)&(*this)(Rows-1,0);
+  }
+  
+  inline auto scale(bool ref = false) {
+    if (ref) return vector<3,float32*>(&(*this)(0,0), &(*this)(1,1), &(*this)(2,2));
+    return stVector3D((*this)(0,0), (*this)(1,1), (*this)(2,2));
+  }
+  
+  auto serialize(serializer::node& s) {
+    s.type("matrix<" + std::to_string(Rows) + "," + std::to_string(Columns) + ">");
+    for (auto i : range(Rows*Columns)) s(m[i])
+  }
+  
+private:
+  std::array<T, Rows * Columns> m;
+};
+
+using stMatrix3D = matrix<3, 3, float32>;
+using stMatrix4D = matrix<4, 4, float32>;
   
 #pragma mark - Containers
+
+enum class LinkedListType { Single, Double };
+/// A linked list
+template<typename T = uint32, enum LinkedListType K = LinkedListType::Single>
+struct LinkedList {
+  pointer<T> first;
+  std::conditional_t<K == LinkedListType::Single, pointer<T>, std::monostate> last;
+  int32 numEntries;
   
-  /// A linked list
-  template <typename T = uint32>
-  struct stLinkedList {
-    pointer<T> first;
-    int32 numEntries;
-    
-    template <typename F>
-    void forEach(const F& f, void *userdata = nullptr) {
-      for (T *c = first; c; c = c->next) {
-        f(c, userdata);
-      }
+  template<typename F> void forEach(const F& f, void *userdata = nullptr) {
+    for (T *c = first; c; c = c->next) {
+      f(c, userdata);
     }
-  };
-  
-  /// A doubly linked list
-  template <typename T = uint32>
-  struct stDoublyLinkedList {
-    pointer<T> first;
-    pointer<T> last;
-    int32 numEntries;
-    
-    template <typename F>
-    void forEach(const F& f, void *userdata = nullptr) {
-      for (T *c = first; c; c = c->next) {
-        f(c, userdata);
-      }
-    }
-  };
-  
+  }
+};
+
+template<typename T = uint32> using stSingleLinkedList = LinkedList<T, LinkedListType::Single>;
+template<typename T = uint32> using stDoublyLinkedList = LinkedList<T, LinkedListType::Single>;
+template<typename T = uint32> using stLinkedList = stDoublyLinkedList<T>;
+
 #pragma mark - stTransform
   
   /// World transform
   struct stTransform {
     
-    enum Type : uint32_t {
+    enum class Type : uint32_t {
       /* gcn */
       Uninitialized = 0,
       Identity = 1,
@@ -306,7 +283,7 @@ namespace CPA::Structure {
     stTransform();
     
     /** transform type */
-    Type type = Uninitialized;
+    uint32 type = 0;
     /** matrix */
     stMatrix4D matrix;
     /** external scale parameter */
@@ -314,13 +291,19 @@ namespace CPA::Structure {
     
     /// Get translation vector
     stVector3D& translation() {
-      return *(stVector3D*)&matrix.m30;
+      return matrix.translation();
     }
     
     /** transform x stVector3D -> stVector3D */
     stVector3D operator * (stVector3D v);
     /** transform x stVector4D -> stVector4D */
     stVector4D operator * (stVector4D v);
+    
+    auto serialize(serializer::node& s) {
+      s(type)
+      s(matrix)
+      s(scale)
+    }
   };
   
 #pragma mark - stAlways
@@ -335,31 +318,33 @@ namespace CPA::Structure {
   
 #pragma mark - stObjectType
   
-  enum eObjectType {
-    objectFamilyName = 0,
-    objectModelName = 1,
-    objectInstanceName = 2,
-  };
+enum ObjectType {
+  Family = 0,
+  Model = 1,
+  Instance = 2,
+};
+
+using ObjectNameResolver = std::function<std::string(ObjectType, int*)>;
   
-  /// Object identifier
-  struct stObjectTypeElement {
-    pointer<stObjectTypeElement> next;
-    pointer<stObjectTypeElement> prev;
-    pointer<stDoublyLinkedList<stObjectTypeElement>> father;
-    pointer<string<>> name;
-    uint8 priority;
-    uint8 identifier;
-    padding(2)
-    void serialize(serializer& s);
-  };
-  
-  /// Global object type table
-  struct stObjectType {
-    stDoublyLinkedList<stObjectTypeElement> family;
-    stDoublyLinkedList<stObjectTypeElement> model;
-    stDoublyLinkedList<stObjectTypeElement> instance;
-    void serialize(serializer& s);
-  };
+/// Object identifier
+struct stObjectTypeElement {
+  pointer<stObjectTypeElement> next;
+  pointer<stObjectTypeElement> prev;
+  pointer<stDoublyLinkedList<stObjectTypeElement>> father;
+  pointer<string<>> name;
+  uint8 priority;
+  uint8 identifier;
+  padding(2)
+  void serialize(serializer& s);
+};
+
+/// Global object type table
+struct stObjectType {
+  stDoublyLinkedList<stObjectTypeElement> family;
+  stDoublyLinkedList<stObjectTypeElement> model;
+  stDoublyLinkedList<stObjectTypeElement> instance;
+  void serialize(serializer::node& s);
+};
   
 #pragma mark - Engine
   
@@ -382,28 +367,28 @@ namespace CPA::Structure {
     void serialize(serializer& s);
   };
   
-  enum eEngineMode : uint8_t {
-    Invalid = 0,
-    Initialize = 1,
-    Deinitialize = 2,
-    InitializeGameplay = 3,
-    DeinitializeGameplay = 4,
-    EnterLevel = 5,
-    ChangeLevel = 6,
-    Gameplay = 9,
-  };
-  
-  enum eInputMode : uint8::UnderlyingPrimaryType {
-    Normal = 0,
-    Commands = 1,
-  };
-  
   struct stEngineStructure {
-    eEngineMode mode = Invalid;
+    enum mode : uint8_t {
+      Invalid = 0,
+      Initialize = 1,
+      Deinitialize = 2,
+      InitializeGameplay = 3,
+      DeinitializeGameplay = 4,
+      EnterLevel = 5,
+      ChangeLevel = 6,
+      Gameplay = 9,
+    };
+    
+    enum inputMode : uint8_t {
+      Normal = 0,
+      Commands = 1,
+    };
+    
+    mode mode;
     string<30> currentLevelName;
     string<30> nextLevelName;
     string<30> firstLevelName;
-    eInputMode inputMode;
+    inputMode inputMode = Normal;
     uint8 displayFixMode;
     padding(3)
     uint32 displayMode;
@@ -468,7 +453,7 @@ namespace CPA::Structure {
     pointer<stCineManager> cineManager;
     
     /// Load level by name
-    void loadLevel(std::string levelName);
+    inline auto loadLevel(std::string levelName) -> void;
     
     void serialize(serializer& s);
   };
@@ -809,7 +794,6 @@ namespace CPA::Structure {
     stTransform previousMatrixPrevious;
   };
   
-  
   struct stDynamicsObstacle {
     float32 rate;
     stVector3D normal;
@@ -902,8 +886,6 @@ namespace CPA::Structure {
     /* :: custom values :: */
   };
   
-  using ObjectNameResolver = std::function<std::string(eObjectType, int*)>;
-  
   struct stEngineObject {
     pointer<st3DData> p3DData;
     pointer<stStandardGameInfo> stdGame;
@@ -917,19 +899,18 @@ namespace CPA::Structure {
     pointer<stMicro> micro;
     pointer<stMSSound> msSound;
     
-    std::string name(ObjectNameResolver resolve, eObjectType type);
-    std::string familyName(ObjectNameResolver resolve);
-    std::string modelName(ObjectNameResolver resolve);
-    std::string instanceName(ObjectNameResolver resolve);
-    
+    /// Get the name of this actor in order of [Instance, Model, Family]
+    inline auto name(ObjectType type = Instance) -> std::string;
+    /// Get the superobject associated with this actor
+    inline auto superobject() -> pointer<stSuperObject>;
     /// Return the AI model of this actor
-    pointer<stAIModel> aiModel();
+    inline auto aiModel() -> pointer<stAIModel>;
+    /// Get the dsg variable memory
+    inline auto dsgMem() -> pointer<stDsgMem>;
     /// Get the dsg variable memory at specified index
-    pointer<> dsgVar(int idx);
-    
-    void serialize(serializer& s);
-    
-    //static const inline std::string className = "stEngineObject";
+    inline auto dsgVar(int idx, uint32_t* type = nullptr) -> pointer<>;
+    /// Serialize this structure
+    inline auto serialize(serializer::node& s);
   };
   
   using stActor = stEngineObject;
@@ -1255,37 +1236,23 @@ namespace CPA::Structure {
   };
   
 #pragma mark - stSuperObject
-  
-  enum eSuperObjectType : uint32_t {
-    superObjectTypeNone                 = (0 << 0),
-    superObjectTypeWorld                = (1 << 0),
-    superObjectTypeActor                = (1 << 1),
-    superObjectTypeSector               = (1 << 2),
-    superObjectTypePhysicalObject       = (1 << 3),
-    superObjectTypePhysicalObjectMirror = (1 << 4),
-    superObjectTypeIPO                  = (1 << 5),
-    superObjectTypeIPOMirror            = (1 << 6),
-    superObjectTypeSpecialEffect        = (1 << 7),
-    superObjectTypeNoAction             = (1 << 8),
-    superObjectTypeMirror               = (1 << 9),
-  };
-  
-  static std::map<eSuperObjectType, std::string> stSuperObjectTypeNames {
-    { superObjectTypeNone                , "Dummy SuperObject" },
-    { superObjectTypeWorld               , "World" },
-    { superObjectTypeActor               , "Actor" },
-    { superObjectTypeSector              , "Sector" },
-    { superObjectTypePhysicalObject      , "PhysicalObject" },
-    { superObjectTypePhysicalObjectMirror, "PhysicalObjectMirror" },
-    { superObjectTypeIPO                 , "IPO" },
-    { superObjectTypeIPOMirror           , "IPO.Mirror" },
-    { superObjectTypeSpecialEffect       , "SpecialEffect" },
-    { superObjectTypeNoAction            , "NoAction" },
-    { superObjectTypeMirror              , "Mirror" },
-  };
-    
+
   struct stSuperObject {
-    /// `eSuperObjectType`
+    
+    enum type : uint32_t {
+      None                 = (0 << 0),
+      World                = (1 << 0),
+      Actor                = (1 << 1),
+      Sector               = (1 << 2),
+      PhysicalObject       = (1 << 3),
+      PhysicalObjectMirror = (1 << 4),
+      IPO                  = (1 << 5),
+      IPOMirror            = (1 << 6),
+      SpecialEffect        = (1 << 7),
+      NoAction             = (1 << 8),
+      Mirror               = (1 << 9),
+    };
+    
     uint32 type;
     
     union {
@@ -1308,7 +1275,7 @@ namespace CPA::Structure {
     uint32 flags;
     pointer<> visualBBox;
     pointer<> collideBBox;
-    stVector3D semiLookat;
+    stVector3D semiLookAt;
     float32 transparency;
     uint32 outlineColor;
     int32 displayPriority;
@@ -1321,27 +1288,40 @@ namespace CPA::Structure {
     uint8 transition;
     padding(1)
     
-    /// Return the name of this superobject's type
-    std::string typeName();
+    struct iterator {
+      iterator(pointer<stSuperObject> start) : obj(start) { /* ... */ }
+      auto operator*() const -> pointer<stSuperObject> { return obj; }
+      auto operator!=(iterator& source) -> bool { return obj != source.obj; }
+      auto operator++() -> iterator& { obj = obj->next; return *this; }
+      
+    private:
+      pointer<stSuperObject> obj;
+    };
     
+    /// Return the name of this superobject's type
+    inline auto typeName() -> std::string;
     /// Return the name of the superobject
-    ///   For actors, return the first name available
-    ///   in the order of [Family, Model, Instance]
-    std::string name(ObjectNameResolver resolve, bool fullname = false);
+    inline auto name(bool fullname = false) -> std::string;
     
     /// Recurse the tree below this superobject
     template <typename F, typename UserData>
-    void recurse(const F& f, UserData userdata) {
+    auto recurse(const F& f, UserData userdata) {
       _recurse(this, userdata, f);
     }
       
     /// Run a custom function for each child object
     template <typename F>
     void forEachChild(const F& f, void *userdata = nullptr) {
-      for (stSuperObject *ii = firstChild; ii; ii = ii->next) {
+      for (pointer<stSuperObject> ii = firstChild; ii; ii = ii->next) {
         f(ii, userdata);
       }
     }
+    
+    //iterator
+    auto begin() -> iterator { return firstChild; }
+    auto end() -> iterator { return lastChild; }
+    //serialize
+    inline auto serialize(serializer::node&);
     
   private:
     template <typename F, typename UserData>
@@ -1492,9 +1472,7 @@ namespace CPA::Structure {
     pointer<> initialBuffer;
     pointer<> currentBuffer;
     
-    pointer<stDsgVarInfo> dsgVarInfo(int idx) {
-      return dsgVars->info[idx];
-    }
+    inline auto dsgVarInfo(int idx) -> pointer<stDsgVarInfo> { return dsgVars->info[idx]; }
   };
   
 #pragma mark - GLI
@@ -1565,8 +1543,123 @@ namespace CPA::Structure {
     padding(3)
   };
   
-  #undef padding
+#pragma mark - Function -
+
+#pragma mark EngineStructure
+    
+auto stEngineStructure::loadLevel(std::string levelName) -> void {
+  nextLevelName = levelName;
+  mode = stEngineStructure::mode::ChangeLevel;
+}
+    
+#pragma mark EngineObject
+
+auto stEngineObject::name(ObjectType type) -> std::string {
+  std::string name;
+  extern ObjectNameResolver nameResolver;
+  for (int i : {stdGame->instanceType, stdGame->modelType, stdGame->familyType}) {
+    name = nameResolver(type, &i);
+    if (name != "Invalid name") break;
+  }
+  
+  return name;
+}
+/// Get the superobject associated with this actor
+auto stEngineObject::superobject() -> pointer<stSuperObject> {
+  return stdGame->superObject;
+}
+
+/// Return the AI model of this actor
+auto stEngineObject::aiModel() -> pointer<stAIModel> {
+  return brain->mind->aiModel;
+}
+
+/// Get the dsg variable memory
+auto stEngineObject::dsgMem() -> pointer<stDsgMem> {
+  return brain->mind->dsgMem;
+}
+
+auto stEngineObject::dsgVar(int idx, uint32_t *type) -> pointer<> {
+  try {
+    pointer<stDsgMem> mem = brain->mind->dsgMem;
+    pointer<stDsgVar> vars = mem->dsgVars;
+    pointer<stDsgVarInfo> info = mem->dsgVarInfo(idx);
+    if (type) *type = info->type;
+    return (uint8_t*)mem->currentBuffer + info->memoryOffset;
+  } catch (bad_pointer& e) {
+    return nullptr;
+  }
+}
+
+/// Serialize this structure
+auto stEngineObject::serialize(serializer::node& s) {
+  
+}
+
+
+#pragma mark SuperObject
+
+auto stSuperObject::typeName() -> std::string {
+  switch (type) {
+    case None: return "Dummy SuperObject";
+    case World: return "World";
+    case Actor: return "Actor";
+    case Sector: return "Sector";
+    case PhysicalObject: return "PhysicalObject";
+    case PhysicalObjectMirror: return "PhysicalObjectMirror";
+    case IPO: return "IPO";
+    case IPOMirror: return "IPO.Mirror";
+    case SpecialEffect: return "SpecialEffect";
+    case NoAction: return "NoAction";
+    case Mirror: return "Mirror";
+    default: return "Invalid";
+  }
+}
+
+auto stSuperObject::name(bool fullname) -> std::string {
+  try {
+    switch (type) {
+      case Actor: return actor->name();
+      case IPO: return fullname ? ipo->name : ipo->name.lastPathComponent();
+      case Sector: return fullname ? sector->name : sector->name.lastPathComponent();
+      default: return typeName();
+    }
+  } catch (bad_pointer& e) {
+    return "";
+  }
+}
+
+auto stSuperObject::serialize(serializer::node& s) {
+  s.type("stSuperObject");
+  s(type)
+  s(data)
+  s(firstChild)
+  s(lastChild)
+  s(numChildren);
+  for (auto child : *this) s(child);
+  s.add("next", next, false);
+  s.add("prev", prev, false);
+  s.add("parent", parent, false);
+  s(localTransform);
+  s(globalTransform);
+  s(prevFrameProcessed);
+  s(drawFlags);
+  s(flags);
+  s(visualBBox);
+  s(collideBBox);
+  s(semiLookAt);
+  s(transparency);
+  s(outlineColor);
+  s(displayPriority);
+  s(ilstatus);
+  s(ambientColor);
+  s(parallelDirection);
+  s(parallelColor);
+  s(superimpose);
+  s(isSuperObject);
+  s(transition);
+}
+
+#undef s
+#undef padding
 };
-
-
-#endif /* structure_hh */

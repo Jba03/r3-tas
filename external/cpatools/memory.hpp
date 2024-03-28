@@ -1,5 +1,4 @@
-#ifndef memory_hh
-#define memory_hh
+#pragma once
 
 #include <cstdint>
 #include <fstream>
@@ -10,13 +9,14 @@
 # define OPTIMIZED_BYTESWAP
 #endif
 
-namespace CPA {
+namespace cpa {
   
-  namespace Memory {
+  namespace memory {
     using HostAddressType = void*;
     using TargetAddressType = uint32_t;
-    
+  
     static constexpr std::endian endianness = std::endian::big;
+    
     /// Swap integral byteorder
     static auto bswap(auto v) {
       if constexpr (endianness != std::endian::native) {
@@ -33,22 +33,42 @@ namespace CPA {
     }
     
     /// Engine base address
-    extern Memory::HostAddressType baseAddress;
+    extern memory::HostAddressType baseAddress;
     /// Size of the memory space
     extern size_t size;
     /// Is the memory marked readonly?
     extern bool readonly;
+  
+    inline auto memoryBound(memory::HostAddressType addr) -> bool {
+      return addr >= static_cast<uint8_t*>(baseAddress) && addr <= static_cast<uint8_t*>(baseAddress) + size;
+    }
   };
   
   struct Stream {
     /// Initialize with filename
-    Stream(std::string filename);
+    Stream(std::string filename) {
+      std::ifstream s(filename, std::ios::binary | std::ios::ate);
+      if (s.is_open()) {
+        size = s.tellg();
+        data = new uint8_t[size];
+        s.seekg(0);
+        s.read((char*)data, size);
+      }
+    }
     /// Seek to offset
-    void seek(size_t off);
+    void seek(size_t off) {
+      pos = std::clamp(off, 0ul, size);
+    }
+    
     /// Advance offset
-    void advance(size_t bytes);
+    void advance(size_t bytes) {
+      pos += bytes;
+    }
+    
     /// Get stream position
-    size_t position();
+    size_t position() {
+      return pos;
+    }
     
     template <typename T, bool NoAdvance = false>
     const T read() {
@@ -64,5 +84,3 @@ namespace CPA {
   };
   
 };
-
-#endif /* memory_hh */

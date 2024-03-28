@@ -8,9 +8,10 @@
 #ifndef game_h
 #define game_h
 
-#include "cpa.hh"
-using namespace CPA;
-using namespace CPA::Structure;
+#include <cpatools/cpa.hpp>
+
+using namespace cpa;
+using namespace cpa::structure;
 
 namespace game {
   
@@ -28,7 +29,7 @@ namespace game {
   extern stSuperObject *p_stFatherSector;
     
   /* Global variables */
-  extern CPA::uint8 *g_bGhostMode;
+  extern cpa::uint8 *g_bGhostMode;
     
   void initialize();
   void update();
