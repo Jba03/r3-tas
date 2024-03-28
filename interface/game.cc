@@ -16,16 +16,13 @@
 #include "log.hh"
 #include "tools.hh"
 
+#define CPATOOLS_IMPLEMENTATION
+#include <cpatools.hpp>
+
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
 #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
 #define padding(S) uint8_t UNIQUE_NAME(padding) [S];
-
-namespace cpa::memory {
-  memory::HostAddressType baseAddress = nullptr;
-  size_t size = 0;
-  bool readonly;
-};
 
 namespace library::external {
   std::function<std::string(int, int)> nameLookup = nullptr;
@@ -56,10 +53,10 @@ namespace game
   uint8 *g_bGhostMode = nullptr;
   
   /* World */
-  stSuperObject *p_stActualWorld;
-  stSuperObject *p_stDynamicWorld;
-  stSuperObject *p_stInactiveDynamicWorld;
-  stSuperObject *p_stFatherSector;
+  stSuperObject* p_stActualWorld;
+  stSuperObject* p_stDynamicWorld;
+  stSuperObject* p_stInactiveDynamicWorld;
+  stSuperObject* p_stFatherSector;
   
   std::map<std::string, stSuperObject*> objectLookupCache;
   std::map<std::string, pointer<stInputEntryElement>> inputEntryElementCache;
@@ -72,7 +69,7 @@ namespace game
   
   std::map<std::string, namecache> objectNameCache;
     
-  static eEngineMode lastEngineMode = Invalid;
+  static enum stEngineStructure::mode lastEngineMode = stEngineStructure::mode::Invalid;
   
 #pragma mark - FIX
     
@@ -201,19 +198,15 @@ namespace game
     if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
       namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
       try {
-        if (type == objectFamilyName) return cache.familyNames.at(idx);
-        if (type == objectModelName) return cache.modelNames.at(idx);
-        if (type == objectInstanceName) return cache.instanceNames.at(idx);
+        if (type == Family) return cache.familyNames.at(idx);
+        if (type == Model) return cache.modelNames.at(idx);
+        if (type == Instance) return cache.instanceNames.at(idx);
       } catch (std::out_of_range& e) {
         //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
         return "Invalid name";
       }
     }
     return "Invalid name";
-  }
-  
-  std::string nameResolver(eObjectType type, int *index) {
-    return nameLookup(type, *index);
   }
     
   void update() {
@@ -228,65 +221,10 @@ namespace game
     
     g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
     
-    
-    
-   
-    
-    
-    
-//    stVector3D test0(2.0f, 3.0f, 5.0f);
-//    stVector3D test1(5.0f, 1.0f, -4.0f);
-//
-//    vector<3> t0 = *(vector<3>*)&test0.x;
-//    vector<3> t1 = *(vector<3>*)&test1.x;
-//
-//    printf("t0: (%.2f, %.2f, %.2f)\n\n", float(t0.x), float(t0.y), float(t0.z));
-//    printf("t1: (%.2f, %.2f, %.2f)\n\n", float(t1.x), float(t1.y), float(t1.z));
-//
-//    stVector3D test2 = test0 + test1;
-//    vector<3> t2 = t0 + t1;
-//
-//    printf("(%f)\n", float((t0 + t1).x));
-//
-//    printf("test: (%.2f, %.2f, %.2f)\n", float(test2.x), float(test2.y), float(test2.z));
-//    printf("t: (%.2f, %.2f, %.2f)\n\n", float(t2.x), float(t2.y), float(t2.z));
-    
-    
-    
-//    node nd("platform", "GCN");
-//    node nd2("test", "hi");
-//    auto& ndada = nd.add(nd2);
-//    //nd.add_child(&node("test3", "hi"));
-//    ndada.add(node("test2", "hi3"));
-//    nd.add(node("game", "Rayman 3 - Hoodlum Havoc (GCN, NTSC)"));
-//    
-//    printf("serialization: \n%s\n\n\n", node::serialize(nd).c_str());
-//    
     if (isValidGameState()) {
       readLevel();
       cache();
       cacheInputEntries();
-      
-      if (p_stDynamicWorld) {
-        serializer s;
-        p_stDynamicWorld->serialize(s);
-        FILE *f = fopen("/Users/jba03/Desktop/Development/Github/r3-tas/external/cpatools/data/out", "wb");
-        
-        std::string str = serializer::node::serialize(s);
-        fwrite(str.c_str(), str.length(), 1, f);
-        fclose(f);
-        
-        //printf("serialized:\n%s\n\n", serializer::node::serialize(node).c_str());
-      }
-      
-//      serializer s("root", "");
-//      g_stEngineStructure->currentMainPlayers[0]->actor->serialize(s);
-//      
-//      serializer_node::forEach([](serializer_node *nd) {
-//        printf("node: %s %s\n", nd->name.c_str(), nd->name.c_str());
-//      }, s.root);
-      
-      //serializer::node nd = serializer::serialize(g_stEngineStructure->currentMainPlayers[0]->actor);
     }
     
     if (g_stEngineStructure->mode != lastEngineMode) {
@@ -300,22 +238,6 @@ namespace game
   
   void initialize() {
     library::external::nameLookup = nameLookup;
-    
-//    std::string text;
-//    std::ifstream s("/Users/jba03/Desktop/Development/Github/r3-tas/external/cpatools/data/R3-GCN");
-//    s.seekg(0, std::ios::end);    // go to the end
-//    size_t length = s.tellg();           // report location (this is the length)
-//    s.seekg(0, std::ios::beg);    // go back to the beginning
-//    text.resize(length);    // allocate memory for a buffer of appropriate dimension
-//    s.read(text.data(), length);       // read the whole file into the buffer
-//    s.close();
-    
-    //node nd;
-    //nd.unserialize(text);
-    
-    //printf("ser: %s\n", node::serialize(nd).c_str());
-    
-    
   }
     
   uint32_t color_table_index(unsigned idx) {
@@ -324,9 +246,9 @@ namespace game
     
   uint32_t objectColor(stSuperObject *object) {
     if (!object) return 0xAA808080;
-    if (object->type == superObjectTypeIPO) return 0xFF00AAFF;
-    if (object->type == superObjectTypeIPOMirror) return 0xFF00DDFF;
-    if (object->type != superObjectTypeActor) return 0xAAFFFFFF;
+    if (object->type == stSuperObject::type::IPO) return 0xFF00AAFF;
+    if (object->type == stSuperObject::type::IPOMirror) return 0xFF00DDFF;
+    if (object->type != stSuperObject::type::Actor) return 0xAAFFFFFF;
     stEngineObject *actor = object->data;
     if (!actor->stdGame) return 0x80808080;
     return color_table_index(2 * actor->stdGame->familyType + 1);
@@ -355,7 +277,7 @@ namespace game
     pointer<stSuperObject> target = nullptr;
     try {
       p_stDynamicWorld->recurse([&](stSuperObject *obj, void *data) {
-        if (obj->name(game::nameResolver) == instanceName) {
+        if (obj->name() == instanceName) {
           target = obj;
         }
       }, nullptr);
@@ -376,10 +298,18 @@ namespace game
     && p_stFatherSector;
   }
   
-  bool engineModeChangedTo(eEngineMode mode, eEngineMode from) {
-    return (from == eEngineMode::Invalid) ?
+  bool engineModeChangedTo(enum stEngineStructure::mode mode, enum stEngineStructure::mode from) {
+    return (from == stEngineStructure::mode::Invalid) ?
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) :
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) && (lastEngineMode == from);
   }
     
+}
+
+namespace cpa::structure {
+  std::string resolve(ObjectType type, int *index) {
+    return game::nameLookup(type, *index);
+  }
+
+ObjectNameResolver nameResolver = resolve;
 }

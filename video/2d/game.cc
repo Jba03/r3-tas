@@ -29,12 +29,13 @@ static void objectMarker(pointer<stSuperObject> object) {
     bgColor.Value.w = 0.5f;
     
     ImGui::SetCursorScreenPos(screenPosReal);
-    marker(pointer<stSuperObject>(object), Memory::readonly);
+    marker(pointer<stSuperObject>(object), memory::readonly);
     
     ImDrawCmd cmd;
     
-//          dw->AddCircleFilled(screenPosReal, 5.0f, bgColor);
-//          dw->AddCircle(screenPosReal, 5.0f, color);
+//    ImDrawList *dw = ImPlot::GetPlotDrawList();
+//    dw->AddCircleFilled(screenPosReal, 5.0f, bgColor);
+//    dw->AddCircle(screenPosReal, 5.0f, color);
    // dw->AddText(screenPosReal, color, object->name(game::nameResolver).c_str());
   }
 }
@@ -43,9 +44,9 @@ static void objectMarkersDrawWorld(stSuperObject *world, ImDrawList *drawlist, b
   if (world) {
     world->recurse([onlyActors](stSuperObject* object, ImDrawList *dw) {
       try {
-        if (object->type == eSuperObjectType::superObjectTypeActor || (!onlyActors && object->type != eSuperObjectType::superObjectTypeActor))
+        if (object->type == stSuperObject::type::Actor || (!onlyActors && object->type != stSuperObject::type::Actor))
           objectMarker(object);
-      } catch (BadPointer& e) {
+      } catch (bad_pointer& e) {
         /* ... */
       }
     }, drawlist);
@@ -67,7 +68,7 @@ static void overlayDrawObjects() {
 //          bgColor.Value.w = 0.5f;
 //          
 //          ImGui::SetCursorScreenPos(screenPosReal);
-//          marker(pointer<stSuperObject>(object), Memory::readonly);
+//          marker(pointer<stSuperObject>(object), memory::readonly);
 //          
 //          ImDrawCmd cmd;
 //          
@@ -77,7 +78,7 @@ static void overlayDrawObjects() {
 //        }
 //      }, drawlist);
 //    }
-//  } catch (BadPointer& e) {
+//  } catch (bad_pointer& e) {
 //    /* ... */
 //  }
 }
@@ -97,7 +98,7 @@ static void drawVector22() {
     
     ImDrawList *drawlist = ImPlot::GetPlotDrawList();
     drawlist->AddLine(s1, s2, ImColor(0.0f, 1.0f, 1.0f, 1.0f), 2.5f);
-  } catch (BadPointer& e) {
+  } catch (bad_pointer& e) {
     /* ... */
   }
 }

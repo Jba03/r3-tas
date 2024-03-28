@@ -8,15 +8,15 @@ static auto actor(stSuperObject *spo) -> void {
   stEngineObject *obj = spo->actor;
   // Name hierarchy
   ImColor color = ImColor(game::objectColor(spo));
-  ImGui::TextColored(color, "%s -", obj->familyName(game::nameResolver).c_str());
+  ImGui::TextColored(color, "%s -", obj->name(Family).c_str());
   
   color.Value.w = 0.6f;
   ImGui::SameLine();
-  ImGui::TextColored(color, "%s -", obj->modelName(game::nameResolver).c_str());
+  ImGui::TextColored(color, "%s -", obj->name(Model).c_str());
   
   color.Value.w = 0.45f;
   ImGui::SameLine();
-  ImGui::TextColored(color, "%s", obj->instanceName(game::nameResolver).c_str());
+  ImGui::TextColored(color, "%s", obj->name(Instance).c_str());
   
   if (ImGui::BeginTabBar("Actor")) {
     
@@ -63,12 +63,12 @@ static auto physicalObject() -> void {
 
 auto superObjectWindow::draw() -> void {
   if (open) {
-    ImGui::Begin(std::string("SPO - " + target->name(game::nameResolver)).c_str(), &open);
+    ImGui::Begin(std::string("SPO - " + target->name()).c_str(), &open);
     switch (target->type) {
-      case superObjectTypeActor: actor(target);
-      case superObjectTypeSector: sector(target);
-      case superObjectTypeIPO: ipo(target);
-      case superObjectTypePhysicalObject: physicalObject();
+      case stSuperObject::type::Actor: actor(target);
+      case stSuperObject::type::Sector: sector(target);
+      case stSuperObject::type::IPO: ipo(target);
+      case stSuperObject::type::PhysicalObject: physicalObject();
     }
     ImGui::End();
   }

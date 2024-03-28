@@ -40,7 +40,7 @@ void CommonWindow::draw() {
     float v = 0;//g_stEngineStructure->currentMainPlayers[0]->actor->getVerticalSpeed();
     speedbuffer.AddPoint(t, h);
     speedbuffer_v.AddPoint(t, v);
-  } catch (BadPointer& e) {
+  } catch (bad_pointer& e) {
     std::cout << "Failed to get speed data: " << e.what() << "\n";
   }
   

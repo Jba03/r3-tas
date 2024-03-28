@@ -8,7 +8,7 @@
 #ifndef game_h
 #define game_h
 
-#include <cpatools/cpa.hpp>
+#include <cpatools/cpatools.hpp>
 
 using namespace cpa;
 using namespace cpa::structure;
@@ -23,10 +23,10 @@ namespace game {
   extern pointer<stRandom> g_stRandomStructure;
   
   /* World */
-  extern stSuperObject *p_stActualWorld;
-  extern stSuperObject *p_stDynamicWorld;
-  extern stSuperObject *p_stInactiveDynamicWorld;
-  extern stSuperObject *p_stFatherSector;
+  extern stSuperObject* p_stActualWorld;
+  extern stSuperObject* p_stDynamicWorld;
+  extern stSuperObject* p_stInactiveDynamicWorld;
+  extern stSuperObject* p_stFatherSector;
     
   /* Global variables */
   extern cpa::uint8 *g_bGhostMode;
@@ -41,7 +41,7 @@ namespace game {
   /** get object type color */
   uint32_t objectColor(stSuperObject *object);
   /** resolve object name */
-  std::string nameResolver(eObjectType type, int *index);
+  //std::string nameResolver(ObjectType type, int *index);
   
   /** look up input structure element */
   pointer<stInputEntryElement> findInputEntryElement(std::string name);
@@ -49,7 +49,7 @@ namespace game {
   /** is the engine in a valid state? */
   bool isValidGameState();
   /** did the engine mode change? */
-  bool engineModeChangedTo(eEngineMode mode, eEngineMode from = eEngineMode::Invalid);
+  bool engineModeChangedTo(enum stEngineStructure::mode mode, enum stEngineStructure::mode from = stEngineStructure::mode::Invalid);
   
 }
 

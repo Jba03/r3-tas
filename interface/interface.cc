@@ -10,7 +10,7 @@
 #undef GCN
 #undef PS2
 #undef PC
-#include <cpatools/cpa.hpp>
+#include <cpatools/cpatools.hpp>
 
 #if defined(WIN32)
 # define LIBR3TAS_EXPORT __declspec(dllexport)
@@ -32,10 +32,6 @@ static VideoInterface *videoInterface;
 Interface::Interface() {
   std::locale::global(std::locale::classic()); //for stringstream
   videoInterface = new VideoInterface(this);
-  
-//  debugger = new Debugger("/Users/jba03/Library/Application Support/Dolphin/Maps/GRHE41.map");
-//  collisionTracker = new CollisionTracker();
-  
   //applyOptimizations();
 }
 

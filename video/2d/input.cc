@@ -11,6 +11,8 @@ static void drawJoystick(ImDrawList *drawlist, ImVec2 pos, const float radius, i
   ImVec2 start = ImVec2(pos.x + radius, pos.y + radius);
   ImVec2 end = ImVec2(pos.x + radius + x, pos.y + radius + y);
   drawlist->AddLine(start, end, joyCol);
+  
+  ImGui::SetCursorScreenPos(ImVec2(pos.x + radius * 2.0f + 4, pos.y));
 }
 
 void InputWindow::draw() {
@@ -29,11 +31,9 @@ void InputWindow::draw() {
     pointer<stInputEntryElement> cX = game::findInputEntryElement("Action_Pad0_AxeV");
     pointer<stInputEntryElement> cY = game::findInputEntryElement("Action_Pad0_AxeZ");
     
-    float x = float(mX->analogValue);
-    float y = float(mY->analogValue);
-    
     ImDrawList *drawlist = ImGui::GetWindowDrawList();
-    drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, x, y, joystickColor);
+    drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, float(mX->analogValue), float(mY->analogValue), joystickColor);
+    drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, float(cX->analogValue), float(cY->analogValue), joystickColor);
   } catch (...) {
     /* ... */
   }

@@ -20,7 +20,7 @@ static auto overrideName(stSuperObject *root) -> std::string  {
   else if (root == p_stDynamicWorld) return "Dynamic world (" + std::to_string(root->numChildren) + ")";
   else if (root == p_stInactiveDynamicWorld) return "Inactive dynamic world (" + std::to_string(root->numChildren) + ")";
   else if (root == p_stFatherSector) return "Father sector (" + std::to_string(root->numChildren) + ")";
-  return root->name(nameResolver);
+  return root->name();
 }
 
 static auto drawRecursive(stSuperObject *root, void*) -> void {
@@ -28,7 +28,7 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
   ImGui::PushID(root);
   ImGui::PushStyleColor(ImGuiCol_Text, game::objectColor(root));
   
-  if (root->type == superObjectTypeSector) {
+  if (root->type == stSuperObject::type::Sector) {
 //    if (root == g_stEngineStructure->currentMainPlayers[0]->currentSector(p_stFatherSector)) {
 //      ImGui::PopStyleColor();
 //      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.1f, 1.0f));
@@ -57,7 +57,7 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
   }
   
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-    if (root->type == eSuperObjectType::superObjectTypeActor) {
+    if (root->type == stSuperObject::type::Actor) {
       gui::aiWindow->setTargetObject(root);
     }
   }
@@ -78,6 +78,15 @@ static auto drawHierarchy() -> void {
   drawRecursive(p_stDynamicWorld, nullptr);
   drawRecursive(p_stInactiveDynamicWorld, nullptr);
   drawRecursive(p_stFatherSector, nullptr);
+  
+  try {
+    for (auto i : range(g_stAlways->numAlways)) {
+      pointer<stSuperObject> obj = g_stAlways->alwaysActors[i];
+      ImGui::Text("%s", obj->name().c_str());
+    }
+  } catch (...) {
+    
+  }
   
   gui::drawPopup();
     

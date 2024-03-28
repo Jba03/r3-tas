@@ -185,7 +185,7 @@ void RNGWindow::draw() {
         }
       }
     ImGui::EndTable();
-  } catch (BadPointer& e) {
+  } catch (bad_pointer& e) {
     /* ... */
   }
   ImGui::End();

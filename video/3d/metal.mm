@@ -15,7 +15,7 @@
 
 #include "game.hh"
 //#include "structure.hh"
-namespace r3 = CPA; //library;
+namespace r3 = cpa; //library;
 
 
 namespace graphics {
@@ -180,10 +180,10 @@ namespace graphics {
     static simd_float4x4 GameToMetalMatrix(stMatrix4D mat)
     {
         simd_float4x4 m;
-        m.columns[0] = simd_make_float4(mat.m00, mat.m01, mat.m02, mat.m03);
-        m.columns[1] = simd_make_float4(mat.m10, mat.m11, mat.m12, mat.m13);
-        m.columns[2] = simd_make_float4(mat.m20, mat.m21, mat.m22, mat.m23);
-        m.columns[3] = simd_make_float4(mat.m30, mat.m31, mat.m32, mat.m33);
+        m.columns[0] = simd_make_float4(mat(0,0), mat(0,1), mat(0,2), mat(0,3));
+        m.columns[1] = simd_make_float4(mat(1,0), mat(1,1), mat(1,2), mat(1,3));
+        m.columns[2] = simd_make_float4(mat(2,0), mat(2,1), mat(2,2), mat(2,3));
+        m.columns[3] = simd_make_float4(mat(3,0), mat(3,1), mat(3,2), mat(3,3));
 
         return m;
     }

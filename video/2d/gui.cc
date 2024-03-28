@@ -203,7 +203,7 @@ static auto drawWorld(stSuperObject *root, stMatrix4D T) -> void {
   if (!root) return;
   
   T = root->globalTransform->matrix * T; //root->globalTransform->matrix.hostByteOrder() * T;
-  if (root->type == superObjectTypeIPO)
+  if (root->type == stSuperObject::type::IPO)
     graphics::drawIPO(root->data, T);
   
   root->forEachChild([&](stSuperObject *object, void*) {
@@ -331,7 +331,7 @@ namespace gui {
     ImGui::DockBuilderDockWindow("AI", middle2);
     ImGui::DockBuilderDockWindow("Structure Explorer", right3);
     ImGui::DockBuilderDockWindow("RNG", right1);
-    ImGui::DockBuilderDockWindow("Test", right2);
+    ImGui::DockBuilderDockWindow("GameSub2", right2);
   }
   
   static void layout(ImGuiID dockSpaceID) {
@@ -352,7 +352,7 @@ namespace gui {
       stCamera *camera = nullptr;
       if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
         /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
-        graphics::projectionMatrix = stMatrix4D::perspective(-0.24f + 0.1, 640.0f / 528.0f, 0.1, 100.f);
+        graphics::projectionMatrix = stMatrix4D::make_perspective(-0.24f + 0.1, 640.0f / 528.0f, 0.1, 100.f);
         
         //            float *proj = graphics::getProjectionMatrix();
         //            for (int i = 0; i < 16; i++) {
@@ -477,7 +477,7 @@ namespace gui {
         }
         
         if (ImGui::BeginMenu("Memory", interface->mode != Speedrun)) {
-          ImGui::Checkbox("Readonly", &Memory::readonly);
+          ImGui::Checkbox("Readonly", &memory::readonly);
           ImGui::EndMenu();
         }
         ImGui::EndMenu();
@@ -500,7 +500,7 @@ namespace gui {
     aiWindow = new AIWindow(pointer<stSuperObject>(0x80BF0C0C));
   }
   
-  static int numCallsToMul = 0;
+  static std::vector<pointer<stSuperObject>> actorAiProcessed;
   
   auto draw(void *c, void *texture, bool *windowed) -> void {
     
@@ -539,9 +539,21 @@ namespace gui {
       loadWindows();
       needsLayout = false;
       
-      event("MTH4D_M_vMulMatrixVector").subscribe("gui", [&](Event::Param& p) {
-        numCallsToMul++;
+      event("AITreeEval").subscribe("GUI", [&](Event::Param& p) {
+        pointer<stSuperObject> obj = std::any_cast<pointer<stSuperObject>>(p["object"]);
+        pointer<stNodeInterpret> tree = std::any_cast<pointer<stNodeInterpret>>(p["tree"]);
+        pointer<uGetSetParam> gs = std::any_cast<pointer<uGetSetParam>>(p["getSetParam"]);
+        
+        if (obj.memoryOffset().physicalAddress() == 0x80BF0C0C) {
+          //actorAiProcessed.push_back(obj);
+          
+          //aiWindow->debugMap[tree] = tree;
+        }
       });
+      
+      
+      
+      // .fire({{"object", object}, {"tree", tree}, {"getSetParam", gsparam}});
     }
 
     clearMarkers();
@@ -564,9 +576,11 @@ namespace gui {
       ImGui::End();
 
       ImGui::Begin("GameSub2");
-      ImGui::Text("num calls: %d\n", numCallsToMul);
+      for (auto& v : actorAiProcessed) {
+       // ImGui::Text("actor: %s", v->name(game::nameResolver).c_str());
+      }
+      actorAiProcessed.clear();
       ImGui::End();
-      numCallsToMul= 0;
       
       inputWindow->draw();
       commonWindow->draw();
@@ -580,7 +594,7 @@ namespace gui {
 
       ImGui::Begin("Object window");
       if (game::isValidGameState()) {
-        pointer<stSuperObject> spo = Address(0x80BF0C0C);
+        pointer<stSuperObject> spo = address(0x80BF0C0C);
         pointer<stEngineObject> eng = spo->actor;
 
         drawDynamics(eng->dynam->dynamics);
@@ -841,9 +855,10 @@ namespace gui {
 //
 //      //gui::popup(nullptr, nullptr);
 //
+    
       //gui::memoryEditor.GotoAddr = 0xBF0C0C;
       gui::memoryEditor.ReadOnly = false;
-      gui::memoryEditor.DrawWindow("Memory editor", (void*)Memory::baseAddress, 24 * 1000 * 1000);
+      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
     }
     
   
@@ -860,14 +875,20 @@ namespace gui {
       
       stMatrix4D view = camera->transform.matrix;
       /* Change sign of the two middle columns (flipping the rotation) */
-      view.m01 = -view.m01; view.m11 = -view.m11;
-      view.m21 = -view.m21; view.m22 = -view.m22;
-      view.m31 = -view.m31; view.m32 = -view.m32;
-      view.m02 = -view.m02; view.m12 = -view.m12;
+//      view.m01 = -view.m01; view.m11 = -view.m11;
+//      view.m21 = -view.m21; view.m22 = -view.m22;
+//      view.m31 = -view.m31; view.m32 = -view.m32;
+//      view.m02 = -view.m02; view.m12 = -view.m12;
+      
+      view(0,1) = -(float)view(0,1); view(1,1) = -(float)view(1,1);
+      view(2,1) = -(float)view(2,1); view(2,2) = -(float)view(2,2);
+      view(3,1) = -(float)view(3,1); view(3,2) = -(float)view(3,2);
+      view(0,2) = -(float)view(0,2); view(1,2) = -(float)view(1,2);
       
       const float fov = camera->xAlpha;
-      stMatrix4D projection = stMatrix4D::perspective(fov, ASPECT, 0.1f, 1000.0f);
+      stMatrix4D projection = stMatrix4D::make_perspective(fov, ASPECT, 0.1f, 1000.0f);
       stMatrix4D viewprojection = projection * view;
+      
       stVector4D P2 = stVector4D(P.x, P.y, P.z, 1.0f);
       stVector4D R = viewprojection * P2;
       
@@ -875,7 +896,7 @@ namespace gui {
       float yp = (R.y / R.w) * PROJECTION_RATIO_Y + 0.5f;
       
       return ImVec4(xp, yp, R.z, R.w);
-    } catch (BadPointer& e) {
+    } catch (bad_pointer& e) {
       return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
     }
   }

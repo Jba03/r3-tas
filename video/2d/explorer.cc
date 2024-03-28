@@ -35,7 +35,7 @@ void drawElement(pointer<stSuperObject> root, void*) {
       ImGui::OpenPopup("SPO");
       printf("click\n");
     }
-  } catch (BadPointer& e) {
+  } catch (bad_pointer& e) {
     /* ... */
   }
 }

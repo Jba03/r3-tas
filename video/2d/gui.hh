@@ -15,6 +15,7 @@
 #include "script.hh"
 
 #include <iostream>
+#include <unordered_map>
 
 #include "imgui_memory_editor.h"
 
@@ -32,42 +33,35 @@ struct Window
     bool Open = false;
 };
 
-struct CommonWindow {
+class CommonWindow {
+public:
   CommonWindow();
   void draw();
 };
 
-struct RNGWindow {
+class RNGWindow {
+  int numEntriesShown = 20;
+public:
   RNGWindow();
   void draw();
-private:
-  int numEntriesShown = 20;
 };
 
-struct GameWindow {
-  GameWindow();
-  void draw(ImTextureID texture);
-private:
+class GameWindow {
   void drawMenuBar();
   void drawGame(ImTextureID texture);
-  
   bool projectObjectPositions;
+public:
+  GameWindow();
+  void draw(ImTextureID texture);
 };
 
-struct CinematicWindow {
+class CinematicWindow {
+public:
   CinematicWindow();
   void draw();
 };
 
-struct AIWindow {
-  AIWindow(pointer<stSuperObject> targetObject);
-  void setTargetObject(pointer<stSuperObject> targetObject);
-  void setTargetMacro(pointer<stMacro> macro);
-  void setTargetBehavior(pointer<stBehavior> behavior);
-  void drawScript();
-  void drawDsgVars();
-  void draw();
-private:
+class AIWindow {
   pointer<stSuperObject> targetObject = nullptr;
   pointer<stBehavior> targetBehavior = nullptr;
   pointer<stMacro> targetMacro = nullptr;
@@ -75,13 +69,26 @@ private:
   bool displayActive = true;
   bool drawLineNumbers = true;
   bool quietReferences = false;
+  int debuggerStep = 1;
   
   void drawMenuBar();
   void drawInfo();
   void drawBehaviorLists();
+  void drawDebugPanel();
+public:
+  AIWindow(pointer<stSuperObject> targetObject);
+  void setTargetObject(pointer<stSuperObject> targetObject);
+  void setTargetMacro(pointer<stMacro> macro);
+  void setTargetBehavior(pointer<stBehavior> behavior);
+  void drawScript();
+  void drawDsgVars();
+  void draw();
+  
+  //std::unordered_map<pointer<stNodeInterpret>, pointer<stNodeInterpret>> debugMap;
 };
 
-struct StructureExplorerWindow {
+class StructureExplorerWindow {
+public:
   StructureExplorerWindow();
   void draw();
 };
@@ -95,7 +102,6 @@ private:
   ImColor joystickColor = IM_COL32(255, 0, 0, 196);
 };
 
-extern Window MenuBar;
 extern Window ConfigurationWindow;
 //extern Window RNGWindow;
 extern Window HierarchyWindow;
@@ -134,7 +140,7 @@ namespace gui {
 /// other marker references compatible with the type of object `T`.
 template <typename T>
 void marker(pointer<T> reference, bool readonly = false, std::string customText = "", bool quiet = false);
-void marker(CPA::Script::TranslationToken tok, bool readonly = false, std::string customText = "", bool quiet = false);
+void marker(cpa::script::TranslationToken tok, bool readonly = false, std::string customText = "", bool quiet = false);
 void clearMarkers();
 
 #endif /* gui_hh */
