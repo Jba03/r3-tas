@@ -1,5 +1,5 @@
 #include "gui.hh"
-#include "script.hh"
+#include "script.hpp"
 #include "constants.hh"
 #include "tables.hh"
 #include "imgui_internal.h"
@@ -177,7 +177,7 @@ void AIWindow::drawBehaviorLists() {
   }
   
   try {
-    if (ImGui::BeginChild("Intelligence", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true)) {
+    if (ImGui::BeginChild("Intelligence", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true, ImGuiWindowFlags_HorizontalScrollbar)) {
       if (intelligenceList) {
         if (ImGui::TreeNode("Intelligence")) {
           list(intelligenceList, currentIntelligenceBehavior);
@@ -220,17 +220,12 @@ void AIWindow::drawInfo() {
   
   ImGui::BeginChild("##ai-general-info", ImVec2(ImGui::GetContentRegionAvail().x, 28), true);
   
-  marker(targetObject, true);
- // ImGui::Spacing();
+  
+  try { marker(targetObject, true); } catch (...) {}
   ImGui::SameLine();
-  marker(targetObject->actor->brain, true);
-  //ImGui::NewLine();
   
   try {
     currentIntelligence = targetObject->actor->brain->mind->intelligence->currentBehavior;
-    ImGui::SameLine();
-    ImGui::Text("INTL:");
-    ImGui::SameLine();
     ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentIntelligence->name.lastPathComponent().c_str());
     
     if (displayActive) targetBehavior = currentIntelligence;
@@ -238,11 +233,12 @@ void AIWindow::drawInfo() {
     /* ... */
   }
   
+  ImGui::SameLine();
+  ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+  ImGui::SameLine();
+  
   try {
     currentReflex = targetObject->actor->brain->mind->reflex->currentBehavior;
-    ImGui::SameLine();
-    ImGui::Text("RFLX:");
-    ImGui::SameLine();
     ImGui::TextColored(ImVec4(1,1,1,0.75f), "%s", currentReflex->name.lastPathComponent().c_str());
   } catch(bad_pointer&e) {
     /* ... */
@@ -295,6 +291,7 @@ void AIWindow::drawScript() {
       }
       
       bool newLine = false;
+      pointer<stEngineObject> referenceActorTmp = nullptr;
       
       TranslationResult *result = t.translate(targetObject, node);
       
@@ -306,7 +303,7 @@ void AIWindow::drawScript() {
           try {
             switch (tok.originalNode->type) {
               case ScriptNodeType::Keyword: color = ImVec4(198.0f / 255.0f, 121.0f / 255.0f, 221.0f / 255.0f, 1.0f); break;
-              case ScriptNodeType::Condition:
+              case ScriptNodeType::Condition: if (uint32_t(tok.originalNode->param) > 9)
               case ScriptNodeType::Function:
               case ScriptNodeType::Procedure: color = ImVec4(0.3, 0.5, 1.0f, 1.0f); break;
               case ScriptNodeType::Constant:
@@ -351,6 +348,7 @@ void AIWindow::drawScript() {
 //            ImGui::SameLine();
             marker(tok, memory::readonly, actor->name(Instance).c_str(), quietReferences);
             ImGui::SameLine();
+            referenceActorTmp = actor;
             continue;
           } else if (tok.originalNode->type == SuperObjectRef) {
             pointer<stSuperObject> obj = pointer<stSuperObject>(param);
@@ -375,21 +373,19 @@ void AIWindow::drawScript() {
             ImGui::SameLine();
             continue;
           } else if (tok.originalNode->type == DsgVarRef || tok.originalNode->type == DsgVarRef2) {
-            uint32_t var = param, type;
-            pointer<stEngineObject> obj = targetObject->actor->dsgVar(var, &type);
+            uint32_t var = param, type = 0;
+            pointer<stEngineObject> obj = (referenceActorTmp.pointee() != nullptr) ? referenceActorTmp : targetObject->actor;
+            obj->dsgVar(var, &type);
             
             std::string txt = DsgVarTypenameTable[type] + "_" + std::to_string(var);
-            
             marker(tok, memory::readonly, txt, quietReferences);
             ImGui::SameLine();
-//            ImGui::TextColored(stringColor, "\"%s\"", behavior->name.lastPathComponent().c_str());
-//            ImGui::SameLine();
+            
+            // clear the actor reference
+            referenceActorTmp = nullptr;
             continue;
           }
         }
-        
-        ImDrawList *drawlist = ImGui::GetForegroundDrawList();
-        drawlist->PushClipRect(ImVec2(), ImVec2());
         
         ImGui::TextColored(color, "%s", text.c_str());
         
@@ -413,6 +409,7 @@ void AIWindow::drawScript() {
         draw(targetMacro->currentTree->node, targetMacro->name.lastPathComponent().c_str(), 0);
       }
     } catch (bad_pointer& e) {
+      ImGui::PopStyleVar();
       fprintf(stderr, "Failed to draw translated script tree: %s\n", e.what().c_str());
     }
     ImGui::EndChild();
@@ -426,7 +423,7 @@ void AIWindow::drawDsgVars() {
     pointer<stDsgVar> vars = mem->dsgVars;
     pointer<> memory = mem->currentBuffer;
     
-    if (ImGui::BeginChild("Designer variables", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true)) {
+    if (ImGui::BeginChild("Designer variables", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true, ImGuiWindowFlags_HorizontalScrollbar)) {
       for (int i = 0; i < vars->infoLength; i++) {
         pointer<stDsgVarInfo> info = mem->dsgVarInfo(i);
         pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
@@ -448,6 +445,7 @@ AIWindow::AIWindow(pointer<stSuperObject> target) {
 
 void AIWindow::setTargetObject(pointer<stSuperObject> target) {
   targetObject = target;
+  targetBehavior = nullptr;
 }
 
 void AIWindow::drawMenuBar() {

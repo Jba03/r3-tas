@@ -5,6 +5,10 @@ namespace gui {
   pointer<> popupTarget = nullptr;
   
   auto superObjectPopup() -> void {
+//    if (game::isValidGameState()) {
+//      pointer<stSuperObject> spo = pointer<stSuperObject>(0x810B0CD8);
+//      spo->ipo->physicalObject->physicalCollideset = nullptr;
+//    }
     if (ImGui::BeginPopup("SPO")) {
       if (ImGui::Button("View object")) {
         superObjectWindow window(popupTarget);

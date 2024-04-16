@@ -6,6 +6,7 @@
 
 #include "emulator.hh"
 #include "event.hh"
+#include "settings.hh"
 
 enum InterfaceMode {
   Speedrun,

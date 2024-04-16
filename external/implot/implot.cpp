@@ -1519,10 +1519,15 @@ void ShowPlotContextMenu(ImPlotPlot& plot) {
 
     char buf[16] = {};
 
+    bool autofit = ImGui::Button("Auto-Fit");
+  
     for (int i = 0; i < IMPLOT_NUM_X_AXES; i++) {
         ImPlotAxis& x_axis = plot.XAxis(i);
         if (!x_axis.Enabled || !x_axis.HasMenus())
             continue;
+        x_axis.Flags &= ~ImPlotAxisFlags_AutoFit;
+        if (autofit)
+            x_axis.Flags |= ImPlotAxisFlags_AutoFit;
         ImGui::PushID(i);
         ImFormatString(buf, sizeof(buf) - 1, i == 0 ? "X-Axis" : "X-Axis %d", i + 1);
         if (ImGui::BeginMenu(x_axis.HasLabel() ? plot.GetAxisLabel(x_axis) : buf)) {
@@ -1536,6 +1541,9 @@ void ShowPlotContextMenu(ImPlotPlot& plot) {
         ImPlotAxis& y_axis = plot.YAxis(i);
         if (!y_axis.Enabled || !y_axis.HasMenus())
             continue;
+        y_axis.Flags &= ~ImPlotAxisFlags_AutoFit;
+        if (autofit)
+            y_axis.Flags |= ImPlotAxisFlags_AutoFit;
         ImGui::PushID(i);
         ImFormatString(buf, sizeof(buf) - 1, i == 0 ? "Y-Axis" : "Y-Axis %d", i + 1);
         if (ImGui::BeginMenu(y_axis.HasLabel() ? plot.GetAxisLabel(y_axis) : buf)) {

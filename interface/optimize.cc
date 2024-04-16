@@ -4,6 +4,10 @@
 #include "interface.hh"
 #include "hook.hh"
 #include "log.hh"
+#include "script.hpp"
+#include "tables.hh"
+
+#include "gui.hh"
 
 #pragma mark - Helper functions
 
@@ -133,7 +137,7 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     stVector3D *result = pointer<stVector3D>GPR(3);
     stTransform *T = pointer<stTransform>GPR(4);
     stVector3D *v1 = pointer<stVector3D>GPR(5);
-    *result = T->matrix * (*v1);
+    *result = (T->matrix * (*v1)).xyz();
     NPC = LR;
   }
   
@@ -277,12 +281,133 @@ static auto fn_p_stEvalTree() -> void {
   pointer<stSuperObject> object = pointer<stSuperObject>GPR(3);
   pointer<stNodeInterpret> tree = pointer<stNodeInterpret>GPR(4);
   pointer<uGetSetParam> gsparam = pointer<uGetSetParam>GPR(5);
-  event("AITreeEval").fire({{"object", object}, {"tree", tree}, {"getSetParam", gsparam}});
+  //event("AITreeEval").fire({{"object", object}, {"tree", tree}, {"getSetParam", gsparam}});
+//  if (tree->type == cpa::script::ScriptNodeType::Function && (int(tree->param) == 698 || int(tree->param) == 698 || int(tree->param) == 697)) {
+//    printf("print in log window!\n");
+//  }
+  
+  if (tree->type == cpa::script::ScriptNodeType::Procedure) {
+    //printf("executing proc %s in actor %s\n", R3ProcedureTable[int(tree->param)].c_str(), object->name().c_str());
+  }
+}
+
+static auto fn_vInitLevelLoop() -> void {
+  uint32_t addr = GPR(0);
+  //gui::addTemporaryMessage(std::to_string(addr));
+  //printf("init level llooop\n");
 }
   
+static auto fn_vEndTransitionSyncrho() -> void {
+  //printf("end transition\n");
+}
+
+#include "collision.hh"
+
+static auto fn_vAddInCollisionTable() -> void {
+  try {
+    pointer<stVector3D> tempDistance = pointer<stVector3D>GPR(3);
+    pointer<stVector3D> tempHit = pointer<stVector3D>GPR(4);
+    pointer<stVector3D> tempNormal = pointer<stVector3D>GPR(5);
+    pointer<stCollideMaterial> dynamicMaterial = pointer<stCollideMaterial>GPR(6);
+    pointer<stCollideMaterial> staticMaterial = pointer<stCollideMaterial>GPR(7);
+    int16_t param1 = *(int16*)pointer<int16>GPR(8);
+    int16_t param2 = *(int16*)pointer<int16>GPR(9);
+    pointer<stVector3D> movement = pointer<int16>GPR(10); // not updated yet
+    float radius = float(*(float32*)pointer<float32>GPR(11));
+    pointer<stVector3D> endpos = pointer<int16>GPR(12); // not updated yet
+    
+//    printf("COL_fn_vAddInStaticCollisionTable(\n");
+//    printf("  tempDistance = [%.2f, %.2f, %.2f]\n", float(tempDistance->x), float(tempDistance->y), float(tempDistance->z));
+//    printf("  tempHit = [%.2f, %.2f, %.2f]\n", float(tempHit->x), float(tempHit->y), float(tempHit->z));
+//    printf("  tempNormal = [%.2f, %.2f, %.2f]\n", float(tempNormal->x), float(tempNormal->y), float(tempNormal->z));
+//    printf("  radius = %.3f\n", radius);
+//    printf(")\n\n");
+    
+    CollisionTableEntry entry;
+    entry.tempDistance = *(stVector3D*)tempDistance;
+    entry.tempHit = *(stVector3D*)tempHit;
+    entry.tempNormal = *(stVector3D*)tempNormal;
+    entry.entity1 = param1;
+    entry.entity2 = param2;
+    entry.radius = radius;
+    entry.dynamicMaterial = dynamicMaterial;
+    entry.staticMaterial = staticMaterial;
+    collisionTableEntries.push_back(entry);
+    
+  } catch (...) {
+    
+  }
+}
+
+static auto fn_vCollisionStarted() -> void {
+ 
+//  try {
+//    pointer<stSuperObject> object = pointer<stSuperObject>GPR(3);
+//    //printf("collision started for %s\n", object->name().c_str());
+//  } catch(...) {}
+}
+
+static auto fn_vIntersection() -> void {
+  //printf("collision!\n");
+}
+
+static auto fn_vCollisionFinished() -> void {
+  //printf("collision ended\n\n");
+}
+
+static auto fn_vCollideStaticEdge() -> void {
+  NPC = LR;
+}
+
+static auto fn_vCollideStaticIndexedTriangle() -> void {
+  NPC = LR;
+}
+
+static auto multmat() -> void {
+  pointer<stVector3D> dst = pointer<stVector3D>GPR(3);
+  pointer<stTransform> transform = pointer<stVector3D>GPR(4);
+  pointer<stVector3D> src = pointer<stVector3D>GPR(5);
+  if (isnan(float(dst->x))) printf("\n\n NAN HERE\n\n");
+  printf("MAT_fn_vRotateVector(\n");
+  printf("  TransformType = %s\n", transform->typeName().c_str());
+  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x), float(src->y), float(src->z));
+  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x), float(dst->y), float(dst->z));
+  printf(")\n\n");
+  //GPR(0) = 1;
+}
+
+static auto mulmatrixvertex() -> void {
+  pointer<stVector3D> dst = pointer<stVector3D>GPR(3);
+  pointer<stTransform> transform = pointer<stVector3D>GPR(4);
+  pointer<stVector3D> src = pointer<stVector3D>GPR(5);
+  
+  printf("MAT_fn_vMulMatrixVertex(\n");
+  printf("  TransformType = %s\n", transform->typeName().c_str());
+  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x), float(src->y), float(src->z));
+  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x), float(dst->y), float(dst->z));
+  printf(")\n\n");
+  //GPR(0) = 1;
+}
+
   void Interface::applyOptimizations() {
     
     log::info(log::bold, log::pink, "Optimizations loaded\n");
+    
+    //hook<0x8007568c>(mulmatrixvertex, hookType::start);
+    //hook<0x80075844>(multmat, hookType::start);
+    
+    //hook<0x80075844>(fn_vCollideStaticIndexedTriangle, hookType::replace);
+//    hook<0x8006dc98>(fn_vEndTransitionSyncrho, hookType::start);
+//
+//    hook<0x8002cc68>(fn_vAddInCollisionTable, hookType::start);
+//    hook<0x800358a0>(fn_vCollisionStarted, hookType::start);
+//    hook<0x8002e944>(fn_vIntersection, hookType::start);
+//    hook<0x800358e0>(fn_vCollisionFinished, hookType::start);
+//
+//    hook<0x8002e438>(fn_vCollideStaticEdge, hookType::replace);
+    //hook<0x8002ed34>(multmat, hookType::start);
+    //hook<0x8002f5d4>(fn_vCollideStaticIndexedTriangle, hookType::replace);
+    //hook<0x8002ee04>(fn_vCollideStaticIndexedTriangle, hookType::replace);
     
     //hook<0x8002e974>(replace1, hookType::replace);
     
@@ -295,7 +420,8 @@ static auto fn_p_stEvalTree() -> void {
     // POS
     //hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
     
-    //hook<0x80136234>(fn_p_stEvalTree, hookType::start);
+    hook<0x80136234>(fn_p_stEvalTree, hookType::start);
+    hook<0x800edd44>(fn_vInitLevelLoop, hookType::start);
     
     
     //hook<0x8007568c>(POS_fn_vMulMatrixVertex, hookType::replace);

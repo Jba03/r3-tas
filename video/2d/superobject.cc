@@ -46,15 +46,15 @@ static auto sector(stSuperObject *spo) -> void {
   ImGui::Text("Min: [%.2f, %.2f, %.2f]", float(sector->min.x), float(sector->min.y), float(sector->min.z));
   ImGui::Text("Max: [%.2f, %.2f, %.2f]", float(sector->max.x), float(sector->max.y), float(sector->max.z));
   
-  if (ImGui::Button("Highlight in 3D view")) {
-    graphics::highlightList.push_back(spo);
-  }
+//  if (ImGui::Button("Highlight in 3D view")) {
+//    graphics::highlightList.push_back(spo);
+//  }
 }
 
 static auto ipo(stSuperObject *spo) -> void {
-  if (ImGui::Button("Highlight in 3D view")) {
-    graphics::highlightList.push_back(spo->ipo);
-  }
+//  if (ImGui::Button("Highlight in 3D view")) {
+//    graphics::highlightList.push_back(spo->ipo);
+//  }
 }
 
 static auto physicalObject() -> void {

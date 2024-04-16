@@ -64,12 +64,13 @@ namespace gui {
     
     bool highlight = false;
     ImColor color;
-//    
-//    try {
-//      highlightSuperObject(offset, &highlight, &color);
-//    } catch (bad_ptr& e) {
-//      
-//    }
+    
+    try {
+      // WARNING: VERY SLOW
+     // highlightSuperObject(offset, &highlight, &color);
+    } catch (bad_pointer& e) {
+      
+    }
     
     memoryEditor.HighlightColor = color;
     

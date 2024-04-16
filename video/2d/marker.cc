@@ -27,11 +27,8 @@ static void markerConnect() {
   }
 }
 
-#define MARKER_HOVERED  (1 << 0)
-#define MARKER_CLICKED  (1 << 1)
-
-static int markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad, float round) {
-  ImVec2 itemPos = ImGui::GetCursorScreenPos();
+static int markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad, float round, bool crossed = false) {
+  int flags = 0;
   
   ImVec4 bgCol = color;
   ImVec4 txtCol = bgCol;
@@ -40,16 +37,45 @@ static int markerElement(std::string text, bool quiet, ImVec4 color, ImVec2 pad,
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, round);
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, pad);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-  ImGui::PushStyleColor(ImGuiCol_Button, bgCol);
+  ImGui::PushStyleColor(ImGuiCol_Button, quiet ? ImVec4(0,0,0,0.0f) : bgCol);
   ImGui::PushStyleColor(ImGuiCol_Text, txtCol);
-  ImGui::PushStyleColor(ImGuiCol_Border, bgCol);
+  ImGui::PushStyleColor(ImGuiCol_Border, quiet ? ImVec4(0,0,0,0.0f) : bgCol);
   
-  ImGui::ButtonEx(text.c_str(), ImVec2(0,0), ImGuiButtonFlags_AllowOverlap);
+  txtCol.x *= 1.5f;
+  txtCol.y *= 1.5f;
+  txtCol.z *= 1.5f;
+  bgCol.x *= 1.25f;
+  bgCol.y *= 1.25f;
+  bgCol.z *= 1.25f;
+  bgCol.w = 0.25f;
+  
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, bgCol);
+  bgCol.w = 0.35f;
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, bgCol);
+  
+  ImVec2 startPos = ImGui::GetCursorScreenPos();
+  
+  if (ImGui::ButtonEx(text.c_str(), ImVec2(0,0), ImGuiButtonFlags_AllowOverlap)) {
+    flags |= MARKER_CLICKED;
+  }
+  
+  if (ImGui::IsItemHovered()) {
+    flags |= MARKER_HOVERED;
+    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+  }
+  
+  
+  if (crossed) {
+    ImDrawList* dw = ImGui::GetWindowDrawList();
+    dw->AddLine(startPos, ImVec2(startPos.x + ImGui::GetItemRectSize().x, startPos.y + ImGui::GetItemRectSize().y), ImColor(1.0f, 0.2f, 0.2f, 0.75f), 2.5f);
+  }
+  
   
   ImGui::PopStyleVar(3);
-  ImGui::PopStyleColor(3);
+  ImGui::PopStyleColor(5);
   
-  return 0;
+  
+  return flags;
   
 //  ImDrawList *drawlist = ImGui::GetWindowDrawList();
 //
@@ -123,19 +149,39 @@ static std::pair<std::string, ImVec4> markerFormat(pointer<T> reference) {
     std::string objectName = "Brain";
     ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference));
     return { objectName, bgCol };
+  } else if constexpr (std::is_same<T, stDynam>::value) {
+    std::string objectName = "Dynam";
+    ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference));
+    return { objectName, bgCol };
+  } else if constexpr (std::is_same<T, stDynamics>::value) {
+    std::string objectName = "Dynamics";
+    ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference));
+    return { objectName, bgCol };
   }
 }
 
 template <>
-void marker<stSuperObject>(pointer<stSuperObject> reference, bool readonly, std::string customText, bool quiet) {
+int marker<stSuperObject>(pointer<stSuperObject> reference, bool readonly, std::string customText, bool quiet) {
   std::pair<std::string, ImVec4> data = markerFormat(reference);
-  markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
+  return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
 }
 
 template <>
-void marker<stBrain>(pointer<stBrain> reference, bool readonly, std::string customText, bool quiet) {
+int marker<stBrain>(pointer<stBrain> reference, bool readonly, std::string customText, bool quiet) {
   std::pair<std::string, ImVec4> data = markerFormat(reference);
-  markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
+  return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
+}
+
+template <>
+int marker<stDynam>(pointer<stDynam> reference, bool readonly, std::string customText, bool quiet) {
+  std::pair<std::string, ImVec4> data = markerFormat(reference);
+  return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding, reference.pointee() != nullptr);
+}
+
+template <>
+int marker<stDynamics>(pointer<stDynamics> reference, bool readonly, std::string customText, bool quiet) {
+  std::pair<std::string, ImVec4> data = markerFormat(reference);
+  return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding, reference.pointee() != nullptr);
 }
 
 void marker(cpa::script::TranslationToken tok, bool readonly, std::string customText, bool quiet) {
@@ -156,21 +202,11 @@ void marker(cpa::script::TranslationToken tok, bool readonly, std::string custom
         ImGui::SetNextWindowPos(ImGui::GetMousePos());
         ImGui::SetNextWindowSize(ImVec2(700,500));
         ImGui::Begin(customText.c_str());
+        ImGui::SetWindowFocus();
         w.setTargetMacro(pointer<stMacro>(uint32_t(tok.originalNode->param)));
         w.drawScript();
         ImGui::End();
-        
-        if (marker1) {
-          
-        } else {
-//          marker1 =
-//          marker2 = nullptr;
-        }
       }
-      
-      //      if (q & MARKER_CLICKED) {
-      //
-      //      }
       break;
     }
       

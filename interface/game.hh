@@ -23,10 +23,10 @@ namespace game {
   extern pointer<stRandom> g_stRandomStructure;
   
   /* World */
-  extern stSuperObject* p_stActualWorld;
-  extern stSuperObject* p_stDynamicWorld;
-  extern stSuperObject* p_stInactiveDynamicWorld;
-  extern stSuperObject* p_stFatherSector;
+  extern pointer<stSuperObject> p_stActualWorld;
+  extern pointer<stSuperObject> p_stDynamicWorld;
+  extern pointer<stSuperObject> p_stInactiveDynamicWorld;
+  extern pointer<stSuperObject> p_stFatherSector;
     
   /* Global variables */
   extern cpa::uint8 *g_bGhostMode;

@@ -18,6 +18,7 @@ build
 *.r3c
 *.bin
 *.triforce
+settings
 
 *~
 

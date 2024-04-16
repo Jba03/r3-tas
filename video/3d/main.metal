@@ -13,9 +13,6 @@ using namespace metal;
 
 struct RasterizerData
 {
-    // The [[position]] attribute of this member indicates that this value
-    // is the clip space position of the vertex when this structure is
-    // returned from the vertex function.
     float4 position [[position]];
     float point_size [[point_size]];
     
@@ -30,21 +27,33 @@ struct RasterizerData
 //    float4 color;
 };
 
-struct Uniform
-{
-    float3 camera_pos;
-    
-    matrix_float4x4 view;
-    matrix_float4x4 projection;
-    matrix_float4x4 model;
-    matrix_float3x3 normalMatrix;
-    
-    float4 color;
-    bool use_texture;
-    bool useGameIndexing;
-  bool faceNormals;
-  bool enableShading;
-    int slopeMode;
+//struct Uniform
+//{
+//    float3 camera_pos;
+//    
+//    matrix_float4x4 view;
+//    matrix_float4x4 projection;
+//    matrix_float4x4 model;
+//    //matrix_float3x3 normalMatrix;
+//    
+//    float4 color;
+//    bool use_texture;
+//    bool useGameIndexing;
+//  bool faceNormals;
+//  bool enableShading;
+//    int slopeMode;
+//};
+
+struct Uniform {
+  matrix_float4x4 view;
+  matrix_float4x4 projection;
+  matrix_float4x4 model;
+  float3 cameraPosition;
+  float4 color;
+  bool useCheckerTexture;
+  bool useGameIndexing;
+  bool useFaceNormals;
+  bool useShading;
 };
 
 constexpr sampler linearSampler (address::repeat,
@@ -64,29 +73,28 @@ constexpr sampler nearestSampler(address::repeat,
     ((((data) >> 24) & 0x000000FF) | (((data) >>  8) & 0x0000FF00) | \
     ( ((data) <<  8) & 0x00FF0000) | (((data) << 24) & 0xFF000000) )
 
-float3 swap_float3(float3 input)
-{
-    float3 result;
-    
-    uint32_t vx = as_type<uint32_t>(input.x);
-    uint32_t vy = as_type<uint32_t>(input.y);
-    uint32_t vz = as_type<uint32_t>(input.z);
-    
-    vx = swap32(vx);
-    vy = swap32(vy);
-    vz = swap32(vz);
-    
-    result.x = as_type<float>(vx);
-    result.y = as_type<float>(vy);
-    result.z = as_type<float>(vz);
-    
-    return result;
+const float3 swap_float3(float3 input) {
+  float3 result;
+  
+  uint32_t vx = as_type<uint32_t>(input.x);
+  uint32_t vy = as_type<uint32_t>(input.y);
+  uint32_t vz = as_type<uint32_t>(input.z);
+  
+  vx = swap32(vx);
+  vy = swap32(vy);
+  vz = swap32(vz);
+  
+  result.x = as_type<float>(vx);
+  result.y = as_type<float>(vy);
+  result.z = as_type<float>(vz);
+  
+  return result;
 }
 
 vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
-                                  constant packed_float3 *vertices [[ buffer(0) ]],
-                                  constant packed_float3 *normals [[ buffer(1) ]],
-                                  constant uint16_t *indices [[ buffer(2) ]],
+                                  constant packed_float3* vertices [[ buffer(0) ]],
+                                  constant packed_float3* normals [[ buffer(1) ]],
+                                  constant uint16_t* indices [[ buffer(2) ]],
                                   constant Uniform &uniform [[ buffer(3) ]])
 {
     RasterizerData out;
@@ -98,12 +106,12 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     {
       uint16_t index = swap16(indices[vertexID]);
       position = float4(swap_float3(vertices[index]), 1.0f);
-      normal = swap_float3(uniform.faceNormals ? normals[vertexID/3] : normals[index]);
+      normal = swap_float3(uniform.useFaceNormals ? normals[vertexID/3] : normals[index]);
     }
     else
     {
-        position = float4(swap_float3(vertices[vertexID]), 1.0f);
-        normal = normals[vertexID];
+      position = float4(swap_float3(vertices[vertexID]), 1.0f);
+      normal = swap_float3(normals[vertexID]);
     }
     
     //out.texcoord = vertices[vertexID].texcoord.xy;
@@ -113,7 +121,7 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
     
-    out.point_size = 5.0f;
+    out.point_size = 25.0f;
     
     float4 div = position / 20.0f;
     float n = max(max(normal.x, normal.y), normal.z);
@@ -143,12 +151,14 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
                                       constant Uniform &uniform [[ buffer(0) ]])
 {
   FragmentOutput out;
+  
+  
     
-  float tex = uniform.use_texture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1.0f;
+  float tex = uniform.useCheckerTexture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1.0f;
     
   float3 normal = normalize(in.normal);
   float3 position = in.position.xyz;
-  float3 ambientTerm = float3(tex * 0.25f); //float3(tex * 0.25f);
+  float3 ambientTerm = float3(tex * 0.5f);
     
   float3 lightDir = float3(0.0f, 0.0f, 1.0f);
   float diffuseIntensity = saturate(dot(normal, lightDir));
@@ -160,7 +170,7 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     float3 eyeDirection = normalize(in.eye);
     float3 halfway = normalize(lightDir + eyeDirection);
     float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
-    specularTerm = specularFactor * 0.55f;
+    specularTerm = specularFactor * 0.35f;
   }
     
     /* Determine slope visibility */
@@ -170,27 +180,22 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     float dot = metal::dot(in.normal, up);
     if (dot < M_SQRT1_2_F && uniform.useGameIndexing)
     {
-       // discard_fragment();
+        //discard_fragment();
         //uniformColor.w = 0.0f;
     }
-//    else if (dot > MIN_SLOPE)
-//    {
-//        printf("wall\n");
-//    }
-    
-    //cool color:
-    //out.color = float4(ambientTerm + diffuseTerm + in.normal, 1) * uniform.color;
-    //out.color.w = ;
-    
-  //out.color = float4(uniform.color); //float4(in.normal, 1.0f);
+    else
+    {
+      
+    }
   
-  if (uniform.enableShading) {
-    out.color = uniform.color; // float4(ambientTerm + diffuseTerm + specularTerm, 1) * uniform.color;
-  } else {
+  //out.color = float4(ambientTerm + diffuseTerm - in.normal, 1.0) * uniform.color;
+  
+  
+  if (uniform.useShading)
+    out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1.0) * uniform.color;
+    //out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1.0) * uniform.color;
+  else
     out.color = uniform.color;
-  }
-    
-//out.color = float4(1.0f, 0.0f, 0.0f, 1.0f);;
   
   return out;
 }

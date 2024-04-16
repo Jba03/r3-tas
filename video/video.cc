@@ -8,6 +8,7 @@
 #include "video.hh"
 #include "interface.hh"
 #include "gui.hh"
+#include "graphics.hh"
 
 struct GCNVideoPayload {
   void *texture;
@@ -25,6 +26,9 @@ VideoInterface::VideoInterface(Interface *ctx) {
     
   }
   
+  mainContext = MakeGraphicsContext();
+  
+  //graphics::initialize();
   gui::initialize();
 }
 

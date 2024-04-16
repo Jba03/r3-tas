@@ -16,6 +16,8 @@
 #include "log.hh"
 #include "tools.hh"
 
+#include "gui.hh"
+
 #define CPATOOLS_IMPLEMENTATION
 #include <cpatools.hpp>
 
@@ -53,10 +55,10 @@ namespace game
   uint8 *g_bGhostMode = nullptr;
   
   /* World */
-  stSuperObject* p_stActualWorld;
-  stSuperObject* p_stDynamicWorld;
-  stSuperObject* p_stInactiveDynamicWorld;
-  stSuperObject* p_stFatherSector;
+  pointer<stSuperObject> p_stActualWorld;
+  pointer<stSuperObject> p_stDynamicWorld;
+  pointer<stSuperObject> p_stInactiveDynamicWorld;
+  pointer<stSuperObject> p_stFatherSector;
   
   std::map<std::string, stSuperObject*> objectLookupCache;
   std::map<std::string, pointer<stInputEntryElement>> inputEntryElementCache;
@@ -70,7 +72,8 @@ namespace game
   std::map<std::string, namecache> objectNameCache;
     
   static enum stEngineStructure::mode lastEngineMode = stEngineStructure::mode::Invalid;
-  
+static std::string lastLevelName = "";
+
 #pragma mark - FIX
     
     struct fix_header {
@@ -231,8 +234,22 @@ namespace game
       event("EngineModeChanged").fire({{"from", lastEngineMode}, {"to", g_stEngineStructure->mode}});
     }
     
+    if (std::string(g_stEngineStructure->currentLevelName) != lastLevelName) {
+      //event("LevelChanged").subscribe("GUI", [&](Event::Param& p) {
+      std::string currentLevel = g_stEngineStructure->currentLevelName; //std::any_cast<std::string>(p["currentLevel"]);
+      std::string previousLevel = lastLevelName; //std::any_cast<std::string>(p["previousLevel"]);
+        printf("level change: %s -> %s\n", previousLevel.c_str(), currentLevel.c_str());
+      if (currentLevel.length() && previousLevel.length()) {
+        gui::saveLayout(previousLevel);
+        gui::loadLayout(currentLevel);
+      }
+      //});
+      //event("LevelChanged").fire({{"current", std::string(g_stEngineStructure->currentLevelName)}, {"previousLevel", lastLevelName}});
+    }
+    
     R3::autoSplitter.update();
     
+    lastLevelName = std::string(g_stEngineStructure->currentLevelName);
     lastEngineMode = g_stEngineStructure->mode;
   }
   

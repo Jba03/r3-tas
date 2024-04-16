@@ -80,10 +80,19 @@ static auto drawHierarchy() -> void {
   drawRecursive(p_stFatherSector, nullptr);
   
   try {
-    for (auto i : range(g_stAlways->numAlways)) {
-      pointer<stSuperObject> obj = g_stAlways->alwaysActors[i];
-      ImGui::Text("%s", obj->name().c_str());
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.70f, 0.70f, 0.70f, 1.0f));
+    if (ImGui::TreeNodeEx("Always structure")) {
+      g_stAlways->alwaysModels.forEach([](pointer<stAlwaysModelList> entry, void*) {
+        pointer<stEngineObject> obj = entry->alwaysObject;
+        
+        ImGui::PushStyleColor(ImGuiCol_Text, game::objectColor(nullptr));
+        ImGui::Selectable(obj->name().c_str());
+        ImGui::PopStyleColor();
+      });
+      ImGui::TreePop();
     }
+    ImGui::PopStyleColor();
+    
   } catch (...) {
     
   }
