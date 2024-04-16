@@ -49,7 +49,7 @@ struct type : type_id {
   template<typename S> requires ArithmeticType<S> type(const S value) {
     if constexpr (std::is_same<S, float>::value) {
       // Copy float type to memory
-      data = memory::bswap(*(T*)&value);
+      /*if (!memory::readonly && memoryBound())*/ data = memory::bswap(*(T*)&value);
     } else if constexpr (std::is_integral<S>::value) {
       // Copy integral type to memory
     }
@@ -57,7 +57,7 @@ struct type : type_id {
   /// Assign any
   template<typename S> requires IntegralType<S> type& operator =(const S v) {
     if (memoryBound()) return *this;
-    data = memory::bswap(*(T*)&v);
+    /*if (!memory::readonly)*/ data = memory::bswap(*(T*)&v);
     return *this;
   }
   
@@ -89,7 +89,7 @@ private:
   T data = 0;
 };
   
-  using TargetAddressTypeLocal = type<memory::TargetAddressType, memory::TargetAddressType>;
+using TargetAddressTypeLocal = type<memory::TargetAddressType, memory::TargetAddressType>;
   
 #pragma mark - Pointer
   
@@ -129,12 +129,21 @@ struct pointer : pointer_id {
     return pointer<X>(obj + idx);
   }
   
+//  template<typename X = T> X& operator[](auto idx) {
+//    X *obj = pointee<X>();
+//    if (!obj) throw bad_pointer("array access into bad pointer");
+//    return *(obj + idx);
+//  }
+  
   pointer<T> operator +(std::integral auto c) { return pointer<T>(ptr.physicalAddress() + sizeof(T) * c); }
   pointer<T> operator -(std::integral auto c) { return ptr.effectiveAddress() - sizeof(T) * c; }
   pointer<T> operator ++() { return (*this = pointer<T>(ptr.physicalAddress() + sizeof(T))); }
   pointer<T> operator ++(std::integral auto) { pointer<T> o = *this; (*this = pointer<T>(ptr.physicalAddress() + sizeof(T))); return o; }
   template <typename X = T> bool operator ==(pointer<X>& other) { return ptr == other.ptr; }
   operator bool() { return valid(); }
+  
+  auto begin() { return pointee()->begin(); }
+  auto end() { return pointee()->begin(); }
   
   using UnderlyingType = T;
   

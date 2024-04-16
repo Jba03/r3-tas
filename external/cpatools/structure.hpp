@@ -82,22 +82,19 @@ struct stWayPoint;
 struct stGraph;
 struct stGraphNode;
 struct stGraphChainList;
-  
+
 #pragma mark - Structure -
   
+using Index3D = uint16;
+
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
 #define UNIQUE_NAME(base) CONCAT(base, __LINE__)
-  /// Create struct padding
 #define padding(S) private: uint8_t UNIQUE_NAME(padding) [S]; public:
-  
-  struct structure {
-    /* ... */
-  };
 
 #define s(what) s.add(#what, what);
   
-  /** ``STRUCTURE BEGIN`` **/
+/** ``STRUCTURE BEGIN`` **/
   
 #pragma mark - Common types
   
@@ -113,14 +110,36 @@ union vector {
   auto length() const { return sqrt(square()); }
   auto& operator [](auto i) { return data[i]; }
   
-  auto operator +(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] + v[i]; return result; }
-  auto operator -(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] - v[i]; return result; }
-  auto operator *(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] * v[i]; return result; }
-  auto operator /(vector<N> v) { vector<N> result; for(auto i : range(N)) result[i] = data[i] / v[i]; return result; }
-  auto operator *(float     s) { vector<N> result; for(auto i : range(N)) result[i] = data[i] *    s; return result; }
-  auto operator /(float     s) { vector<N> result; for(auto i : range(N)) result[i] = data[i] /    s; return result; }
-  auto operator -()            { vector<N> result; for(auto i : range(N)) result[i] =-data[i];        return result; }
+  auto operator +(vector v) { vector result; for(auto i : range(N)) result[i] = data[i] + v[i]; return result; }
+  auto operator -(vector v) { vector result; for(auto i : range(N)) result[i] = data[i] - v[i]; return result; }
+  auto operator *(vector v) { vector result; for(auto i : range(N)) result[i] = data[i] * v[i]; return result; }
+  auto operator /(vector v) { vector result; for(auto i : range(N)) result[i] = data[i] / v[i]; return result; }
+  auto operator *(float  s) { vector result; for(auto i : range(N)) result[i] = data[i] *    s; return result; }
+  auto operator /(float  s) { vector result; for(auto i : range(N)) result[i] = data[i] /    s; return result; }
+  auto operator -()         { vector result; for(auto i : range(N)) result[i] =-data[i];        return result; }
+  auto operator >(vector v) { bool result = true; for(auto i : range(N)) if (data[i] <= v[i]) result = false; return result; }
+  auto operator <(vector v) { bool result = true; for(auto i : range(N)) if (data[i] >= v[i]) result = false; return result; }
+  auto operator>=(vector v) { bool result = true; for(auto i : range(N)) if (data[i] <  v[i]) result = false; return result; }
+  auto operator<=(vector v) { bool result = true; for(auto i : range(N)) if (data[i] >  v[i]) result = false; return result; }
+  
+  auto xy() -> vector<2> { return vector<2>(x, y); }
   auto xyz() -> vector<3> { return vector<3>(x, y, z); }
+  
+  auto cross(vector<3> v) -> vector<3> {
+    vector<3> result;
+    result.x = data[1] * v.data[2] - data[2] * v.data[1];
+    result.y = data[2] * v.data[0] - data[0] * v.data[2];
+    result.z = data[0] * v.data[1] - data[1] * v.data[0];
+    return result;
+  }
+  
+  auto normalize() {
+    vector result = *this;
+    if(length() == 0) return result;
+    float scale = 1.0f / length();
+    for(auto i : range(N)) result[i] *= scale;
+    return result;
+  }
   
   struct {
     std::conditional_t<N >= 1, T, zero_t> x;
@@ -141,7 +160,7 @@ private:
 using stVector2D = vector<2>;
 using stVector3D = vector<3>;
 using stVector4D = vector<4>;
-  
+
 template<unsigned Rows, unsigned Columns, typename T>
 struct matrix {
   matrix() {
@@ -154,7 +173,7 @@ struct matrix {
   
   T& operator()(auto row, auto col) { return m[col + row * Columns]; }
   
-  static inline auto identity() {
+  static auto identity() {
     matrix result;
     for (auto y : range(Rows)) {
       for (auto x : range(Columns)) {
@@ -191,8 +210,8 @@ struct matrix {
     return result;
   }
   
-  auto operator* (stVector3D v) -> stVector3D {
-    return ((*this) * stVector4D(v.x, v.y, v.z, 1.0f)).xyz();
+  auto operator* (stVector3D v) -> stVector4D {
+    return ((*this) * stVector4D(v.x, v.y, v.z, 1.0f));
   }
   
   static inline auto make_translation(vector<3> p) {
@@ -219,6 +238,89 @@ struct matrix {
     return result;
   }
   
+  static inline auto make_lookat(stVector3D eye, stVector3D center, stVector3D up) {
+    stVector3D n = (eye - center).normalize();
+    stVector3D u = up.cross(n).normalize();
+    stVector3D v = n.cross(u);
+    
+    float nnx = (-u).dot(eye);
+    float nny = (-v).dot(eye);
+    float nnz = (-n).dot(eye);
+    
+    matrix<4,4,T> result;
+    result(0,0) = u.x;
+    result(0,1) = v.x;
+    result(0,2) = n.x;
+    result(0,3) = 0.0f;
+    result(1,0) = u.y;
+    result(1,1) = v.y;
+    result(1,2) = n.y;
+    result(1,3) = 0.0f;
+    result(2,0) = u.z;
+    result(2,1) = v.z;
+    result(2,2) = n.z;
+    result(2,3) = 0.0f;
+    result(3,0) = nnx;
+    result(3,1) = nny;
+    result(3,2) = nnz;
+    result(3,3) = 1.0f;
+    
+    return result;
+  }
+  
+  auto transpose() -> matrix {
+    matrix<Rows, Columns, T> result;
+    for (auto y : range(Rows)) {
+      for (auto x : range(Columns)) {
+        result(x,y) = (*this)(y,x);
+      }
+    }
+    return result;
+  }
+  
+  auto inverse() -> matrix<4,4,T> {
+    matrix<4,4,T> result;
+    
+    float s0 = (*this)(0,0) * (*this)(1,1) - (*this)(1,0) * (*this)(0,1);
+    float s1 = (*this)(0,0) * (*this)(1,2) - (*this)(1,0) * (*this)(0,2);
+    float s2 = (*this)(0,0) * (*this)(1,3) - (*this)(1,0) * (*this)(0,3);
+    float s3 = (*this)(0,1) * (*this)(1,2) - (*this)(1,1) * (*this)(0,2);
+    float s4 = (*this)(0,1) * (*this)(1,3) - (*this)(1,1) * (*this)(0,3);
+    float s5 = (*this)(0,2) * (*this)(1,3) - (*this)(1,2) * (*this)(0,3);
+    float c5 = (*this)(2,2) * (*this)(3,3) - (*this)(3,2) * (*this)(2,3);
+    float c4 = (*this)(2,1) * (*this)(3,3) - (*this)(3,1) * (*this)(2,3);
+    float c3 = (*this)(2,1) * (*this)(3,2) - (*this)(3,1) * (*this)(2,2);
+    float c2 = (*this)(2,0) * (*this)(3,3) - (*this)(3,0) * (*this)(2,3);
+    float c1 = (*this)(2,0) * (*this)(3,2) - (*this)(3,0) * (*this)(2,2);
+    float c0 = (*this)(2,0) * (*this)(3,1) - (*this)(3,0) * (*this)(2,1);
+    
+    float const det = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+    float const invdet = 1.0f / det;
+    
+    /* If the determinant is zero,
+      * the matrix is singular and cannot be inverted. */
+    assert(det != 0.0f);
+    
+    result(0,0) = ( (*this)(1,1) * c5 - (*this)(1,2) * c4 + (*this)(1,3) * c3) * invdet;
+    result(0,1) = (-(*this)(0,1) * c5 + (*this)(0,2) * c4 - (*this)(0,3) * c3) * invdet;
+    result(0,2) = ( (*this)(3,1) * s5 - (*this)(3,2) * s4 + (*this)(3,3) * s3) * invdet;
+    result(0,3) = (-(*this)(2,1) * s5 + (*this)(2,2) * s4 - (*this)(2,3) * s3) * invdet;
+    result(1,0) = (-(*this)(1,0) * c5 + (*this)(1,2) * c2 - (*this)(1,3) * c1) * invdet;
+    result(1,1) = ( (*this)(0,0) * c5 - (*this)(0,2) * c2 + (*this)(0,3) * c1) * invdet;
+    result(1,2) = (-(*this)(3,0) * s5 + (*this)(3,2) * s2 - (*this)(3,3) * s1) * invdet;
+    result(1,3) = ( (*this)(2,0) * s5 - (*this)(2,2) * s2 + (*this)(2,3) * s1) * invdet;
+    result(2,0) = ( (*this)(1,0) * c4 - (*this)(1,1) * c2 + (*this)(1,3) * c0) * invdet;
+    result(2,1) = (-(*this)(0,0) * c4 + (*this)(0,1) * c2 - (*this)(0,3) * c0) * invdet;
+    result(2,2) = ( (*this)(3,0) * s4 - (*this)(3,1) * s2 + (*this)(3,3) * s0) * invdet;
+    result(2,3) = (-(*this)(2,0) * s4 + (*this)(2,1) * s2 - (*this)(2,3) * s0) * invdet;
+    result(3,0) = (-(*this)(1,0) * c3 + (*this)(1,1) * c1 - (*this)(1,2) * c0) * invdet;
+    result(3,1) = ( (*this)(0,0) * c3 - (*this)(0,1) * c1 + (*this)(0,2) * c0) * invdet;
+    result(3,2) = (-(*this)(3,0) * s3 + (*this)(3,1) * s1 - (*this)(3,2) * s0) * invdet;
+    result(3,3) = ( (*this)(2,0) * s3 - (*this)(2,1) * s1 + (*this)(2,2) * s0) * invdet;
+    
+    return result;
+  }
+  
   inline auto translation() -> stVector3D& {
     return *(stVector3D*)&(*this)(Rows-1,0);
   }
@@ -233,7 +335,6 @@ struct matrix {
     for (auto i : range(Rows*Columns)) s(m[i])
   }
   
-private:
   std::array<T, Rows * Columns> m;
 };
 
@@ -251,10 +352,28 @@ struct LinkedList {
   int32 numEntries;
   
   template<typename F> void forEach(const F& f, void *userdata = nullptr) {
-    for (T *c = first; c; c = c->next) {
-      f(c, userdata);
-    }
+//    pointer<T> c = first;
+//    for (int i = 0; i < numEntries; i++) {
+//      f(c++, userdata);
+//    }
+    try {
+      for (T *c = first; c; c = c->next) {
+        f(c, userdata);
+      }
+    } catch (...) {}
   }
+  
+  struct iterator {
+    iterator(pointer<T> pos) : _pos(pos) { /* ... */ }
+    auto operator*() -> pointer<T> { return _pos; }
+    auto operator!=(iterator& source) -> bool { return _pos != source._pos; }
+    auto operator++() -> iterator& { if (_pos) _pos = _pos->next; return *this; }
+  private:
+    pointer<T> _pos;
+  };
+  
+  auto begin() -> iterator { return first; }
+  auto end() -> iterator { return last; }
 };
 
 template<typename T = uint32> using stSingleLinkedList = LinkedList<T, LinkedListType::Single>;
@@ -262,7 +381,7 @@ template<typename T = uint32> using stDoublyLinkedList = LinkedList<T, LinkedLis
 template<typename T = uint32> using stLinkedList = stDoublyLinkedList<T>;
 
 #pragma mark - stTransform
-  
+
 /// World transform
 struct stTransform {
   
@@ -294,10 +413,35 @@ struct stTransform {
     return matrix.translation();
   }
   
+  auto getRotation(stVector3D& i, stVector3D& j, stVector3D& k) -> void {
+    Type t = static_cast<Type>(uint32_t(type));
+    if (t == Type::Rotation) {
+      i = *(stVector3D*)&matrix(0,0);
+      j = *(stVector3D*)&matrix(1,0);
+      k = *(stVector3D*)&matrix(2,0);
+    }
+  }
+  
   /** transform x stVector3D -> stVector3D */
   stVector3D operator * (stVector3D v);
   /** transform x stVector4D -> stVector4D */
   stVector4D operator * (stVector4D v);
+  
+  inline auto typeName() -> std::string {
+    switch (static_cast<Type>(uint32_t(type))) {
+      case Type::Uninitialized: return "Uninitialized";
+      case Type::Identity: return "Identity";
+      case Type::Translate: return "Translate";
+      case Type::Zoom: return "Zoom";
+      case Type::Scale: return "Scale";
+      case Type::Rotation: return "Rotation";
+      case Type::RotationZoom: return "RotationZoom";
+      case Type::RotationScale: return "RotationScale";
+      case Type::RotationScaleComplex: return "RotationScaleComplex";
+      case Type::Undefined: return "Undefined";
+      default: return "Invalid";
+    }
+  }
   
   auto serialize(serializer::node& s) {
     s(type)
@@ -308,9 +452,17 @@ struct stTransform {
   
 #pragma mark - stAlways
   
+struct stAlwaysModelList {
+  pointer<stAlwaysModelList> next;
+  pointer<stAlwaysModelList> prev;
+  pointer<stLinkedList<stAlwaysModelList>> parentList;
+  int32 objectModelType;
+  pointer<stEngineObject> alwaysObject;
+};
+
 struct stAlways {
   uint32 numAlways;
-  stDoublyLinkedList<> alwaysModels;
+  stDoublyLinkedList<stAlwaysModelList> alwaysModels;
   pointer<stSuperObject> alwaysSuperobject;
   pointer<stEngineObject> alwaysActors;
   pointer<stSuperObject> alwaysGeneratorSuperobjects;
@@ -459,17 +611,18 @@ struct stEngineStructure {
 };
   
 #pragma mark - IPT
-  
+
+/// Structure for ReadAnalogJoystick function
 struct stPadReadingOutput {
+  /// The world vector the joystick value translates to
   stVector3D globalVector;
   int16 horizontalAxis;
   int16 verticalAxis;
   float32 analogForce;
   float32 trueAnalogForce;
-  float32 angle;
-  int32 sector;
-  
-  void serialize(serializer& s);
+  float32 rotationAngle;
+  /// Strafe sector (0-7 clockwise)
+  int32 strafeSector;
 };
 
 struct stInputDevice {
@@ -585,6 +738,15 @@ struct stRandom {
   float32 tableMaxInverse;
   /// Random number table
   pointer<uint32> table;
+  
+  auto serialize(serializer::node& s) {
+    s.type("stRandom");
+    s(tableSize)
+    s(tableIndices)
+    s(lastIndex)
+    s(tableMax)
+    s(tableMaxInverse)
+  }
 };
   
 #pragma mark - 3D
@@ -803,6 +965,22 @@ struct stDynamicsObstacle {
   pointer<stSuperObject> superObject;
 };
 
+struct stDynamicsObstacleMEC {
+  float32 rate;
+  stVector3D normal;
+  stVector3D contact;
+  pointer<> material;
+  pointer<> collideMaterial;
+  pointer<stSuperObject> superObject;
+  uint32 type;
+  int16 entity1;
+  int16 entity2;
+  stVector3D translation;
+  stVector3D zoneMove;
+  stVector3D zonePosition;
+  float32 zoneRadius;
+};
+
 struct stDynamicsMovevement {
   stVector3D linear;
   stDynamicsRotation angular;
@@ -909,6 +1087,12 @@ struct stEngineObject {
   inline auto dsgMem() -> pointer<stDsgMem>;
   /// Get the dsg variable memory at specified index
   inline auto dsgVar(int idx, uint32_t* type = nullptr) -> pointer<>;
+  /// Get the speed of this actor
+  inline auto speed() -> stVector3D;
+  /// Get the linear horizontal speed of this actor
+  inline auto horizontalSpeed() -> float;
+  /// Get the linear vertical speed of this actor
+  inline auto verticalSpeed() -> float;
   /// Serialize this structure
   inline auto serialize(serializer::node& s);
 };
@@ -918,6 +1102,12 @@ using stActor = stEngineObject;
 #pragma mark - SECT
   
 struct stSector {
+  enum priority : int8_t {
+    Min = 0,
+    Normal = 64,
+    Max = 127,
+  };
+  
   stDoublyLinkedList<> characterList;
   stDoublyLinkedList<> staticLightList;
   stDoublyLinkedList<> dynamicLightList;
@@ -938,6 +1128,10 @@ struct stSector {
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
   string<0x104> name;
 #endif
+  
+  static const inline uint32 minPriority    = 0;
+  static const inline uint32 normalPriority = 64;
+  static const inline uint32 maxPriority    = 127;
 };
   
 #pragma mark - COL
@@ -960,7 +1154,7 @@ struct stOctree {
 
 struct stCollideObject {
   
-  enum Type {
+  enum type {
     IndexedTriangles   = 1,
     Facemap            = 2,
     Sprite             = 3,
@@ -971,6 +1165,7 @@ struct stCollideObject {
     AABB               = 8,
     Cones              = 9,
     DeformationSetInfo = 13,
+    Invalid            = 0xFFFF,
   };
   
   int16 numVertices;
@@ -1004,10 +1199,10 @@ struct stColliderInfo {
   
 struct stZdxListEntry {
 #if CPA_PLATFORM == CPA_PLATFORM_GCN
-  pointer<> next;
-  pointer<> prev;
+  pointer<stZdxListEntry> next;
+  pointer<stZdxListEntry> prev;
   pointer<> parent;
-  pointer<> data;
+  pointer<stCollideObject> data;
 #else
   pointer<stCollideObject> data;
 #endif
@@ -1021,10 +1216,17 @@ struct stZdxList {
 #endif
   uint16 numZdx;
   padding(2)
+  
+  /// Return a vector of all the collide zdx objects
+  inline auto all() -> std::vector<pointer<stCollideObject>>;
 };
   
 struct stCsaList {
   stDoublyLinkedList<> list;
+};
+
+struct stZoneSetList {
+  
 };
 
 struct stCollideSet {
@@ -1032,14 +1234,14 @@ struct stCollideSet {
   pointer<stZdxList> zdeList;
   pointer<stZdxList> zdmList;
   pointer<stZdxList> zdrList;
-  pointer<> zddActivationList;
-  pointer<> zdeActivationList;
-  pointer<> zdmActivationList;
-  pointer<> zdrActivationList;
-  pointer<> zddCurrentActivation;
-  pointer<> zdeCurrentActivation;
-  pointer<> zdrCurrentActivation;
-  pointer<> zdmCurrentActivation;
+  pointer<stCsaList> zddActivationList;
+  pointer<stCsaList> zdeActivationList;
+  pointer<stCsaList> zdmActivationList;
+  pointer<stCsaList> zdrActivationList;
+  pointer<stZoneSetList> zddCurrentActivation;
+  pointer<stZoneSetList> zdeCurrentActivation;
+  pointer<stZoneSetList> zdrCurrentActivation;
+  pointer<stZoneSetList> zdmCurrentActivation;
   uint32 zddPrivilegedZone;
   uint32 zdePrivilegedZone;
   uint32 zdmPrivilegedZone;
@@ -1074,7 +1276,7 @@ struct stElementIndexedTrianglesVisual {
 };
 
 struct stCollideElementIndexedTriangles {
-  pointer<stGameMaterial> material;
+  pointer<stCollideMaterial> material;
   pointer<uint16> faceIndices;
   pointer<stVector3D> normals;
   int16 numFaces;
@@ -1099,6 +1301,25 @@ struct stCollideElementSpheres {
   int16 numSpheres;
   int16 aabbIndex;
 };
+
+#define COL_MAT_ID_MASK_NONE              (0 << 0)
+#define COL_MAT_ID_MASK_SLIDE             (1 << 0)
+#define COL_MAT_ID_MASK_TRAMPOLINE        (1 << 1)
+#define COL_MAT_ID_MASK_GRABBABLE_LEDGE   (1 << 2)
+#define COL_MAT_ID_MASK_WALL              (1 << 3)
+#define COL_MAT_ID_MASK_UNKNOWN           (1 << 4)
+#define COL_MAT_ID_MASK_HANGABLE_CEILING  (1 << 5)
+#define COL_MAT_ID_MASK_CLIMBABLE_WALL    (1 << 6)
+#define COL_MAT_ID_MASK_ELECTRIC          (1 << 7)
+#define COL_MAT_ID_MASK_LAVA_DEATH_WARP   (1 << 8)
+#define COL_MAT_ID_MASK_FALL_TRIGGER      (1 << 9)
+#define COL_MAT_ID_MASK_HURT_TRIGGER      (1 << 10)
+#define COL_MAT_ID_MASK_DEATH_WARP        (1 << 11)
+#define COL_MAT_ID_MASK_UNKNOWN2          (1 << 12)
+#define COL_MAT_ID_MASK_UNKNOWN3          (1 << 13)
+#define COL_MAT_ID_MASK_WATER             (1 << 14)
+#define COL_MAT_ID_MASK_NO_COLLISION      (1 << 15)
+#define COL_MAT_ID_MASK_ALL               0xFFFF
 
 struct stCollideMaterial {
   int16 zoneType;
@@ -1260,6 +1481,7 @@ struct stSuperObject {
     pointer<stEngineObject> actor;
     pointer<stSector> sector;
     pointer<stInstantiatedPhysicalObject> ipo;
+    pointer<stPhysicalObject> physicalObject;
   };
   
   pointer<stSuperObject> firstChild;
@@ -1302,6 +1524,8 @@ struct stSuperObject {
   inline auto typeName() -> std::string;
   /// Return the name of the superobject
   inline auto name(bool fullname = false) -> std::string;
+  /// Get the position of the supreobject
+  inline auto position() -> stVector3D;
   
   /// Recurse the tree below this superobject
   template <typename F, typename UserData>
@@ -1318,8 +1542,8 @@ struct stSuperObject {
   }
   
   //iterator
-  auto begin() -> iterator { return firstChild; }
-  auto end() -> iterator { return lastChild; }
+  auto begin() const -> iterator { return firstChild; }
+  auto end() const -> iterator { return lastChild; }
   //serialize
   inline auto serialize(serializer::node&);
   
@@ -1579,10 +1803,10 @@ auto stEngineObject::dsgMem() -> pointer<stDsgMem> {
   return brain->mind->dsgMem;
 }
 
-auto stEngineObject::dsgVar(int idx, uint32_t *type) -> pointer<> {
+auto stEngineObject::dsgVar(int idx, uint32_t* type) -> pointer<> {
   try {
     pointer<stDsgMem> mem = brain->mind->dsgMem;
-    pointer<stDsgVar> vars = mem->dsgVars;
+    if (idx > mem->dsgVars->infoLength) return nullptr;
     pointer<stDsgVarInfo> info = mem->dsgVarInfo(idx);
     if (type) *type = info->type;
     return (uint8_t*)mem->currentBuffer + info->memoryOffset;
@@ -1591,11 +1815,37 @@ auto stEngineObject::dsgVar(int idx, uint32_t *type) -> pointer<> {
   }
 }
 
+auto stEngineObject::speed() -> stVector3D {
+  try {
+    return dynam->dynamics->base.previousSpeed;
+  } catch (bad_pointer& e) {
+    return stVector3D();
+  }
+}
+
+auto stEngineObject::horizontalSpeed() -> float {
+  auto s = speed();
+  return sqrt(s.x * s.x + s.y * s.y);
+}
+
+auto stEngineObject::verticalSpeed() -> float {
+  return speed().z;
+}
+
 /// Serialize this structure
 auto stEngineObject::serialize(serializer::node& s) {
   
 }
 
+
+#pragma mark - ZdxList
+
+auto stZdxList::all() -> std::vector<pointer<stCollideObject>> {
+  assert(list.numEntries == numZdx); //should never happen
+  std::vector<pointer<stCollideObject>> objects;
+  list.forEach([&](pointer<stZdxListEntry> entry, void*) { objects.emplace_back(entry->data); });
+  return objects;
+}
 
 #pragma mark SuperObject
 
@@ -1626,6 +1876,13 @@ auto stSuperObject::name(bool fullname) -> std::string {
     }
   } catch (bad_pointer& e) {
     return "";
+  }
+}
+auto stSuperObject::position() -> stVector3D {
+  try {
+    return globalTransform->translation();
+  } catch (bad_pointer& e) {
+    return stVector3D();
   }
 }
 
@@ -1660,6 +1917,127 @@ auto stSuperObject::serialize(serializer::node& s) {
   s(transition);
 }
 
+#pragma mark - Static functions
+
+static inline auto sectorSearch(pointer<stSuperObject> fatherSector, stVector3D point) -> pointer<stSuperObject> {
+  try {
+    float dNear = INFINITY;
+    float dCurrent = INFINITY;
+    float dVirtual = INFINITY;
+    enum stSector::priority p = stSector::priority::Min;
+    enum stSector::priority v = stSector::priority::Min;
+    
+    pointer<stSuperObject> targetSector = nullptr;
+    pointer<stSuperObject> targetSectorVirtual = nullptr;
+       
+    fatherSector->forEachChild([&](pointer<stSuperObject> object, void*) {
+      pointer<stSector> sector = object->sector;
+      stVector3D min = sector->min;
+      stVector3D max = sector->max;
+      
+      if (point >= min && point <= max) {
+        stVector3D distance = (min + max) / 2.0f - point;
+        dNear = distance.length();
+        
+        if (!sector->isVirtual) {
+          if (sector->priority > p) {
+            targetSector = object;
+            dCurrent = dNear;
+            p = static_cast<enum stSector::priority>(int8_t(sector->priority));
+          } else if (sector->priority == p && dNear < dCurrent) {
+            targetSector = object;
+            dCurrent = dNear;
+          }
+        } else {
+          if (sector->priority > v) {
+            targetSectorVirtual = object;
+            dVirtual = dNear;
+            v = static_cast<enum stSector::priority>(int8_t(sector->priority));
+          } else if (sector->priority == v && dNear < dVirtual) {
+            targetSectorVirtual = object;
+            dVirtual = dNear;
+          }
+        }
+      }
+    });
+    
+    if (!targetSector) targetSector = targetSectorVirtual;
+    if (!targetSector) targetSector = fatherSector->lastChild; // UNIVERS
+    return targetSector;
+  } catch (...) {
+    return nullptr;
+  }
+}
+
+static auto rayTriangleIntersect(stVector3D &origin, stVector3D &direction, stVector3D& A, stVector3D& B, stVector3D& C, bool cullBackface, double &t) -> bool {
+  stVector3D E1 = B - A;
+  stVector3D E2 = C - A;
+  stVector3D H = direction.cross(E2);
+  
+  const double det = E1.dot(H);
+  const double invdet = 1.0f / det;
+  
+  if (det < EPSILON && cullBackface) return false;
+  if (fabs(det) < EPSILON && !cullBackface) return false;
+    
+  stVector3D S = origin - A;
+  const double u = S.dot(H) * invdet;
+  if (u < 0.0f || u > 1.0f) return false;
+  
+  stVector3D Q = S.cross(E1);
+  const double v = direction.dot(Q) * invdet;
+  if (v < 0.0f || u + v > 1.0f) return false;
+  
+  t = invdet * E2.dot(Q);
+  return t > EPSILON;
+}
+
+template<bool UseOctreeOptimization = false>
+static auto segmentCollideObjectIntersect(pointer<stCollideObject> collObj, stMatrix4D T, stVector3D start, stVector3D end, stVector3D& intersectionPoint) -> bool {
+  try {
+    if (!collObj) return false;
+    
+    stVector3D origin = start;
+    stVector3D direction = (end - start).normalize();
+    const double l = (end - start).length();
+    
+    for (int i = 0; i < collObj->numElements; i++) {
+      int16_t type = collObj->elementTypes[i];
+      if (type == stCollideObject::type::IndexedTriangles) {
+        pointer<stCollideElementIndexedTriangles> element = collObj->elements[i];
+        stVector3D* vertices = collObj->vertices;
+        uint16* indices = element->faceIndices;
+        
+        for (int16_t index = 0; index < element->numFaces; index++) {
+          uint16 idx0 = *(indices + index * 3 + 0);
+          uint16 idx1 = *(indices + index * 3 + 1);
+          uint16 idx2 = *(indices + index * 3 + 2);
+          
+          stVector3D A = *(vertices + idx0);
+          stVector3D B = *(vertices + idx1);
+          stVector3D C = *(vertices + idx2);
+          
+          stVector3D TA = (T*A).xyz();
+          stVector3D TB = (T*B).xyz();
+          stVector3D TC = (T*C).xyz();
+          
+          double t;
+          if (rayTriangleIntersect(origin, direction, TA, TB, TC, true, t)) {
+            if (t < l) { // constrain to segment
+              intersectionPoint = origin + direction * t;
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  } catch (...) {
+    return false;
+  }
+}
+
 #undef s
 #undef padding
 };
+

@@ -18,8 +18,8 @@ struct node {
   
   auto name() const -> std::string { return _name; }
   auto value() const -> std::string { return _value; }
-  auto begin() const { return _children.begin(); }
-  auto end() const { return _children.end(); }
+  auto begin() { return _children.begin(); }
+  auto end() { return _children.end(); }
   auto add_child(const node& nd) -> node& { return _children.emplace_back(nd); }
   
   auto operator [](std::string name) -> node& {
@@ -29,7 +29,7 @@ struct node {
     throw "No such node '" + name + "' found";
   }
   
-  inline static auto serialize(const node& nd, unsigned depth = 0) -> std::string {
+  inline static auto serialize(node& nd, unsigned depth = 0) -> std::string {
     if (nd.name().length() == 0) {
       std::string text;
       for (auto child : nd) {
@@ -124,6 +124,10 @@ struct node {
     }
   }
   
+  auto children() {
+    return _children;
+  }
+  
 protected:
   size_t _depth;
   std::string _name;
@@ -144,6 +148,11 @@ struct serializer {
   
   struct node : markup::node {
     node() = default;
+    
+    node(markup::node& nd) {
+      _name = nd.name();
+      _value = nd.value();
+    }
     
     node(serializer* s, std::string name) {
       _serializer = s;
@@ -232,6 +241,8 @@ struct serializer {
           
         }
         //this->add(nd);
+      } else if constexpr (std::is_array<T>::value) {
+        
       } else {
         nd._value = typeid(decltype(v)).name();
         v.serialize(nd);

@@ -38,4 +38,6 @@ static inline auto range(int64_t sz) {
   return _range { 0, sz, 1 };
 }
 
+static constexpr float EPSILON = 1e-6;
+
 }
