@@ -1,18 +1,21 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 #include <cmath>
 
 #include <array>
 #include <string>
 #include <concepts>
 #include <type_traits>
+#include <variant>
+#include <concepts>
+#include <type_traits>
+#include <functional>
 
 namespace cpa {
-
-//used with std::conditional_t to delete specific struct fields
-using zero_t = int[0];
-static_assert(sizeof(zero_t) == 0, "zero_t is not zero!");
 
 struct _range {
   struct iterator {

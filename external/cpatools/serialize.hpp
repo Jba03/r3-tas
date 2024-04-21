@@ -2,6 +2,7 @@
 
 #include <cpatools/types.hpp>
 
+#include <iomanip>
 #include <iterator>
 #include <vector>
 #include <sstream>

@@ -16,7 +16,7 @@ struct address : address_id {
   /// Initialize with target address
   address(memory::TargetAddressType address) : addr(memory::bswap(address)) { /* ... */ }
   /// Initialize with host address
-  address(memory::HostAddressType hostAddress) : addr(hostAddress ? memory::bswap(uint32_t(long(hostAddress) - long(memory::baseAddress))) : 0) { /* ... */ }
+  address(memory::HostAddressType hostAddress) : addr(hostAddress ? memory::bswap(uint32_t(intptr_t(hostAddress) - intptr_t(memory::baseAddress))) : 0) { /* ... */ }
   /// Return the physical hardware address
   inline auto physicalAddress() -> memory::TargetAddressType { return memory::bswap(addr) | 0x80000000; };
   /// Return the effective (emulated) address
