@@ -466,7 +466,7 @@ struct stTransform {
     Undefined = 9,
   };
   
-  stTransform();
+  stTransform() = default;
   
   /** transform type */
   uint32 type = 0;
