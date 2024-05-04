@@ -45,7 +45,7 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
       TC("Endflags", "%X", uint32_t(base.endFlags))
       TC("Gravity", "%f", float(base.gravity))
       TC("Slope limit", "%f", float(base.slopeLimit));
-      TC("Slope", "%f°", degrees(base.slopeCosine));
+      TC("Slope", "%f°", degrees(acos(base.slopeCosine)));
       TC("Slide", "%f", float(base.rebound));
       TC("Rebound", "%f", float(base.rebound));
               
