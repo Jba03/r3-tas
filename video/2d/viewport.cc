@@ -38,7 +38,7 @@ static void objectMarker(pointer<stSuperObject> object) {
     
     ImGui::SetCursorScreenPos(screenPosReal);
     
-    if (object->type == stSuperObject::type::Actor) {
+    if (object->type == superobjectTypeActor) {
       if (marker(pointer<stSuperObject>(object), memory::readonly) & MARKER_CLICKED) {
         gui::aiWindow->setTargetObject(object);
       }
@@ -58,7 +58,7 @@ static void objectMarkersDrawWorld(stSuperObject *world, ImDrawList *drawlist, b
   if (world) {
     world->recurse([onlyActors](stSuperObject* object, ImDrawList *dw) {
       try {
-        if (object->type == stSuperObject::type::Actor || (!onlyActors && object->type != stSuperObject::type::Actor))
+        if (object->type == superobjectTypeActor || (!onlyActors && object->type != superobjectTypeActor))
           objectMarker(object);
       } catch (bad_pointer& e) {
         /* ... */
@@ -194,7 +194,7 @@ static auto drawWorld(GraphicsContext* ctx, pointer<stSuperObject> root, stMatri
   
   try {
     T = root->globalTransform->matrix * T;
-    if (root->type == stSuperObject::type::IPO) {
+    if (root->type == superobjectTypeIPO) {
       //root->drawFlags = 0; // for collision/game blend
       ctx->drawIPO(root->data, T);
     }
@@ -212,13 +212,13 @@ static auto drawZDX(GraphicsContext* ctx, pointer<stSuperObject> object) -> void
         for (auto zdx : list->list) {
           pointer<stCollideObject> colobj = zdx->data;
           for (int i = 0; i < int(colobj->numElements); i++) {
-            int16_t elementType = *(int16*)colobj->elementTypes[i];
-            if (elementType == stCollideObject::IndexedSpheres) {
-              pointer<stCollideElementSpheres> sphereSet = colobj->elements[i];
+            int16_t elementType = (int16)colobj->elementTypes[i];
+            if (elementType == collideObjectTypeIndexedSpheres) {
+              pointer<stCollideElementIndexedSpheres> sphereSet = colobj->elements[i];
               for (int j = 0; j < sphereSet->numSpheres; j++) {
-                pointer<stCollideElementIndexedSphere> sphere = sphereSet->spheres[i];
+                pointer<stCollideElementIndexedSphere> sphere = &sphereSet->spheres[i];
                 int idx = int(sphere->indexOfCenterPoint);
-                stVector3D pos = (object->globalTransform->matrix * *(stVector3D*)colobj->vertices[idx]).xyz();
+                stVector3D pos = (object->globalTransform->matrix * *(stVector3D*)&colobj->vertices[idx]).xyz();
                 ctx->setColor(color);
                 ctx->setUseCheckerTexture(true);
                 ctx->drawSphere(pos, sphere->radius);
@@ -277,7 +277,7 @@ void GameViewport::draw() {
 //  ImGui::SetCursorScreenPos(ImPlot::PlotToPixels(position));
 //  ImGui::SliderFloat("##GameAlpha", &alpha, 0.0f, 1.0f);
   
-  drawOverlay();
+  //drawOverlay();
   
   plotGridSnap(position.x, position.y);
 }
@@ -292,69 +292,68 @@ extern stVector3D genericDirection;
 extern stVector3D realDirection;
 
 void CollisionViewport::draw() {
-  if (!game::isValidGameState()) return;
-  
   graphics->beginFrame(gui::gameTexture);
-  graphics->setViewMatrix(viewMatrix());
-  graphics->setProjectionMatrix(projectionMatrix());
-  graphics->setUseCheckerTexture(true);
-  graphics->setDisableShading(false);
-  drawWorld(graphics, game::p_stFatherSector, stMatrix4D());
-  
-  pointer<stSuperObject> main = game::g_stEngineStructure->currentMainPlayers[0];
-  stVector3D pos = main->position();
- // graphics->setUseCheckerTexture(true);
-//  graphics->drawLine(pos, pos + stVector3D(1.0f, 0.0f, 0.0f), stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
-//  graphics->drawLine(pos, pos + stVector3D(0.0f, 1.0f, 0.0f), stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
-//  graphics->drawLine(pos, pos + stVector3D(0.0f, 0.0f, 1.0f), stVector4D(0.0f, 0.0f, 1.0f, 1.0f));
-  graphics->setUseCheckerTexture(true);
-  
-//  for (int i = 0; i < gui::xrayPoints.size() / 2; i += 2) {
-//    stVector3D a = gui::xrayPoints[i+0];
-//    stVector3D b = gui::xrayPoints[i+1];
-//    graphics->drawLine(a, b, stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
-//  }
+  if (game::isValidGameState()) {
+    graphics->setViewMatrix(viewMatrix());
+    graphics->setProjectionMatrix(projectionMatrix());
+    graphics->setUseCheckerTexture(true);
+    graphics->setDisableShading(false);
+    drawWorld(graphics, game::p_stFatherSector, stMatrix4D());
     
-  graphics->setUseCheckerTexture(false);
-  graphics->setColor(stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
-  graphics->draw(GraphicsContext::Points, gui::xrayPoints.size(), gui::xrayPoints.data());
-  
-  graphics->setColor(stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
-  graphics->draw(GraphicsContext::Lines, gui::xrayPoints.size(), gui::xrayPoints.data());
-  
-//  stPadReadingOutput pad = *(stPadReadingOutput*)pointer<stPadReadingOutput>(0x8042F8F8);
-//  stVector3D lines[2] = { pos, pos + stVector3D(pad.globalVector.x, pad.globalVector.y, 0.0f) };
-//  graphics->setColor(stVector4D(0.0f, 1.0f, 1.0f, 1.0f));
-//  graphics->draw(GraphicsContext::Lines, 2, lines);
-  
-  
-//  graphics->setDisableShading(true);
-//  for (auto& entry : collisionTableEntries) {
-//    stVector3D lines[2] = { entry.tempHit, entry.tempHit + entry.tempNormal };
-//    graphics->setColor(stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
-//    graphics->draw(GraphicsContext::Lines, 2, lines);
-//  }
-//  collisionTableEntries.clear();
-//  graphics->setDisableShading(false);
-  
-  stPadReadingOutput pad = *(stPadReadingOutput*)pointer<stPadReadingOutput>(0x8042F8F8);
-  stVector3D lines[2] = { pos, pos - genericDirection };
-  graphics->setColor(stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
-  graphics->draw(GraphicsContext::Lines, 2, lines);
-  
-  stVector3D lines2[2] = { pos, pos + realDirection };
-  graphics->setColor(stVector4D(1.0f, 1.0f, 0.0f, 1.0f));
-  graphics->draw(GraphicsContext::Lines, 2, lines2);
-  
-  //graphics->drawSphere(pos, 0.9f);
-  
-  //zdx
-  graphics->setDisableShading(false);
-  graphics->setUseCheckerTexture(true);
-  game::p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
-    drawZDX(graphics, object);
-  }, nullptr);
-  
+    pointer<stSuperObject> main = game::g_stEngineStructure->currentMainPlayers[0];
+    stVector3D pos = main->position();
+    // graphics->setUseCheckerTexture(true);
+    //  graphics->drawLine(pos, pos + stVector3D(1.0f, 0.0f, 0.0f), stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
+    //  graphics->drawLine(pos, pos + stVector3D(0.0f, 1.0f, 0.0f), stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
+    //  graphics->drawLine(pos, pos + stVector3D(0.0f, 0.0f, 1.0f), stVector4D(0.0f, 0.0f, 1.0f, 1.0f));
+    graphics->setUseCheckerTexture(true);
+    
+    //  for (int i = 0; i < gui::xrayPoints.size() / 2; i += 2) {
+    //    stVector3D a = gui::xrayPoints[i+0];
+    //    stVector3D b = gui::xrayPoints[i+1];
+    //    graphics->drawLine(a, b, stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
+    //  }
+    
+    graphics->setUseCheckerTexture(false);
+    graphics->setColor(stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+    graphics->draw(GraphicsContext::Points, gui::xrayPoints.size(), gui::xrayPoints.data());
+    
+    graphics->setColor(stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
+    graphics->draw(GraphicsContext::Lines, gui::xrayPoints.size(), gui::xrayPoints.data());
+    
+    //  stPadReadingOutput pad = *(stPadReadingOutput*)pointer<stPadReadingOutput>(0x8042F8F8);
+    //  stVector3D lines[2] = { pos, pos + stVector3D(pad.globalVector.x, pad.globalVector.y, 0.0f) };
+    //  graphics->setColor(stVector4D(0.0f, 1.0f, 1.0f, 1.0f));
+    //  graphics->draw(GraphicsContext::Lines, 2, lines);
+    
+    
+    //  graphics->setDisableShading(true);
+    //  for (auto& entry : collisionTableEntries) {
+    //    stVector3D lines[2] = { entry.tempHit, entry.tempHit + entry.tempNormal };
+    //    graphics->setColor(stVector4D(1.0f, 0.0f, 1.0f, 1.0f));
+    //    graphics->draw(GraphicsContext::Lines, 2, lines);
+    //  }
+    //  collisionTableEntries.clear();
+    //  graphics->setDisableShading(false);
+    
+    stPadReadingOutput pad = *(stPadReadingOutput*)pointer<stPadReadingOutput>(0x8042F8F8);
+    stVector3D lines[2] = { pos, pos - genericDirection };
+    graphics->setColor(stVector4D(0.0f, 1.0f, 0.0f, 1.0f));
+    graphics->draw(GraphicsContext::Lines, 2, lines);
+    
+    stVector3D lines2[2] = { pos, pos + realDirection };
+    graphics->setColor(stVector4D(1.0f, 1.0f, 0.0f, 1.0f));
+    graphics->draw(GraphicsContext::Lines, 2, lines2);
+    
+    //graphics->drawSphere(pos, 0.9f);
+    
+    //zdx
+    graphics->setDisableShading(false);
+    graphics->setUseCheckerTexture(true);
+    game::p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
+      drawZDX(graphics, object);
+    }, nullptr);
+  }
   graphics->endFrame();
   
   bool grab = ImPlot::DragPoint(1, &position.x, &position.y, ImVec4(0.1f, 0.4f, 1.0f, 0.75));
@@ -363,6 +362,10 @@ void CollisionViewport::draw() {
 //  ImGui::SetCursorScreenPos(ImPlot::PlotToPixels(position));
 //  ImGui::SliderFloat("##CollisionAlpha", &alpha, 0.0f, 1.0f);
   
+  
+  ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
+  if (!game::isValidGameState()) ImPlot::PlotText("INVALID GAME STATE", position.x + size.x / 2.0f, position.y + size.y / 2.0f);
+  ImGui::PopStyleColor();
   
   plotGridSnap(position.x, position.y);
 }
@@ -376,7 +379,7 @@ TopdownCollisionViewport::TopdownCollisionViewport() {
 void TopdownCollisionViewport::draw() {
   if (!game::isValidGameState()) return;
   
-  pointer<stCamera> camera = game::g_stEngineStructure->viewportCamera[0];
+  pointer<stCameraGLI> camera = game::g_stEngineStructure->viewportCamera[0];
   
   graphics->beginFrame(gui::gameTexture);
   graphics->setViewMatrix(stMatrix4D::make_lookat(stVector3D(0.0f, 0.0f, 10.0f), stVector3D(0.0f, 0.0f, 0.0f), stVector3D(0.0f, 0.0f, -1.0f)));

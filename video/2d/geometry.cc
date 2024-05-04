@@ -5,13 +5,13 @@ static auto drawGeometryRecursive(pointer<stSuperObject> object, const stMatrix4
   //try {
     
     
-    if (object->type == stSuperObject::type::IPO) {
+    if (object->type == superobjectTypeIPO) {
       try {
         pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
         
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == stCollideObject::type::IndexedTriangles) {
+          if (type == collideObjectTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;
@@ -100,13 +100,13 @@ static auto drawGeometryTopdown(pointer<stSuperObject> object, const stMatrix4D 
   try {
     
     
-    if (object->type == stSuperObject::type::IPO) {
+    if (object->type == superobjectTypeIPO) {
       try {
         pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
         
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == stCollideObject::type::IndexedTriangles) {
+          if (type == collideObjectTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;
@@ -197,12 +197,12 @@ static auto getIPOVertices(pointer<stSuperObject> object, const stMatrix4D trans
   if (!object) return;
   stMatrix4D T = object->globalTransform->matrix * transform;
   try {
-    if (object->type == stSuperObject::type::IPO) {
+    if (object->type == superobjectTypeIPO) {
       try {
         pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == stCollideObject::type::IndexedTriangles) {
+          if (type == collideObjectTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;

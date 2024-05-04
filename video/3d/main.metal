@@ -116,7 +116,7 @@ vertex RasterizerData vertex_main(uint vertexID [[ vertex_id ]],
     
     //out.texcoord = vertices[vertexID].texcoord.xy;
     out.position = uniform.projection * uniform.view * uniform.model * position;
-    out.eye = -(uniform.view * uniform.model * position).xyz;
+    out.eye = uniform.cameraPosition; //-(uniform.view * uniform.model * position).xyz;
     out.normal = normal.xyz; //uniform.normal_matrix * vertices[vertexID].normal.xyz;
     
     //float4(vertices[vertexID].normal.xyz, 1.0f);
@@ -154,12 +154,12 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
   
   
     
-  float tex = uniform.useCheckerTexture ? texture.sample(nearestSampler, in.texcoord, 0).r : 1.0f;
+  float tex = (uniform.useCheckerTexture ? texture.sample(nearestSampler, in.texcoord, 0).r + 0.25f : 1.0f) * 0.5f;
     
   float3 normal = normalize(in.normal);
   float3 position = in.position.xyz;
   float3 ambientTerm = float3(tex * 0.5f);
-    
+
   float3 lightDir = float3(0.0f, 0.0f, 1.0f);
   float diffuseIntensity = saturate(dot(normal, lightDir));
   float3 diffuseTerm = diffuseIntensity * 0.25f;
@@ -172,9 +172,8 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     float specularFactor = pow(saturate(dot(normal, halfway)), 0.75f);
     specularTerm = specularFactor * 0.35f;
   }
-    
+
     /* Determine slope visibility */
-    
     float4 uniformColor = uniform.color;
     float3 up = float3(0, 0, 1);
     float dot = metal::dot(in.normal, up);
@@ -185,13 +184,31 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     }
     else
     {
-      
+
     }
+  
+  
+//  float3 color = uniform.color.xyz;
+//  float3 ambient = tex * color;
+//  float3 lightDir = normalize(lightPos - in.position.xzy);
+//  float diff = max(dot(lightDir, in.normal), 0.0);
+//  float3 diffuse = diff * color;
+//  float3 viewDir = normalize(uniform.cameraPosition - in.position.xzy);
+//  float3 reflectDir = reflect(-lightDir, in.normal);
+//  float spec = 0.0;
+//  if(true)
+//  {
+//    float3 halfwayDir = normalize(lightDir + viewDir);
+//    spec = pow(max(dot(in.normal, halfwayDir), 0.0), 32.0);
+//  }
+//  
+//  float3 specular = float3(0.3f) * spec;
   
   //out.color = float4(ambientTerm + diffuseTerm - in.normal, 1.0) * uniform.color;
   
   
   if (uniform.useShading)
+    //out.color = float4(ambient + diffuse + specular, 1.0f) * uniform.color;
     out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1.0) * uniform.color;
     //out.color = float4(ambientTerm + diffuseTerm + specularTerm, 1.0) * uniform.color;
   else

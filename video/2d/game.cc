@@ -36,7 +36,7 @@ static void objectMarker(pointer<stSuperObject> object) {
     
     ImGui::SetCursorScreenPos(screenPosReal);
     
-    if (object->type == stSuperObject::type::Actor) {
+    if (object->type == superobjectTypeActor) {
       if (marker(pointer<stSuperObject>(object), memory::readonly) & MARKER_CLICKED) {
         gui::aiWindow->setTargetObject(object);
       }
@@ -56,7 +56,7 @@ static void objectMarkersDrawWorld(stSuperObject *world, ImDrawList *drawlist, b
   if (world) {
     world->recurse([onlyActors](stSuperObject* object, ImDrawList *dw) {
       try {
-        if (object->type == stSuperObject::type::Actor || (!onlyActors && object->type != stSuperObject::type::Actor))
+        if (object->type == superobjectTypeActor || (!onlyActors && object->type != superobjectTypeActor))
           objectMarker(object);
       } catch (bad_pointer& e) {
         /* ... */
@@ -338,10 +338,6 @@ void GameWindow::draw(ImTextureID texture) {
   ImGui::Begin("Game", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
   ImGui::SetWindowSize(ImVec2(640,528));
   ImGui::PopStyleVar();
-  
-  if (ImGui::IsKeyPressed(ImGuiKey_W)) {
-    printf("W\n");
-  }
   
   drawMenuBar();
   drawGame(texture);

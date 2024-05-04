@@ -227,7 +227,7 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     if (INT_fn_bIntersectBoxWithBox( p_stMinSituation, p_stMaxSituation, &p_stNodeToBeExplored->min, &p_stNodeToBeExplored->max)) {
       if (p_stNodeToBeExplored->children) {
         for (int i = 0; i < 8; i++) {
-          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(static_cast<uint8_t*>(memory::baseAddress) + p_stNodeToBeExplored->children.memoryOffset().effectiveAddress() + i * 4));
+          stOctreeNode *node = pointer<stOctreeNode>(*(uint32_t*)(static_cast<uint8_t*>(memory::baseAddress) + p_stNodeToBeExplored->children.offset().effectiveAddress() + i * 4));
           COL_fn_vExploreRecursiveOctreeWithBox ( node, p_stMinSituation, p_stMaxSituation, d_pstSelectedNode, p_xNumberOfSelectedNodes );
         }
       } else {
@@ -420,8 +420,8 @@ static auto mulmatrixvertex() -> void {
     // POS
     //hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
     
-    hook<0x80136234>(fn_p_stEvalTree, hookType::start);
-    hook<0x800edd44>(fn_vInitLevelLoop, hookType::start);
+//    hook<0x80136234>(fn_p_stEvalTree, hookType::start);
+//    hook<0x800edd44>(fn_vInitLevelLoop, hookType::start);
     
     
     //hook<0x8007568c>(POS_fn_vMulMatrixVertex, hookType::replace);

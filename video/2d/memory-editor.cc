@@ -29,7 +29,7 @@ static auto highlightSuperObject(size_t offset, bool *b, ImColor *color) -> void
       *color = ImColor(1.0f, 0.75f, 0.0f, 0.25f);
     }
     
-    if (spo->type == stSuperObject::type::Actor) {
+    if (spo->type == superobjectTypeActor) {
       
       if (highlight(spo->actor, offset)) {
         *color = ImColor(1.0f, 0.0f, 0.1f, 0.25f);

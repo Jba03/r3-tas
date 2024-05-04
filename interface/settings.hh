@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "serialize.hpp"
+#include "types.hpp"
 
 struct settings {
 
@@ -13,21 +14,21 @@ struct settings {
     convertible() = default;
     
     template<typename T> convertible(T v) {
-      if constexpr (cpa::is_pointer<T>::value) {
-        type = Pointer;
-        std::stringstream s;
-        s << "0x" << std::hex << v.pointeeAddress().effectiveAddress();
-        value = s.str();
-      } else if constexpr (std::is_same<T, bool>::value) {
-        type = Boolean;
-        value = v;
-      } else if constexpr (std::is_integral<T>::value) {
-        type = Int;
-        value = int64_t(v);
-      } else if constexpr (std::is_literal_type<T>::value) {
-        type = String;
-        value = std::string(v);
-      }
+//      if constexpr (cpa::is_pointer<T>::value) {
+//        type = Pointer;
+//        std::stringstream s;
+//        s << "0x" << std::hex << v.pointeeAddress().effectiveAddress();
+//        value = s.str();
+//      } else if constexpr (std::is_same<T, bool>::value) {
+//        type = Boolean;
+//        value = v;
+//      } else if constexpr (std::is_integral<T>::value) {
+//        type = Int;
+//        value = int64_t(v);
+//      } else if constexpr (std::is_literal_type<T>::value) {
+//        type = String;
+//        value = std::string(v);
+//      }
     }
     
     operator std::string() const {
@@ -55,17 +56,17 @@ struct settings {
       std::filesystem::create_directory(base + "/settings");
     }
     
-    cpa::serializer s;
-    cpa::serializer::node root(&s, "root");
-    for (auto& [key, value] : map) {
-      cpa::serializer::node nd(&s, key, std::string(value));
-      root.add_child(nd);
-    }
-    
-    std::string data = cpa::serializer::node::serialize(root);
-    std::ofstream f(base + "/settings/" + filename);
-    f.write(data.c_str(), data.length());
-    f.close();
+//    cpa::serializer s;
+//    cpa::serializer::node root(&s, "root");
+//    for (auto& [key, value] : map) {
+//      cpa::serializer::node nd(&s, key, std::string(value));
+//      root.add_child(nd);
+//    }
+//    
+//    std::string data = cpa::serializer::node::serialize(root);
+//    std::ofstream f(base + "/settings/" + filename);
+//    f.write(data.c_str(), data.length());
+//    f.close();
   }
   
   static std::string folder() {

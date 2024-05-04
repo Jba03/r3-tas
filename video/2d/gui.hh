@@ -151,7 +151,7 @@ extern std::deque<stMatrix4D> viewMatrixStack;
 
 static auto viewMatrix() {
   
-  pointer<stCamera> camera = game::g_stEngineStructure->viewportCamera[0];
+  pointer<stCameraGLI> camera = game::g_stEngineStructure->viewportCamera[0];
   stMatrix4D view = camera->transform.matrix;
   view(0,1) = -(float)view(0,1); view(1,1) = -(float)view(1,1);
   view(2,1) = -(float)view(2,1); view(2,2) = -(float)view(2,2);

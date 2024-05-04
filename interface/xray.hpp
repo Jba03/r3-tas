@@ -190,7 +190,7 @@ struct xRAY {
       pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
       for (int i = 0; i < zdr->numElements; i++) {
         int16_t type = zdr->elementTypes[i];
-        if (type == stCollideObject::type::IndexedTriangles) {
+        if (type == collideObjectTypeIndexedTriangles) {
           pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
           for (int16_t index = 0; index < element->numFaces; index++) {
             Triangle t(object, zdr, element, index);
@@ -207,7 +207,7 @@ struct xRAY {
     try {
       if (!object) return;
       T = object->globalTransform->matrix * T;
-      if (object->type == stSuperObject::type::IPO) deriveTrianglesReal(object, T, list);
+      if (object->type == superobjectTypeIPO) deriveTrianglesReal(object, T, list);
       object->forEachChild([&](pointer<stSuperObject> _object, void*) { deriveTrianglesRecursive(_object, T, list); });
     } catch (bad_pointer& e) {
       //std::cout << "[xray] failed to derive triangles (recursively) for '" + object->name() + "': " + e.what() + "\n";
@@ -225,14 +225,14 @@ struct xRAY {
       pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
       for (int i = 0; i < zdr->numElements; i++) {
         int16_t type = zdr->elementTypes[i];
-        if (type == stCollideObject::type::IndexedTriangles) {
+        if (type == collideObjectTypeIndexedTriangles) {
           //pointer<stCollideElementIndexedTriangles> tris = zdr->elements[i];
           //if (!(tris->material->identifier & COL_MAT_ID_MASK_WALL)) {
-            for (int vertex = 0; vertex < zdr->numVertices; vertex++) {
-              stVector3D vert = *(stVector3D*)zdr->vertices[vertex];
-              stVector3D v = (T * vert).xyz();
-              list.push_back(v);
-            }
+//            for (int vertex = 0; vertex < zdr->numVertices; vertex++) {
+//              stVector3D vert = *(stVector3D*)zdr->vertices[vertex];
+//              stVector3D v = (T * vert).xyz();
+//              list.push_back(v);
+//            }
           //}
         }
       }
@@ -245,7 +245,7 @@ struct xRAY {
     if (!object) return;
     try {
       T = object->globalTransform->matrix * T;
-      if (object->type == stSuperObject::type::IPO) derivePointsReal(object, T, list);
+      if (object->type == superobjectTypeIPO) derivePointsReal(object, T, list);
       object->forEachChild([&](pointer<stSuperObject> _object, void*) { derivePointsRecursive(_object, T, list); });
     } catch (bad_pointer& e) {
       //std::cout << "[xray] failed to derive points (recursively) for '" + object->name() + "': " + e.what() + "\n";

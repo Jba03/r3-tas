@@ -185,7 +185,9 @@ auto MetalGraphicsContext::draw(const PrimitiveType primitive, uint32_t vertexCo
 auto MetalGraphicsContext::drawIndexed(const PrimitiveType primitive, uint32_t vertexCount, stVector3D* vertices, stVector3D* normals, uint32_t indexCount, void* indices) -> void {
   bool gameIndexing = uniforms.useGameIndexing;
   size_t indexSize = uniforms.useGameIndexing ? sizeof(Index3D) : sizeof(uint32_t);
-  
+  uniforms.cameraPosition.x = game::g_stEngineStructure->standardCamera->position().x;
+  uniforms.cameraPosition.y = game::g_stEngineStructure->standardCamera->position().y;
+  uniforms.cameraPosition.z = game::g_stEngineStructure->standardCamera->position().z;
   
   
   id<MTLBuffer> normalBuffer = nullptr;

@@ -65,21 +65,21 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
   if (dynamics->endFlag(dynamicsSizeAdvanced)) {
     ImGui::SameLine();
     ImGui::BeginChild("Dynamics: advanced block", ImVec2(std::max(275.0f, ImGui::GetContentRegionAvail().x / 2), 0));
-    ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", dynamics->advanced.xInertia.memoryOffset().physicalAddress());
+    ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", dynamics->advanced.inertia.x.memoryOffset().physicalAddress());
     if (ImGui::BeginTable("Dynamics advanced block", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg)) {
       stVector3D maxSpeed = advanced.maxSpeed;
       stVector3D streamSpeed = advanced.streamSpeed;
-      stVector3D addSpeed = advanced.addedSpeed;
+      stVector3D addSpeed = advanced.addSpeed;
       stVector3D limit = advanced.limit;
       stVector3D collisionTranslation = advanced.collisionTranslation;
       stVector3D inertiaTranslation = advanced.inertiaTranslation;
       stVector3D groundNormal = advanced.groundNormal;
       stVector3D wallNormal = advanced.wallNormal;
 
-      TC("Inertia", "[%.2f, %.2f, %.2f]", float(advanced.xInertia), float(advanced.yInertia), float(advanced.zInertia));
+      TC("Inertia", "[%.2f, %.2f, %.2f]", float(advanced.inertia.x), float(advanced.inertia.y), float(advanced.inertia.z));
       TC("Stream priority", "%f", float(advanced.streamPriority));
       TC("Stream factor", "%f", float(advanced.streamFactor));
-      TC("Slide factor", "[%.2f, %.2f, %.2f]", float(advanced.xSlideFactor), float(advanced.ySlideFactor), float(advanced.zSlideFactor));
+      TC("Slide factor", "[%.2f, %.2f, %.2f]", float(advanced.slideFactor.x), float(advanced.slideFactor.y), float(advanced.slideFactor.z));
       TC("Previous slide", "%f", float(advanced.previousSlide));
       TC("Max speed", "[%.2f, %.2f, %.2f]", (float)maxSpeed.x, (float)maxSpeed.y, (float)maxSpeed.z);
       TC("Stream speed", "[%.2f, %.2f, %.2f]", (float)streamSpeed.x, (float)streamSpeed.y, (float)streamSpeed.z);

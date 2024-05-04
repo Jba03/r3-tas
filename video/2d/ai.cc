@@ -149,7 +149,7 @@ static std::string dsgVarFormat(pointer<stDsgVarInfo> info, pointer<> memory) {
 void AIWindow::drawBehaviorLists() {
   auto list = [this](pointer<stScriptAI> list, pointer<stBehavior> current) {
     for (int i = 0; i < list->numBehaviors; i++) {
-      pointer<stBehavior> behavior = list->behavior[i];
+      pointer<stBehavior> behavior = &list->behavior[i];
       ImGui::PushStyleColor(ImGuiCol_Text, behavior == current ? ImVec4(0.1f, 1.0f, 0.25f, 1.0f) :  ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
       if (ImGui::Selectable(behavior->name.lastPathComponent().c_str())) {
         setTargetBehavior(behavior);
@@ -195,7 +195,7 @@ void AIWindow::drawBehaviorLists() {
       if (macroList) {
         if (ImGui::TreeNode("Macro")) {
           for (uint8 n = 0; n < macroList->numMacros; n++) {
-            pointer<stMacro> macro = macroList->macros[n];
+            pointer<stMacro> macro = &macroList->macros[n];
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.75f));
             if (ImGui::Selectable(macro->name.lastPathComponent().c_str())) {
               setTargetMacro(macro);
@@ -346,7 +346,7 @@ void AIWindow::drawScript() {
             pointer<stEngineObject> actor = pointer<stEngineObject>(param);
 //            ImGui::TextColored(classColor, "%s", actor->instanceName(game::nameResolver).c_str());
 //            ImGui::SameLine();
-            marker(tok, memory::readonly, actor->name(Instance).c_str(), quietReferences);
+            marker(tok, memory::readonly, actor->name(objectTypeInstance).c_str(), quietReferences);
             ImGui::SameLine();
             referenceActorTmp = actor;
             continue;
@@ -402,7 +402,7 @@ void AIWindow::drawScript() {
     try {
       if (targetBehavior) {
         for (int i = 0; i < targetBehavior->numScripts; i++) {
-          pointer<stNodeInterpret> node = targetBehavior->scripts[i]->node;
+          pointer<stNodeInterpret> node = targetBehavior->scripts[i].node;
           draw(node, targetBehavior->name.lastPathComponent().c_str(), 0);
         }
       } else if (targetMacro) {
@@ -420,16 +420,20 @@ void AIWindow::drawDsgVars() {
   try {
     pointer<stMind> mind = targetObject->actor->brain->mind;
     pointer<stDsgMem> mem = mind->dsgMem;
-    pointer<stDsgVar> vars = mem->dsgVars;
+    pointer<stDsgVar> vars = *mem->dsgVars;
     pointer<> memory = mem->currentBuffer;
     
     if (ImGui::BeginChild("Designer variables", ImVec2(std::max(200.0f, ImGui::GetContentRegionAvail().x / 5.0f), 0), true, ImGuiWindowFlags_HorizontalScrollbar)) {
       for (int i = 0; i < vars->infoLength; i++) {
-        pointer<stDsgVarInfo> info = mem->dsgVarInfo(i);
-        pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
-        std::string format = dsgVarFormat(info, data);
-        std::string name = DsgVarTypenameTable[info->type];
-        ImGui::TextColored(dsgVarColorTable[info->type], "%s_%d: %s", name.c_str(), i, format.c_str());
+        try {
+          pointer<stDsgVarInfo> info = mem->dsgVarInfo(i);
+          pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
+          std::string format = dsgVarFormat(info, data);
+          std::string name = DsgVarTypenameTable[info->type];
+          ImGui::TextColored(dsgVarColorTable[info->type], "%s_%d: %s", name.c_str(), i, format.c_str());
+        } catch (...) {
+          
+        }
       }
     }
     ImGui::EndChild();
@@ -484,21 +488,23 @@ void AIWindow::draw() {
   std::string name = "AI"; //"AI - " + targetObject->name(game::nameResolver);
   ImGui::SetNextWindowSize(ImVec2(200,100));
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_MenuBar);
-  if (targetObject->type == stSuperObject::type::Actor) {
-    drawMenuBar();
-    drawInfo();
-    ImGui::BeginGroup();
-    drawBehaviorLists();
-    ImGui::EndGroup();
-    ImGui::SameLine();
-    drawDsgVars();
-    ImGui::SameLine();
-    ImGui::BeginGroup();
-    drawDebugPanel();
-    drawScript();
-    ImGui::EndGroup();
-  } else {
-    ImGui::Text("Invalid target actor");
+  if (game::isValidGameState()) {
+    if (targetObject->type == superobjectTypeActor) {
+      drawMenuBar();
+      drawInfo();
+      ImGui::BeginGroup();
+      drawBehaviorLists();
+      ImGui::EndGroup();
+      ImGui::SameLine();
+      drawDsgVars();
+      ImGui::SameLine();
+      ImGui::BeginGroup();
+      drawDebugPanel();
+      drawScript();
+      ImGui::EndGroup();
+    } else {
+      ImGui::Text("Invalid target actor");
+    }
   }
   ImGui::End();
 }

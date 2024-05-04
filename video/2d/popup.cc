@@ -16,7 +16,7 @@ namespace gui {
       }
 
       if (ImGui::Button("View in memory editor")) {
-        memoryEditor.GotoAddr = popupTarget.pointeeAddress().effectiveAddress();
+        //memoryEditor.GotoAddr = popupTarget.pointeeAddress().effectiveAddress();
       }
       
       ImGui::EndPopup();

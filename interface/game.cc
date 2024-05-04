@@ -71,7 +71,7 @@ namespace game
   
   std::map<std::string, namecache> objectNameCache;
     
-  static enum stEngineStructure::mode lastEngineMode = stEngineStructure::mode::Invalid;
+  static uint8 lastEngineMode = engineModeInvalid;
 static std::string lastLevelName = "";
 
 #pragma mark - FIX
@@ -137,7 +137,7 @@ static std::string lastLevelName = "";
       #pragma mark FIX
       {
             //info(BOLD COLOR_GREEN "FIX @ [0x%X : %p]\n", fixptr.offset(), fixptr.realAddress());
-            fix.header = fixptr;
+            fix.header = *fixptr;
         
             const unsigned char* offset = (const unsigned char*)(fix.header + 1);
             /* Skip demo save names */
@@ -154,7 +154,7 @@ static std::string lastLevelName = "";
         {
             //info(BOLD COLOR_GREEN "LVL @ [0x%X : %p]\n", lvlptr->physicalAddress(), lvlptr->hostAddress());
             
-            lvl.header = (struct lvl_header*)lvlptr;
+            lvl.header = *lvlptr;
             
             const unsigned char* offset = (const unsigned char*)(lvl.header + 1);
             /* Calculate total texture count: this is the number of textures in the level aside (duplicates?) in fixed memory */
@@ -183,7 +183,7 @@ static std::string lastLevelName = "";
     //printf("entries: %X\n", g_stInputStructure->entries.memoryOffset().effectiveAddress());
     try {
       for (int i = 0; i < g_stInputStructure->numEntries; i++) {
-        pointer<stInputEntryElement> element = g_stInputStructure->entries[i];
+        pointer<stInputEntryElement> element = &g_stInputStructure->entries[i];
         if (element->actionName) inputEntryElementCache[std::string(element->actionName)] = element;
       }
     } catch (...) {
@@ -201,9 +201,9 @@ static std::string lastLevelName = "";
     if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
       namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
       try {
-        if (type == Family) return cache.familyNames.at(idx);
-        if (type == Model) return cache.modelNames.at(idx);
-        if (type == Instance) return cache.instanceNames.at(idx);
+        if (type == objectTypeFamily) return cache.familyNames.at(idx);
+        if (type == objectTypeModel) return cache.modelNames.at(idx);
+        if (type == objectTypeInstance) return cache.instanceNames.at(idx);
       } catch (std::out_of_range& e) {
         //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
         return "Invalid name";
@@ -216,13 +216,12 @@ static std::string lastLevelName = "";
     g_stEngineStructure = pointer<stSuperObject>    (GCN_POINTER_ENGINE_STRUCTURE);
     g_stInputStructure  = pointer<stInputStructure> (GCN_POINTER_INPUT_STRUCTURE);
     g_stRandomStructure = pointer<stRandom>         (GCN_POINTER_RND);
+    g_bGhostMode        = pointer<uint8>            (GCN_POINTER_GHOST_MODE);
     
-    p_stActualWorld          = doublepointer<stSuperObject>(GCN_POINTER_ACTUAL_WORLD);
-    p_stDynamicWorld         = doublepointer<stSuperObject>(GCN_POINTER_DYNAMIC_WORLD);
-    p_stInactiveDynamicWorld = doublepointer<stSuperObject>(GCN_POINTER_INACTIVE_DYNAMIC_WORLD);
-    p_stFatherSector         = doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
-    
-    g_bGhostMode = pointer<uint8>(GCN_POINTER_GHOST_MODE);
+    p_stActualWorld          = *doublepointer<stSuperObject>(GCN_POINTER_ACTUAL_WORLD);
+    p_stDynamicWorld         = *doublepointer<stSuperObject>(GCN_POINTER_DYNAMIC_WORLD);
+    p_stInactiveDynamicWorld = *doublepointer<stSuperObject>(GCN_POINTER_INACTIVE_DYNAMIC_WORLD);
+    p_stFatherSector         = *doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
     
     if (isValidGameState()) {
       readLevel();
@@ -239,10 +238,10 @@ static std::string lastLevelName = "";
       std::string currentLevel = g_stEngineStructure->currentLevelName; //std::any_cast<std::string>(p["currentLevel"]);
       std::string previousLevel = lastLevelName; //std::any_cast<std::string>(p["previousLevel"]);
         printf("level change: %s -> %s\n", previousLevel.c_str(), currentLevel.c_str());
-      if (currentLevel.length() && previousLevel.length()) {
-        gui::saveLayout(previousLevel);
-        gui::loadLayout(currentLevel);
-      }
+//      if (currentLevel.length() && previousLevel.length()) {
+//        gui::saveLayout(previousLevel);
+//        gui::loadLayout(currentLevel);
+//      }
       //});
       //event("LevelChanged").fire({{"current", std::string(g_stEngineStructure->currentLevelName)}, {"previousLevel", lastLevelName}});
     }
@@ -263,9 +262,9 @@ static std::string lastLevelName = "";
     
   uint32_t objectColor(stSuperObject *object) {
     if (!object) return 0xAA808080;
-    if (object->type == stSuperObject::type::IPO) return 0xFF00AAFF;
-    if (object->type == stSuperObject::type::IPOMirror) return 0xFF00DDFF;
-    if (object->type != stSuperObject::type::Actor) return 0xAAFFFFFF;
+    if (object->type == superobjectTypeIPO) return 0xFF00AAFF;
+    if (object->type == superobjectTypeIPOMirror) return 0xFF00DDFF;
+    if (object->type != superobjectTypeActor) return 0xAAFFFFFF;
     stEngineObject *actor = object->data;
     if (!actor->stdGame) return 0x80808080;
     return color_table_index(2 * actor->stdGame->familyType + 1);
@@ -315,8 +314,8 @@ static std::string lastLevelName = "";
     && p_stFatherSector;
   }
   
-  bool engineModeChangedTo(enum stEngineStructure::mode mode, enum stEngineStructure::mode from) {
-    return (from == stEngineStructure::mode::Invalid) ?
+  bool engineModeChangedTo(uint8 mode, uint8 from) {
+    return (from == engineModeInvalid) ?
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) :
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) && (lastEngineMode == from);
   }
@@ -324,7 +323,7 @@ static std::string lastLevelName = "";
 }
 
 namespace cpa::structure {
-  std::string resolve(ObjectType type, int *index) {
+  std::string resolve(int16_t type, int *index) {
     return game::nameLookup(type, *index);
   }
 

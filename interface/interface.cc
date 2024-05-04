@@ -56,6 +56,8 @@ static void GCN_OnMemoryPointer(emulator::message *msg) {
 
 static void GCN_OnUpdate(emulator::message *msg) {
   cpa::memory::baseAddress = GCN_MemoryFunction();
+  cpa::memory::size = 24 * 1000 * 1000;
+  cpa::memory::readonly = false;
 
   game::update();
 }
@@ -87,7 +89,7 @@ static const std::map<int, std::function<void(emulator::message*)>> msgmap {
   { HASH("update"),        &GCN_OnUpdate },
   { HASH("video"),         &GCN_OnVideo },
   { HASH("unload"),        &GCN_OnUnload },
-//  /* debug */
+  /* debug */
   { HASH("hle-hook"),      &GCN_CreateHLEHooks },
   { HASH("ppcstate"),      &GCN_ReceivePPCState },
 };

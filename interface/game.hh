@@ -49,7 +49,7 @@ namespace game {
   /** is the engine in a valid state? */
   bool isValidGameState();
   /** did the engine mode change? */
-  bool engineModeChangedTo(enum stEngineStructure::mode mode, enum stEngineStructure::mode from = stEngineStructure::mode::Invalid);
+  bool engineModeChangedTo(cpa::uint8 mode, cpa::uint8 from = engineModeInvalid);
   
 }
 

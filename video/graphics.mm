@@ -135,7 +135,7 @@ auto GraphicsContext::drawIPO(cpa::structure::stInstantiatedPhysicalObject *ipo,
     cpa::pointer<cpa::structure::stCollideObject> zdr = ipo->physicalObject->physicalCollideset->zdr;
     for (int i = 0; i < zdr->numElements; i++) {
       int16_t type = zdr->elementTypes[i];
-      if (type == cpa::structure::stCollideObject::type::IndexedTriangles) {
+      if (type == collideObjectTypeIndexedTriangles) {
         cpa::pointer<cpa::structure::stCollideElementIndexedTriangles> mesh = zdr->elements[i];
         if (!mesh) continue;
 

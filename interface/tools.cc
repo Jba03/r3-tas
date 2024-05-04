@@ -23,13 +23,12 @@ namespace R3 {
   }
   
   bool AutoSplitter::connect() {
-    
     event("EngineModeChanged").subscribe("AutoSplitter", [&](Event::Param& p) {
-      enum stEngineStructure::mode from = std::any_cast<enum stEngineStructure::mode>(p["from"]);
-      enum stEngineStructure::mode to = std::any_cast<enum stEngineStructure::mode>(p["to"]);
-      if (from == stEngineStructure::mode::ChangeLevel && whenToSplit == EndTriggerTouch) {
+      uint8 from = std::any_cast<uint8>(p["from"]);
+      uint8 to = std::any_cast<uint8>(p["to"]);
+      if (from == engineModeChangeLevel && whenToSplit == EndTriggerTouch) {
         split();
-      } else if (from == stEngineStructure::mode::ChangeLevel && to == stEngineStructure::mode::EnterLevel) {
+      } else if (from == engineModeChangeLevel && to == engineModeEnterLevel) {
         if (whenToSplit == StarsAppear) split();
         if (whenToSplit == FirstStar) splitDelay = 27;
       }

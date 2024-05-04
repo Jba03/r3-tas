@@ -206,7 +206,7 @@ static auto drawWorld(pointer<stSuperObject> root, stMatrix4D T) -> void {
   
   try {
     T = root->globalTransform->matrix * T;
-    if (root->type == stSuperObject::type::IPO) {
+    if (root->type == superobjectTypeIPO) {
       //root->drawFlags = 0; // for collision/game blend
       mainContext->drawIPO(root->data, T);
     }
@@ -367,7 +367,7 @@ namespace gui {
   
   static auto drawGraphics(void *tex) -> void {
     if (game::isValidGameState()) {
-      stCamera *camera = nullptr;
+      stCameraGLI *camera = nullptr;
       if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
         /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
         //graphics::projectionMatrix = stMatrix4D::make_perspective(-0.24f + 0.1, 640.0f / 528.0f, 0.1, 100.f);
@@ -399,7 +399,7 @@ namespace gui {
         projectionMatrix(2,3) *= 4.0f;
         
         
-        pointer<stCamera> camera = g_stEngineStructure->viewportCamera[0];
+        pointer<stCameraGLI> camera = g_stEngineStructure->viewportCamera[0];
         //graphics::projectionMatrix = stMatrix4D::make_perspective(float(camera->xAlpha), 640.0f/528.0f, camera->near, camera->far);
         
         stMatrix4D view = camera->transform.matrix;
@@ -593,13 +593,13 @@ void addTemporaryMessage(std::string msg) {
       loadWindows();
       needsLayout = false;
       
-      settings s;
-      s["hi"] = "dadasd";
-      s["test"] = true;
-      s["test2"] = 223242;
-      s["aiWindow"] = g_stEngineStructure;
-      
-      s.save("test");
+//      settings s;
+//      s["hi"] = "dadasd";
+//      s["test"] = true;
+//      s["test2"] = 223242;
+//      s["aiWindow"] = g_stEngineStructure;
+//
+//      s.save("test");
 //
 //      event("AITreeEval").subscribe("GUI", [&](Event::Param& p) {
 //        pointer<stSuperObject> obj = std::any_cast<pointer<stSuperObject>>(p["object"]);
@@ -629,6 +629,12 @@ void addTemporaryMessage(std::string msg) {
     gameWindow->draw(static_cast<ImTextureID>(texture));
 
     if (interface->mode == Advanced) {
+      
+      // Draw the memory editor first in order for it not to take focus,
+      // which can cause memory to be edited unknowingly when pressing buttons.
+      gui::memoryEditor.ReadOnly = memory::readonly;
+      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, memory::size);
+      
       ImGui::Begin("Hierarchy");
       HierarchyWindow.Draw();
       ImGui::End();
@@ -638,19 +644,19 @@ void addTemporaryMessage(std::string msg) {
       ImGui::End();
 
       ImGui::Begin("GameSub2");
-      for (auto& v : actorAiProcessed) {
-       // ImGui::Text("actor: %s", v->name(game::nameResolver).c_str());
-      }
-      actorAiProcessed.clear();
       ImGui::End();
       
-      inputWindow->draw();
-      commonWindow->draw();
-      cineWindow->draw();
-      aiWindow->draw();
-      rngWindow->draw();
-      structureExplorerWindow->draw();
-
+      try {
+        inputWindow->draw();
+        commonWindow->draw();
+        cineWindow->draw();
+        aiWindow->draw();
+        rngWindow->draw();
+        structureExplorerWindow->draw();
+      } catch (...) {
+        
+      }
+        
       ImGui::Begin("Object window");
       if (game::isValidGameState()) {
         pointer<stSuperObject> spo = address(0x80BF0C0C);
@@ -659,9 +665,6 @@ void addTemporaryMessage(std::string msg) {
         drawDynamics(eng->dynam->dynamics);
       }
       ImGui::End();
-      
-      gui::memoryEditor.ReadOnly = memory::readonly;
-      gui::memoryEditor.DrawWindow("Memory editor", (void*)memory::baseAddress, 24 * 1000 * 1000);
     }
     
     ImGui::End();
@@ -669,7 +672,7 @@ void addTemporaryMessage(std::string msg) {
     ImGui::PopStyleVar(2);
     
     
-      gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
+      //gui::memoryEditor.HighlightFn = gui::memoryEditorHighlight;
     
       //DrawGameWindow(texture, windowed);
 //
@@ -932,7 +935,7 @@ ImVec4 projectWorldCoordinate(stVector3D P) {
     #define PROJECTION_RATIO_X  0.377f
     #define PROJECTION_RATIO_Y  0.708f
     
-    pointer<stCamera> camera = g_stEngineStructure->viewportCamera[0];
+    pointer<stCameraGLI> camera = g_stEngineStructure->viewportCamera[0];
     if (!camera)
       return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
     

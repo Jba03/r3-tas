@@ -176,10 +176,10 @@ RNGWindow::RNGWindow() {
 void RNGWindow::draw() {
   ImGui::Begin("RNG");
   try {
-    ImGui::Text("Index: %d", (int)g_stRandomStructure->tableIndices[RND_DEFAULT_INDEX]);
+    ImGui::Text("Index: %d", (int)g_stRandomStructure->tableIndices[RNDDefaultIndex]);
       if (ImGui::BeginTable("RNG Table", 1, ImGuiTableFlags_RowBg, ImGui::GetContentRegionAvail())) {
         for (int i = 0; i < 10; i++) {
-          uint32_t entry = g_stRandomStructure->indexRelative(RND_DEFAULT_INDEX, i);
+          uint32_t entry = g_stRandomStructure->indexRelative(RNDDefaultIndex, i);
           ImGui::TableNextColumn();
           ImGui::Text("%X", entry);
         }

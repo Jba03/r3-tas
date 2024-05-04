@@ -1,0 +1,3 @@
+[submodule "external/cpatools"]
+	path = external/cpatools
+	url = https://github.com/Jba03/cpatools.git

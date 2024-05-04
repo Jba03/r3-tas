@@ -44,6 +44,9 @@ void CommonWindow::draw() {
     float v = game::g_stEngineStructure->currentMainPlayers[0]->actor->verticalSpeed();
     float r = game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.report->currentAbsoluteSpeed.angular.angle;
     
+    //printf("%X\n", game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.numFrames.memoryOffset().physicalAddress());
+    
+    
     //stMatrix3D rot = game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.imposedRotation;
 //    ImGui::Text("[%.2f  %.2f  %.2f]", float(rot.m[0]), float(rot.m[1]), float(rot.m[2]));
 //    ImGui::Text("[%.2f  %.2f  %.2f]", float(rot.m[3]), float(rot.m[4]), float(rot.m[5]));

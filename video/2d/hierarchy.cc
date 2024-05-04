@@ -28,7 +28,7 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
   ImGui::PushID(root);
   ImGui::PushStyleColor(ImGuiCol_Text, game::objectColor(root));
   
-  if (root->type == stSuperObject::type::Sector) {
+  if (root->type == superobjectTypeSector) {
 //    if (root == g_stEngineStructure->currentMainPlayers[0]->currentSector(p_stFatherSector)) {
 //      ImGui::PopStyleColor();
 //      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.1f, 1.0f));
@@ -57,7 +57,7 @@ static auto drawRecursive(stSuperObject *root, void*) -> void {
   }
   
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-    if (root->type == stSuperObject::type::Actor) {
+    if (root->type == superobjectTypeActor) {
       gui::aiWindow->setTargetObject(root);
     }
   }
