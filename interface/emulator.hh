@@ -54,31 +54,33 @@ extern void (*emulatorFrameAdvance)(void);
 extern void (*emulatorRunFunction)(uint32 address, uint32 stop);
 
 namespace emulator {
-  
-  struct message {
-    int type;
-    void *data;
-  };
-  
-  struct processorState {
-    uint32_t *pc = nullptr;
-    uint32_t *npc = nullptr;
-    uint32_t *gpr = nullptr;
-    uint32_t *lr = nullptr;
-  };
-  
-  /* CPU */
-  extern processorState ppcState;
-  void pushProcessorState();
-  void popProcessorState();
-  
-  /// Hook create function
-  extern void (*createHook)(uint32_t, const char *, int, int, void (*)(void));
+
+struct message {
+  int type;
+  void *data;
+};
+
+struct processorState {
+  uint32_t *pc = nullptr;
+  uint32_t *npc = nullptr;
+  uint32_t *gpr = nullptr;
+  uint32_t *lr = nullptr;
+};
+
+/* CPU */
+extern processorState ppcState;
+void pushProcessorState();
+void popProcessorState();
+
+/// Hook create function
+extern void (*createHook)(uint32_t, const char *, int, int, void (*)(void));
+
 };
 
 #define PC     (* emulator::ppcState.pc     )
 #define NPC    (* emulator::ppcState.npc    )
 #define LR     (* emulator::ppcState.lr     )
 #define GPR(i) (*(emulator::ppcState.gpr + i))
+#define FPR(i) (*(((double*)(emulator::ppcState.gpr + 32)) + i*2))
 
 #endif /* emulator_h */

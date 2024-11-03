@@ -8,19 +8,19 @@
 #ifndef gui_hh
 #define gui_hh
 
-#include "imgui.h"
-#include "implot.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_memory_editor.h>
+#include <implot/implot.h>
+
 #include "game.hh"
 #include "interface.hh"
-#include "script.hpp"
+#include <cpatools/script.hpp>
 #include "graphics.hh"
 
 #include "viewport.hh"
 
 #include <iostream>
 #include <unordered_map>
-
-#include "imgui_memory_editor.h"
 
 struct superObjectWindow {
   bool open = true;
@@ -140,7 +140,7 @@ static auto projectionMatrix() {
   projectionMatrix(3,2) *= 0.5f;
   projectionMatrix(2,3) *= 4.0f;
   
-//  pointer<stCamera> camera = game::g_stEngineStructure->viewportCamera[0];
+//  pointer<stCamera> camera = g_stEngineStructure->viewportCamera[0];
 //  const float fov = camera->xAlpha;
 //  stMatrix4D projectionMatrix = stMatrix4D::make_perspective(fov, 640.f/528.0f, camera->near, camera->far);
   
@@ -151,7 +151,7 @@ extern std::deque<stMatrix4D> viewMatrixStack;
 
 static auto viewMatrix() {
   
-  pointer<stCameraGLI> camera = game::g_stEngineStructure->viewportCamera[0];
+  pointer<stCameraGLI> camera = g_stEngineStructure->viewportCamera[0];
   stMatrix4D view = camera->transform.matrix;
   view(0,1) = -(float)view(0,1); view(1,1) = -(float)view(1,1);
   view(2,1) = -(float)view(2,1); view(2,2) = -(float)view(2,2);
@@ -172,7 +172,7 @@ static auto viewMatrix() {
 namespace gui {
 
 static inline void drawVector3(stVector3D v) {
-  ImGui::Text("[%.2f, %.2f, %.2f]", float(v.x), float(v.y), float(v.z));
+  ImGui::Text("[%.2f, %.2f, %.2f]", float(v.x()), float(v.y()), float(v.z()));
 }
 
 static inline void drawMatrix3(stMatrix3D mat) {
@@ -234,5 +234,8 @@ template <typename T>
 int marker(pointer<T> reference, bool readonly = false, std::string customText = "", bool quiet = false);
 void marker(cpa::script::TranslationToken tok, bool readonly = false, std::string customText = "", bool quiet = false);
 void clearMarkers();
+
+void drawSpeedrunTimer();
+void drawRunManager();
 
 #endif /* gui_hh */

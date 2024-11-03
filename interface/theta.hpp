@@ -7,7 +7,7 @@
 //auto thetaLineOfSight(ThetaNode* a, ThetaNode* b) -> bool {
 //  bool lineOfSight = true;
 //  stVector3D intersectionPoint;
-//  thetaLineOfSightRecursive(sectorSearch(game::p_stFatherSector, game::g_stEngineStructure->mainCharacterList[]->position()), stMatrix4D(), a, b, lineOfSight, intersectionPoint);
+//  thetaLineOfSightRecursive(sectorSearch(p_stFatherSector, g_stEngineStructure->mainCharacterList[]->position()), stMatrix4D(), a, b, lineOfSight, intersectionPoint);
 //  return lineOfSight;
 //}
 //

@@ -119,7 +119,7 @@ static void DrawSearchWindow() {
 }
 
 static void Draw() {
-  if (interface->mode == Speedrun)
+  if (config["mode"] == "Speedrun")
     return;
   
     if (isValidGameState()) {

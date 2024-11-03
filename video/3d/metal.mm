@@ -185,9 +185,9 @@ auto MetalGraphicsContext::draw(const PrimitiveType primitive, uint32_t vertexCo
 auto MetalGraphicsContext::drawIndexed(const PrimitiveType primitive, uint32_t vertexCount, stVector3D* vertices, stVector3D* normals, uint32_t indexCount, void* indices) -> void {
   bool gameIndexing = uniforms.useGameIndexing;
   size_t indexSize = uniforms.useGameIndexing ? sizeof(Index3D) : sizeof(uint32_t);
-  uniforms.cameraPosition.x = game::g_stEngineStructure->standardCamera->position().x;
-  uniforms.cameraPosition.y = game::g_stEngineStructure->standardCamera->position().y;
-  uniforms.cameraPosition.z = game::g_stEngineStructure->standardCamera->position().z;
+  uniforms.cameraPosition.x = g_stEngineStructure->standardCamera->position().x();
+  uniforms.cameraPosition.y = g_stEngineStructure->standardCamera->position().y();
+  uniforms.cameraPosition.z = g_stEngineStructure->standardCamera->position().z();
   
   
   id<MTLBuffer> normalBuffer = nullptr;
@@ -260,20 +260,22 @@ auto MetalGraphicsContext::setDisableShading(bool value) -> void {
   uniforms.useShading = !value;
 }
 
-auto MetalGraphicsContext::setColor(const stVector4D& color) -> void {
-  uniforms.color[0] = color.x;
-  uniforms.color[1] = color.y;
-  uniforms.color[2] = color.z;
-  uniforms.color[3] = color.w;
+auto MetalGraphicsContext::setColor(stVector4D color) -> void {
+  uniforms.color[0] = color.x();
+  uniforms.color[1] = color.y();
+  uniforms.color[2] = color.z();
+  uniforms.color[3] = color.w();
 }
 
-auto MetalGraphicsContext::setCameraPosition(const stVector3D& pos) -> void {
-  uniforms.cameraPosition[0] = pos.x;
-  uniforms.cameraPosition[1] = pos.y;
-  uniforms.cameraPosition[2] = pos.z;
+auto MetalGraphicsContext::setCameraPosition(stVector3D pos) -> void {
+  uniforms.cameraPosition[0] = pos.x();
+  uniforms.cameraPosition[1] = pos.y();
+  uniforms.cameraPosition[2] = pos.z();
 }
     
 auto MetalGraphicsContext::endFrame() -> void {
+  submitSpheres();
+  
   [renderEncoder popDebugGroup];
   [renderEncoder endEncoding];
   [commandBuffer commit];
@@ -290,162 +292,3 @@ auto MetalGraphicsContext::texture() -> void* {
   abstractRenderTexture.data = renderTexture;
   return &abstractRenderTexture;
 }
-    
-   
-    
-    
-//
-//    static simd::float3x3 getNormalMatrix(simd::float4x4 view, simd::float4x4 model)
-//    {
-//        simd::float4x4 MV = view * model;
-//        simd::float3x3 normalMatrix = { MV.columns[0].xyz, MV.columns[1].xyz, MV.columns[2].xyz };
-//        return simd::transpose(simd::inverse(normalMatrix));
-//    }
-    
-//  auto drawPoint(stVector3D point, stVector4D color) -> void {
-//    uniform.useGameIndexing = false;
-//    uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
-//    uniform.use_texture = false;
-//    uniform.enableShading = false;
-//    uniform.model = GameToMetalMatrix(stMatrix4D());
-//
-//    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: (void*)&point length: sizeof point options: MTLResourceStorageModeShared];
-//    id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: (void*)&uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-//    [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//    [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//    [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//    [renderEncoder drawPrimitives: MTLPrimitiveTypePoint vertexStart: 0 vertexCount: 1];
-//
-//    [vertexBuffer release];
-//    [uniformBuffer release];
-//
-//    uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 1.0f);
-//    uniform.enableShading = true;
-//  }
-  
-//  auto drawSphere(r3::stVector3D point, float radius, r3::stVector4D color) -> void {
-//    uniform.color = simd_make_float4(1.0f, 1.0f, 1.0f, 0.5f);
-//    uniform.use_texture = false;
-//    
-//    r3::stMatrix4D matrix = r3::stMatrix4D();
-//    matrix.m00 = radius * 2.0f;
-//    matrix.m11 = radius * 2.0f;
-//    matrix.m22 = radius * 2.0f;
-//    
-//    uniform.model = GameToMetalMatrix(matrix);
-//    
-//    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: (void*)&point length: sizeof point options: MTLResourceStorageModeShared];
-//    id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: (void*)&uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-//    [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//    [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//    [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//    [renderEncoder drawPrimitives: MTLPrimitiveTypePoint vertexStart: 0 vertexCount: 1];
-//        
-//    [vertexBuffer release];
-//    [uniformBuffer release];
-//  }
-  
-//  void drawLine(stVector3D p1, stVector3D p2, stVector4D color) {
-//    uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
-//    uniform.use_texture = false;
-//    uniform.useGameIndexing = false;
-//
-//    stVector3D buf[2] = { p1, p2 };
-//    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: (void*)buf length: sizeof buf options: MTLResourceStorageModeShared];
-//    id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: (void*)&uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-//    //printf("renderencoder: %p\n", renderEncoder);
-//   // if (renderEncoder) {
-//      //printf("renderencoder: %p\n", renderEncoder);
-//      [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//      [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//      [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//      [renderEncoder drawPrimitives: MTLPrimitiveTypeLine vertexStart: 0 vertexCount: 2];
-//    //}
-//
-//    [vertexBuffer release];
-//    [uniformBuffer release];
-//  }
-  
-//  auto draw(stVector3D *vertices, stVector3D *normals, r3::uint16 *indices, unsigned numVertices, unsigned numIndices, stMatrix4D T, stVector4D color) -> void {
-//    uniform.useGameIndexing = true;
-//    uniform.model = GameToMetalMatrix(T);
-//    uniform.useFaceNormals = false;
-//    uniform.color = simd_make_float4(color.x, color.y, color.z, color.w);
-//
-//    id<MTLBuffer> indexBuffer = [metalDevice newBufferWithBytes: indices length: numIndices * sizeof(r3::uint16) options: MTLResourceStorageModePrivate];
-//    id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: numVertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
-//    id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: numVertices * sizeof(stVector3D) options: MTLResourceStorageModePrivate];
-//    id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModePrivate];
-//
-//    [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//    [renderEncoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
-//    [renderEncoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
-//    [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//    [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//    //[renderEncoder setFragmentTexture: checkerTexture atIndex: 0];
-//    [renderEncoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: numIndices];
-//
-//    [indexBuffer release];
-//    [normalBuffer release];
-//    [vertexBuffer release];
-//    [uniformBuffer release];
-//
-//    uniform.useFaceNormals = true;
-//    uniform.useGameIndexing = false;
-//    uniform.model = GameToMetalMatrix(stMatrix4D());
-//  }
-//
-
-//auto drawIPO(stInstantiatedPhysicalObject *ipo, stMatrix4D T) -> void {
-//  try {
-//    pointer<stCollideObject> zdr = ipo->physicalObject->physicalCollideset->zdr;
-//    for (int i = 0; i < zdr->numElements; i++) {
-//      int16_t type = zdr->elementTypes[i];
-//      if (type == stCollideObject::type::IndexedTriangles) {
-//        pointer<stCollideElementIndexedTriangles> mesh = zdr->elements[i];
-//        if (!mesh) continue;
-//
-//        stVector3D* vertices = zdr->vertices;
-//        stVector3D* normals = mesh->normals;
-//        r3::uint16* indices = mesh->faceIndices;
-//
-//        r3::int16 numVertices = zdr->numVertices;
-//        r3::int16 numFaces = mesh->numFaces;
-//
-//        pointer<stCollideMaterial> material = mesh->material;
-//
-//        stVector4D mat = getCollideMaterialColor(material);
-//        simd_float4 col = {mat.x, mat.y, mat.z, mat.w};
-//
-//
-//        uniform.color = col;
-//        uniform.model = GameToMetalMatrix(T);
-//        uniform.useGameIndexing = true;
-//        uniform.use_texture = true;
-//        uniform.useFaceNormals = true;
-//
-//        id<MTLBuffer> indexBuffer = [metalDevice newBufferWithBytes: indices length: int(numFaces) * 3 * sizeof(r3::uint16) options: MTLResourceStorageModeShared];
-//        id<MTLBuffer> normalBuffer = [metalDevice newBufferWithBytes: normals length: int(numFaces) * sizeof(stVector3D) options: MTLResourceStorageModeShared];
-//        id<MTLBuffer> vertexBuffer = [metalDevice newBufferWithBytes: vertices length: int(numVertices) * sizeof(stVector3D) options: MTLResourceStorageModeShared];
-//        id<MTLBuffer> uniformBuffer = [metalDevice newBufferWithBytes: &uniform length: sizeof uniform options: MTLResourceStorageModeShared];
-//
-//        [renderEncoder setVertexBuffer: vertexBuffer offset: 0 atIndex: 0];
-//        [renderEncoder setVertexBuffer: normalBuffer offset: 0 atIndex: 1];
-//        [renderEncoder setVertexBuffer: indexBuffer offset: 0 atIndex: 2];
-//        [renderEncoder setVertexBuffer: uniformBuffer offset: 0 atIndex: 3];
-//        [renderEncoder setFragmentBuffer: uniformBuffer offset: 0 atIndex: 0];
-//        [renderEncoder setFragmentTexture: checkerTexture atIndex: 0];
-//        [renderEncoder drawPrimitives: MTLPrimitiveTypeTriangle vertexStart: 0 vertexCount: int(numFaces) * 3];
-//
-//        [indexBuffer release];
-//        [normalBuffer release];
-//        [vertexBuffer release];
-//        [uniformBuffer release];
-//
-//        uniform.useGameIndexing = false;
-//      }
-//    }
-//  } catch (...) {
-//
-//  }
-//}

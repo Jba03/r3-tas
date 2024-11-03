@@ -1,9 +1,9 @@
 #include "gui.hh"
 
 static const std::map<std::string, pointer<>> globals {
-  {"g_stEngineStructure", game::g_stEngineStructure},
-  {"g_stRandomStructure", game::g_stRandomStructure},
-  {"g_stInputStructure", game::g_stInputStructure},
+  {"g_stEngineStructure", g_stEngineStructure},
+  {"g_stRandomStructure", g_stRandomStructure},
+  {"g_stInputStructure", g_stInputStructure},
 };
 
 StructureExplorerWindow::StructureExplorerWindow() {
@@ -14,7 +14,7 @@ StructureExplorerWindow::StructureExplorerWindow() {
 //  try {
 //    //ImGui::PushID(static_cast<void*>(root));
 //    //ImGui::PushStyleColor(ImGuiCol_Text, game::objectColor(root));
-//    
+//
 //    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None | (root.children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0);
 //    if (ImGui::TreeNodeEx(root.name().c_str(), flags, "%s: %s", root.name().c_str(), root.value().c_str())) {
 //      ImVec4 col = ImGui::GetStyleColorVec4(ImGuiCol_Text);
@@ -25,7 +25,7 @@ StructureExplorerWindow::StructureExplorerWindow() {
 //      //root->forEachChild(drawElement);
 //      ImGui::TreePop();
 //    }
-//    
+//
 //   //ImGui::PopStyleColor();
 //    //ImGui::PopID();
 //  } catch (bad_pointer& e) {
@@ -38,7 +38,7 @@ void StructureExplorerWindow::draw() {
   ImGui::Begin("Structure Explorer");
   
   if (game::isValidGameState()) {
-    serializer ser;
+    //serializer ser;
     //game::g_stRandomStructure->serialize(ser);
     
     //drawElement(ser, nullptr);

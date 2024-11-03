@@ -3,16 +3,15 @@
 
 #include <map>
 #include <string>
+#include <filesystem>
+
+#include <cpatools/serialize.hpp>
+using nlohmann::json;
+using nlohmann::ordered_json;
 
 #include "emulator.hh"
 #include "event.hh"
 #include "settings.hh"
-
-enum InterfaceMode {
-  Speedrun,
-  Practice,
-  Advanced
-};
 
 struct Interface {
   Interface();
@@ -24,10 +23,17 @@ struct Interface {
   
   bool initialize();
   void applyOptimizations();
+  void r3solveInit();
   
-  InterfaceMode mode = Advanced;
+  /// Mode selection:
+  ///   Speedrun
+  ///   Practice
+  ///   Advanced
+  std::string mode = "Practice";
   
   EventList events;
+  
+  std::filesystem::path configPath();
   
   const std::string Host = "";
 };
@@ -50,5 +56,7 @@ static inline Event& event(std::string name) {
     events[name] = new Event(name);
   return *events[name];
 }
+
+extern ordered_json config;
 
 #endif /* interface_hh */

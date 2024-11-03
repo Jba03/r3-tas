@@ -21,7 +21,7 @@ static void text(std::string text, ImPlotPoint position, ImVec4 textColor, ImVec
 }
 
 static void objectMarker(pointer<stSuperObject> object) {
-  if (object == game::g_stEngineStructure->standardCamera)
+  if (object == g_stEngineStructure->standardCamera)
     return;
   
   stVector3D pos = object->globalTransform->translation();
@@ -68,8 +68,8 @@ static void objectMarkersDrawWorld(stSuperObject *world, ImDrawList *drawlist, b
 static void overlayDrawObjects() {
 //  ImDrawList *drawlist = ImPlot::GetPlotDrawList();
 //  try {
-//    if (game::p_stActualWorld) {
-//      game::p_stActualWorld->recurse([](stSuperObject* object, ImDrawList *dw) {
+//    if (p_stActualWorld) {
+//      p_stActualWorld->recurse([](stSuperObject* object, ImDrawList *dw) {
 //        stVector3D pos = object->globalTransform->translation();
 //        ImVec4 screenPos = gui::projectWorldCoordinate(pos);
 //        if (screenPos.w > 0.0f) {
@@ -97,7 +97,7 @@ static void overlayDrawObjects() {
 
 static void drawVector22() {
   try {
-    pointer<stSuperObject> mainchar = game::g_stEngineStructure->currentMainPlayers[0];
+    pointer<stSuperObject> mainchar = g_stEngineStructure->currentMainPlayers[0];
     stVector3D pos = mainchar->globalTransform->translation();
     stVector3D dsg22 = *(stVector3D*)mainchar->actor->dsgVar(22);
     stVector3D t = pos + dsg22;
@@ -117,7 +117,7 @@ static void drawVector22() {
 
 static void drawSpeedVector() {
   try {
-    pointer<stSuperObject> mainchar = game::g_stEngineStructure->currentMainPlayers[0];
+    pointer<stSuperObject> mainchar = g_stEngineStructure->currentMainPlayers[0];
     stVector3D pos = mainchar->position();
     stVector3D speed = mainchar->actor->speed();
     stVector3D t = pos + speed;
@@ -150,9 +150,9 @@ static void drawOverlayCommon() {
 }
 
 static void drawOverlay(bool actorsOnly = true) {
-  if (interface->mode == Practice) {
+  if (config["mode"] == "Practice") {
     text("PRACTICE MODE", ImVec2(0, 528), ImVec4(1.0f, 0.4f, 0.5f, 1.0f), ImVec4(1.0f, 0.0f, 0.0f, 0.25f));
-  } else if (interface->mode == Advanced) {
+  } else if (config["mode"] == "Advanced") {
     text("ADVANCED MODE", ImVec2(0, 528), ImVec4(1.0f, 0.8f, 0.4f, 1.0f), ImVec4(1.0f, 0.75f, 0.0f, 0.25f));
   }
   
@@ -161,7 +161,7 @@ static void drawOverlay(bool actorsOnly = true) {
   
   
   ImDrawList *drawlist = ImPlot::GetPlotDrawList();
-  //objectMarkersDrawWorld(game::p_stDynamicWorld, drawlist, actorsOnly);
+  //objectMarkersDrawWorld(p_stDynamicWorld, drawlist, actorsOnly);
   
   drawSpeedVector();
   drawVector22();
@@ -223,7 +223,7 @@ void GameWindow::drawGame(ImTextureID texture) {
 //    }
 //
 //    try {
-//      pointer<stSuperObject> drawSector = sectorSearch(game::p_stFatherSector, game::g_stEngineStructure->currentMainPlayers[0]->globalTransform->translation());
+//      pointer<stSuperObject> drawSector = sectorSearch(p_stFatherSector, g_stEngineStructure->currentMainPlayers[0]->globalTransform->translation());
 //      ImDrawList *dw = ImGui::GetWindowDrawList();
 //
 ////      dw->PushClipRect(ImPlot::PlotToPixels(ImVec2(0,528)), ImPlot::PlotToPixels(ImVec2(640,0)), true);
@@ -248,13 +248,13 @@ void GameWindow::drawGame(ImTextureID texture) {
 ////      }
 ////
 //
-//      //drawGeometryTopdown(game::p_stFatherSector, stMatrix4D::identity(), dw, ImVec2(0,0), ImVec2(640,528), ImVec4(0.0f, 1.0f, 0.25f, 1.0f));
+//      //drawGeometryTopdown(p_stFatherSector, stMatrix4D::identity(), dw, ImVec2(0,0), ImVec2(640,528), ImVec4(0.0f, 1.0f, 0.25f, 1.0f));
 //
 //    } catch (...) {
 //      //printf(<#const char *, ...#>)
 //    }
 
-    if (interface->mode != Speedrun)
+    if (config["mode"] != "Speedrun")
       drawOverlay(!projectActorChildren);
 
     ImPlot::EndPlot();
@@ -264,15 +264,15 @@ void GameWindow::drawGame(ImTextureID texture) {
 
 void GameWindow::drawMenuBar() {
   if (ImGui::BeginMenuBar()) {
-    if (interface->mode != Speedrun) {
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "%d", int(game::g_stEngineStructure->mode));
+    if (config["mode"] != "Speedrun") {
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.5f), "%d", int(g_stEngineStructure->mode));
       if (ImGui::BeginMenu("Engine")) {
         if (ImGui::BeginMenu("Change level")) {
-          for (int n = 0; n < game::g_stEngineStructure->levelCount; n++) {
-            std::string name = game::g_stEngineStructure->levelNames[n];
-            bool b = std::string(game::g_stEngineStructure->currentLevelName) == name;
+          for (int n = 0; n < g_stEngineStructure->levelCount; n++) {
+            std::string name = g_stEngineStructure->levelNames[n];
+            bool b = std::string(g_stEngineStructure->currentLevelName) == name;
             if (b) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.65f, 0.0f, 1.0f));
-            if (ImGui::MenuItem(name.c_str(), nullptr, b)) game::g_stEngineStructure->loadLevel(name);
+            if (ImGui::MenuItem(name.c_str(), nullptr, b)) g_stEngineStructure->loadLevel(name);
             if (b) ImGui::PopStyleColor();
           }
           ImGui::EndMenu();
@@ -309,12 +309,12 @@ void GameWindow::drawMenuBar() {
       }
       
     } else {
-      if (game::g_stEngineStructure->currentLevelName == "intro_10" && game::isValidGameState()) {
+      if (g_stEngineStructure->currentLevelName == "intro_10" && game::isValidGameState()) {
         if (ImGui::Button("Skip intro")) {
           skippingIntro = true;
-          game::g_stEngineStructure->loadLevel("intro_15");
+          g_stEngineStructure->loadLevel("intro_15");
         }
-      } else if (game::g_stEngineStructure->currentLevelName == "intro_15") {
+      } else if (g_stEngineStructure->currentLevelName == "intro_15") {
         if (skippingIntro) {
           skippingIntro = false;
         }
@@ -345,5 +345,5 @@ void GameWindow::draw(ImTextureID texture) {
   ImGui::End();
   
   // Update timescale
-  //game::g_stEngineStructure->timer.ticksPerMs = uint32_t(40500 * 1.0f / timescale);
+  //g_stEngineStructure->timer.ticksPerMs = uint32_t(40500 * 1.0f / timescale);
 }

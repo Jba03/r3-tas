@@ -1,5 +1,5 @@
 #include "gui.hh"
-#include "script.hpp"
+#include <cpatools/script.hpp>
 #include "constants.hh"
 #include "tables.hh"
 #include "imgui_internal.h"
@@ -85,8 +85,16 @@ static std::string dsgVarFormatFloat(pointer<float> v) {
 static std::string dsgVarFormatVector(pointer<stVector3D> v) {
   std::stringstream s;
   s << std::setprecision(3);
-  s << "(" << float(v->x) << ", " << float(v->y) << ", " << float(v->z) << ")";
+  s << "(" << float(v->x()) << ", " << float(v->y()) << ", " << float(v->z()) << ")";
   return s.str();
+}
+
+static std::string dsgVarFormatActor(pointer<stEngineObject> v) {
+  return v->name();
+}
+
+static std::string dsgVarFormatSuperObject(pointer<stSuperObject> v) {
+  return v->name();
 }
 
 static std::map<DsgVarType, std::function<std::string(pointer<>)>> dsgFormatTable {
@@ -98,7 +106,7 @@ static std::map<DsgVarType, std::function<std::string(pointer<>)>> dsgFormatTabl
   { DsgVarType::Int, dsgVarFormatIntegral<int32> },
   { DsgVarType::UInt, dsgVarFormatIntegral<uint32> },
   { DsgVarType::Float, dsgVarFormatFloat },
-  { DsgVarType::Vector, &dsgVarFormatVector },
+  { DsgVarType::Vector, dsgVarFormatVector },
   { DsgVarType::List, nullptr },
   { DsgVarType::Comport, nullptr },
   { DsgVarType::Action, nullptr },
@@ -112,7 +120,7 @@ static std::map<DsgVarType, std::function<std::string(pointer<>)>> dsgFormatTabl
   { DsgVarType::Waypoint, nullptr },
   { DsgVarType::Graph, nullptr },
   { DsgVarType::Text, nullptr },
-  { DsgVarType::SuperObject, nullptr },
+  { DsgVarType::SuperObject, dsgVarFormatSuperObject },
   { DsgVarType::SOLinks, nullptr },
   { DsgVarType::ActorArray, nullptr },
   { DsgVarType::VectorArray, nullptr },
@@ -430,7 +438,24 @@ void AIWindow::drawDsgVars() {
           pointer<> data = (uint8_t*)memory.pointee() + info->memoryOffset;
           std::string format = dsgVarFormat(info, data);
           std::string name = DsgVarTypenameTable[info->type];
+          
           ImGui::TextColored(dsgVarColorTable[info->type], "%s_%d: %s", name.c_str(), i, format.c_str());
+          
+//          switch (info->type) {
+//            case DsgVarType::Actor:
+//              if (data) {
+//                ImGui::SameLine();
+//                marker(pointer<stEngineObject>(data));
+//              }
+//              break;
+//              
+//            case DsgVarType::SuperObject:
+//              if (data) {
+//                ImGui::SameLine();
+//                marker(pointer<stSuperObject>(data));
+//              }
+//              break;
+//          }
         } catch (...) {
           
         }
@@ -482,10 +507,10 @@ void AIWindow::drawDebugPanel() {
 }
 
 void AIWindow::draw() {
-  if (interface->mode == Speedrun)
+  if (config["mode"] == "Speedrun")
     return;
   
-  std::string name = "AI"; //"AI - " + targetObject->name(game::nameResolver);
+  std::string name = "AI";
   ImGui::SetNextWindowSize(ImVec2(200,100));
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_MenuBar);
   if (game::isValidGameState()) {

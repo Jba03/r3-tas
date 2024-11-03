@@ -40,19 +40,16 @@ void CommonWindow::draw() {
   
   try {
     t += ImGui::GetIO().DeltaTime;
-    float h = game::g_stEngineStructure->currentMainPlayers[0]->actor->horizontalSpeed();
-    float v = game::g_stEngineStructure->currentMainPlayers[0]->actor->verticalSpeed();
-    float r = game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.report->currentAbsoluteSpeed.angular.angle;
+    float h = g_stEngineStructure->currentMainPlayers[0]->actor->horizontalSpeed();
+    float v = g_stEngineStructure->currentMainPlayers[0]->actor->verticalSpeed();
+    float r = g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.report->currentAbsoluteSpeed.angular.angle;
     
-    //printf("%X\n", game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.numFrames.memoryOffset().physicalAddress());
-    
-    
-    //stMatrix3D rot = game::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.imposedRotation;
+    //stMatrix3D rot = g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.imposedRotation;
 //    ImGui::Text("[%.2f  %.2f  %.2f]", float(rot.m[0]), float(rot.m[1]), float(rot.m[2]));
 //    ImGui::Text("[%.2f  %.2f  %.2f]", float(rot.m[3]), float(rot.m[4]), float(rot.m[5]));
 //    ImGui::Text("[%.2f  %.2f  %.2f]", float(rot.m[6]), float(rot.m[7]), float(rot.m[8]));
     
-    gui::drawTransform(game::g_stEngineStructure->standardCamera->globalTransform);
+    gui::drawTransform(g_stEngineStructure->standardCamera->globalTransform);
     
     speedbuffer_h.AddPoint(t, h);
     speedbuffer_v.AddPoint(t, v);
@@ -85,12 +82,12 @@ void CommonWindow::draw() {
   if (game::isValidGameState()) {
     ImGui::Text("Position: ");
     ImGui::SameLine();
-    gui::drawVector3(game::g_stEngineStructure->currentMainPlayers[0]->position());
+    gui::drawVector3(g_stEngineStructure->currentMainPlayers[0]->position());
     ImGui::Text("Speed: ");
     ImGui::SameLine();
-    gui::drawVector3(game::g_stEngineStructure->currentMainPlayers[0]->actor->speed());
+    gui::drawVector3(g_stEngineStructure->currentMainPlayers[0]->actor->speed());
     ImGui::SameLine();
-    ImGui::Text("(%.3f, %.3f)", game::g_stEngineStructure->currentMainPlayers[0]->actor->horizontalSpeed(), game::g_stEngineStructure->currentMainPlayers[0]->actor->verticalSpeed());
+    ImGui::Text("(%.3f, %.3f)", g_stEngineStructure->currentMainPlayers[0]->actor->horizontalSpeed(), g_stEngineStructure->currentMainPlayers[0]->actor->verticalSpeed());
   }
     
   
@@ -106,14 +103,14 @@ void CommonWindow::draw() {
     
     
     
-    pointer<stSuperObject> currentSector = sectorSearch(game::p_stFatherSector, game::g_stEngineStructure->currentMainPlayers[0]->position());
+    pointer<stSuperObject> currentSector = sectorSearch(p_stFatherSector, g_stEngineStructure->currentMainPlayers[0]->position());
     
     xRAY xray;
     std::vector<stVector3D> list = xray.derivePoints(currentSector);
     std::vector<xRAY::ThetaNode*> theta_nodes;
     
     xRAY::ThetaNode *start = new xRAY::ThetaNode;
-    start->vertex = game::g_stEngineStructure->currentMainPlayers[0]->position();
+    start->vertex = g_stEngineStructure->currentMainPlayers[0]->position();
     theta_nodes.push_back(start);
     
     for (auto& vertex : list) {

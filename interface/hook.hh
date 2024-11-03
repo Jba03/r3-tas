@@ -15,6 +15,8 @@ enum hookFlag {
   fixed = 2,
 };
 
+enum HookLocation { Start, End };
+
 template <uint32_t address = 0x00>
 static inline void hook(void (*function)(), enum hookType type = hookType::start, enum hookFlag flags = hookFlag::fixed) {
   std::string s = std::to_string(uint64_t(function));

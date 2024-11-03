@@ -49,13 +49,13 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
       TC("Slide", "%f", float(base.rebound));
       TC("Rebound", "%f", float(base.rebound));
               
-      TC("Impose speed", "[%.2f, %.2f, %.2f]", (float)imposedSpeed.x, (float)imposedSpeed.y, (float)imposedSpeed.z);
-      TC("Propose speed", "[%.2f, %.2f, %.2f]", (float)proposedSpeed.x, (float)proposedSpeed.y, (float)proposedSpeed.z);
-      TC("Previous speed", "[%.2f, %.2f, %.2f]", (float)previousSpeed.x, (float)previousSpeed.y, (float)previousSpeed.z);
-      TC("Scale", "[%.2f, %.2f, %.2f]", (float)scale.x, (float)scale.y, (float)scale.z);
-      TC("Anim proposespeed", "[%.2f, %.2f, %.2f]", (float)animSpeed.x, (float)animSpeed.y, (float)animSpeed.z);
-      TC("Safe translation", "[%.2f, %.2f, %.2f]", (float)safeTranslation.x, (float)safeTranslation.y, (float)safeTranslation.z);
-      TC("Added translation", "[%.2f, %.2f, %.2f]", (float)addedTranslation.x, (float)addedTranslation.y, (float)addedTranslation.z);
+      TC("Impose speed", "[%.2f, %.2f, %.2f]", (float)imposedSpeed.x(), (float)imposedSpeed.y(), (float)imposedSpeed.z());
+      TC("Propose speed", "[%.2f, %.2f, %.2f]", (float)proposedSpeed.x(), (float)proposedSpeed.y(), (float)proposedSpeed.z());
+      TC("Previous speed", "[%.2f, %.2f, %.2f]", (float)previousSpeed.x(), (float)previousSpeed.y(), (float)previousSpeed.z());
+      TC("Scale", "[%.2f, %.2f, %.2f]", (float)scale.x(), (float)scale.y(), (float)scale.z());
+      TC("Anim proposespeed", "[%.2f, %.2f, %.2f]", (float)animSpeed.x(), (float)animSpeed.y(), (float)animSpeed.z());
+      TC("Safe translation", "[%.2f, %.2f, %.2f]", (float)safeTranslation.x(), (float)safeTranslation.y(), (float)safeTranslation.z());
+      TC("Added translation", "[%.2f, %.2f, %.2f]", (float)addedTranslation.x(), (float)addedTranslation.y(), (float)addedTranslation.z());
               
       ImGui::EndTable();
     }
@@ -65,7 +65,7 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
   if (dynamics->endFlag(dynamicsSizeAdvanced)) {
     ImGui::SameLine();
     ImGui::BeginChild("Dynamics: advanced block", ImVec2(std::max(275.0f, ImGui::GetContentRegionAvail().x / 2), 0));
-    ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", dynamics->advanced.inertia.x.memoryOffset().physicalAddress());
+    ImGui::TextColored(ImVec4(0.7f, 0.4f, 0.0f, 1.0f), "Advanced @ %X", dynamics->advanced.inertia.x().memoryOffset().physicalAddress());
     if (ImGui::BeginTable("Dynamics advanced block", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_RowBg)) {
       stVector3D maxSpeed = advanced.maxSpeed;
       stVector3D streamSpeed = advanced.streamSpeed;
@@ -76,19 +76,19 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
       stVector3D groundNormal = advanced.groundNormal;
       stVector3D wallNormal = advanced.wallNormal;
 
-      TC("Inertia", "[%.2f, %.2f, %.2f]", float(advanced.inertia.x), float(advanced.inertia.y), float(advanced.inertia.z));
+      TC("Inertia", "[%.2f, %.2f, %.2f]", float(advanced.inertia.x()), float(advanced.inertia.y()), float(advanced.inertia.z()));
       TC("Stream priority", "%f", float(advanced.streamPriority));
       TC("Stream factor", "%f", float(advanced.streamFactor));
-      TC("Slide factor", "[%.2f, %.2f, %.2f]", float(advanced.slideFactor.x), float(advanced.slideFactor.y), float(advanced.slideFactor.z));
+      TC("Slide factor", "[%.2f, %.2f, %.2f]", float(advanced.slideFactor.x()), float(advanced.slideFactor.y()), float(advanced.slideFactor.z()));
       TC("Previous slide", "%f", float(advanced.previousSlide));
-      TC("Max speed", "[%.2f, %.2f, %.2f]", (float)maxSpeed.x, (float)maxSpeed.y, (float)maxSpeed.z);
-      TC("Stream speed", "[%.2f, %.2f, %.2f]", (float)streamSpeed.x, (float)streamSpeed.y, (float)streamSpeed.z);
-      TC("Add speed", "[%.2f, %.2f, %.2f]", (float)addSpeed.x, (float)addSpeed.y, (float)addSpeed.z);
-      TC("Limit", "[%.2f, %.2f, %.2f]", (float)limit.x, (float)limit.y, (float)limit.z);
-      TC("Col. translation", "[%.2f, %.2f, %.2f]", (float)collisionTranslation.x, (float)collisionTranslation.y, (float)collisionTranslation.z);
-      TC("Inert. translation", "[%.2f, %.2f, %.2f]", (float)inertiaTranslation.x, (float)inertiaTranslation.y, (float)inertiaTranslation.z);
-      TC("Ground normal", "[%.2f, %.2f, %.2f]", (float)groundNormal.x, (float)groundNormal.y, (float)groundNormal.z);
-      TC("Wall normal", "[%.2f, %.2f, %.2f]", (float)wallNormal.x, (float)wallNormal.y, (float)wallNormal.z);
+      TC("Max speed", "[%.2f, %.2f, %.2f]", (float)maxSpeed.x(), (float)maxSpeed.y(), (float)maxSpeed.z());
+      TC("Stream speed", "[%.2f, %.2f, %.2f]", (float)streamSpeed.x(), (float)streamSpeed.y(), (float)streamSpeed.z());
+      TC("Add speed", "[%.2f, %.2f, %.2f]", (float)addSpeed.x(), (float)addSpeed.y(), (float)addSpeed.z());
+      TC("Limit", "[%.2f, %.2f, %.2f]", (float)limit.x(), (float)limit.y(), (float)limit.z());
+      TC("Col. translation", "[%.2f, %.2f, %.2f]", (float)collisionTranslation.x(), (float)collisionTranslation.y(), (float)collisionTranslation.z());
+      TC("Inert. translation", "[%.2f, %.2f, %.2f]", (float)inertiaTranslation.x(), (float)inertiaTranslation.y(), (float)inertiaTranslation.z());
+      TC("Ground normal", "[%.2f, %.2f, %.2f]", (float)groundNormal.x(), (float)groundNormal.y(), (float)groundNormal.z());
+      TC("Wall normal", "[%.2f, %.2f, %.2f]", (float)wallNormal.x(), (float)wallNormal.y(), (float)wallNormal.z());
       TC("Collide count", "%d", (int)advanced.collideCount);
 
       ImGui::EndTable();
@@ -109,8 +109,8 @@ static auto drawDynamics(stDynamics *dynamics) -> void {
       TC("Tilt origin", "%f", float(complex.tiltOrigin));
       TC("Tilt angle", "%f", float(complex.tiltAngle));
       TC("Hanging limit", "%f", float(complex.hangingLimit));
-      TC("Contact", "[%.2f, %.2f, %.2f]", (float)contact.x, (float)contact.y, (float)contact.z);
-      TC("Fall translation", "[%.2f, %.2f, %.2f]", (float)fallTranslation.x, (float)fallTranslation.y, (float)fallTranslation.z);
+      TC("Contact", "[%.2f, %.2f, %.2f]", (float)contact.x(), (float)contact.y(), (float)contact.z());
+      TC("Fall translation", "[%.2f, %.2f, %.2f]", (float)fallTranslation.x(), (float)fallTranslation.y(), (float)fallTranslation.z());
       TC("Platform SO", "%X", (uint32_t)complex.platformSuperObject);
 
       ImGui::EndTable();

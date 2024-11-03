@@ -27,7 +27,7 @@ struct xRAY {
     
     auto position() -> stVector3D { return vertex; } //*(stVector3D*)vertex; }
   };
-
+  
   #pragma mark Heuristic rules
   
   //consider a roll from s to neighbor if distance allows for it
@@ -35,7 +35,7 @@ struct xRAY {
     stVector3D a = s->position();
     stVector3D b = neighbor->position();
     //height difference
-    float hdiff = float(a.z) - float(b.z);
+    float hdiff = float(a.z()) - float(b.z());
   }
   
   auto considerNeighbor(ThetaNode* s, ThetaNode* neighbor) -> bool {
@@ -190,7 +190,7 @@ struct xRAY {
       pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
       for (int i = 0; i < zdr->numElements; i++) {
         int16_t type = zdr->elementTypes[i];
-        if (type == collideObjectTypeIndexedTriangles) {
+        if (type == collideElementTypeIndexedTriangles) {
           pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
           for (int16_t index = 0; index < element->numFaces; index++) {
             Triangle t(object, zdr, element, index);
@@ -225,7 +225,7 @@ struct xRAY {
       pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
       for (int i = 0; i < zdr->numElements; i++) {
         int16_t type = zdr->elementTypes[i];
-        if (type == collideObjectTypeIndexedTriangles) {
+        if (type == collideElementTypeIndexedTriangles) {
           //pointer<stCollideElementIndexedTriangles> tris = zdr->elements[i];
           //if (!(tris->material->identifier & COL_MAT_ID_MASK_WALL)) {
 //            for (int vertex = 0; vertex < zdr->numVertices; vertex++) {

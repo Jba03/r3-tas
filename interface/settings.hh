@@ -4,8 +4,8 @@
 #include <fstream>
 #include <filesystem>
 
-#include "serialize.hpp"
-#include "types.hpp"
+#include <cpatools/serialize.hpp>
+#include <cpatools/types.hpp>
 
 struct settings {
 

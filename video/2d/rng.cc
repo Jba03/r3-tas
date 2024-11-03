@@ -59,7 +59,7 @@ using namespace game;
 //static float TimeScale = 1.0f;
 //
 //static auto RazoffHelper() -> void {
-//  if (game::g_stEngineStructure->currentLevelName == "Swamp_51" && p_stFatherSector) {
+//  if (g_stEngineStructure->currentLevelName == "Swamp_51" && p_stFatherSector) {
 //
 //  }
 //}

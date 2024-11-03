@@ -4,8 +4,11 @@
 #include "interface.hh"
 #include "hook.hh"
 #include "log.hh"
-#include "script.hpp"
+
+#include <cpatools/script.hpp>
 #include "tables.hh"
+
+#include "mecsync.hh"
 
 #include "gui.hh"
 
@@ -20,18 +23,18 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
     #define ssign(a,b) ((a >= 0.0f) == (b >= 0.0f))
     
     #define MSM(a,b,c,d) ((a)*(b) - (c)*(d))
-    #define dXY(a,b) MSM(a.x, b.y, a.y, b.x)
-    #define dYZ(a,b) MSM(a.y, b.z, a.z, b.y)
-    #define dZX(a,b) MSM(a.z, b.x, a.x, b.z)
+    #define dXY(a,b) MSM(a.x(), b.y(), a.y(), b.x())
+    #define dYZ(a,b) MSM(a.y(), b.z(), a.z(), b.y())
+    #define dZX(a,b) MSM(a.z(), b.x(), a.x(), b.z())
     
     float det = 0.0f;
-    if (std::fabs(N.z) >= M_INV_SQRT_3) {
+    if (std::fabs(N.z()) >= M_INV_SQRT_3) {
         det = dXY(p0, p1);
-        if (ssign(det, N.z)) {
+        if (ssign(det, N.z())) {
             det = dXY(p1, p2);
-            if (ssign(det, N.z)) {
+            if (ssign(det, N.z())) {
                 det = dXY(p2, p0);
-                return ssign(det, N.z);
+                return ssign(det, N.z());
             } else {
                 return false;
             }
@@ -39,13 +42,13 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
             return false;
         }
     } else {
-        if (std::fabs(N.x) >= M_INV_SQRT_3) {
+        if (std::fabs(N.x()) >= M_INV_SQRT_3) {
             det = dYZ(p0, p1);
-            if (ssign(det, N.x)) {
+            if (ssign(det, N.x())) {
                 det = dYZ(p1, p2);
-                if (ssign(det, N.x)) {
+                if (ssign(det, N.x())) {
                     det = dYZ(p2, p0);
-                    return ssign(det, N.x);
+                    return ssign(det, N.x());
                 } else {
                     return false;
                 }
@@ -54,11 +57,11 @@ static auto pointInTriangle(stVector3D P, stVector3D A, stVector3D B, stVector3D
             }
         } else {
             det = dZX(p0, p1);
-            if (ssign(det, N.y)) {
+            if (ssign(det, N.y())) {
                 det = dZX(p1, p2);
-                if (ssign(det, N.y)) {
+                if (ssign(det, N.y())) {
                     det = dZX(p2, p0);
-                    return ssign(det, N.y);
+                    return ssign(det, N.y());
                 } else {
                     return false;
                 }
@@ -86,9 +89,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     stVector3D s = *src;
     
     stVector3D result;
-//    result.x = (m.m20 * s.z) + (m.m00 * s.x) + (m.m10 * s.y) + m.m30;
-//    result.y = (m.m21 * s.z) + (m.m01 * s.x) + (m.m11 * s.y) + m.m31;
-//    result.z = (m.m22 * s.z) + (m.m02 * s.x) + (m.m12 * s.y) + m.m32;
+//    result.x() = (m.m20 * s.z()) + (m.m00 * s.x()) + (m.m10 * s.y()) + m.m30;
+//    result.y() = (m.m21 * s.z()) + (m.m01 * s.x()) + (m.m11 * s.y()) + m.m31;
+//    result.z() = (m.m22 * s.z()) + (m.m02 * s.x()) + (m.m12 * s.y()) + m.m32;
     
     *dst = result;
     
@@ -110,9 +113,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 //    stVector3D s = src->host();
 //
 //    stVector3D result;
-//    result.x = (m.m20 * s.z) + (m.m00 * s.x) + (m.m10 * s.y) + m.m30;
-//    result.y = (m.m21 * s.z) + (m.m01 * s.x) + (m.m11 * s.y) + m.m31;
-//    result.z = (m.m22 * s.z) + (m.m02 * s.x) + (m.m12 * s.y) + m.m32;
+//    result.x() = (m.m20 * s.z()) + (m.m00 * s.x()) + (m.m10 * s.y()) + m.m30;
+//    result.y() = (m.m21 * s.z()) + (m.m01 * s.x()) + (m.m11 * s.y()) + m.m31;
+//    result.z() = (m.m22 * s.z()) + (m.m02 * s.x()) + (m.m12 * s.y()) + m.m32;
 //
 //    *dst = result.game();
 //
@@ -206,9 +209,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
 //    stVector3D max1 = p_stMaxPoint1->host();
 //    stVector3D min2 = p_stMinPoint2->host();
 //    stVector3D max2 = p_stMaxPoint2->host();
-//    return max(min1.x, min2.x) <= min(max1.x, max2.x) &&
-//           max(min1.y, min2.y) <= min(max1.y, max2.y) &&
-//           max(min1.z, min2.z) <= min(max1.z, max2.z);
+//    return max(min1.x(), min2.x()) <= min(max1.x(), max2.x()) &&
+//           max(min1.y(), min2.y()) <= min(max1.y(), max2.y()) &&
+//           max(min1.z(), min2.z()) <= min(max1.z(), max2.z());
 //  }
   
   auto INT_fn_bIntersectBoxWithBox(stVector3D *p_stMinPoint1, stVector3D *p_stMaxPoint1, stVector3D *p_stMinPoint2, stVector3D *p_stMaxPoint2) -> bool {
@@ -216,9 +219,9 @@ template<class T> const T& max(const T& a, const T& b) { return (((a) > (b)) ? (
     stVector3D max1 = *p_stMaxPoint1;
     stVector3D min2 = *p_stMinPoint2;
     stVector3D max2 = *p_stMaxPoint2;
-    return max(float(min1.x), float(min2.x)) <= min(float(max1.x), float(max2.x)) &&
-           max(float(min1.y), float(min2.y)) <= min(float(max1.y), float(max2.y)) &&
-           max(float(min1.z), float(min2.z)) <= min(float(max1.z), float(max2.z));
+    return max(float(min1.x()), float(min2.x())) <= min(float(max1.x()), float(max2.x())) &&
+           max(float(min1.y()), float(min2.y())) <= min(float(max1.y()), float(max2.y())) &&
+           max(float(min1.z()), float(min2.z())) <= min(float(max1.z()), float(max2.z()));
   }
   
   static auto COL_fn_vExploreRecursiveOctreeWithBox(stOctreeNode *p_stNodeToBeExplored, stVector3D *p_stMinSituation, stVector3D *p_stMaxSituation, uint32_t *d_pstSelectedNode, short *p_xNumberOfSelectedNodes) -> void {
@@ -286,7 +289,37 @@ static auto fn_p_stEvalTree() -> void {
 //    printf("print in log window!\n");
 //  }
   
+ // printf("eval\n");
+  
+  
+  //if (object == g_stEngineStructure->currentMainPlayers[0])
   if (tree->type == cpa::script::ScriptNodeType::Procedure) {
+    if (int(tree->param) == 755) {
+      printf("%s\n", object->name().c_str());
+      pointer<stNodeInterpret> sound = tree+1;
+      //printf("%s\n", R3ProcedureTable[(int)tree->param].c_str());
+      printf("%s\n", R3NodeTypeTable[(int)sound->type].c_str());
+      printf("sound request: %X\n", int(sound->param));
+      
+      
+      script::TranslationOptions opt;
+      opt.expandMacroReferences = false;
+      opt.removeUnnecessaryParentheses = true;
+      opt.conditionTable = R3ConditionTable;
+      opt.functionTable = R3FunctionTable;
+      opt.procedureTable = R3ProcedureTable;
+      opt.metaActionTable = R3MetaActionTable;
+      opt.fieldTable = R3FieldTable;
+      
+      script::TranslationEngine engine(opt);
+      script::TranslationResult* res = engine.translate(object->actor, tree);
+      for (auto tok : res->tokens) {
+        printf("%s", tok.text.c_str());
+      }
+      
+      delete res;
+      
+    }
     //printf("executing proc %s in actor %s\n", R3ProcedureTable[int(tree->param)].c_str(), object->name().c_str());
   }
 }
@@ -313,15 +346,31 @@ static auto fn_vAddInCollisionTable() -> void {
     int16_t param1 = *(int16*)pointer<int16>GPR(8);
     int16_t param2 = *(int16*)pointer<int16>GPR(9);
     pointer<stVector3D> movement = pointer<int16>GPR(10); // not updated yet
-    float radius = float(*(float32*)pointer<float32>GPR(11));
+    pointer<float32> radius = pointer<float32>GPR(11);
     pointer<stVector3D> endpos = pointer<int16>GPR(12); // not updated yet
     
-//    printf("COL_fn_vAddInStaticCollisionTable(\n");
-//    printf("  tempDistance = [%.2f, %.2f, %.2f]\n", float(tempDistance->x), float(tempDistance->y), float(tempDistance->z));
-//    printf("  tempHit = [%.2f, %.2f, %.2f]\n", float(tempHit->x), float(tempHit->y), float(tempHit->z));
-//    printf("  tempNormal = [%.2f, %.2f, %.2f]\n", float(tempNormal->x), float(tempNormal->y), float(tempNormal->z));
-//    printf("  radius = %.3f\n", radius);
-//    printf(")\n\n");
+    printf("cur, prev: %X %X\n",
+           address(&global::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.currentTransform).effectiveAddress(),
+           address(&global::g_stEngineStructure->currentMainPlayers[0]->actor->dynam->dynamics->base.previousTransform).effectiveAddress());
+    
+//    if (tempNormal->z() > 0.12) {
+//      tempNormal->z() = 10.1162196733058f;
+//    }
+    
+//    if (*radius > 1.0f) *radius = 1.0f;
+    
+    printf("\nCOL_fn_vAddInStaticCollisionTable(\n");
+    printf("  tempDistance = [%f, %f, %f]\n", float(tempDistance->x()), float(tempDistance->y()), float(tempDistance->z()));
+    printf("  tempHit = [%.2f, %.2f, %.2f]\n", float(tempHit->x()), float(tempHit->y()), float(tempHit->z()));
+    printf("  tempNormal = [%.2f, %.2f, %.2f]\n", float(tempNormal->x()), float(tempNormal->y()), float(tempNormal->z()));
+    printf("  tempNormalLength = %f\n", tempNormal->length());
+    printf("  movement = [%f, %f, %f]\n", float(movement->x()), float(movement->y()), float(movement->z()));
+    printf("  radius = %.3f\n", (float)*radius);
+    printf(")\n\n");
+    
+//    if (radius == 1.0f) {
+//      *tempNormal = stVector3D(0.0f, 0.0f, 0.0f); //*tempNormal * 5.0f;
+//    }
     
     CollisionTableEntry entry;
     entry.tempDistance = *(stVector3D*)tempDistance;
@@ -363,15 +412,19 @@ static auto fn_vCollideStaticIndexedTriangle() -> void {
   NPC = LR;
 }
 
+static auto MEC_fn_vComputeAdjustVector() -> void {
+  NPC = LR;
+}
+
 static auto multmat() -> void {
   pointer<stVector3D> dst = pointer<stVector3D>GPR(3);
   pointer<stTransform> transform = pointer<stVector3D>GPR(4);
   pointer<stVector3D> src = pointer<stVector3D>GPR(5);
-  if (isnan(float(dst->x))) printf("\n\n NAN HERE\n\n");
+  if (isnan(float(dst->x()))) printf("\n\n NAN HERE\n\n");
   printf("MAT_fn_vRotateVector(\n");
   printf("  TransformType = %s\n", transform->typeName().c_str());
-  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x), float(src->y), float(src->z));
-  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x), float(dst->y), float(dst->z));
+  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x()), float(src->y()), float(src->z()));
+  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x()), float(dst->y()), float(dst->z()));
   printf(")\n\n");
   //GPR(0) = 1;
 }
@@ -383,15 +436,148 @@ static auto mulmatrixvertex() -> void {
   
   printf("MAT_fn_vMulMatrixVertex(\n");
   printf("  TransformType = %s\n", transform->typeName().c_str());
-  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x), float(src->y), float(src->z));
-  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x), float(dst->y), float(dst->z));
+  printf("  src = [%.2f, %.2f, %.2f]\n", float(src->x()), float(src->y()), float(src->z()));
+  printf("  dst = [%.2f, %.2f, %.2f]\n", float(dst->x()), float(dst->y()), float(dst->z()));
   printf(")\n\n");
   //GPR(0) = 1;
+}
+
+static bool isRayman = false;
+
+static auto MEC_p_stDynamicsBaseMechanics_Initialize() -> void {
+  pointer<stDynamics> dynamics = pointer<stDynamics>GPR(3);
+  pointer<stSuperObject> object = pointer<stSuperObject>GPR(4);
+  
+  if (GPR(4) == 0x80BF0C0C) {
+    isRayman = true;
+    //printf("dt: %f\n", FPR(2));
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.Initialize", dynamics, object, FPR(2));
+  } else {
+    isRayman = false;
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_MEC_fn_vTranslateMatrixOn() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.MEC_fn_vTranslateMatrixOn", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterlFrameLoopEnd() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterlFrameLoopEnd", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_BeforeAnimationProposeSpeed() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.BeforeAnimationProposeSpeed", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterAnimationProposeSpeed() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterAnimationProposeSpeed", dynamics, object);
+  }
+}
+
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterProposeSpeed() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterProposeSpeed", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterInertia() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterInertia", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterGravitySpeed() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterGravitySpeed", dynamics, object);
+  }
+}
+
+static auto MEC_p_stDynamicsBaseMechanics_AfterAnimationProposeSpeedMulFramelength() -> void {
+  if (isRayman) {
+    pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+    pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+    mecsync_send("MEC_p_stDynamicsBaseMechanics.AfterAnimationProposeSpeedMulFramelength", dynamics, object);
+  }
+}
+
+static auto PrintSpeed2() {
+  pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+  pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+  stVector3D speed = dynamics->base.report->currentAbsoluteSpeed.linear; // WRONG! TODO: Aaddadad
+  printf("speed 2: (%f %f %f)\n", float(speed.x()), float(speed.y()), float(speed.z()));
+}
+
+
+static auto PrintSpeed1() {
+  pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+  pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+  stVector3D speed = dynamics->base.previousSpeed;
+  printf("speed 1: (%f %f %f)\n", float(speed.x()), float(speed.y()), float(speed.z()));
+}
+static auto PrintSpeed3() {
+  pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+  pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+  stVector3D speed = dynamics->base.previousSpeed;
+  printf("speed 3: (%f %f %f)\n", float(speed.x()), float(speed.y()), float(speed.z()));
+}
+
+static auto PrintSpeed4() {
+  pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+  pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+  stVector3D speed = dynamics->base.previousSpeed;
+  printf("addr: %X\n", (uint32_t)object->actor->dynam->dynamics.pointeeAddress().effectiveAddress());
+  printf("speed 4: (%f %f %f)\n", float(speed.x()), float(speed.y()), float(speed.z()));
+}
+
+// prev: 24.75, 60.99, 11.46
+// cur: 24.23, 60.78, 11.68
+
+static auto PrintSpeed5() {
+  pointer<stSuperObject> object = g_stEngineStructure->currentMainPlayers[0];
+  pointer<stDynamics> dynamics = object->actor->dynam->dynamics;
+  stVector3D speed = dynamics->base.previousSpeed;
+  printf("speed 5: (%f %f %f)\n", float(speed.x()), float(speed.y()), float(speed.z()));
 }
 
   void Interface::applyOptimizations() {
     
     log::info(log::bold, log::pink, "Optimizations loaded\n");
+    
+//    hook<0x8007e9d8>(MEC_p_stDynamicsBaseMechanics_Initialize);
+//    hook<0x8007eff8>(MEC_p_stDynamicsBaseMechanics_MEC_fn_vTranslateMatrixOn);
+//    hook<0x8007f270>(MEC_p_stDynamicsBaseMechanics_AfterlFrameLoopEnd);
+//
+//    hook<0x8007efc0>(MEC_p_stDynamicsBaseMechanics_AfterAnimationProposeSpeedMulFramelength);
+//    hook<0x8007f044>(MEC_p_stDynamicsBaseMechanics_BeforeAnimationProposeSpeed);
+//    hook<0x8007f04c>(MEC_p_stDynamicsBaseMechanics_AfterAnimationProposeSpeed);
+//    hook<0x8007f068>(MEC_p_stDynamicsBaseMechanics_AfterProposeSpeed);
+//    hook<0x8007f0a8>(MEC_p_stDynamicsBaseMechanics_AfterInertia);
+//    hook<0x8007f158>(MEC_p_stDynamicsBaseMechanics_AfterGravitySpeed);
+    
+    
+    
     
     //hook<0x8007568c>(mulmatrixvertex, hookType::start);
     //hook<0x80075844>(multmat, hookType::start);
@@ -399,12 +585,27 @@ static auto mulmatrixvertex() -> void {
     //hook<0x80075844>(fn_vCollideStaticIndexedTriangle, hookType::replace);
 //    hook<0x8006dc98>(fn_vEndTransitionSyncrho, hookType::start);
 //
+    //hook<0x800862f4>(MEC_fn_vComputeAdjustVector, hookType::replace);
+    
+    
+    
+    
+    
+//    hook<0x8007eb2c>(PrintSpeed1);
+//    hook<0x8007f690>(PrintSpeed2);
+//    hook<0x8007fad8>(PrintSpeed3);
+//    hook<0x8007f6a8>(PrintSpeed4);
+//    hook<0x8007f348>(PrintSpeed5);
 //    hook<0x8002cc68>(fn_vAddInCollisionTable, hookType::start);
+    
+    
+    
+    
 //    hook<0x800358a0>(fn_vCollisionStarted, hookType::start);
 //    hook<0x8002e944>(fn_vIntersection, hookType::start);
 //    hook<0x800358e0>(fn_vCollisionFinished, hookType::start);
 //
-//    hook<0x8002e438>(fn_vCollideStaticEdge, hookType::replace);
+    //hook<0x8002e438>(fn_vCollideStaticEdge, hookType::replace);
     //hook<0x8002ed34>(multmat, hookType::start);
     //hook<0x8002f5d4>(fn_vCollideStaticIndexedTriangle, hookType::replace);
     //hook<0x8002ee04>(fn_vCollideStaticIndexedTriangle, hookType::replace);
@@ -420,7 +621,8 @@ static auto mulmatrixvertex() -> void {
     // POS
     //hook<0x800787dc>(POS_fn_vCopyMatrix, hookType::replace);
     
-//    hook<0x80136234>(fn_p_stEvalTree, hookType::start);
+    //hook<0x80136234>(fn_p_stEvalTree, hookType::start);
+    
 //    hook<0x800edd44>(fn_vInitLevelLoop, hookType::start);
     
     

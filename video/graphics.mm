@@ -121,10 +121,24 @@ auto GraphicsContext::drawSphere(cpa::structure::stVector3D point, float radius)
   setUseGameIndexing(false);
   setModelMatrix(cpa::structure::stMatrix4D::make_translation(point) * cpa::structure::stMatrix4D::make_scale(cpa::structure::stVector3D(radius, radius, radius)));
   drawIndexed(Triangles, sphereVertexCount, sphereVertices, sphereNormals, sphereIndexCount, sphereIndices);
+  
+  
+  
+  //spheres.push_back({ point, radius });
+}
+
+auto GraphicsContext::submitSpheres() -> void {
+  
+  
+//  setUseGameIndexing(false);
+//  setModelMatrix(cpa::structure::stMatrix4D::make_translation(point) * cpa::structure::stMatrix4D::make_scale(cpa::structure::stVector3D(radius, radius, radius)));
+//  drawIndexed(Triangles, sphereVertexCount, sphereVertices, sphereNormals, sphereIndexCount, sphereIndices);
+  
+  spheres.clear();
 }
 
 auto GraphicsContext::drawLine(cpa::structure::stVector3D p0, cpa::structure::stVector3D p1, cpa::structure::stVector4D color) -> void {
-  cpa::structure::stVector3D vertices[2] = { {p0.x, p0.y, p0.z}, {p1.x, p1.y, p1.z} };
+  cpa::structure::stVector3D vertices[2] = { {p0.x(), p0.y(), p0.z()}, {p1.x(), p1.y(), p1.z()} };
   setModelMatrix(cpa::structure::stMatrix4D());
   setColor(color);
   draw(Lines, 2, vertices);
@@ -135,7 +149,7 @@ auto GraphicsContext::drawIPO(cpa::structure::stInstantiatedPhysicalObject *ipo,
     cpa::pointer<cpa::structure::stCollideObject> zdr = ipo->physicalObject->physicalCollideset->zdr;
     for (int i = 0; i < zdr->numElements; i++) {
       int16_t type = zdr->elementTypes[i];
-      if (type == collideObjectTypeIndexedTriangles) {
+      if (type == collideElementTypeIndexedTriangles) {
         cpa::pointer<cpa::structure::stCollideElementIndexedTriangles> mesh = zdr->elements[i];
         if (!mesh) continue;
 

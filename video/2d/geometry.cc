@@ -11,7 +11,7 @@ static auto drawGeometryRecursive(pointer<stSuperObject> object, const stMatrix4
         
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == collideObjectTypeIndexedTriangles) {
+          if (type == collideElementTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;
@@ -106,7 +106,7 @@ static auto drawGeometryTopdown(pointer<stSuperObject> object, const stMatrix4D 
         
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == collideObjectTypeIndexedTriangles) {
+          if (type == collideElementTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;
@@ -146,9 +146,9 @@ static auto drawGeometryTopdown(pointer<stSuperObject> object, const stMatrix4D 
               //ImVec2 pos3 = proj(ImVec2(coord_c.x, coord_c.y));
                 
               
-              ImVec2 p1 = proj(ImVec2(Pa.x, Pa.y));
-              ImVec2 p2 = proj(ImVec2(Pb.x, Pb.y));
-              ImVec2 p3 = proj(ImVec2(Pc.x, Pc.y));
+              ImVec2 p1 = proj(ImVec2(Pa.x(), Pa.y()));
+              ImVec2 p2 = proj(ImVec2(Pb.x(), Pb.y()));
+              ImVec2 p3 = proj(ImVec2(Pc.x(), Pc.y()));
                   
               
               
@@ -202,7 +202,7 @@ static auto getIPOVertices(pointer<stSuperObject> object, const stMatrix4D trans
         pointer<stCollideObject> zdr = object->ipo->physicalObject->physicalCollideset->zdr;
         for (int i = 0; i < zdr->numElements; i++) {
           int16_t type = zdr->elementTypes[i];
-          if (type == collideObjectTypeIndexedTriangles) {
+          if (type == collideElementTypeIndexedTriangles) {
             pointer<stCollideElementIndexedTriangles> element = zdr->elements[i];
             stVector3D* vertices = zdr->vertices;
             uint16* indices = element->faceIndices;

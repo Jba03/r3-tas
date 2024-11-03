@@ -23,7 +23,7 @@ static void text(std::string text, ImPlotPoint position, ImVec4 textColor, ImVec
 }
 
 static void objectMarker(pointer<stSuperObject> object) {
-  if (object == game::g_stEngineStructure->standardCamera)
+  if (object == g_stEngineStructure->standardCamera)
     return;
   
   stVector3D pos = object->globalTransform->translation();
@@ -70,8 +70,8 @@ static void objectMarkersDrawWorld(stSuperObject *world, ImDrawList *drawlist, b
 static void overlayDrawObjects() {
   ImDrawList *drawlist = ImPlot::GetPlotDrawList();
   try {
-    if (game::p_stActualWorld) {
-      game::p_stActualWorld->recurse([](stSuperObject* object, ImDrawList *dw) {
+    if (p_stActualWorld) {
+      p_stActualWorld->recurse([](stSuperObject* object, ImDrawList *dw) {
         stVector3D pos = object->globalTransform->translation();
         ImVec4 screenPos = gui::projectWorldCoordinate(pos);
         if (screenPos.w > 0.0f) {
@@ -107,7 +107,7 @@ static auto drawLine(ImDrawList *drawlist, stVector3D a, stVector3D b, ImColor c
 
 static void drawVector22() {
   try {
-    pointer<stSuperObject> mainchar = game::g_stEngineStructure->currentMainPlayers[0];
+    pointer<stSuperObject> mainchar = g_stEngineStructure->currentMainPlayers[0];
     stVector3D pos = mainchar->globalTransform->translation();
     stVector3D dsg22 = *(stVector3D*)mainchar->actor->dsgVar(22);
     stVector3D t = pos + dsg22;
@@ -169,9 +169,9 @@ static void drawOverlayCommon() {
 }
 
 static void drawOverlay(bool actorsOnly = true) {
-  if (interface->mode == Practice) {
+  if (config["mode"] == "Practice") {
     text("PRACTICE MODE", ImVec2(0, 528), ImVec4(1.0f, 0.4f, 0.5f, 1.0f), ImVec4(1.0f, 0.0f, 0.0f, 0.25f));
-  } else if (interface->mode == Advanced) {
+  } else if (config["mode"] == "Advanced") {
     text("ADVANCED MODE", ImVec2(0, 528), ImVec4(1.0f, 0.8f, 0.4f, 1.0f), ImVec4(1.0f, 0.75f, 0.0f, 0.25f));
   }
   
@@ -180,7 +180,7 @@ static void drawOverlay(bool actorsOnly = true) {
   
   
   ImDrawList *drawlist = ImPlot::GetPlotDrawList();
-  objectMarkersDrawWorld(game::p_stDynamicWorld, drawlist, actorsOnly);
+  objectMarkersDrawWorld(p_stDynamicWorld, drawlist, actorsOnly);
   
   drawCollisionVectors();
   drawVector22();
@@ -208,12 +208,15 @@ static auto drawWorld(GraphicsContext* ctx, pointer<stSuperObject> root, stMatri
 static auto drawZDX(GraphicsContext* ctx, pointer<stSuperObject> object) -> void {
     auto draw = [&](pointer<stZdxList> list, stVector4D color) {
       try {
+        //printf("actor: %s, numzdx: %d\n", object->name().c_str(), (int)list->numZdx);
         assert(list->numZdx == list->list.numEntries);
-        for (auto zdx : list->list) {
-          pointer<stCollideObject> colobj = zdx->data;
+        for (auto colobj : list->all()) {
+         // if (object->name() == "OLP_GenCamTeleport") printf("yabadabadoo!\n");
+          //pointer<stCollideObject> colobj = zdx->data;
           for (int i = 0; i < int(colobj->numElements); i++) {
             int16_t elementType = (int16)colobj->elementTypes[i];
-            if (elementType == collideObjectTypeIndexedSpheres) {
+            if (elementType == collideElementTypeIndexedSpheres) {
+              
               pointer<stCollideElementIndexedSpheres> sphereSet = colobj->elements[i];
               for (int j = 0; j < sphereSet->numSpheres; j++) {
                 pointer<stCollideElementIndexedSphere> sphere = &sphereSet->spheres[i];
@@ -298,9 +301,9 @@ void CollisionViewport::draw() {
     graphics->setProjectionMatrix(projectionMatrix());
     graphics->setUseCheckerTexture(true);
     graphics->setDisableShading(false);
-    drawWorld(graphics, game::p_stFatherSector, stMatrix4D());
+    drawWorld(graphics, p_stFatherSector, stMatrix4D());
     
-    pointer<stSuperObject> main = game::g_stEngineStructure->currentMainPlayers[0];
+    pointer<stSuperObject> main = g_stEngineStructure->currentMainPlayers[0];
     stVector3D pos = main->position();
     // graphics->setUseCheckerTexture(true);
     //  graphics->drawLine(pos, pos + stVector3D(1.0f, 0.0f, 0.0f), stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
@@ -350,7 +353,7 @@ void CollisionViewport::draw() {
     //zdx
     graphics->setDisableShading(false);
     graphics->setUseCheckerTexture(true);
-    game::p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
+    p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
       drawZDX(graphics, object);
     }, nullptr);
   }
@@ -379,18 +382,18 @@ TopdownCollisionViewport::TopdownCollisionViewport() {
 void TopdownCollisionViewport::draw() {
   if (!game::isValidGameState()) return;
   
-  pointer<stCameraGLI> camera = game::g_stEngineStructure->viewportCamera[0];
+  pointer<stCameraGLI> camera = g_stEngineStructure->viewportCamera[0];
   
   graphics->beginFrame(gui::gameTexture);
   graphics->setViewMatrix(stMatrix4D::make_lookat(stVector3D(0.0f, 0.0f, 10.0f), stVector3D(0.0f, 0.0f, 0.0f), stVector3D(0.0f, 0.0f, -1.0f)));
   graphics->setProjectionMatrix(projectionMatrix());
   graphics->setUseCheckerTexture(true);
   graphics->setDisableShading(true);
-  drawWorld(graphics, game::p_stFatherSector, stMatrix4D());
+  drawWorld(graphics, p_stFatherSector, stMatrix4D());
   
   printf("draw top down world\n");
   
-  pointer<stSuperObject> main = game::g_stEngineStructure->currentMainPlayers[0];
+  pointer<stSuperObject> main = g_stEngineStructure->currentMainPlayers[0];
   stVector3D pos = main->position();
  // graphics->setUseCheckerTexture(true);
 //  graphics->drawLine(pos, pos + stVector3D(1.0f, 0.0f, 0.0f), stVector4D(1.0f, 0.0f, 0.0f, 1.0f));
@@ -423,7 +426,7 @@ void TopdownCollisionViewport::draw() {
   //zdx
   graphics->setDisableShading(false);
   graphics->setUseCheckerTexture(true);
-  game::p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
+  p_stDynamicWorld->forEachChild([&](pointer<stSuperObject> object, void*) {
     drawZDX(graphics, object);
   }, nullptr);
   

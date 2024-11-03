@@ -18,7 +18,9 @@ build
 *.r3c
 *.bin
 *.triforce
+*.json
 settings
+Debug
 
 *~
 

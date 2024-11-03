@@ -16,10 +16,13 @@
 #include "log.hh"
 #include "tools.hh"
 
+#include "mecsync.hh"
+
 #include "gui.hh"
+#include "run-manager.hh"
 
 #define CPATOOLS_IMPLEMENTATION
-#include <cpatools.hpp>
+#include <cpatools/cpatools.hpp>
 
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
@@ -44,22 +47,6 @@ static const std::vector<uint32_t> color_table = {
 
 namespace game
 {
-  /* Globals */
-  pointer<stAlways> g_stAlways = nullptr;
-  pointer<stEngineStructure> g_stEngineStructure = nullptr;
-  pointer<stObjectType> g_stObjectTypes = nullptr;
-  pointer<stInputStructure> g_stInputStructure = nullptr;
-  pointer<stRandom> g_stRandomStructure = nullptr;
-  
-  /* Global variables */
-  uint8 *g_bGhostMode = nullptr;
-  
-  /* World */
-  pointer<stSuperObject> p_stActualWorld;
-  pointer<stSuperObject> p_stDynamicWorld;
-  pointer<stSuperObject> p_stInactiveDynamicWorld;
-  pointer<stSuperObject> p_stFatherSector;
-  
   std::map<std::string, stSuperObject*> objectLookupCache;
   std::map<std::string, pointer<stInputEntryElement>> inputEntryElementCache;
   
@@ -73,111 +60,6 @@ namespace game
     
   static uint8 lastEngineMode = engineModeInvalid;
 static std::string lastLevelName = "";
-
-#pragma mark - FIX
-    
-    struct fix_header {
-      padding(32)
-      pointer<> identity_matrix;
-      pointer<> localization_structure;
-      uint32 level_name_count;
-      uint32 demo_name_count;
-    };
-    
-    struct fix_trailer {
-      char8 first_level[30];
-      padding(2)
-      uint32 language_count;
-      uint32 language_offset;
-      uint32 texture_count;
-    };
-    
-    struct fix {
-      struct fix_header* header;
-      struct fix_trailer* trailer;
-    };
-    
-#pragma mark - LVL
-    
-    struct lvl_header {
-      padding(4 * 4) /* ? */
-      char8 text[24];
-      padding(4 * 60) /* ? */
-      uint32 texture_count;
-    };
-    
-    struct lvl_section_a {
-      pointer<> actual_world;
-      pointer<> dynamic_world;
-      pointer<> inactive_dynamic_world;
-      pointer<> father_sector;
-      pointer<> first_submap_position;
-      stAlways always_structure;
-      stObjectType object_type;
-    };
-    
-    struct lvl {
-      struct lvl_header* header;
-      struct lvl_section_a* section_a;
-    };
-    
-    /* FIX: fixed memory */
-    struct fix fix;
-    /* LVL: level memory */
-    struct lvl lvl;
-    
-#pragma mark - Engine
-    
-    void readLevel() {
-      doublepointer<> fixptr(GCN_POINTER_FIX);
-      doublepointer<> lvlptr(GCN_POINTER_LVL);
-      
-      if (!fixptr || !lvlptr) return;
-      
-      #pragma mark FIX
-      {
-            //info(BOLD COLOR_GREEN "FIX @ [0x%X : %p]\n", fixptr.offset(), fixptr.realAddress());
-            fix.header = *fixptr;
-        
-            const unsigned char* offset = (const unsigned char*)(fix.header + 1);
-            /* Skip demo save names */
-            offset += 12 * fix.header->demo_name_count;
-            /* Skip demo level names */
-            offset += 12 * fix.header->demo_name_count;
-            /* Skip level names (these are derived from the engine struct) */
-            offset += 30 * fix.header->level_name_count;
-            /* Trailer */
-            fix.trailer = (fix_trailer*)offset;
-        }
-        
-#pragma mark LVL
-        {
-            //info(BOLD COLOR_GREEN "LVL @ [0x%X : %p]\n", lvlptr->physicalAddress(), lvlptr->hostAddress());
-            
-            lvl.header = *lvlptr;
-            
-            const unsigned char* offset = (const unsigned char*)(lvl.header + 1);
-            /* Calculate total texture count: this is the number of textures in the level aside (duplicates?) in fixed memory */
-            const uint32_t n_textures = lvl.header->texture_count - fix.trailer->texture_count;
-            /* Skip textures */
-            offset += n_textures * 4 * 2;
-            /* Read dynamically aligned section 1 */
-            lvl.section_a = (lvl_section_a*)offset;
-          
-            g_stObjectTypes = (stObjectType*)&lvl.section_a->object_type;
-            g_stAlways = (stAlways*)&lvl.section_a->always_structure;
-        }
-    }
-  
-  static auto cache() -> void {
-    if (objectNameCache.find(g_stEngineStructure->currentLevelName) == objectNameCache.end()) {
-      namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
-      
-      g_stObjectTypes->family.forEach([&](stObjectTypeElement* e, void*) { cache.familyNames.push_back(std::string(e->name)); });
-      g_stObjectTypes->model.forEach([&](stObjectTypeElement* e, void*) { cache.modelNames.push_back(std::string(e->name)); });
-      g_stObjectTypes->instance.forEach([&](stObjectTypeElement* e, void*) { cache.instanceNames.push_back(std::string(e->name)); });
-    }
-  }
   
   static void cacheInputEntries() { // b24460
     //printf("entries: %X\n", g_stInputStructure->entries.memoryOffset().effectiveAddress());
@@ -196,39 +78,74 @@ static std::string lastLevelName = "";
       return inputEntryElementCache[name];
     return nullptr;
   }
-  
-  static auto nameLookup(int type, int idx) -> std::string {
-    if (objectNameCache.find(g_stEngineStructure->currentLevelName) != objectNameCache.end()) {
-      namecache& cache = objectNameCache[g_stEngineStructure->currentLevelName];
-      try {
-        if (type == objectTypeFamily) return cache.familyNames.at(idx);
-        if (type == objectTypeModel) return cache.modelNames.at(idx);
-        if (type == objectTypeInstance) return cache.instanceNames.at(idx);
-      } catch (std::out_of_range& e) {
-        //std::cout << "could not locate name (idx=" << idx  << ") out of range\n";
-        return "Invalid name";
-      }
-    }
-    return "Invalid name";
-  }
     
   void update() {
-    g_stEngineStructure = pointer<stSuperObject>    (GCN_POINTER_ENGINE_STRUCTURE);
-    g_stInputStructure  = pointer<stInputStructure> (GCN_POINTER_INPUT_STRUCTURE);
-    g_stRandomStructure = pointer<stRandom>         (GCN_POINTER_RND);
-    g_bGhostMode        = pointer<uint8>            (GCN_POINTER_GHOST_MODE);
-    
-    p_stActualWorld          = *doublepointer<stSuperObject>(GCN_POINTER_ACTUAL_WORLD);
-    p_stDynamicWorld         = *doublepointer<stSuperObject>(GCN_POINTER_DYNAMIC_WORLD);
-    p_stInactiveDynamicWorld = *doublepointer<stSuperObject>(GCN_POINTER_INACTIVE_DYNAMIC_WORLD);
-    p_stFatherSector         = *doublepointer<stSuperObject>(GCN_POINTER_FATHER_SECTOR);
+    cpa::global::load();
     
     if (isValidGameState()) {
-      readLevel();
-      cache();
       cacheInputEntries();
+      
+//      serializer s(serializer::Mode::Save);
+//      serializer::node nd(&s);
+//      nd.pointer("root", p_stDynamicWorld);
+//      std::string data = nd.data.dump(1);
+//      //printf("%s\n", nd.data.dump(2).c_str());
+//      
+//      FILE* fp = fopen("/Users/jba03/Desktop/Music/YouTube/out.json", "wb");
+//      fwrite(data.c_str(), data.length(), 1, fp);
+//      fclose(fp);
+      
+      
+     // dynamics.serialize(nd);
+      
+      //printf("adr: %X\n", g_stEngineStructure->currentMainPlayers[0]->actor->brain->mind->runIntelligence.memoryOffset().effectiveAddress());
+      
+//      *(uint8_t*)g_stEngineStructure->currentMainPlayers[0]->actor->dsgVar(0) = 4;
+//      *(uint8_t*)g_stEngineStructure->currentMainPlayers[0]->actor->dsgVar(1) = 1;
+//      *(uint8_t*)g_stEngineStructure->currentMainPlayers[0]->actor->dsgVar(4) = 1;
+      //g_stEngineStructure->standardCamera->actor->brain->mind->intelligence = nullptr;
+      
+//      serializer s;
+//      serializer::node nd(&s, "root", "");
+//      p_stActualWorld->serialize(nd);
+//
+//      std::string ser = serializer::node::serialize(nd);
+//
+//      FILE* fp = fopen("out.serialize", "wb");
+//      fwrite(ser.c_str(), ser.length(), 1, fp);
+//      fclose(fp);
+      
+//      serializer s(serializer::Load);
+//      serializer::node nd(&s, "root", "");
+//
+//      FILE* fp = fopen("/Users/jba03/Desktop/Music/YouTube/out.serialize", "rb");
+//
+//      fseek(fp, 0, SEEK_END);
+//      size_t sz = ftell(fp);
+//      fseek(fp, 0, SEEK_SET);
+//      char* buf = (char*)malloc(sizeof(char) * sz);
+//      fread(buf, sz, 1, fp);
+//
+//      fclose(fp);
+//
+//      nd.unserialize(buf);
+      //p_stActualWorld->serialize(nd);
+
+      
+
+//            std::string ser = serializer::node::serialize(nd);
+//      printf("a: %s\n", ser.c_str());
+      
+      //printf("string:\n%s\n\n", );
+      
+     // g_stEngineStructure->inputMode = engineInputModeCommands;
+//      g_stInputStructure->entries[IPT_E_Entry_Action_Pad0_AxeX].analogValue = float((drand48() - 0.5f) * 200.0f);
+//      g_stInputStructure->entries[IPT_E_Entry_Action_Pad0_AxeY].analogValue = float((drand48() - 0.5f) * 200.0f);
+      //g_stInputStructure->device[0].joyAxisR->analogValue = drand48();
     }
+      
     
+  
     if (g_stEngineStructure->mode != lastEngineMode) {
       event("EngineModeChanged").fire({{"from", lastEngineMode}, {"to", g_stEngineStructure->mode}});
     }
@@ -243,17 +160,23 @@ static std::string lastLevelName = "";
 //        gui::loadLayout(currentLevel);
 //      }
       //});
-      //event("LevelChanged").fire({{"current", std::string(g_stEngineStructure->currentLevelName)}, {"previousLevel", lastLevelName}});
+      event("LevelChanged").fire({{"current", std::string(g_stEngineStructure->currentLevelName)}, {"previousLevel", lastLevelName}});
     }
     
+    
+    //printf("last: %d\n", lastEngineMode);
+    
     R3::autoSplitter.update();
+    
+    runManager.Update();
     
     lastLevelName = std::string(g_stEngineStructure->currentLevelName);
     lastEngineMode = g_stEngineStructure->mode;
   }
   
   void initialize() {
-    library::external::nameLookup = nameLookup;
+   // library::external::nameLookup = nameLookup;
+   // mecsync_start();
   }
     
   uint32_t color_table_index(unsigned idx) {
@@ -272,10 +195,10 @@ static std::string lastLevelName = "";
   }
     
   void game_unload() {
-    fix.header = NULL;
-    fix.trailer = NULL;
-    lvl.header = NULL;
-    lvl.section_a = NULL;
+//    fix.header = NULL;
+//    fix.trailer = NULL;
+//    lvl.header = NULL;
+//    lvl.section_a = NULL;
     g_stAlways = NULL;
     g_stObjectTypes = NULL;
   }
@@ -292,7 +215,7 @@ static std::string lastLevelName = "";
     if (!isValidGameState()) return nullptr;
     pointer<stSuperObject> target = nullptr;
     try {
-      p_stDynamicWorld->recurse([&](stSuperObject *obj, void *data) {
+      p_stActualWorld->recurse([&](stSuperObject *obj, void *data) {
         if (obj->name() == instanceName) {
           target = obj;
         }
@@ -304,28 +227,15 @@ static std::string lastLevelName = "";
   }
     
   bool isValidGameState() {
-    if (!g_stEngineStructure) return false;
-    return !g_stEngineStructure->engineFrozen
-    && g_stEngineStructure->mode != 5
-    && g_stEngineStructure->mode != 6
-    && p_stActualWorld
-    && p_stDynamicWorld
-    && p_stInactiveDynamicWorld
-    && p_stFatherSector;
+    return cpa::global::isValidState();
   }
   
-  bool engineModeChangedTo(uint8 mode, uint8 from) {
+  bool engineModeChangedTo(int mode, int from) {
+    //printf("check change: %d %d %d\n", mode, g_stEngineStructure->mode, lastEngineMode);
+    //return (g_stEngineStructure->mode == mode) && (mode != lastEngineMode);
     return (from == engineModeInvalid) ?
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) :
     (g_stEngineStructure->mode == mode) && (mode != lastEngineMode) && (lastEngineMode == from);
   }
     
-}
-
-namespace cpa::structure {
-  std::string resolve(int16_t type, int *index) {
-    return game::nameLookup(type, *index);
-  }
-
-ObjectNameResolver nameResolver = resolve;
 }

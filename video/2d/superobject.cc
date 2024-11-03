@@ -43,8 +43,8 @@ static auto sector(stSuperObject *spo) -> void {
   stSector *sector = spo->sector;
   
   ImGui::Text("%s", sector->name.lastPathComponent().c_str());
-  ImGui::Text("Min: [%.2f, %.2f, %.2f]", float(sector->min.x), float(sector->min.y), float(sector->min.z));
-  ImGui::Text("Max: [%.2f, %.2f, %.2f]", float(sector->max.x), float(sector->max.y), float(sector->max.z));
+  ImGui::Text("Min: [%.2f, %.2f, %.2f]", float(sector->min.x()), float(sector->min.y()), float(sector->min.z()));
+  ImGui::Text("Max: [%.2f, %.2f, %.2f]", float(sector->max.x()), float(sector->max.y()), float(sector->max.z()));
   
 //  if (ImGui::Button("Highlight in 3D view")) {
 //    graphics::highlightList.push_back(spo);

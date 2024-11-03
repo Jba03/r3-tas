@@ -22,7 +22,7 @@ template <typename T> static auto highlight(pointer<T> object, size_t offset) ->
 }
 
 static auto highlightSuperObject(size_t offset, bool *b, ImColor *color) -> void {
-  game::p_stDynamicWorld->forEachChild([&](stSuperObject *spo, void*) {
+  p_stDynamicWorld->forEachChild([&](stSuperObject *spo, void*) {
     size_t effective = pointer<stSuperObject>(spo).pointeeAddress().effectiveAddress();
     if (offset >= effective && offset <= effective + sizeof(stSuperObject)) {
       *b = true;

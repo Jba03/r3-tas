@@ -177,16 +177,20 @@ fragment FragmentOutput fragment_main(RasterizerData in [[stage_in]],
     float4 uniformColor = uniform.color;
     float3 up = float3(0, 0, 1);
     float dot = metal::dot(in.normal, up);
-    if (dot < M_SQRT1_2_F && uniform.useGameIndexing)
-    {
-        //discard_fragment();
-        //uniformColor.w = 0.0f;
-    }
-    else
-    {
-
-    }
+  float3 xup = float3(1,0,0);
+  //float dot2 = metal::dot(in.normal, float3(1, 0, 0));
+  //float angle = degrees(acos(dot(in.normal, xup) / (A.length() * B.length())));;
   
+//    if ((dot >= M_SQRT1_2_F && dot2 <= M_SQRT1_2_F/4.0f) && uniform.useGameIndexing)
+//    {
+//        discard_fragment();
+//        //uniformColor.w = 0.0f;
+//    }
+//    else
+//    {
+//
+//    }
+//
   
 //  float3 color = uniform.color.xyz;
 //  float3 ambient = tex * color;

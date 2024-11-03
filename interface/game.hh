@@ -12,44 +12,27 @@
 
 using namespace cpa;
 using namespace cpa::structure;
+using namespace cpa::global;
 
 namespace game {
-  
-  /* Global structures */
-  extern pointer<stAlways> g_stAlways;
-  extern pointer<stEngineStructure> g_stEngineStructure;
-  extern pointer<stObjectType> g_stObjectTypes;
-  extern pointer<stInputStructure> g_stInputStructure;
-  extern pointer<stRandom> g_stRandomStructure;
-  
-  /* World */
-  extern pointer<stSuperObject> p_stActualWorld;
-  extern pointer<stSuperObject> p_stDynamicWorld;
-  extern pointer<stSuperObject> p_stInactiveDynamicWorld;
-  extern pointer<stSuperObject> p_stFatherSector;
     
-  /* Global variables */
-  extern cpa::uint8 *g_bGhostMode;
-    
-  void initialize();
-  void update();
-  void deinitialize();
-  void level_read();
-  
-  /** find an object by instance name*/
-  pointer<stSuperObject> findObject(std::string instanceName);
-  /** get object type color */
-  uint32_t objectColor(stSuperObject *object);
-  /** resolve object name */
-  //std::string nameResolver(ObjectType type, int *index);
-  
-  /** look up input structure element */
-  pointer<stInputEntryElement> findInputEntryElement(std::string name);
-  
-  /** is the engine in a valid state? */
-  bool isValidGameState();
-  /** did the engine mode change? */
-  bool engineModeChangedTo(cpa::uint8 mode, cpa::uint8 from = engineModeInvalid);
+void initialize();
+void update();
+void deinitialize();
+void level_read();
+
+/** find an object by instance name*/
+pointer<stSuperObject> findObject(std::string instanceName);
+/** get object type color */
+uint32_t objectColor(stSuperObject *object);
+
+/** look up input structure element */
+pointer<stInputEntryElement> findInputEntryElement(std::string name);
+
+/** is the engine in a valid state? */
+bool isValidGameState();
+/** did the engine mode change? */
+bool engineModeChangedTo(int mode, int from = engineModeInvalid);
   
 }
 

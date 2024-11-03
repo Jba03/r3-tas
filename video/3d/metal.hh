@@ -36,8 +36,8 @@ struct MetalGraphicsContext : GraphicsContext {
   auto setUseCheckerTexture(bool value) -> void;
   auto setUseFaceNormals(bool value) -> void;
   auto setDisableShading(bool value) -> void;
-  auto setColor(const cpa::structure::stVector4D& color) -> void;
-  auto setCameraPosition(const cpa::structure::stVector3D& pos) -> void;
+  auto setColor(cpa::structure::stVector4D color) -> void;
+  auto setCameraPosition(cpa::structure::stVector3D pos) -> void;
   
   // Primitives
   auto drawPoint(cpa::structure::stVector3D point) -> void;

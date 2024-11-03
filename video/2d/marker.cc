@@ -145,6 +145,10 @@ static std::pair<std::string, ImVec4> markerFormat(pointer<T> reference) {
     std::string objectName = reference->name();
     ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference));
     return { objectName, bgCol };
+  } else if constexpr (std::is_same<T, stEngineObject>::value) {
+    std::string objectName = reference->name();
+    ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference->stdGame->superObject));
+    return { objectName, bgCol };
   } else if constexpr (std::is_same<T, stBrain>::value) {
     std::string objectName = "Brain";
     ImVec4 bgCol = ImGui::ColorConvertU32ToFloat4(game::objectColor(reference));
@@ -162,6 +166,12 @@ static std::pair<std::string, ImVec4> markerFormat(pointer<T> reference) {
 
 template <>
 int marker<stSuperObject>(pointer<stSuperObject> reference, bool readonly, std::string customText, bool quiet) {
+  std::pair<std::string, ImVec4> data = markerFormat(reference);
+  return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
+}
+
+template <>
+int marker<stEngineObject>(pointer<stEngineObject> reference, bool readonly, std::string customText, bool quiet) {
   std::pair<std::string, ImVec4> data = markerFormat(reference);
   return markerElement(customText.length() != 0 ? customText : data.first, quiet, data.second, defaultPadding, defaultRounding);
 }

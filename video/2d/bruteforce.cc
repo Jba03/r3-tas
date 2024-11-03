@@ -10,7 +10,7 @@
 
 
 static void dumpGeometry(FILE *fp) {
-//  game::p_stFatherSector->recurse([&](stSuperObject *spo, void*) {
+//  p_stFatherSector->recurse([&](stSuperObject *spo, void*) {
 //    // Write type
 //    fwrite(&spo->type, sizeof(uint32_t), 1, fp);
 //    
@@ -49,7 +49,7 @@ static void draw() {
 //  if (!game::isValidGameState()) return;
 //  ImGui::Begin("Bruteforce");
 //  
-//  stSuperObject *spo = game::p_stDynamicWorld->find("Rayman", game::g_stObjectTypes);
+//  stSuperObject *spo = p_stDynamicWorld->find("Rayman", game::g_stObjectTypes);
 //  stEngineObject *obj = (stEngineObject*)spo->data;
 //  stDynam *dynam = obj->dynam;
 //  stDynamics *dynamics = dynam->dynamics;

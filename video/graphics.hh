@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cpatools.hpp"
+#include <cpatools/cpatools.hpp>
 
 #define DEFAULT_COLOR cpa::structure::stVector4D(1.0f, 1.0f, 1.0f, 1.0f)
 
@@ -28,6 +28,11 @@ struct GraphicsContext {
     Triangles,
   };
   
+  struct Sphere {
+    cpa::structure::stVector3D point;
+    float radius;
+  };
+  
   // Draw
   virtual auto beginFrame(void* subtex = nullptr) -> void = 0;
   virtual auto draw(const PrimitiveType primitive, uint32_t vertexCount, cpa::structure::stVector3D* vertices) -> void = 0;
@@ -43,8 +48,8 @@ struct GraphicsContext {
   virtual auto setUseCheckerTexture(bool value) -> void = 0;
   virtual auto setUseFaceNormals(bool value) -> void = 0;
   virtual auto setDisableShading(bool value) -> void = 0;
-  virtual auto setColor(const cpa::structure::stVector4D& color) -> void = 0;
-  virtual auto setCameraPosition(const cpa::structure::stVector3D& pos) -> void = 0;
+  virtual auto setColor(cpa::structure::stVector4D color) -> void = 0;
+  virtual auto setCameraPosition(cpa::structure::stVector3D pos) -> void = 0;
   
   // Primitives
   auto drawPoint(cpa::structure::stVector3D point) -> void;
@@ -56,6 +61,12 @@ struct GraphicsContext {
   auto drawIPO(cpa::structure::stInstantiatedPhysicalObject *IPO, cpa::structure::stMatrix4D T) -> void;
   auto drawGraph(cpa::structure::stGraph *graph) -> void;
   auto drawZDX();
+  
+  auto submitSpheres() -> void;
+  
+  std::vector<Sphere> spheres;
+  
+  cpa::structure::stMatrix4D projection;
 };
 
 GraphicsContext* MakeGraphicsContext();

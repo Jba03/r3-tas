@@ -18,15 +18,15 @@ static void drawJoystick(ImDrawList *drawlist, ImVec2 pos, const float radius, i
 
 stVector2D jostickFromCamera(stVector3D worldDirection) {
   stVector3D i, j, k;
-  pointer<stTransform> cameraTransform = game::g_stEngineStructure->standardCamera->globalTransform;
+  pointer<stTransform> cameraTransform = g_stEngineStructure->standardCamera->globalTransform;
   cameraTransform->getRotation(i, j, k);
-  j.z = 0.0f;
-  if (j.length() == 0.0f) (j = k).z = 0.0f;
+  j.z() = 0.0f;
+  if (j.length() == 0.0f) (j = k).z() = 0.0f;
   stVector3D normJ = j.normalize();
   
   
   stVector3D k2 = stVector3D(0.0f, 0.0f, 1.0f);
-  stVector3D i2 = game::g_stEngineStructure->currentMainPlayers[0]->position();
+  stVector3D i2 = g_stEngineStructure->currentMainPlayers[0]->position();
   
   i = j.cross(k);
   
@@ -85,12 +85,12 @@ void InputWindow::draw() {
     pointer<stInputEntryElement> cX = game::findInputEntryElement("Action_Pad0_AxeV");
     pointer<stInputEntryElement> cY = game::findInputEntryElement("Action_Pad0_AxeZ");
     
-    stInputDevice device = game::g_stInputStructure->device[0];
+    stInputDevice device = g_stInputStructure->device[0];
     stPadReadingOutput pad = *(stPadReadingOutput*)pointer<stPadReadingOutput>(0x8042F8F8); //device.padReadOutput;
     
    // printf("addr: %X\n", game::g_stInputStructure->device[0].valid.memoryOffset().effectiveAddress());
     
-//    stVector3D globalVector = pad.globalVector;
+    stVector3D globalVector = pad.globalVector;
 //    int16 horizontalAxis = pad.horizontalAxis;
 //    int16 verticalAxis;
 //    float32 analogForce;
@@ -98,7 +98,17 @@ void InputWindow::draw() {
 //    float32 rotationAngle;
 //    int32 strafeSector;
     
-//    printf("pad vector: (%.2f, %.2f, %.2f)\n", float(pad.globalVector.x), float(pad.globalVector.y), float(pad.globalVector.z));
+    //printf("pad vector: (%f, %f, %f)\n", float(pad.globalVector.x()), float(pad.globalVector.y()), float(pad.globalVector.z()));
+    //globalVector = globalVector.normalize() * 100.0f;
+    //printf("pad vector 2: (%f, %f, %f)\n", float(globalVector.x()), float(globalVector.y()), float(globalVector.z()));
+    float angle = atan2(globalVector.y(), globalVector.x());
+    //float magnitude = globalVector.length();
+    
+    stVector3D padVectorReconstructed = stVector3D(sin(angle), cos(angle), 0.0f);
+    //printf("pad vector reconst: (%f, %f, %f)\n", float(padVectorReconstructed.x()), float(padVectorReconstructed.y()), float(padVectorReconstructed.z()));
+    
+    
+    
 //    printf("pad x axis: %d\n", int(pad.horizontalAxis));
 //    printf("pad y axis: %d\n", int(pad.verticalAxis));
 //    printf("pad analog force: %f\n", float(pad.analogForce));
@@ -113,8 +123,8 @@ void InputWindow::draw() {
     
     //drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, float(pad.globalVector.x), float(pad.globalVector.y), ImVec4(1.0f, 0.4f, 0.1f, 1.0f));
 
-//    game::g_stEngineStructure->inputMode = running ? stEngineStructure::inputMode::Commands : stEngineStructure::inputMode::Normal;
-    stVector3D pos = game::g_stEngineStructure->currentMainPlayers[0]->position();
+//    g_stEngineStructure->inputMode = running ? stEngineStructure::inputMode::Commands : stEngineStructure::inputMode::Normal;
+    stVector3D pos = g_stEngineStructure->currentMainPlayers[0]->position();
 //
 //    if (running) {
 //      genericDirection = targets.size() > 0 ? -(targets.front() - pos) : stVector3D();
@@ -128,8 +138,8 @@ void InputWindow::draw() {
 //
 //
     genericDirection = -(targetPos - pos);
-    genericDirection.y = -float(genericDirection.y);
-    genericDirection.z = 0.0f;
+    genericDirection.y() = -float(genericDirection.y());
+    genericDirection.z() = 0.0f;
     stVector2D joy = jostickFromCamera(genericDirection.normalize());
 //      mX->analogValue = joy.x;
 //      mY->analogValue = joy.y;
@@ -139,7 +149,7 @@ void InputWindow::draw() {
 //
 //      cameraAngle += 0.035f;
       
-      if (useTarget) drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, float(joy.x), float(joy.y), ImVec4(1.0f, 0.4f, 0.1f, 1.0f));
+      if (useTarget) drawJoystick(drawlist, ImGui::GetCursorScreenPos(), joystickRadius, float(joy.x()), float(joy.y()), ImVec4(1.0f, 0.4f, 0.1f, 1.0f));
    // }
       
 //    //printf("running: %d, targets: %d\n", running, targets.size());

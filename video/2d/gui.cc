@@ -125,7 +125,7 @@ static void DrawGameWindow(ImTextureID T, bool *windowed)
         ImGui::Begin("Game window extras", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
         ImGui::SetWindowPos(ImVec2(WindowPos.x, WindowPos.y + WindowSize.y + 10));
         ImGui::SetWindowSize(ImVec2(WindowSize.x, 0));
-        ImGui::Checkbox("Noclip/ghost mode", reinterpret_cast<bool*>(game::g_bGhostMode));
+        ImGui::Checkbox("Noclip/ghost mode", reinterpret_cast<bool*>((bool*)g_bGhostMode));
         ImGui::SliderFloat("Engine timescale", &TimeScale, 0.1f, 2.0f);
         ImGui::SliderInt("Engine timescale2", &timescale_real, 0, 256*4);
         //g_stEngineStructure->timer.ticksPerMs = 40500 * 1.0f / TimeScale;
@@ -134,7 +134,7 @@ static void DrawGameWindow(ImTextureID T, bool *windowed)
         //pointer<uint32>(0x805D8510).assign(timescale_real);
         //*(uint32*)(memory::baseAddress + 0x005D8510) = timescale_real;
       
-//        stSuperObject *rayman = game::p_stDynamicWorld->find("Rayman", game::g_stObjectTypes);
+//        stSuperObject *rayman = p_stDynamicWorld->find("Rayman", game::g_stObjectTypes);
 //        stVector3D position = rayman->globalTransform->position();
 //        printf("%.2f %.2f %.2f\n", position.x, position.y, position.z);
 ////
@@ -266,7 +266,7 @@ namespace gui {
     style.Colors[ImGuiCol_ChildBg] = ImColor(30, 30, 30, 50);
    // style.Colors[ImGuiCol_HeaderActive] = ImColor(105, 65, 65, 255);
     
-    if (interface->mode == Speedrun) {
+    if (config["mode"] == "Speedrun") {
       style.Colors[ImGuiCol_MenuBarBg] = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
       style.Colors[ImGuiCol_WindowBg] = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
       style.Colors[ImGuiCol_Border] = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -356,11 +356,9 @@ namespace gui {
     ImGui::DockBuilderRemoveNode(dockSpaceID);
     ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
     ImGui::DockBuilderSetNodeSize(dockSpaceID, ImGui::GetMainViewport()->WorkSize);
-    switch (interface->mode) {
-      case Speedrun: speedrunLayout(dockSpaceID); break;
-      case Practice: practiceLayout(dockSpaceID); break;
-      case Advanced: advancedLayout(dockSpaceID); break;
-    }
+    if (config["mode"] == "Speedrun") speedrunLayout(dockSpaceID);
+    if (config["mode"] == "Practice") practiceLayout(dockSpaceID);
+    if (config["mode"] == "Advanced") advancedLayout(dockSpaceID);
     ImGui::DockBuilderFinish(dockSpaceID);
   }
     
@@ -368,7 +366,7 @@ namespace gui {
   static auto drawGraphics(void *tex) -> void {
     if (game::isValidGameState()) {
       stCameraGLI *camera = nullptr;
-      if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
+      if ((camera = g_stEngineStructure->viewportCamera[0])) {
         /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
         //graphics::projectionMatrix = stMatrix4D::make_perspective(-0.24f + 0.1, 640.0f / 528.0f, 0.1, 100.f);
         
@@ -511,13 +509,36 @@ namespace gui {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("r3-tas")) {
         if (ImGui::BeginMenu("Mode")) {
-          if (ImGui::MenuItem("Speedrunning", nullptr, interface->mode == Speedrun)) { interface->mode = Speedrun; needsLayout = true; }
-          if (ImGui::MenuItem("Practice", nullptr, interface->mode == Practice)) { interface->mode = Practice; needsLayout = true; }
-          if (ImGui::MenuItem("Advanced", nullptr, interface->mode == Advanced)) { interface->mode = Advanced; needsLayout = true; }
+          if (ImGui::MenuItem("Speedrunning", nullptr, config["mode"] == "Speedrun")) { config["mode"] = "Speedrun"; needsLayout = true; }
+          if (ImGui::MenuItem("Practice", nullptr, config["mode"] == "Practice")) { config["mode"] = "Practice"; needsLayout = true; }
+          if (ImGui::MenuItem("Advanced", nullptr, config["mode"] == "Advanced")) { config["mode"] = "Advanced"; needsLayout = true; }
           ImGui::EndMenu();
         }
         
-        if (ImGui::BeginMenu("Memory", interface->mode != Speedrun)) {
+        if (config["mode"] == "Speedrun") {
+          ImGui::Separator();
+          if (ImGui::BeginMenu("Speedrun")) {
+            if (ImGui::MenuItem("New run")) {
+              
+            }
+            
+            if (ImGui::BeginMenu("Options")) {
+              if (ImGui::BeginMenu("Split point")) {
+                ImGui::MenuItem("First star");
+                ImGui::MenuItem("Last level frame");
+                ImGui::EndMenu();
+              }
+              ImGui::MenuItem("Remove loading times");
+              ImGui::MenuItem("Upload new runs to database");
+              ImGui::EndMenu();
+            }
+            
+            ImGui::EndMenu();
+          }
+          ImGui::Separator();
+        }
+        
+        if (ImGui::BeginMenu("Memory", config["mode"] != "Speedrun")) {
           ImGui::Checkbox("Readonly", &memory::readonly);
           ImGui::EndMenu();
         }
@@ -563,8 +584,11 @@ void addTemporaryMessage(std::string msg) {
     GImGui = (ImGuiContext*)c;
     loadStyle();
     mainMenuBar();
-    if (interface->mode == Speedrun)
+    if (config["mode"] == "Speedrun") {
+      drawSpeedrunTimer();
+      drawRunManager();
       return;
+    }
     
     gameTexture = texture;
     
@@ -628,7 +652,7 @@ void addTemporaryMessage(std::string msg) {
 
     gameWindow->draw(static_cast<ImTextureID>(texture));
 
-    if (interface->mode == Advanced) {
+    if (config["mode"] == "Advanced") {
       
       // Draw the memory editor first in order for it not to take focus,
       // which can cause memory to be edited unknowingly when pressing buttons.
@@ -679,7 +703,7 @@ void addTemporaryMessage(std::string msg) {
 //      //if (false)
 //      if (game::isValidGameState()) {
 //        stCamera *camera = nullptr;
-//        if ((camera = game::g_stEngineStructure->viewportCamera[0])) {
+//        if ((camera = g_stEngineStructure->viewportCamera[0])) {
 //          /* Construct projection matrix. Use negative fov in order to account for flipped transformations. */
 //          graphics::projectionMatrix = stMatrix4D::perspective(-camera->xAlpha + 0.1, 640.0f / 528.0f, camera->near, camera->far);
 //
@@ -950,13 +974,13 @@ ImVec4 projectWorldCoordinate(stVector3D P) {
     stMatrix4D projection = stMatrix4D::make_perspective(fov, ASPECT, camera->near, camera->far);
     stMatrix4D viewprojection = projection * view;
     
-    stVector4D P2 = stVector4D(P.x, P.y, P.z, 1.0f);
+    stVector4D P2 = stVector4D(P.x(), P.y(), P.z(), 1.0f);
     stVector4D R = viewprojection * P2;
     
-    float xp = (R.x / R.w) * PROJECTION_RATIO_X + 0.5f;
-    float yp = (R.y / R.w) * PROJECTION_RATIO_Y + 0.5f;
+    float xp = (R.x() / R.w()) * PROJECTION_RATIO_X + 0.5f;
+    float yp = (R.y() / R.w()) * PROJECTION_RATIO_Y + 0.5f;
     
-    return ImVec4(xp, yp, R.z, R.w);
+    return ImVec4(xp, yp, R.z(), R.w());
   } catch (bad_pointer& e) {
     return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
   }
